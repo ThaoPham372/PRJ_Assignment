@@ -36,15 +36,15 @@
                             <strong>Cause:</strong> ${pageContext.exception.cause.message}<br>
                         </c:if>
                     </c:if>
-                    <c:if test="${not empty requestScope['jakarta.servlet.error.exception']}">
-                        <strong>Servlet Exception:</strong> ${requestScope['jakarta.servlet.error.exception'].class.simpleName}<br>
-                        <strong>Message:</strong> ${requestScope['jakarta.servlet.error.exception'].message}<br>
+                    <c:if test="${not empty requestScope['javax.servlet.error.exception']}">
+                        <strong>Servlet Exception:</strong> ${requestScope['javax.servlet.error.exception'].class.simpleName}<br>
+                        <strong>Message:</strong> ${requestScope['javax.servlet.error.exception'].message}<br>
                     </c:if>
-                    <c:if test="${not empty requestScope['jakarta.servlet.error.message']}">
-                        <strong>Error Message:</strong> ${requestScope['jakarta.servlet.error.message']}<br>
+                    <c:if test="${not empty requestScope['javax.servlet.error.message']}">
+                        <strong>Error Message:</strong> ${requestScope['javax.servlet.error.message']}<br>
                     </c:if>
-                    <c:if test="${not empty requestScope['jakarta.servlet.error.request_uri']}">
-                        <strong>Request URI:</strong> ${requestScope['jakarta.servlet.error.request_uri']}<br>
+                    <c:if test="${not empty requestScope['javax.servlet.error.request_uri']}">
+                        <strong>Request URI:</strong> ${requestScope['javax.servlet.error.request_uri']}<br>
                     </c:if>
                 </div>
             </c:if>

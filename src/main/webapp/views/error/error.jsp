@@ -58,18 +58,18 @@ prefix="c" %>
                     </c:if>
                   </c:when>
                   <c:when
-                    test="${not empty requestScope['jakarta.servlet.error.exception']}"
+                    test="${not empty requestScope['javax.servlet.error.exception']}"
                   >
                     <p>
                       <strong>Loại lỗi:</strong>
-                      ${requestScope['jakarta.servlet.error.exception'].class.simpleName}
+                      ${requestScope['javax.servlet.error.exception'].class.simpleName}
                     </p>
                     <c:if
-                      test="${not empty requestScope['jakarta.servlet.error.message']}"
+                      test="${not empty requestScope['javax.servlet.error.message']}"
                     >
                       <p>
                         <strong>Thông báo:</strong>
-                        ${requestScope['jakarta.servlet.error.message']}
+                        ${requestScope['javax.servlet.error.message']}
                       </p>
                     </c:if>
                   </c:when>
@@ -82,11 +82,11 @@ prefix="c" %>
                 </c:choose>
 
                 <c:if
-                  test="${not empty requestScope['jakarta.servlet.error.request_uri']}"
+                  test="${not empty requestScope['javax.servlet.error.request_uri']}"
                 >
                   <p>
                     <strong>URL yêu cầu:</strong>
-                    ${requestScope['jakarta.servlet.error.request_uri']}
+                    ${requestScope['javax.servlet.error.request_uri']}
                   </p>
                 </c:if>
 

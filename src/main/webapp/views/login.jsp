@@ -6,7 +6,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Đăng Nhập - Gym Management</title>
+    <title>Đăng Nhập - Stamina Gym</title>
 
     <!-- Bootstrap CSS -->
     <link
@@ -27,60 +27,174 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
     />
 
     <style>
+      /* Override CSS with Stamina Gym theme for this specific page */
       body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(
+          135deg,
+          var(--primary-purple) 0%,
+          var(--secondary-purple) 100%
+        );
         min-height: 100vh;
         display: flex;
         align-items: center;
+        font-family: 'Poppins', sans-serif;
       }
 
       .login-card {
-        background: rgba(255, 255, 255, 0.95);
+        background: var(--white);
         backdrop-filter: blur(10px);
-        border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        border-radius: 30px;
+        box-shadow: 0 30px 60px rgba(59, 30, 120, 0.2);
         overflow: hidden;
+        max-width: 450px;
       }
 
       .login-header {
-        background: linear-gradient(135deg, #2c3e50, #3498db);
-        color: white;
-        padding: 40px;
+        background: linear-gradient(
+          135deg,
+          var(--primary-purple),
+          var(--secondary-purple)
+        );
+        color: var(--white);
+        padding: 50px 40px;
         text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .login-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="login-pattern" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="2" fill="%23FFD700" opacity="0.2"/><circle cx="75" cy="75" r="2" fill="%23FFD700" opacity="0.2"/></pattern></defs><rect width="100" height="100" fill="url(%23login-pattern)"/></svg>');
+      }
+
+      .login-header h1,
+      .login-header h2,
+      .login-header p {
+        position: relative;
+        z-index: 2;
+        color: var(--white);
+      }
+
+      .login-header .fa-dumbbell {
+        color: var(--accent-yellow);
       }
 
       .login-form {
-        padding: 40px;
+        padding: 50px 40px;
       }
 
       .form-control {
-        border-radius: 15px;
-        border: 2px solid #e0e0e0;
-        padding: 15px 20px;
+        border-radius: 20px;
+        border: 2px solid var(--gray-medium);
+        padding: 18px 25px;
         font-size: 16px;
+        font-family: 'Poppins', sans-serif;
         transition: all 0.3s ease;
+        background-color: var(--white);
       }
 
       .form-control:focus {
-        border-color: #3498db;
-        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        border-color: var(--primary-purple);
+        box-shadow: 0 0 0 0.2rem rgba(59, 30, 120, 0.25);
+        outline: none;
+      }
+
+      .form-label {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        color: var(--primary-purple);
+        margin-bottom: 10px;
       }
 
       .btn-login {
-        background: linear-gradient(135deg, #3498db, #2c3e50);
+        background: linear-gradient(
+          135deg,
+          var(--primary-purple),
+          var(--secondary-purple)
+        );
         border: none;
-        border-radius: 15px;
-        padding: 15px;
+        border-radius: 25px;
+        padding: 18px;
         font-size: 16px;
         font-weight: 600;
-        color: white;
+        color: var(--white);
+        font-family: 'Poppins', sans-serif;
         transition: all 0.3s ease;
       }
 
       .btn-login:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(59, 30, 120, 0.3);
+        color: var(--white);
+      }
+
+      .btn-outline-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+        border-radius: 20px;
+        padding: 12px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .btn-outline-danger:hover {
+        background-color: #dc3545;
         transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        color: white;
+      }
+
+      .btn-outline-primary {
+        border-color: var(--primary-purple);
+        color: var(--primary-purple);
+        border-radius: 20px;
+        padding: 12px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .btn-outline-primary:hover {
+        background-color: var(--primary-purple);
+        transform: translateY(-2px);
+      }
+
+      .btn-outline-secondary {
+        border-color: var(--primary-purple);
+        color: var(--primary-purple);
+        border-radius: 0 20px 20px 0;
+        transition: all 0.3s ease;
+      }
+
+      .btn-outline-secondary:hover {
+        background-color: var(--primary-purple);
+        border-color: var(--primary-purple);
+        color: var(--white);
+      }
+
+      .input-group .form-control {
+        border-radius: 20px 0 0 20px;
+      }
+
+      .bg-light {
+        background: linear-gradient(
+          135deg,
+          var(--gray-light),
+          #f8f9fa
+        ) !important;
+        border: 2px solid var(--accent-yellow);
+        border-radius: 15px;
+      }
+
+      .text-muted {
+        color: var(--gray-dark) !important;
+      }
+
+      .form-check-input:checked {
+        background-color: var(--primary-purple);
+        border-color: var(--primary-purple);
       }
 
       .floating-shapes {
@@ -95,42 +209,56 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
       .shape {
         position: absolute;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 215, 0, 0.1);
         border-radius: 50%;
-        animation: float 6s ease-in-out infinite;
+        animation: float 8s ease-in-out infinite;
       }
 
       .shape:nth-child(1) {
-        width: 80px;
-        height: 80px;
-        top: 20%;
-        left: 10%;
+        width: 100px;
+        height: 100px;
+        top: 15%;
+        left: 8%;
         animation-delay: 0s;
       }
 
       .shape:nth-child(2) {
-        width: 120px;
-        height: 120px;
+        width: 150px;
+        height: 150px;
         top: 60%;
-        right: 15%;
-        animation-delay: 2s;
+        right: 10%;
+        animation-delay: 3s;
       }
 
       .shape:nth-child(3) {
+        width: 80px;
+        height: 80px;
+        bottom: 15%;
+        left: 15%;
+        animation-delay: 6s;
+      }
+
+      .shape:nth-child(4) {
         width: 60px;
         height: 60px;
-        bottom: 20%;
-        left: 20%;
-        animation-delay: 4s;
+        top: 40%;
+        right: 30%;
+        animation-delay: 1.5s;
       }
 
       @keyframes float {
         0%,
         100% {
-          transform: translateY(0px);
+          transform: translateY(0px) rotate(0deg);
+        }
+        25% {
+          transform: translateY(-30px) rotate(90deg);
         }
         50% {
-          transform: translateY(-20px);
+          transform: translateY(-15px) rotate(180deg);
+        }
+        75% {
+          transform: translateY(-25px) rotate(270deg);
         }
       }
     </style>
@@ -138,6 +266,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
   <body>
     <!-- Floating Shapes Background -->
     <div class="floating-shapes">
+      <div class="shape"></div>
       <div class="shape"></div>
       <div class="shape"></div>
       <div class="shape"></div>
@@ -152,8 +281,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
               <h1 class="mb-3">
                 <i class="fas fa-dumbbell fa-2x"></i>
               </h1>
-              <h2 class="fw-bold">Gym Manager</h2>
-              <p class="mb-0 opacity-75">Đăng nhập vào hệ thống</p>
+              <h2 class="fw-bold">STAMINA GYM</h2>
             </div>
 
             <!-- Login Form -->
@@ -305,7 +433,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                 </a>
                 <span class="mx-2">|</span>
                 <a
-                  href="${pageContext.request.contextPath}/views/home.jsp"
+                  href="${pageContext.request.contextPath}/index.jsp"
                   class="text-decoration-none"
                 >
                   Về trang chủ

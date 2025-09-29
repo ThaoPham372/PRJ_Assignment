@@ -1,11 +1,23 @@
 /**
- * Main JavaScript file for Gym Management System
+ * Stamina Gym Management System - Main JavaScript
  * Contains common utilities and functions used across the application
+ * Author: Stamina Gym Team
+ * Version: 1.0.0
  */
 
 // Global configuration
-const GymManager = {
+const StaminaGym = {
   baseUrl: window.location.origin + '/gym-management',
+  theme: {
+    colors: {
+      primary: '#3B1E78',
+      secondary: '#FFD700',
+      success: '#28A745',
+      danger: '#DC3545',
+      warning: '#FFC107',
+      info: '#17A2B8',
+    },
+  },
 
   // Initialize common functionality
   init: function () {
@@ -15,6 +27,10 @@ const GymManager = {
     this.setupTooltips();
     this.setupDatePickers();
     this.setupNumberFormatting();
+    this.setupScrollAnimations();
+    this.setupNavbarHighlight();
+    this.setupResponsiveHandling();
+    console.log('🏋️ Stamina Gym System Initialized');
   },
 
   // Setup DataTables for list pages
@@ -305,12 +321,129 @@ const GymManager = {
         });
     },
   },
+
+  // Setup scroll animations
+  setupScrollAnimations: function () {
+    const animateElements = document.querySelectorAll(
+      '.stat-card, .coach-card, .package-card',
+    );
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.style.animation = 'fadeInUp 0.6s ease forwards';
+          }
+        });
+      },
+      { threshold: 0.1 },
+    );
+
+    animateElements.forEach((el) => {
+      observer.observe(el);
+    });
+
+    // Add CSS animation
+    if (!document.getElementById('scroll-animations')) {
+      const style = document.createElement('style');
+      style.id = 'scroll-animations';
+      style.textContent = `
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  },
+
+  // Setup navbar highlight on scroll
+  setupNavbarHighlight: function () {
+    const navbar = document.querySelector('.navbar');
+    if (navbar) {
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 100) {
+          navbar.classList.add('scrolled');
+        } else {
+          navbar.classList.remove('scrolled');
+        }
+      });
+    }
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }
+      });
+    });
+  },
+
+  // Setup responsive handling
+  setupResponsiveHandling: function () {
+    // Mobile sidebar toggle
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+
+    if (sidebarToggle && sidebar) {
+      sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('show');
+      });
+
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener('click', (e) => {
+        if (
+          window.innerWidth <= 992 &&
+          !sidebar.contains(e.target) &&
+          !sidebarToggle.contains(e.target)
+        ) {
+          sidebar.classList.remove('show');
+        }
+      });
+    }
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 992 && sidebar) {
+        sidebar.classList.remove('show');
+      }
+    });
+  },
+
+  // Enhanced validation with Stamina Gym specific rules
+  validateMembershipId: function (id) {
+    const pattern = /^GM\d{4}$/;
+    return pattern.test(id);
+  },
+
+  validateCoachId: function (id) {
+    const pattern = /^PT\d{3}$/;
+    return pattern.test(id);
+  },
+
+  validateEquipmentId: function (id) {
+    const pattern = /^EQ\d{3}$/;
+    return pattern.test(id);
+  },
 };
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function () {
-  GymManager.init();
+  StaminaGym.init();
 });
 
 // Export for global use
-window.GymManager = GymManager;
+window.StaminaGym = StaminaGym;
+window.GymManager = StaminaGym; // Backward compatibility
