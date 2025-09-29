@@ -1,0 +1,657 @@
+🏋️ PLAN THỰC HIỆN CHI TIẾT - DỰ ÁN FITZ GYM MANAGEMENT SYSTEM
+=====================================================================
+
+📋 I. TỔNG QUAN DỰ ÁN
+=====================
+
+Mục tiêu chính:
+- Tỷ lệ retention: +40% (từ 65% lên 90%+)  
+- Tăng doanh thu: +35% thông qua automation và upselling
+- Giảm thời gian quản lý: -60% nhờ digitization
+
+Tech Stack được chọn:
+- Backend: Java Servlet + JSP + JSTL + JPA
+- Database: SQL Server + JDBC  
+- Frontend: Bootstrap + jQuery + Chart.js
+- Advanced: AI Integration + Payment Gateway + OAuth
+
+Problem Statement:
+- Quản lý thủ công: 60% thời gian lãng phí cho giấy tờ
+- Tỷ lệ churn 35%/năm do thiếu engagement
+- Không tracking progress → khách thiếu motivation
+- Limited payment options → mất revenue opportunities
+
+🚀 II. ROADMAP THỰC HIỆN (16 TUẦN)
+=================================
+
+📅 PHASE 1: FOUNDATION SETUP (Tuần 1-3)
+----------------------------------------
+
+Tuần 1: Project Infrastructure
+□ Setup Maven project với cấu trúc MVC chuẩn
+□ Configure dependencies (Servlet, JSP, JSTL, SQL Server, JPA)
+□ Setup web.xml, persistence.xml
+□ Tạo database schema cho 8 core tables
+□ Test JDBC connection và JPA entity mapping
+□ Git repository setup với branching strategy
+□ Tạo cấu trúc package: controller, model, dao, service, utils
+
+Deliverables:
+- Working Maven project structure
+- Database connection established
+- Basic entity mapping verified
+
+Tuần 2: Database Design & Core Entities
+□ Implement ERD với 15+ tables:
+  - customers, employees, services, products
+  - contracts, orders, payments, schedules
+  - health_records, trainer_assignments
+□ Create Entity classes với JPA annotations
+□ Setup connection pooling
+□ Seed initial data (roles, sample records)
+□ Create DAO layer với basic CRUD operations
+
+Deliverables:
+- Complete database schema
+- Entity classes with relationships
+- Basic DAO implementations
+
+Tuần 3: Authentication & Security Foundation
+□ User authentication system (Session + Cookie)
+□ Authorization Filter cho 4 roles:
+  - Director/Manager: Full access
+  - Employee: Limited CRUD
+  - Trainer: Booking + client management
+  - Customer: Self-service portal
+□ Password encryption + "Remember Me"
+□ Basic error handling và logging
+□ Login/logout functionality
+
+Deliverables:
+- Secure authentication system
+- Role-based access control
+- Session management
+
+🏗️ PHASE 2: CORE BUSINESS FEATURES (Tuần 4-8)
+----------------------------------------------
+
+Tuần 4: Customer Management System
+□ Customer CRUD với validation:
+  - Code format: KH-XXXX
+  - Phone: 090xxxxxxx, 091xxxxxxxx
+  - ID: 9/13 digits
+  - Email validation
+  - Date validation (DD/MM/YYYY)
+□ Advanced search & filtering
+□ Pagination cho large datasets
+□ Customer profile dashboard
+□ Emergency contact management
+
+Deliverables:
+- Complete customer management module
+- Validation framework
+- Search and pagination
+
+Tuần 5: Service & Product Management
+□ Service management (PT, Group Classes, Pool):
+  - Service code: DV-XXXX
+  - Pricing tiers, duration, capacity
+□ Product inventory system:
+  - Stock tracking, low-stock alerts
+  - Categories (supplements, equipment, apparel)
+□ Supplier management
+□ Dynamic pricing capabilities
+
+Deliverables:
+- Service catalog management
+- Inventory tracking system
+- Supplier management module
+
+Tuần 6: Contract & Membership System
+□ Membership package creation:
+  - Standard, Premium, VIP tiers
+  - Flexible duration (1,3,6,12 months)
+□ Contract lifecycle management
+□ Auto-renewal notifications
+□ Package upgrade/downgrade workflows
+□ Payment scheduling và overdue management
+
+Deliverables:
+- Membership contract system
+- Package management
+- Renewal automation
+
+Tuần 7: Booking & Scheduling
+□ PT booking system:
+  - Trainer availability matrix
+  - Client-trainer matching
+  - Recurring appointment scheduling
+□ Group class management:
+  - Real-time capacity tracking
+  - Waitlist functionality
+□ Calendar integration
+□ Booking confirmation system
+
+Deliverables:
+- Complete booking system
+- Scheduling automation
+- Calendar integration
+
+Tuần 8: Order & Cart Management
+□ Shopping cart functionality
+□ Order processing workflow
+□ Inventory update automation
+□ Order history & tracking
+□ Receipt generation
+□ Cart persistence across sessions
+
+Deliverables:
+- E-commerce cart system
+- Order processing workflow
+- Receipt and tracking
+
+💳 PHASE 3: PAYMENT & INTEGRATION (Tuần 9-11)
+----------------------------------------------
+
+Tuần 9: Payment Gateway Integration
+□ MoMo API integration
+□ ZaloPay payment processing
+□ QR code payment generation
+□ Payment status tracking
+□ Refund management system
+□ Installment options cho long-term packages
+
+Deliverables:
+- Multi-payment gateway support
+- QR code payment system
+- Payment tracking dashboard
+
+Tuần 10: External Services
+□ Google OAuth login implementation
+□ Email notification system (registration, booking confirmations)
+□ SMS reminders cho appointments
+□ QR code check-in system
+□ Social login workflow
+
+Deliverables:
+- OAuth integration
+- Notification system
+- QR check-in functionality
+
+Tuần 11: Mobile Optimization
+□ Responsive design cho all screens
+□ Mobile-first booking flow
+□ Offline capability cho basic features
+□ Push notification setup
+□ Mobile UI/UX optimization
+
+Deliverables:
+- Mobile-responsive interface
+- Offline functionality
+- Push notification system
+
+📊 PHASE 4: ANALYTICS & AI (Tuần 12-14)
+---------------------------------------
+
+Tuần 12: Business Intelligence Dashboard
+□ Revenue analytics với Chart.js:
+  - Daily/weekly/monthly breakdown
+  - Service vs product revenue
+  - Trainer performance metrics
+□ Customer analytics:
+  - Retention rates, churn prediction
+  - Top customers by value
+  - Attendance patterns
+□ Real-time dashboard indicators
+
+Deliverables:
+- Analytics dashboard
+- Revenue reporting system
+- Performance metrics tracking
+
+Tuần 13: AI-Powered Features
+□ Chatbot integration (customer support):
+  - Workout advice, nutrition tips
+  - FAQ automation
+  - Booking assistance
+□ Smart recommendations:
+  - Optimal workout times
+  - Equipment alternatives
+  - Class suggestions based on history
+□ AI meal planner integration
+
+Deliverables:
+- AI chatbot system
+- Recommendation engine
+- Smart suggestions module
+
+Tuần 14: Health & Progress Tracking
+□ Health metrics tracking:
+  - Weight, BMI, body fat tracking
+  - Progress photo uploads
+  - Workout performance trends
+□ Goal setting và milestone tracking
+□ Achievement system với badges
+□ Progress visualization charts
+
+Deliverables:
+- Health tracking system
+- Goal management module
+- Achievement/badge system
+
+🎯 PHASE 5: ADVANCED FEATURES (Tuần 15-16)
+------------------------------------------
+
+Tuần 15: E-commerce & Loyalty
+□ Advanced product recommendations
+□ Loyalty point system
+□ Referral program implementation
+□ Automated marketing campaigns
+□ Tier-based benefits (bronze, silver, gold)
+□ Cross-selling success tracking
+
+Deliverables:
+- Loyalty program system
+- Referral tracking
+- Marketing automation
+
+Tuần 16: Final Integration & Testing
+□ Comprehensive testing (Unit + Integration)
+□ Performance optimization
+□ Security audit & penetration testing
+□ User acceptance testing
+□ Deployment preparation
+□ Documentation completion
+□ Staff training materials
+
+Deliverables:
+- Production-ready system
+- Complete documentation
+- Training materials
+
+🗃️ III. DATABASE SCHEMA CHI TIẾT
+================================
+
+Core Tables:
+
+-- Customers Table
+customers (
+  id BIGINT PRIMARY KEY IDENTITY,
+  customer_code VARCHAR(10) UNIQUE, -- KH-XXXX
+  full_name NVARCHAR(100),
+  phone VARCHAR(15),
+  email VARCHAR(100),
+  id_number VARCHAR(13),
+  date_of_birth DATE,
+  address NVARCHAR(200),
+  emergency_contact VARCHAR(15),
+  medical_conditions NVARCHAR(500),
+  created_date DATETIME DEFAULT GETDATE(),
+  status VARCHAR(20) DEFAULT 'ACTIVE'
+)
+
+-- Services Table  
+services (
+  id BIGINT PRIMARY KEY IDENTITY,
+  service_code VARCHAR(10) UNIQUE, -- DV-XXXX
+  service_name NVARCHAR(100),
+  description NVARCHAR(500),
+  category VARCHAR(50), -- PT, GROUP_CLASS, POOL, etc.
+  price DECIMAL(10,2),
+  duration_minutes INT,
+  max_capacity INT,
+  trainer_required BIT DEFAULT 0
+)
+
+-- Products Table
+products (
+  id BIGINT PRIMARY KEY IDENTITY,
+  product_name NVARCHAR(100),
+  description NVARCHAR(500),
+  category VARCHAR(50), -- SUPPLEMENT, EQUIPMENT, APPAREL
+  price DECIMAL(10,2),
+  stock_quantity INT,
+  low_stock_threshold INT DEFAULT 10,
+  supplier_id BIGINT,
+  expiration_date DATE,
+  created_date DATETIME DEFAULT GETDATE()
+)
+
+-- Contracts Table
+contracts (
+  id BIGINT PRIMARY KEY IDENTITY,
+  customer_id BIGINT FOREIGN KEY,
+  package_type VARCHAR(50), -- STANDARD, PREMIUM, VIP
+  start_date DATE,
+  end_date DATE,
+  total_amount DECIMAL(12,2),
+  paid_amount DECIMAL(12,2) DEFAULT 0,
+  status VARCHAR(20) DEFAULT 'ACTIVE', -- ACTIVE, EXPIRED, SUSPENDED
+  auto_renewal BIT DEFAULT 0,
+  created_date DATETIME DEFAULT GETDATE()
+)
+
+-- Contract Details Table
+contract_details (
+  id BIGINT PRIMARY KEY IDENTITY,
+  contract_id BIGINT FOREIGN KEY,
+  service_id BIGINT FOREIGN KEY,
+  quantity INT,
+  unit_price DECIMAL(10,2),
+  discount_percentage DECIMAL(5,2) DEFAULT 0
+)
+
+-- Orders Table
+orders (
+  id BIGINT PRIMARY KEY IDENTITY,
+  customer_id BIGINT FOREIGN KEY,
+  order_date DATETIME DEFAULT GETDATE(),
+  total_amount DECIMAL(12,2),
+  discount_amount DECIMAL(10,2) DEFAULT 0,
+  tax_amount DECIMAL(10,2) DEFAULT 0,
+  status VARCHAR(20) DEFAULT 'PENDING' -- PENDING, PAID, CANCELLED, REFUNDED
+)
+
+-- Order Details Table
+order_details (
+  id BIGINT PRIMARY KEY IDENTITY,
+  order_id BIGINT FOREIGN KEY,
+  product_id BIGINT FOREIGN KEY,
+  quantity INT,
+  unit_price DECIMAL(10,2),
+  discount_percentage DECIMAL(5,2) DEFAULT 0
+)
+
+-- Employees Table
+employees (
+  id BIGINT PRIMARY KEY IDENTITY,
+  employee_code VARCHAR(10) UNIQUE, -- NV-XXXX
+  username VARCHAR(50) UNIQUE,
+  password VARCHAR(255), -- encrypted
+  full_name NVARCHAR(100),
+  role VARCHAR(20), -- MANAGER, EMPLOYEE, TRAINER
+  email VARCHAR(100),
+  phone VARCHAR(15),
+  hire_date DATE,
+  salary DECIMAL(12,2),
+  status VARCHAR(20) DEFAULT 'ACTIVE'
+)
+
+-- Payments Table
+payments (
+  id BIGINT PRIMARY KEY IDENTITY,
+  order_id BIGINT FOREIGN KEY,
+  contract_id BIGINT FOREIGN KEY,
+  payment_method VARCHAR(50), -- CASH, MOMO, ZALOPAY, QR_CODE
+  amount DECIMAL(12,2),
+  payment_date DATETIME DEFAULT GETDATE(),
+  transaction_id VARCHAR(100),
+  status VARCHAR(20) DEFAULT 'PENDING' -- PENDING, SUCCESS, FAILED, REFUNDED
+)
+
+-- Bookings Table
+bookings (
+  id BIGINT PRIMARY KEY IDENTITY,
+  customer_id BIGINT FOREIGN KEY,
+  service_id BIGINT FOREIGN KEY,
+  trainer_id BIGINT FOREIGN KEY,
+  booking_date DATE,
+  start_time TIME,
+  end_time TIME,
+  status VARCHAR(20) DEFAULT 'CONFIRMED', -- CONFIRMED, CANCELLED, COMPLETED
+  notes NVARCHAR(500),
+  created_date DATETIME DEFAULT GETDATE()
+)
+
+-- Health Records Table
+health_records (
+  id BIGINT PRIMARY KEY IDENTITY,
+  customer_id BIGINT FOREIGN KEY,
+  record_date DATE,
+  weight DECIMAL(5,2),
+  height DECIMAL(5,2),
+  bmi DECIMAL(4,2),
+  body_fat_percentage DECIMAL(4,2),
+  muscle_mass DECIMAL(5,2),
+  blood_pressure VARCHAR(20),
+  notes NVARCHAR(500)
+)
+
+-- Attendance Table
+attendance (
+  id BIGINT PRIMARY KEY IDENTITY,
+  customer_id BIGINT FOREIGN KEY,
+  check_in_time DATETIME,
+  check_out_time DATETIME,
+  qr_code VARCHAR(100),
+  created_date DATETIME DEFAULT GETDATE()
+)
+
+-- Loyalty Points Table
+loyalty_points (
+  id BIGINT PRIMARY KEY IDENTITY,
+  customer_id BIGINT FOREIGN KEY,
+  points_earned INT,
+  points_used INT DEFAULT 0,
+  transaction_type VARCHAR(50), -- PURCHASE, REFERRAL, ATTENDANCE, REDEMPTION
+  transaction_date DATETIME DEFAULT GETDATE(),
+  description NVARCHAR(200)
+)
+
+-- Trainers Table
+trainers (
+  id BIGINT PRIMARY KEY IDENTITY,
+  employee_id BIGINT FOREIGN KEY,
+  specialties NVARCHAR(200), -- WEIGHT_LOSS, MUSCLE_GAIN, YOGA, etc.
+  certifications NVARCHAR(500),
+  hourly_rate DECIMAL(10,2),
+  rating DECIMAL(3,2) DEFAULT 0.00,
+  total_sessions INT DEFAULT 0,
+  availability_schedule NVARCHAR(1000) -- JSON format
+)
+
+-- Notifications Table
+notifications (
+  id BIGINT PRIMARY KEY IDENTITY,
+  customer_id BIGINT FOREIGN KEY,
+  title NVARCHAR(100),
+  message NVARCHAR(500),
+  type VARCHAR(50), -- EMAIL, SMS, PUSH
+  sent_date DATETIME,
+  status VARCHAR(20) DEFAULT 'PENDING' -- PENDING, SENT, FAILED
+)
+
+⚡ IV. FEATURES ROADMAP THEO ĐỘ ưu TIÊN
+======================================
+
+🔥 HIGH PRIORITY (Must-Have)
+1. Customer Management - Core business function
+2. Membership Contracts - Revenue foundation  
+3. Payment Processing - Business critical
+4. Booking System - Daily operations
+5. Authentication & Security - Data protection
+
+🚀 MEDIUM PRIORITY (Should-Have)
+6. Analytics Dashboard - Business insights
+7. Health Tracking - Customer value-add
+8. E-commerce - Additional revenue
+9. Mobile Optimization - User experience
+10. Email/SMS Notifications - Communication
+
+💎 LOW PRIORITY (Nice-to-Have)
+11. AI Chatbot - Advanced automation
+12. Social Features - Community building
+13. IoT Integration - Future-proofing
+14. Advanced AI - Competitive advantage
+
+🛠️ V. IMPLEMENTATION STRATEGY
+=============================
+
+Development Approach:
+- Agile methodology với 2-tuần sprints
+- MVP approach: Core features trước, advanced features sau
+- Continuous testing: Unit tests cho mỗi feature
+- User feedback integration: Thử nghiệm với pilot customers
+
+Quality Assurance:
+- Code reviews cho mọi pull request
+- Automated testing với JUnit
+- Performance benchmarks cho key operations
+- Security testing định kỳ
+
+Risk Mitigation:
+- Backup & Recovery strategy
+- Scalability planning cho 1000+ concurrent users
+- Data migration plan từ legacy systems
+- Staff training program
+
+VI. VALIDATION RULES REFERENCE
+===============================
+
+1. Customer code: KH-XXXX (X = 0-9)
+2. Service code: DV-XXXX (X = 0-9)
+3. Employee code: NV-XXXX (X = 0-9)
+4. Phone: 090xxxxxxx, 091xxxxxxxx, (84)+90xxxxxxxx, (84)+91xxxxxxxx
+5. ID number: XXXXXXXXX (9 digits) or XXXXXXXXXXXXX (13 digits)
+6. Email: standard email format validation
+7. Dates: DD/MM/YYYY format
+8. Quantity, floors: positive integers
+9. Price, salary, deposit: positive numbers
+10. Delete confirmation required
+11. BMI calculation: weight(kg) / (height(m))^2
+12. Password: minimum 8 characters, include uppercase, lowercase, number
+
+VII. AUTHORIZATION MATRIX
+=========================
+
+Manager/Director:
+- Full CRUD on Products, Services, Employees
+- Financial reports và analytics
+- System configuration
+- Customer management (all operations)
+- Payment processing và refunds
+
+Employee:
+- View Products/Services (no delete)
+- Add/Edit Customers
+- Process Orders và bookings
+- View basic reports
+- Customer support functions
+
+Trainer:
+- View assigned clients
+- Manage booking schedule
+- Update session notes
+- View client health records
+- Limited product recommendations
+
+Customer:
+- View own profile và health records
+- View services/products catalog
+- Place orders và bookings
+- View order/booking history
+- Update personal information
+
+Guest:
+- View public pages
+- Register account
+- View services (limited information)
+- Contact information
+
+📈 VIII. SUCCESS METRICS
+========================
+
+Technical KPIs:
+- System uptime: >99.5%
+- Page load time: <3 seconds
+- API response time: <500ms
+- Database queries: <100ms average
+- Concurrent users support: 1000+
+
+Business KPIs:
+- Customer retention: From 65% to 90%+
+- Revenue per customer: +35% increase
+- Admin efficiency: -60% time reduction
+- Customer satisfaction: >4.5/5 rating
+- Monthly recurring revenue growth: +25%
+
+IX. DEPLOYMENT & MAINTENANCE
+============================
+
+Production Environment:
+- Windows Server với IIS/Tomcat
+- SQL Server Enterprise
+- Load balancer cho high availability
+- SSL certificate cho security
+- Regular backup schedule
+
+Monitoring:
+- Application performance monitoring
+- Database performance tracking
+- User activity analytics
+- Error logging và alerting
+- Security monitoring
+
+Maintenance Schedule:
+- Weekly: Database optimization
+- Monthly: Security updates
+- Quarterly: Feature updates
+- Annually: Major version upgrades
+
+X. TRAINING & DOCUMENTATION
+===========================
+
+User Training:
+- Admin training: 2 days comprehensive
+- Staff training: 1 day operational
+- Customer onboarding: Self-service tutorial
+- Video tutorials cho common tasks
+
+Documentation:
+- Technical documentation cho developers
+- User manual cho administrators
+- API documentation cho integrations
+- Troubleshooting guide
+
+XI. BUDGET ESTIMATION
+=====================
+
+Development Costs:
+- Developer resources: 16 tuần x team size
+- Infrastructure setup: SQL Server license, hosting
+- Third-party integrations: Payment gateways, AI services
+- Testing và QA resources
+
+Operational Costs:
+- Monthly hosting và maintenance
+- Payment gateway transaction fees
+- AI service usage fees
+- Support và training costs
+
+XII. RISK ANALYSIS
+==================
+
+Technical Risks:
+- Database performance với large datasets
+- Payment gateway integration complexity
+- AI service reliability và costs
+- Mobile compatibility issues
+
+Business Risks:
+- User adoption resistance
+- Data migration từ legacy systems
+- Staff training requirements
+- Competition reaction
+
+Mitigation Strategies:
+- Phased rollout approach
+- Comprehensive testing
+- User feedback integration
+- Backup plans cho critical features
+
+=== END OF PLAN ===
+
+Last Updated: $(Get-Date)
+Project: FitZ Gym Management System
+Version: 1.0
+Status: Ready for Implementation

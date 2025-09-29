@@ -1,0 +1,255 @@
+PLAN THỰC HIỆN DỰ ÁN GYM MANAGEMENT SYSTEM
+=====================================================
+
+I. PHÂN TÍCH CÔNG NGHỆ VÀ MỤC ĐÍCH SỬ DỤNG
+==========================================
+
+1. Backend Technologies:
+------------------------
+- HTTP/Servlet: Xử lý các request/response từ client, điều hướng business logic
+- JSP (JavaServer Pages): Tạo dynamic web pages, render UI với data từ server
+- JSTL (JSP Standard Tag Library): Thư viện tag chuẩn để xử lý logic trong JSP (vòng lặp, điều kiện)
+- Java Bean: Đóng gói data và business logic theo chuẩn JavaBean
+- Session: Quản lý trạng thái user đăng nhập, lưu thông tin tạm thời
+- Cookies: Lưu trữ thông tin "Remember me", preferences của user
+- Filter: Xử lý authentication, authorization, logging
+- Listener: Lắng nghe các sự kiện trong application lifecycle
+
+2. Database Technologies:
+-------------------------
+- SQL Server: Database chính lưu trữ dữ liệu
+- JDBC: Kết nối và thao tác với database
+- JPA (Java Persistence API): ORM framework, map Java objects với database tables
+
+3. Advanced Features:
+--------------------
+- Gen AI: Tích hợp AI cho suggestions, content generation, chatbot support
+- Payment Integration: Thanh toán online (MoMo, ZaloPay, cards)
+- Google Login: OAuth authentication
+- Charts/Statistics: Báo cáo doanh thu, top customers
+
+II. PLAN THỰC HIỆN (12 TUẦN)
+============================
+
+GIAI ĐOẠN 1: SETUP & CƠ SỞ (Tuần 1-2)
+--------------------------------------
+
+Tuần 1: Project Setup
+□ 1. Tạo Maven project với cấu trúc MVC
+□ 2. Setup dependencies: Servlet, JSP, JSTL, SQL Server driver, JPA
+□ 3. Cấu hình web.xml, persistence.xml
+□ 4. Setup SQL Server database
+□ 5. Tạo cấu trúc package: controller, model, dao, service, utils
+
+Tuần 2: Database Design & Connection
+□ 1. Thiết kế ERD cho gym system:
+   - Customer (khách hàng)
+   - Service (dịch vụ gym: personal trainer, group class, etc.)
+   - Product (sản phẩm: protein, equipment)
+   - Contract (hợp đồng thành viên)
+   - Order (đơn hàng)
+   - Employee (nhân viên)
+   - Payment (thanh toán)
+□ 2. Tạo database schema
+□ 3. Test connection JDBC + JPA
+□ 4. Tạo basic Entity classes
+
+GIAI ĐOẠN 2: CORE FEATURES (Tuần 3-6)
+-------------------------------------
+
+Tuần 3: Authentication & Authorization (Requirements 4)
+□ 1. Tạo login form với session management
+□ 2. Implement Filter cho permission control:
+   - Manager/Director: full access
+   - Employee: limited access  
+   - Customer: view only
+□ 3. Cookie "Remember me" functionality
+□ 4. Header với user info display
+
+Tuần 4: Product Management (Requirements 2 - Part 1)
+□ 1. Product CRUD operations:
+   - Add Product form
+   - Product listing với pagination
+   - Search functionality
+   - Edit/Delete với confirmation
+□ 2. Validation cho product data
+
+Tuần 5: Customer & Service Management (Requirements 2 - Part 2)
+□ 1. Customer management:
+   - Add Customer form
+   - Customer listing với pagination
+   - Search và edit/delete functions
+□ 2. Service management (gym services):
+   - Add Service form
+   - Service listing
+
+Tuần 6: Contract Management (Requirements 2 - Part 3)
+□ 1. Contract creation (membership packages)
+□ 2. Contract details management
+□ 3. Link contracts với customers và services
+
+GIAI ĐOẠN 3: VALIDATION & UI (Tuần 7-8)
+---------------------------------------
+
+Tuần 7: Data Validation (Requirements 3)
+□ 1. Tạo validation package với JUnit tests:
+   - Customer code: KH-XXXX format
+   - Service code: DV-XXXX format  
+   - Phone: 090xxxxxxx, 091xxxxxxxx formats
+   - ID: 9 or 13 digits
+   - Email validation
+   - Date validation (DD/MM/YYYY)
+   - Positive numbers validation
+
+Tuần 8: UI/UX Enhancement (Requirements 10)
+□ 1. Responsive design với Bootstrap/CSS
+□ 2. Modern UI components
+□ 3. Intuitive navigation
+□ 4. Fast loading optimization
+□ 5. Error handling UI
+
+GIAI ĐOẠN 4: ADVANCED FEATURES (Tuần 9-11)
+------------------------------------------
+
+Tuần 9: Cart & Order Management (Requirements 5)
+□ 1. Shopping cart functionality
+□ 2. Order processing workflow
+□ 3. Cart CRUD operations
+□ 4. Order history và tracking
+
+Tuần 10: Payment & External Integration (Requirements 6 & 7)
+□ 1. Payment gateway integration:
+   - MoMo API
+   - ZaloPay API
+   - QR code payments
+□ 2. Google OAuth login implementation
+□ 3. Social login workflow
+
+Tuần 11: Statistics & AI Features (Requirements 8 & 9)
+□ 1. Dashboard với charts (Chart.js/D3.js):
+   - Top customers
+   - Revenue statistics
+   - Best selling products/services
+□ 2. Gen AI integration:
+   - Chatbot cho customer support
+   - Smart recommendations
+   - Content generation
+
+GIAI ĐOẠN 5: TESTING & DEPLOYMENT (Tuần 12)
+-------------------------------------------
+
+Tuần 12: Final Integration
+□ 1. Comprehensive testing (JUnit, integration tests)
+□ 2. Performance optimization
+□ 3. Security audit
+□ 4. Documentation
+□ 5. Deployment preparation
+□ 6. User acceptance testing
+
+III. TECH STACK BREAKDOWN CHO GYM SYSTEM
+========================================
+
+Frontend Flow:
+Browser → JSP Views → JSTL Logic → CSS/JS → User Interface
+
+Backend Flow:
+HTTP Request → Filter (Auth) → Servlet (Controller) → 
+Service Layer → DAO (JPA) → SQL Server → Response
+
+Key Features Mapping:
+- Membership Management: Contract + Customer entities
+- Trainer Booking: Service + Schedule entities  
+- Equipment Sales: Product + Order entities
+- Payment Processing: Payment + Transaction entities
+- Analytics: Revenue + Member statistics
+
+IV. DELIVERABLES THEO TUẦN
+===========================
+
+Mỗi tuần sẽ có:
+1. Working code với features hoàn chỉnh
+2. Unit tests cho business logic
+3. Documentation cho APIs/functions
+4. Demo functionality
+
+V. DATABASE SCHEMA OVERVIEW
+============================
+
+Core Tables:
+- customers (id, customer_code, name, phone, email, id_number, dob)
+- services (id, service_code, name, description, price, duration)
+- products (id, name, description, price, quantity, category)
+- contracts (id, customer_id, start_date, end_date, total_amount, status)
+- contract_details (id, contract_id, service_id, quantity, unit_price)
+- orders (id, customer_id, order_date, total_amount, status)
+- order_details (id, order_id, product_id, quantity, unit_price)
+- employees (id, username, password, full_name, role, email)
+- payments (id, order_id, payment_method, amount, payment_date, status)
+
+VI. VALIDATION RULES REFERENCE
+===============================
+
+1. Customer code: KH-XXXX (X = 0-9)
+2. Service code: DV-XXXX (X = 0-9)
+3. Phone: 090xxxxxxx, 091xxxxxxxx, (84)+90xxxxxxxx, (84)+91xxxxxxxx
+4. ID number: XXXXXXXXX (9 digits) or XXXXXXXXXXXXX (13 digits)
+5. Email: standard email format
+6. Dates: DD/MM/YYYY format
+7. Quantity, floors: positive integers
+8. Price, salary, deposit: positive numbers
+9. Delete confirmation required
+10. Total service fee calculation
+
+VII. AUTHORIZATION MATRIX
+=========================
+
+Manager/Director:
+- Full CRUD on Products
+- Full CRUD on Employees
+- Full CRUD on Customers
+- View all reports
+
+Employee:
+- View Products (no delete)
+- Add/Edit Customers
+- Process Orders
+- View basic reports
+
+Customer:
+- View own profile
+- View services/products
+- Place orders
+- View order history
+
+Guest:
+- View public pages
+- Register account
+- View services (limited)
+
+VIII. NEXT STEPS TO START
+=========================
+
+1. Create Maven project structure
+2. Setup development environment (IDE, SQL Server)
+3. Initialize Git repository
+4. Create basic project skeleton
+5. Setup database connection
+6. Implement first requirement (Home page)
+
+=== END OF PLAN ===
+
+
+gym_management/
+├── src/main/
+│   ├── java/          (Servlet controllers - tạo sau)
+│   └── webapp/
+│       ├── WEB-INF/
+│       │   └── web.xml
+│       ├── css/       (Styles)
+│       ├── js/        (JavaScript)
+│       └── views/     (JSP files)
+│           ├── home.jsp
+│           ├── login.jsp
+│           ├── products.jsp
+│           └── customers.jsp
+└── pom.xml

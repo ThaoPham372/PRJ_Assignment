@@ -1,0 +1,215 @@
+PROJECT PROPOSAL - HỆ THỐNG QUẢN LÝ PHÒNG GYM FitZ
+========================================================
+
+1. TÓM TẮT DỰ ÁN
+================
+
+Tên dự án: FitZ – Hệ thống quản lý phòng gym  
+Mục tiêu: Chuyển đổi số hoạt động quản lý phòng gym  
+Thành viên dự án: Lê Anh Tuấn, Nguyễn Thị Vân Anh, Phạm Huỳnh Nguyên Thảo, Đỗ Ngọc Hoàn Mỹ, Võ Thành Danh
+
+2. VẤN ĐỀ & CƠ HỘI THỊ TRƯỜNG
+==============================
+
+Thách thức hiện tại:
+“60% thời gian quản lý bị lãng phí vì giấy tờ, hội viên không có động lực vì không theo dõi được tiến độ, và phòng gym vừa & nhỏ vẫn chậm chuyển đổi số.”
+
+Cơ hội:
+- Thị trường fitness Việt Nam tăng trưởng 15%/năm (2024)
+- Các phòng gym vừa và nhỏ chậm chuyển đổi số
+- Nhu cầu công nghệ sức khỏe tăng sau COVID
+
+3. DỊCH VỤ HỆ THỐNG CUNG CẤP CHO NGƯỜI DÙNG
+============================================
+
+3.1. Cho Khách hàng (Members):
+------------------------------
+
+🔐 Đăng ký/Đăng nhập (email verification, quà tặng chào mừng)
+
+Ví dụ:
+
+- Giả sử có một bạn trẻ tên Nam, 25 tuổi, làm IT. Nam thường xuyên bận rộn, và trước đây để đăng ký tập gym, bạn ấy mất tới 30 phút điền giấy tờ, ký xác nhận, rồi mới được bắt đầu.
+
+- Nhưng với FitZ, Nam chỉ mất 2 phút đăng ký online ngay trên điện thoại. Xác thực email chưa tới 30 giây, và ngay lập tức nhận được voucher giảm 20% cho gói tập đầu tiên.
+
+- Nhờ đó, tốc độ onboarding tăng tới 85% so với cách làm truyền thống. Tức là thay vì chờ gần nửa tiếng, chỉ cần một tách cà phê là Nam đã hoàn tất mọi thủ tục.
+
+💳 Đăng ký gói tập/buổi lẻ online + Thanh toán trực tuyến
+
+Ví dụ: 
+
+- Tiếp theo là chị Linh, một khách hàng muốn đăng ký gói Yoga Premium. Trước đây, chị phải đến tận quầy, điền thông tin, chờ nhân viên xác nhận và thanh toán. Quá trình này thường mất từ 20–30 phút.
+
+- Nhưng với FitZ, chỉ cần chọn gói 3 tháng với giá 2 triệu đồng ngay trên app. Thanh toán qua MoMo chỉ mất 10 giây. Sau đó, chị Linh nhận ngay QR code để vào phòng gym, và lịch tập được đồng bộ tự động vào calendar.
+
+- Toàn bộ quy trình nhanh hơn 300% so với cách truyền thống. Nghĩa là thay vì phải chờ hàng chục phút, chỉ cần vài cú chạm trên điện thoại là chị Linh đã sẵn sàng cho buổi tập đầu tiên
+
+📊 Theo dõi sức khỏe định kỳ + Khuyến nghị calories
+
+Ví dụ:
+
+- Giả sử một khách hàng là cô Mai, bắt đầu hành trình tập luyện với cân nặng 65kg, BMI 25.0 – nghĩa là đang trong tình trạng thừa cân.
+
+- Trong suốt 6 tháng, hệ thống FitZ không chỉ ghi nhận cân nặng và BMI mà còn dùng AI để khuyến nghị chế độ ăn. Với mục tiêu giảm nửa ký mỗi tuần, AI gợi ý 1.800 calories/ngày.
+
+- Kết quả sau 6 tháng: cô Mai chỉ còn 58kg, BMI giảm còn 22.4 – hoàn toàn bình thường. Quan trọng hơn, nhờ những biểu đồ trực quan theo dõi tiến trình, động lực tập luyện tăng tới 300%.
+
+💪 Đặt lịch Personal Training với trainer chuyên nghiệp
+
+Ví dụ: 
+
+- Anh Tuấn – một khách hàng muốn tăng cơ và tìm huấn luyện viên phù hợp. Nếu theo cách truyền thống, anh sẽ phải hỏi quầy lễ tân, xem lịch thủ công, rồi mất cả chục phút để chốt
+
+- Với FitZ, chỉ cần mở ứng dụng, anh Tuấn chọn ngay trainer David – người có rating ⭐4.9, chuyên về tăng cơ, giá 450 nghìn/buổi. Anh đặt luôn gói 12 buổi, được giảm giá còn 5,13 triệu. Thanh toán trực tuyến chỉ mất 30 giây
+
+- Hệ thống tự động đồng bộ lịch tập, gửi nhắc nhở, và thậm chí book phòng tập. Tức là toàn bộ quy trình – từ chọn huấn luyện viên đến thanh toán và đặt lịch – hoàn tất trong 3 phút.
+
+- Đây là trải nghiệm chuyên nghiệp, nhanh gọn, và giúp khách hàng như anh Tuấn có thể tập trung vào điều quan trọng nhất: tập luyện để đạt mục tiêu
+
+⏰ Nhắc nhở tập luyện và lịch hẹn
+
+Ví dụ: 
+
+- Nhiều khách hàng thường quên lịch tập hoặc bận việc đột xuất, dẫn đến bỏ lỡ buổi hẹn với PT. Điều này vừa làm giảm hiệu quả tập luyện, vừa gây lãng phí.
+
+- Như anh Minh chẳng hạn. Trước buổi tập, hệ thống FitZ gửi một tin nhắn SMS lúc 17:00: ‘1 giờ nữa bạn có buổi PT với David, nhớ mang khăn nhé 💪’. Đồng thời, lúc 16:30, anh còn nhận được email với workout plan trong ngày kèm nutrition tips
+
+- Nhờ cơ chế nhắc nhở thông minh này, tỷ lệ khách hàng bỏ lỡ buổi hẹn giảm tới 40%. Nghĩa là FitZ không chỉ quản lý, mà còn trở thành ‘người bạn đồng hành’ giúp khách hàng duy trì kỷ luật tập luyện.
+
+3.2. Cho Admin/Manager:
+----------------------
+
+👥 Quản lý thành viên (CRUD: thêm, sửa, xóa, gia hạn gói tập)
+
+Ví dụ: 
+
+- Hãy tưởng tượng một phòng gym có 500 thành viên. Khi một khách hàng tên Nguyễn Văn A muốn gia hạn gói tập, nhân viên phải lục tìm hồ sơ giấy hoặc excel. Việc này mất từ 5 đến 10 phút cho mỗi trường hợp
+
+- Với hệ thống FitZ, chỉ cần gõ tên khách hàng ‘Nguyễn Văn A’, toàn bộ thông tin hiển thị trong 15 giây: từ ID khách hàng, số lần check-in, cho tới ngày hết hạn gói tập
+
+- Và ngay trên màn hình, quản lý có thể thực hiện các thao tác một chạm như Gia hạn, Đổi gói, hay Gửi tin nhắn nhắc nhở
+
+- Nhờ vậy, tốc độ xử lý tăng tới 90%. Từ việc mất hàng phút cho một khách hàng, giờ chỉ còn vài giây. Quản lý có thể phục vụ nhiều thành viên hơn mà không cần tăng thêm nhân sự
+
+🎯 Quản lý dịch vụ (Personal Training, Group Classes)
+
+Ví dụ: 
+
+- Thông thường, quản lý phòng gym phải hỏi từng huấn luyện viên, ghi chép thủ công hoặc tổng hợp excel để biết lớp nào đông, lớp nào trống. Điều này vừa chậm vừa thiếu chính xác
+
+- Nhưng với FitZ, chỉ cần mở Dashboard hôm nay là thấy ngay: Trainer David đã kín lịch 8/8 buổi, doanh thu 21,6 triệu một tuần. Trong khi đó, lớp HIIT lúc 18:00 full 25/25 chỗ và còn 8 người chờ
+
+- Ngay lập tức, hệ thống auto-optimization đề xuất: ‘Tăng HIIT lên 30 slot để đáp ứng nhu cầu cao.
+
+- Nhờ đó, tỷ lệ sử dụng công suất tăng 25%. Nghĩa là không chỉ quản lý dễ dàng nắm bắt tình hình, mà còn tận dụng tối đa nguồn lực để tăng doanh thu
+
+📅 Theo dõi lịch tập (slots, danh sách chờ)
+
+Ví dụ: 
+
+- Ở các phòng gym, có lớp thì kín chỗ từ sớm, có lớp lại thưa thớt, dẫn đến doanh thu không ổn định. Quản lý thường phải đoán mò để điều chỉnh
+
+- Ví dụ lớp HIIT lúc 18:00 đã full 25/25 chỗ và còn tới 8 người chờ. Ngay lập tức, FitZ tự động gợi ý: ‘Có nên mở thêm lớp lúc 19:15 không?
+
+- Trong khi đó, lớp Zumba chưa kín, hệ thống tự động áp dụng giảm giá 20% last-minute để thu hút thêm học viên.
+
+- Nhờ cơ chế smart scheduling và dynamic pricing này, doanh thu tối ưu tăng thêm 35% mà không cần tăng chi phí vận hành.
+
+📊 Báo cáo & Dashboard (doanh thu, biểu đồ, top performers)
+
+Ví dụ: 
+
+- Trước đây, chủ phòng gym thường dựa vào cảm giác hoặc sổ sách rời rạc để đánh giá kết quả kinh doanh. Điều này dễ dẫn đến quyết định sai lầm
+
+- Với FitZ, chỉ cần mở báo cáo tháng 3, mọi số liệu đã sẵn sàng. Doanh thu đạt 477 triệu, tăng 15% so với tháng 2. Trainer xuất sắc nhất là David với 38 buổi huấn luyện, mang về hơn 15,2 triệu doanh thu
+
+- Không dừng lại ở quá khứ, FitZ còn dự báo: tháng 4 doanh thu dự kiến 520 triệu, tăng thêm 9%
+
+- Nhờ những con số này, chủ phòng gym có thể đưa ra quyết định dựa trên dữ liệu thay vì cảm tính. Nghĩa là mọi hành động kinh doanh đều có cơ sở, minh bạch và chính xác.
+
+👨‍💼 Quản lý nhân viên (thông tin, lịch làm việc, feedback, hiệu suất)
+
+Ví dụ: 
+
+- Ở nhiều phòng gym, việc quản lý huấn luyện viên chỉ dừng lại ở bảng chấm công và feedback rời rạc. Chủ gym thường không biết ai đang quá tải, ai cần hỗ trợ.
+
+- Với FitZ, mỗi trainer có một profile chi tiết. Lấy ví dụ trainer David: tỷ lệ giữ chân khách hàng lên tới 94%, rating 4.9/5. Lịch làm việc dày đặc với 48 buổi/tuần, mang về hơn 21,6 triệu doanh thu mỗi tháng
+
+- Hệ thống thậm chí còn gửi cảnh báo: ‘David đã full booking 2 tuần liên tiếp – cần tuyển thêm huấn luyện viên mới
+
+- Điều này giúp chủ gym tối ưu nhân sự dựa trên dữ liệu thực tế, thay vì cảm tính. Nhân viên giỏi được nhìn nhận xứng đáng, còn phòng gym thì tránh tình trạng quá tải.
+
+4. THÔNG TIN HỆ THỐNG QUẢN LÝ
+=============================
+
+4.1. Khách hàng (Customers):
+----------------------------
+
+Ví dụ: Hồ sơ Trần Thị Lan (KH-0156)
+• Cá nhân: 30 tuổi, 0901234567, Q.1 TPHCM
+• Sức khỏe: 55kg, BMI 21.5, mục tiêu "tăng sức bền"
+• Hoạt động: 67 checkins, streak 23 ngày
+• Membership: Premium expires 01/2025
+
+4.2. Nhân viên/Trainer (Staff):
+-------------------------------
+
+Ví dụ: Trainer Sarah Lê (NV-018)
+• Chứng chỉ: ACE Personal Trainer, Yoga RYT-200
+• Schedule: T2,4,6 6:00-14:00, 12 clients active
+• Performance: 234 sessions YTD, 95.6M revenue
+• Rating: 4.8/5 từ 89 reviews
+
+4.3. Sản phẩm & dịch vụ:
+------------------------
+
+Ví dụ: Inventory dashboard
+• Whey Protein: 23 units (🟡 LOW alert)
+• Auto-reorder: BCAA 50 units, 25.5M cost, 62% margin
+• Best seller: Whey Protein 87 units → 104.4M revenue
+• AI suggest: "Tăng giá 1.220k - vẫn competitive"
+
+5. TÁC ĐỘNG KINH DOANH DỰ KIẾN
+==============================
+
+📊 MEASURABLE IMPACT:
+
+Member Experience:
+• Đăng ký: 30 phút → 2 phút (-93%)
+• Thanh toán: 5 phút → 10 giây (-97%)
+• Satisfaction: 65% → 92% (+42%)
+
+Operational Efficiency:
+• Admin time: 4 giờ → 1.5 giờ/ngày (-62%)
+• Member lookup: 5-10 phút → 15 giây (-95%)
+• Revenue growth: +35% projected
+
+Financial ROI:
+• Investment: 850M VNĐ (6 tháng development)
+• Year 1 return: 600M VNĐ (71% ROI)
+• Break-even: Month 14
+
+6. CÔNG NGHỆ & TRIỂN KHAI
+=========================
+
+Tech Stack:
+- Frontend: JSP, JSTL, Bootstrap 5, Chart.js
+- Backend: Java 11, Servlet 4.0, JPA/Hibernate
+- Database: SQL Server
+- Payment: MoMo, ZaloPay, VNPay APIs
+
+Timeline: 6 tháng → Full deployment Q4 2024
+
+7. KẾT LUẬN
+===========
+
+FitZ không chỉ là hệ thống quản lý, mà là giải pháp chuyển đổi số toàn diện giúp gym:
+• Tăng hiệu quả vận hành 60%
+• Cải thiện trải nghiệm khách hàng 300%
+• Tăng doanh thu bền vững 35%
+
+Các ví dụ thực tế chứng minh value proposition rõ ràng và tác động tích cực của dự án FitZ.
+
+===== HẾT BÀI THUYẾT TRÌNH =====
+
