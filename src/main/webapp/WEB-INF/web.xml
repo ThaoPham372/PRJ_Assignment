@@ -8,9 +8,20 @@
     <display-name>Gym Management System</display-name>
     <description>Comprehensive Gym Management Application</description>
     
+    <!-- Servlet definitions -->
+    <servlet>
+        <servlet-name>HomeServlet</servlet-name>
+        <servlet-class>com.gym.controller.HomeServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>HomeServlet</servlet-name>
+        <url-pattern>/home</url-pattern>
+    </servlet-mapping>
+    
     <!-- Welcome file list -->
     <welcome-file-list>
-        <welcome-file>views/home.jsp</welcome-file>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
     

@@ -1,0 +1,668 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
+uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Khách Hàng - Gym Management</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome Icons -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Tippy.js for tooltips -->
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+
+    <style>
+      :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --hover-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+      }
+
+      body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .dashboard-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 20px 20px;
+        box-shadow: var(--card-shadow);
+      }
+
+      .welcome-text {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .user-avatar:hover {
+        transform: scale(1.05);
+        border-color: rgba(255, 255, 255, 0.8);
+      }
+
+      .dashboard-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        border: none;
+      }
+
+      .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+      }
+
+      .card-title {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .streak-counter {
+        background: var(--success-gradient);
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+
+      .streak-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        display: block;
+      }
+
+      .day-button {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: none;
+        margin: 0.25rem;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      .day-normal {
+        background: #e74c3c;
+        color: white;
+      }
+
+      .day-pt {
+        background: #27ae60;
+        color: white;
+      }
+
+      .day-button:hover {
+        transform: scale(1.1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .health-metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .metric-item {
+        background: var(--warning-gradient);
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        text-align: center;
+      }
+
+      .metric-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        display: block;
+      }
+
+      .metric-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+      }
+
+      .chat-container {
+        background: white;
+        border-radius: 15px;
+        height: 400px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: var(--card-shadow);
+      }
+
+      .chat-header {
+        background: var(--secondary-gradient);
+        color: white;
+        padding: 1rem;
+        border-radius: 15px 15px 0 0;
+        font-weight: 600;
+      }
+
+      .chat-messages {
+        flex: 1;
+        padding: 1rem;
+        overflow-y: auto;
+        max-height: 250px;
+      }
+
+      .message {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        border-radius: 10px;
+        max-width: 80%;
+      }
+
+      .message.user {
+        background: #e3f2fd;
+        margin-left: auto;
+        text-align: right;
+      }
+
+      .message.ai {
+        background: #f3e5f5;
+        margin-right: auto;
+      }
+
+      .chat-input {
+        padding: 1rem;
+        border-top: 1px solid #eee;
+        border-radius: 0 0 15px 15px;
+      }
+
+      .btn-gradient {
+        background: var(--primary-gradient);
+        border: none;
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 25px;
+        transition: all 0.3s ease;
+      }
+
+      .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+      }
+
+      .comparison-table {
+        width: 100%;
+        margin-top: 1rem;
+      }
+
+      .comparison-table th {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 0.75rem;
+        text-align: center;
+      }
+
+      .comparison-table td {
+        padding: 0.75rem;
+        text-align: center;
+        border-bottom: 1px solid #eee;
+      }
+
+      .improvement {
+        color: #27ae60;
+        font-weight: bold;
+      }
+
+      .decline {
+        color: #e74c3c;
+        font-weight: bold;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .welcome-text {
+          font-size: 1.4rem;
+        }
+
+        .day-button {
+          width: 40px;
+          height: 40px;
+          font-size: 0.8rem;
+        }
+
+        .health-metrics {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      /* Tooltip styles */
+      .tippy-box {
+        background: #2c3e50;
+        color: white;
+        border-radius: 8px;
+        font-size: 0.9rem;
+      }
+
+      .tippy-arrow {
+        color: #2c3e50;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <div class="welcome-text">Chào mừng quay trở lại, Thao Nguyen</div>
+            <p class="mb-0 opacity-75">
+              Hôm nay là một ngày tuyệt vời để tập luyện!
+            </p>
+          </div>
+          <div class="col-md-4 text-end">
+            <div class="dropdown">
+              <img
+                src="https://via.placeholder.com/60x60/667eea/ffffff?text=TN"
+                alt="Avatar"
+                class="user-avatar"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              />
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <a class="dropdown-item" href="#"
+                    ><i class="fas fa-user me-2"></i>Trang cá nhân</a
+                  >
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#"
+                    ><i class="fas fa-cog me-2"></i>Cài đặt</a
+                  >
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" href="#"
+                    ><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <!-- Lịch Streak & PT -->
+        <div class="col-lg-8">
+          <div class="dashboard-card">
+            <h4 class="card-title">
+              <i class="fas fa-fire text-warning"></i>
+              Lịch Tập Luyện & Streak
+            </h4>
+
+            <div class="streak-counter">
+              <span class="streak-number">7</span>
+              <div>Bạn đã duy trì được 7 ngày liên tục</div>
+            </div>
+
+            <div class="text-center">
+              <h6 class="mb-3">Tuần này (23/09 - 29/09)</h6>
+              <div class="d-flex justify-content-center flex-wrap">
+                <button
+                  class="day-button day-normal"
+                  data-tippy-content="Ngày tập thường<br>23/09/2025"
+                >
+                  23<br /><small>St</small>
+                </button>
+                <button
+                  class="day-button day-pt"
+                  data-tippy-content="<strong>PT Day</strong><br>Coach: Le Van A<br>Ngày: 24/09/2025<br>Giờ: 9:00 AM"
+                >
+                  24<br /><small>PT</small>
+                </button>
+                <button
+                  class="day-button day-normal"
+                  data-tippy-content="Ngày tập thường<br>25/09/2025"
+                >
+                  25<br /><small>St</small>
+                </button>
+                <button
+                  class="day-button day-pt"
+                  data-tippy-content="<strong>PT Day</strong><br>Coach: Le Van A<br>Ngày: 26/09/2025<br>Giờ: 9:00 AM"
+                >
+                  26<br /><small>PT</small>
+                </button>
+                <button
+                  class="day-button day-normal"
+                  data-tippy-content="Ngày tập thường<br>27/09/2025"
+                >
+                  27<br /><small>St</small>
+                </button>
+                <button
+                  class="day-button day-normal"
+                  data-tippy-content="Ngày tập thường<br>28/09/2025"
+                >
+                  28<br /><small>St</small>
+                </button>
+                <button
+                  class="day-button day-normal"
+                  data-tippy-content="Ngày tập thường<br>29/09/2025"
+                >
+                  29<br /><small>St</small>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chỉ số sức khỏe -->
+        <div class="col-lg-4">
+          <div class="dashboard-card">
+            <h4 class="card-title">
+              <i class="fas fa-heartbeat text-danger"></i>
+              Chỉ Số Sức Khỏe
+            </h4>
+
+            <div class="text-center mb-3">
+              <small class="text-muted">Lần đo gần nhất: 26/09/2025</small>
+            </div>
+
+            <div class="health-metrics">
+              <div class="metric-item">
+                <span class="metric-value">22.5</span>
+                <div class="metric-label">BMI</div>
+              </div>
+              <div class="metric-item">
+                <span class="metric-value">58kg</span>
+                <div class="metric-label">Cân nặng</div>
+              </div>
+            </div>
+
+            <div class="text-center">
+              <button
+                class="btn btn-gradient"
+                data-bs-toggle="modal"
+                data-bs-target="#comparisonModal"
+              >
+                <i class="fas fa-chart-line me-2"></i>So sánh với các lần trước
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chatbox AI -->
+      <div class="row">
+        <div class="col-12">
+          <div class="dashboard-card">
+            <h4 class="card-title">
+              <i class="fas fa-robot text-info"></i>
+              Trợ Lý AI Tập Luyện
+            </h4>
+
+            <div class="chat-container">
+              <div class="chat-header">
+                <i class="fas fa-comments me-2"></i>Hỏi đáp về tập luyện
+              </div>
+
+              <div class="chat-messages" id="chatMessages">
+                <div class="message ai">
+                  <strong>AI Trainer:</strong> Xin chào! Tôi là trợ lý AI của
+                  bạn. Hãy hỏi tôi bất kỳ câu hỏi nào về tập luyện, dinh dưỡng
+                  hoặc sức khỏe nhé! 💪
+                </div>
+              </div>
+
+              <div class="chat-input">
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="chatInput"
+                    placeholder="Nhập câu hỏi của bạn..."
+                    onkeypress="handleEnterKey(event)"
+                  />
+                  <button class="btn btn-gradient" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal So sánh chỉ số -->
+    <div
+      class="modal fade"
+      id="comparisonModal"
+      tabindex="-1"
+      aria-labelledby="comparisonModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div
+            class="modal-header"
+            style="background: var(--primary-gradient); color: white"
+          >
+            <h5 class="modal-title" id="comparisonModalLabel">
+              <i class="fas fa-chart-line me-2"></i>So Sánh Chỉ Số Sức Khỏe
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="card">
+                  <div class="card-header bg-light">
+                    <h6 class="mb-0">Lần đo 1</h6>
+                    <small class="text-muted">15/08/2025</small>
+                  </div>
+                  <div class="card-body">
+                    <div class="text-center">
+                      <div class="metric-item mb-2" style="background: #95a5a6">
+                        <span class="metric-value">23.1</span>
+                        <div class="metric-label">BMI</div>
+                      </div>
+                      <div class="metric-item" style="background: #95a5a6">
+                        <span class="metric-value">60kg</span>
+                        <div class="metric-label">Cân nặng</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-8">
+                <table class="comparison-table table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Chỉ số</th>
+                      <th>Cũ (15/08)</th>
+                      <th>Hiện tại (26/09)</th>
+                      <th>Thay đổi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>BMI</strong></td>
+                      <td>23.1</td>
+                      <td>22.5</td>
+                      <td class="improvement">
+                        <i class="fas fa-arrow-down"></i> -0.6
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>Cân nặng</strong></td>
+                      <td>60kg</td>
+                      <td>58kg</td>
+                      <td class="improvement">
+                        <i class="fas fa-arrow-down"></i> -2kg
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>Mỡ cơ thể</strong></td>
+                      <td>18%</td>
+                      <td>16%</td>
+                      <td class="improvement">
+                        <i class="fas fa-arrow-down"></i> -2%
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>Khối lượng cơ</strong></td>
+                      <td>42kg</td>
+                      <td>44kg</td>
+                      <td class="improvement">
+                        <i class="fas fa-arrow-up"></i> +2kg
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div class="alert alert-success mt-3">
+                  <i class="fas fa-trophy me-2"></i>
+                  <strong>Xuất sắc!</strong> Bạn đã cải thiện đáng kể các chỉ số
+                  sức khỏe. Hãy tiếp tục duy trì!
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Đóng
+            </button>
+            <button type="button" class="btn btn-gradient">Xuất báo cáo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      // Initialize tooltips
+      document.addEventListener('DOMContentLoaded', function () {
+        tippy('[data-tippy-content]', {
+          allowHTML: true,
+          theme: 'dark',
+          placement: 'top',
+          animation: 'scale',
+        });
+      });
+
+      // Mock AI responses
+      const aiResponses = [
+        'Tuyệt vời! Để tăng cường sức mạnh, bạn nên tập trung vào các bài tập compound như squat, deadlift và bench press. Hãy tăng dần trọng lượng mỗi tuần nhé! 💪',
+        'Cardio là rất quan trọng! Tôi khuyên bạn nên kết hợp HIIT 3 lần/tuần với steady-state cardio 2 lần/tuần để đạt hiệu quả tốt nhất. 🏃‍♀️',
+        'Về dinh dưỡng, hãy đảm bảo ăn đủ protein (1.6-2.2g/kg cân nặng), uống đủ nước và ngủ đủ giấc. Đây là 3 yếu tố then chốt! 🥗',
+        'Để giảm cân hiệu quả, bạn cần tạo ra deficit calo khoảng 300-500 calo/ngày thông qua kết hợp ăn uống và tập luyện. Hãy kiên nhẫn nhé! ⚖️',
+        'Nghỉ ngơi cũng quan trọng như tập luyện! Hãy dành ít nhất 1-2 ngày nghỉ/tuần để cơ thể phục hồi và phát triển. 😴',
+        'Stretching và yoga sẽ giúp cải thiện độ linh hoạt và giảm nguy cơ chấn thương. Hãy dành 10-15 phút mỗi ngày cho việc này! 🧘‍♀️',
+      ];
+
+      function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+
+        if (message === '') return;
+
+        const chatMessages = document.getElementById('chatMessages');
+
+        // Add user message
+        const userMessage = document.createElement('div');
+        userMessage.className = 'message user';
+        userMessage.innerHTML = `<strong>Bạn:</strong> ${message}`;
+        chatMessages.appendChild(userMessage);
+
+        // Clear input
+        input.value = '';
+
+        // Simulate AI thinking
+        setTimeout(() => {
+          const aiMessage = document.createElement('div');
+          aiMessage.className = 'message ai';
+          const randomResponse =
+            aiResponses[Math.floor(Math.random() * aiResponses.length)];
+          aiMessage.innerHTML = `<strong>AI Trainer:</strong> ${randomResponse}`;
+          chatMessages.appendChild(aiMessage);
+
+          // Scroll to bottom
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 1000);
+
+        // Scroll to bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      function handleEnterKey(event) {
+        if (event.key === 'Enter') {
+          sendMessage();
+        }
+      }
+
+      // Add some animation effects
+      document.addEventListener('DOMContentLoaded', function () {
+        // Animate cards on load
+        const cards = document.querySelectorAll('.dashboard-card');
+        cards.forEach((card, index) => {
+          card.style.opacity = '0';
+          card.style.transform = 'translateY(20px)';
+
+          setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+          }, index * 100);
+        });
+      });
+    </script>
+  </body>
+</html>
+
