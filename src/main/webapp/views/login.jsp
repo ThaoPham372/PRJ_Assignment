@@ -1,517 +1,564 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <!DOCTYPE html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Đăng Nhập - Stamina Gym</title>
-
-    <!-- Bootstrap CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-
-    <!-- Font Awesome -->
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      rel="stylesheet"
-    />
-
-    <!-- Custom CSS -->
-    <link
-      href="${pageContext.request.contextPath}/css/styles.css"
-      rel="stylesheet"
-    />
+    <title>Đăng Nhập - GymFit</title>
 
     <style>
-      /* Override CSS with Stamina Gym theme for this specific page */
+      :root {
+        --primary: #141a49;
+        --accent: #ec8b5a;
+        --support: #ffde59;
+        --white: #ffffff;
+        --text-dark: #333333;
+        --text-light: #666666;
+        --border: #e0e0e0;
+        --error: #e74c3c;
+        --gray-bg: #f5f5f5;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
       body {
-        background: linear-gradient(
-          135deg,
-          var(--primary-purple) 0%,
-          var(--secondary-purple) 100%
-        );
+        font-family: 'Arial', sans-serif;
+        background: var(--gray-bg);
+        background-image: radial-gradient(circle, #ddd 1px, transparent 1px);
+        background-size: 20px 20px;
         min-height: 100vh;
         display: flex;
+        flex-direction: column;
+        color: var(--white);
+      }
+
+      /* Header */
+      .header {
+        background: var(--primary);
+        height: 8px;
+        width: 100%;
+      }
+
+      /* Main Content */
+      .main-content {
+        flex: 1;
+        display: flex;
         align-items: center;
-        font-family: 'Poppins', sans-serif;
+        justify-content: center;
+        padding: 40px 20px;
       }
 
       .login-card {
-        background: var(--white);
-        backdrop-filter: blur(10px);
-        border-radius: 30px;
-        box-shadow: 0 30px 60px rgba(59, 30, 120, 0.2);
-        overflow: hidden;
-        max-width: 450px;
-      }
-
-      .login-header {
-        background: linear-gradient(
-          135deg,
-          var(--primary-purple),
-          var(--secondary-purple)
-        );
-        color: var(--white);
-        padding: 50px 40px;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .login-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="login-pattern" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="2" fill="%23FFD700" opacity="0.2"/><circle cx="75" cy="75" r="2" fill="%23FFD700" opacity="0.2"/></pattern></defs><rect width="100" height="100" fill="url(%23login-pattern)"/></svg>');
-      }
-
-      .login-header h1,
-      .login-header h2,
-      .login-header p {
-        position: relative;
-        z-index: 2;
-        color: var(--white);
-      }
-
-      .login-header .fa-dumbbell {
-        color: var(--accent-yellow);
-      }
-
-      .login-form {
-        padding: 50px 40px;
-      }
-
-      .form-control {
-        border-radius: 20px;
-        border: 2px solid var(--gray-medium);
-        padding: 18px 25px;
-        font-size: 16px;
-        font-family: 'Poppins', sans-serif;
-        transition: all 0.3s ease;
-        background-color: var(--white);
-      }
-
-      .form-control:focus {
-        border-color: var(--primary-purple);
-        box-shadow: 0 0 0 0.2rem rgba(59, 30, 120, 0.25);
-        outline: none;
-      }
-
-      .form-label {
-        font-family: 'Poppins', sans-serif;
-        font-weight: 600;
-        color: var(--primary-purple);
-        margin-bottom: 10px;
-      }
-
-      .btn-login {
-        background: linear-gradient(
-          135deg,
-          var(--primary-purple),
-          var(--secondary-purple)
-        );
-        border: none;
+        background: var(--primary);
         border-radius: 25px;
-        padding: 18px;
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--white);
-        font-family: 'Poppins', sans-serif;
-        transition: all 0.3s ease;
-      }
-
-      .btn-login:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 30px rgba(59, 30, 120, 0.3);
-        color: var(--white);
-      }
-
-      .btn-outline-danger {
-        border-color: #dc3545;
-        color: #dc3545;
-        border-radius: 20px;
-        padding: 12px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-      }
-
-      .btn-outline-danger:hover {
-        background-color: #dc3545;
-        transform: translateY(-2px);
-      }
-
-      .btn-outline-primary {
-        border-color: var(--primary-purple);
-        color: var(--primary-purple);
-        border-radius: 20px;
-        padding: 12px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-      }
-
-      .btn-outline-primary:hover {
-        background-color: var(--primary-purple);
-        transform: translateY(-2px);
-      }
-
-      .btn-outline-secondary {
-        border-color: var(--primary-purple);
-        color: var(--primary-purple);
-        border-radius: 0 20px 20px 0;
-        transition: all 0.3s ease;
-      }
-
-      .btn-outline-secondary:hover {
-        background-color: var(--primary-purple);
-        border-color: var(--primary-purple);
-        color: var(--white);
-      }
-
-      .input-group .form-control {
-        border-radius: 20px 0 0 20px;
-      }
-
-      .bg-light {
-        background: linear-gradient(
-          135deg,
-          var(--gray-light),
-          #f8f9fa
-        ) !important;
-        border: 2px solid var(--accent-yellow);
-        border-radius: 15px;
-      }
-
-      .text-muted {
-        color: var(--gray-dark) !important;
-      }
-
-      .form-check-input:checked {
-        background-color: var(--primary-purple);
-        border-color: var(--primary-purple);
-      }
-
-      .floating-shapes {
-        position: fixed;
-        top: 0;
-        left: 0;
+        padding: 50px 40px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: -1;
+        max-width: 420px;
+        border: 2px solid var(--primary);
       }
 
-      .shape {
-        position: absolute;
-        background: rgba(255, 215, 0, 0.1);
+      /* Logo */
+      .logo {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      .logo-text {
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: var(--accent);
+        text-transform: lowercase;
+        letter-spacing: 1px;
+      }
+
+      /* Form */
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 15px 20px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 1rem;
+        background: var(--white);
+        color: var(--text-dark);
+        transition: all 0.3s ease;
+      }
+
+      .form-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px rgba(236, 139, 90, 0.2);
+      }
+
+      .form-input::placeholder {
+        color: var(--text-light);
+      }
+
+      /* Checkbox */
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 25px;
+      }
+
+      .checkbox-input {
+        margin-right: 10px;
+        transform: scale(1.1);
+      }
+
+      .checkbox-label {
+        color: var(--white);
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+
+      /* Login Button */
+      .login-btn {
+        width: 100%;
+        background: var(--support);
+        color: var(--primary);
+        border: none;
+        padding: 18px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .login-btn:hover:not(:disabled) {
+        background: #f4d03f;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 222, 89, 0.4);
+      }
+
+      .login-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* Forgot Password Link */
+      .forgot-link {
+        text-align: center;
+        margin-bottom: 25px;
+      }
+
+      .forgot-link a {
+        color: var(--white);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.3s ease;
+      }
+
+      .forgot-link a:hover {
+        color: var(--accent);
+      }
+
+      /* Google Button */
+      .google-btn {
+        width: 100%;
+        background: var(--white);
+        color: var(--text-dark);
+        border: 1px solid var(--border);
+        padding: 15px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .google-btn:hover {
+        background: #f8f9fa;
+        border-color: var(--accent);
+        transform: translateY(-1px);
+      }
+
+      .google-icon {
+        width: 18px;
+        height: 18px;
+        background: conic-gradient(
+          from 0deg,
+          #ea4335,
+          #fbbc05,
+          #34a853,
+          #4285f4,
+          #ea4335
+        );
         border-radius: 50%;
-        animation: float 8s ease-in-out infinite;
+        display: inline-block;
       }
 
-      .shape:nth-child(1) {
-        width: 100px;
-        height: 100px;
-        top: 15%;
-        left: 8%;
-        animation-delay: 0s;
+      /* Register Section */
+      .register-section {
+        text-align: center;
+        padding-top: 20px;
+        border-top: 1px solid var(--accent);
       }
 
-      .shape:nth-child(2) {
-        width: 150px;
-        height: 150px;
-        top: 60%;
-        right: 10%;
-        animation-delay: 3s;
+      .register-text {
+        color: var(--white);
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
-      .shape:nth-child(3) {
-        width: 80px;
-        height: 80px;
-        bottom: 15%;
-        left: 15%;
-        animation-delay: 6s;
+      .register-btn {
+        background: var(--accent);
+        color: var(--white);
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
-      .shape:nth-child(4) {
-        width: 60px;
-        height: 60px;
-        top: 40%;
-        right: 30%;
-        animation-delay: 1.5s;
+      .register-btn:hover {
+        background: #d67a4f;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(236, 139, 90, 0.4);
       }
 
-      @keyframes float {
-        0%,
+      /* Error Messages */
+      .error-message {
+        color: var(--error);
+        font-size: 0.8rem;
+        margin-top: 5px;
+        display: none;
+      }
+
+      .error-message.show {
+        display: block;
+      }
+
+      /* Footer */
+      .footer {
+        background: var(--primary);
+        padding: 15px;
+        text-align: center;
+        height: 8px;
+      }
+
+      .footer-text {
+        color: var(--white);
+        font-size: 0.8rem;
+      }
+
+      /* Loading Spinner */
+      .loading-spinner {
+        display: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--primary);
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 8px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
         100% {
-          transform: translateY(0px) rotate(0deg);
+          transform: rotate(360deg);
         }
-        25% {
-          transform: translateY(-30px) rotate(90deg);
+      }
+
+      /* Responsive */
+      @media (max-width: 480px) {
+        .login-card {
+          padding: 40px 30px;
+          margin: 20px;
         }
-        50% {
-          transform: translateY(-15px) rotate(180deg);
+
+        .logo-text {
+          font-size: 1.8rem;
         }
-        75% {
-          transform: translateY(-25px) rotate(270deg);
+
+        .form-input {
+          padding: 12px 15px;
         }
+
+        .login-btn {
+          padding: 15px;
+        }
+      }
+
+      /* Accessibility */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .error-region {
+        min-height: 18px;
       }
     </style>
   </head>
   <body>
-    <!-- Floating Shapes Background -->
-    <div class="floating-shapes">
-      <div class="shape"></div>
-      <div class="shape"></div>
-      <div class="shape"></div>
-      <div class="shape"></div>
-    </div>
+    <!-- Header -->
+    <header class="header"></header>
 
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-          <div class="login-card">
-            <!-- Header -->
-            <div class="login-header">
-              <h1 class="mb-3">
-                <i class="fas fa-dumbbell fa-2x"></i>
-              </h1>
-              <h2 class="fw-bold">STAMINA GYM</h2>
-            </div>
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="login-card">
+        <!-- Logo -->
+        <div class="logo">
+          <div class="logo-text">logo</div>
+        </div>
 
-            <!-- Login Form -->
-            <div class="login-form">
-              <!-- Error Message -->
-              <c:if test="${not empty error}">
-                <div
-                  class="alert alert-danger alert-dismissible fade show"
-                  role="alert"
-                >
-                  <i class="fas fa-exclamation-circle me-2"></i>
-                  ${error}
-                  <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert"
-                  ></button>
-                </div>
-              </c:if>
-
-              <!-- Success Message -->
-              <c:if test="${not empty success}">
-                <div
-                  class="alert alert-success alert-dismissible fade show"
-                  role="alert"
-                >
-                  <i class="fas fa-check-circle me-2"></i>
-                  ${success}
-                  <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert"
-                  ></button>
-                </div>
-              </c:if>
-
-              <form
-                action="${pageContext.request.contextPath}/login"
-                method="post"
-                id="loginForm"
-              >
-                <!-- Username -->
-                <div class="mb-4">
-                  <label for="username" class="form-label fw-bold">
-                    <i class="fas fa-user me-2"></i>Tên đăng nhập
-                  </label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="username"
-                    name="username"
-                    placeholder="Nhập tên đăng nhập"
-                    value="${cookie.rememberedUsername.value}"
-                    required
-                  />
-                </div>
-
-                <!-- Password -->
-                <div class="mb-4">
-                  <label for="password" class="form-label fw-bold">
-                    <i class="fas fa-lock me-2"></i>Mật khẩu
-                  </label>
-                  <div class="input-group">
-                    <input
-                      type="password"
-                      class="form-control"
-                      id="password"
-                      name="password"
-                      placeholder="Nhập mật khẩu"
-                      value="${cookie.rememberedPassword.value}"
-                      required
-                    />
-                    <button
-                      class="btn btn-outline-secondary"
-                      type="button"
-                      id="togglePassword"
-                    >
-                      <i class="fas fa-eye"></i>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Remember Me -->
-                <div class="mb-4">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox"
-                    id="rememberMe" name="rememberMe" ${not empty
-                    cookie.rememberedUsername ? 'checked' : ''}>
-                    <label class="form-check-label" for="rememberMe">
-                      Ghi nhớ đăng nhập
-                    </label>
-                  </div>
-                </div>
-
-                <!-- Login Button -->
-                <button type="submit" class="btn btn-login w-100 mb-4">
-                  <i class="fas fa-sign-in-alt me-2"></i>
-                  <span id="loginText">Đăng Nhập</span>
-                  <span id="loginSpinner" class="loading d-none"></span>
-                </button>
-              </form>
-
-              <!-- Divider -->
-              <div class="text-center mb-4">
-                <hr class="my-4" />
-                <span class="text-muted bg-white px-3">Hoặc đăng nhập với</span>
-              </div>
-
-              <!-- Social Login -->
-              <div class="row">
-                <div class="col-6">
-                  <a
-                    href="${pageContext.request.contextPath}/auth/google"
-                    class="btn btn-outline-danger w-100"
-                  >
-                    <i class="fab fa-google me-2"></i>Google
-                  </a>
-                </div>
-                <div class="col-6">
-                  <a
-                    href="${pageContext.request.contextPath}/auth/facebook"
-                    class="btn btn-outline-primary w-100"
-                  >
-                    <i class="fab fa-facebook me-2"></i>Facebook
-                  </a>
-                </div>
-              </div>
-
-              <!-- Demo Accounts -->
-              <div class="mt-4 p-3 bg-light rounded">
-                <h6 class="fw-bold mb-2">
-                  <i class="fas fa-info-circle text-info me-2"></i>Tài khoản
-                  demo:
-                </h6>
-                <small class="text-muted">
-                  <strong>Manager:</strong> admin/admin123<br />
-                  <strong>Employee:</strong> employee/emp123<br />
-                  <strong>Customer:</strong> customer/cust123
-                </small>
-              </div>
-
-              <!-- Links -->
-              <div class="text-center mt-4">
-                <a
-                  href="${pageContext.request.contextPath}/forgot-password"
-                  class="text-decoration-none"
-                >
-                  Quên mật khẩu?
-                </a>
-                <span class="mx-2">|</span>
-                <a
-                  href="${pageContext.request.contextPath}/index.jsp"
-                  class="text-decoration-none"
-                >
-                  Về trang chủ
-                </a>
-              </div>
-            </div>
+        <!-- Login Form -->
+        <form
+          id="loginForm"
+          method="post"
+          action="${pageContext.request.contextPath}/login"
+        >
+          <!-- Username -->
+          <div class="form-group">
+            <label for="username" class="sr-only">User Name</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              class="form-input"
+              placeholder="user name"
+              required
+              aria-describedby="username-error"
+            />
+            <div
+              id="username-error"
+              class="error-message error-region"
+              role="alert"
+              aria-live="polite"
+            ></div>
           </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            <label for="password" class="sr-only">Mật khẩu</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-input"
+              placeholder="mật khẩu"
+              required
+              aria-describedby="password-error"
+            />
+            <div
+              id="password-error"
+              class="error-message error-region"
+              role="alert"
+              aria-live="polite"
+            ></div>
+          </div>
+
+          <!-- Remember Me -->
+          <div class="checkbox-group">
+            <input
+              type="checkbox"
+              id="rememberMe"
+              name="rememberMe"
+              class="checkbox-input"
+            />
+            <label for="rememberMe" class="checkbox-label"
+              >ghi nhớ đăng nhập</label
+            >
+          </div>
+
+          <!-- Login Button -->
+          <button type="submit" class="login-btn" id="loginBtn">
+            <span id="loginText">ĐĂNG NHẬP</span>
+            <div class="loading-spinner" id="loadingSpinner"></div>
+          </button>
+        </form>
+
+        <!-- Forgot Password -->
+        <div class="forgot-link">
+          <a href="#" id="forgotPassword">quên mật khẩu?</a>
+        </div>
+
+        <!-- Google Login -->
+        <button type="button" class="google-btn" id="googleBtn">
+          <div class="google-icon"></div>
+          TIẾP TỤC VỚI GOOGLE
+        </button>
+
+        <!-- Register Section -->
+        <div class="register-section">
+          <div class="register-text">BẠN CHƯA CÓ TÀI KHOẢN?</div>
+          <button type="button" class="register-btn" id="registerBtn">
+            ĐĂNG KÝ
+          </button>
         </div>
       </div>
-    </div>
+    </main>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-text">
+        FOOTER - nhưng cái này ngắn gọn hơn footer trên có thông tin cơ bản thôi
+      </div>
+    </footer>
 
     <script>
       document.addEventListener('DOMContentLoaded', function () {
-        // Toggle password visibility
-        const togglePassword = document.getElementById('togglePassword');
+        const form = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
-
-        togglePassword.addEventListener('click', function () {
-          const type =
-            passwordInput.getAttribute('type') === 'password'
-              ? 'text'
-              : 'password';
-          passwordInput.setAttribute('type', type);
-
-          const icon = this.querySelector('i');
-          icon.classList.toggle('fa-eye');
-          icon.classList.toggle('fa-eye-slash');
-        });
-
-        // Form submission with loading state
-        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
         const loginText = document.getElementById('loginText');
-        const loginSpinner = document.getElementById('loginSpinner');
-        const submitButton = loginForm.querySelector('button[type="submit"]');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const usernameError = document.getElementById('username-error');
+        const passwordError = document.getElementById('password-error');
 
-        loginForm.addEventListener('submit', function (e) {
+        // Form validation
+        function validateForm() {
+          let isValid = true;
+
+          // Clear previous errors
+          usernameError.classList.remove('show');
+          passwordError.classList.remove('show');
+
+          // Validate username
+          if (!usernameInput.value.trim()) {
+            usernameError.textContent = 'Vui lòng nhập tên đăng nhập';
+            usernameError.classList.add('show');
+            isValid = false;
+          }
+
+          // Validate password
+          if (!passwordInput.value.trim()) {
+            passwordError.textContent = 'Vui lòng nhập mật khẩu';
+            passwordError.classList.add('show');
+            isValid = false;
+          }
+
+          return isValid;
+        }
+
+        // Form submission
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+
+          if (!validateForm()) {
+            return;
+          }
+
           // Show loading state
-          submitButton.disabled = true;
-          loginText.classList.add('d-none');
-          loginSpinner.classList.remove('d-none');
+          loginBtn.disabled = true;
+          loginText.style.display = 'none';
+          loadingSpinner.style.display = 'inline-block';
 
-          // For demo purposes, simulate server delay
-          // In real app, form will submit normally
+          // Simulate form submission
           setTimeout(() => {
-            // Reset button state after demo delay
-            submitButton.disabled = false;
-            loginText.classList.remove('d-none');
-            loginSpinner.classList.add('d-none');
-          }, 1000);
+            // Reset button state
+            loginBtn.disabled = false;
+            loginText.style.display = 'inline';
+            loadingSpinner.style.display = 'none';
+
+            // In real application, form would submit here
+            // form.submit();
+
+            // For demo purposes, show success message
+            alert('Đăng nhập thành công! (Demo)');
+          }, 2000);
         });
 
-        // Demo account quick fill
-        document.addEventListener('click', function (e) {
-          if (e.target.closest('.bg-light')) {
-            const text = e.target.textContent;
-            if (text.includes('admin/admin123')) {
-              document.getElementById('username').value = 'admin';
-              document.getElementById('password').value = 'admin123';
-            } else if (text.includes('employee/emp123')) {
-              document.getElementById('username').value = 'employee';
-              document.getElementById('password').value = 'emp123';
-            } else if (text.includes('customer/cust123')) {
-              document.getElementById('username').value = 'customer';
-              document.getElementById('password').value = 'cust123';
-            }
+        // Real-time validation
+        usernameInput.addEventListener('blur', function () {
+          if (!this.value.trim()) {
+            usernameError.textContent = 'Vui lòng nhập tên đăng nhập';
+            usernameError.classList.add('show');
+          } else {
+            usernameError.classList.remove('show');
           }
         });
 
-        // Auto-hide alerts
-        const alerts = document.querySelectorAll('.alert');
-        alerts.forEach((alert) => {
-          setTimeout(() => {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
-          }, 5000);
+        passwordInput.addEventListener('blur', function () {
+          if (!this.value.trim()) {
+            passwordError.textContent = 'Vui lòng nhập mật khẩu';
+            passwordError.classList.add('show');
+          } else {
+            passwordError.classList.remove('show');
+          }
+        });
+
+        // Clear errors on input
+        usernameInput.addEventListener('input', function () {
+          usernameError.classList.remove('show');
+        });
+
+        passwordInput.addEventListener('input', function () {
+          passwordError.classList.remove('show');
+        });
+
+        // Google login button
+        document
+          .getElementById('googleBtn')
+          .addEventListener('click', function () {
+            alert('Chức năng đăng nhập Google sẽ được triển khai');
+          });
+
+        // Register button
+        document
+          .getElementById('registerBtn')
+          .addEventListener('click', function () {
+            alert('Chức năng đăng ký sẽ được triển khai');
+          });
+
+        // Forgot password link
+        document
+          .getElementById('forgotPassword')
+          .addEventListener('click', function (e) {
+            e.preventDefault();
+            alert('Chức năng quên mật khẩu sẽ được triển khai');
+          });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') {
+            const inputs = [usernameInput, passwordInput];
+            const currentIndex = inputs.indexOf(e.target);
+            if (currentIndex < inputs.length - 1) {
+              inputs[currentIndex + 1].focus();
+            } else {
+              form.dispatchEvent(new Event('submit'));
+            }
+          }
         });
       });
     </script>

@@ -1,516 +1,551 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Ký Thành Viên - Stamina Gym</title>
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link href="${pageContext.request.contextPath}/css/styles.css" rel="stylesheet">
-    
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng Ký - GymFit</title>
+
     <style>
-        /* Override CSS with Stamina Gym theme for register page */
-        body {
-            background: linear-gradient(135deg, var(--primary-purple) 0%, var(--secondary-purple) 100%);
-            min-height: 100vh;
-            padding: 20px 0;
-            font-family: 'Poppins', sans-serif;
+      :root {
+        --primary: #141a49;
+        --accent: #ec8b5a;
+        --support: #ffde59;
+        --white: #ffffff;
+        --text-dark: #333333;
+        --text-light: #666666;
+        --border: #e0e0e0;
+        --error: #e74c3c;
+        --gray-bg: #f5f5f5;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Arial', sans-serif;
+        background: var(--gray-bg);
+        background-image: radial-gradient(circle, #ddd 1px, transparent 1px);
+        background-size: 20px 20px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        color: var(--white);
+      }
+
+      /* Header */
+      .header {
+        background: var(--primary);
+        height: 8px;
+        width: 100%;
+      }
+
+      /* Main Content */
+      .main-content {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+      }
+
+      .register-card {
+        background: var(--primary);
+        border-radius: 25px;
+        padding: 50px 40px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        width: 100%;
+        max-width: 420px;
+        border: 2px solid var(--primary);
+      }
+
+      /* Logo */
+      .logo {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .logo-text {
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: var(--accent);
+        text-transform: lowercase;
+        letter-spacing: 1px;
+      }
+
+      /* Title */
+      .page-title {
+        text-align: center;
+        color: var(--white);
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 30px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      /* Form */
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 15px 20px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 1rem;
+        background: var(--white);
+        color: var(--text-dark);
+        transition: all 0.3s ease;
+      }
+
+      .form-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px rgba(236, 139, 90, 0.2);
+      }
+
+      .form-input::placeholder {
+        color: var(--text-light);
+      }
+
+      /* Checkbox */
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 25px;
+      }
+
+      .checkbox-input {
+        margin-right: 10px;
+        transform: scale(1.1);
+      }
+
+      .checkbox-label {
+        color: var(--white);
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+
+      /* Register Button */
+      .register-btn {
+        width: 100%;
+        background: var(--support);
+        color: var(--primary);
+        border: none;
+        padding: 18px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .register-btn:hover:not(:disabled) {
+        background: #f4d03f;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 222, 89, 0.4);
+      }
+
+      .register-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* Google Button */
+      .google-btn {
+        width: 100%;
+        background: var(--white);
+        color: var(--text-dark);
+        border: 1px solid var(--border);
+        padding: 15px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .google-btn:hover {
+        background: #f8f9fa;
+        border-color: var(--accent);
+        transform: translateY(-1px);
+      }
+
+      .google-icon {
+        width: 18px;
+        height: 18px;
+        background: conic-gradient(
+          from 0deg,
+          #ea4335,
+          #fbbc05,
+          #34a853,
+          #4285f4,
+          #ea4335
+        );
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      /* Login Section */
+      .login-section {
+        text-align: center;
+        padding-top: 20px;
+        border-top: 1px solid var(--accent);
+      }
+
+      .login-text {
+        color: var(--white);
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .login-btn {
+        background: var(--accent);
+        color: var(--white);
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .login-btn:hover {
+        background: #d67a4f;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(236, 139, 90, 0.4);
+      }
+
+      /* Error Messages */
+      .error-message {
+        color: var(--error);
+        font-size: 0.8rem;
+        margin-top: 5px;
+        display: none;
+      }
+
+      .error-message.show {
+        display: block;
+      }
+
+      /* Footer */
+      .footer {
+        background: var(--primary);
+        padding: 15px;
+        text-align: center;
+        height: 8px;
+      }
+
+      .footer-text {
+        color: var(--white);
+        font-size: 0.8rem;
+      }
+
+      /* Loading Spinner */
+      .loading-spinner {
+        display: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--primary);
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 8px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
         }
-        
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Responsive */
+      @media (max-width: 480px) {
         .register-card {
-            background: var(--white);
-            border-radius: 30px;
-            box-shadow: 0 30px 60px rgba(59, 30, 120, 0.2);
-            overflow: hidden;
-            max-width: 800px;
-            margin: 20px auto;
+          padding: 40px 30px;
+          margin: 20px;
         }
-        
-        .register-header {
-            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
-            color: var(--white);
-            padding: 40px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
+
+        .logo-text {
+          font-size: 1.8rem;
         }
-        
-        .register-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="register-pattern" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="2" fill="%23FFD700" opacity="0.2"/><circle cx="75" cy="75" r="2" fill="%23FFD700" opacity="0.2"/></pattern></defs><rect width="100" height="100" fill="url(%23register-pattern)"/></svg>');
+
+        .form-input {
+          padding: 12px 15px;
         }
-        
-        .register-header h1, .register-header h2, .register-header p {
-            position: relative;
-            z-index: 2;
-            color: var(--white);
+
+        .register-btn {
+          padding: 15px;
         }
-        
-        .register-header .fa-dumbbell {
-            color: var(--accent-yellow);
-        }
-        
-        .register-form {
-            padding: 50px 40px;
-        }
-        
-        .form-control {
-            border-radius: 15px;
-            border: 2px solid var(--gray-medium);
-            padding: 15px 20px;
-            font-size: 16px;
-            font-family: 'Poppins', sans-serif;
-            transition: all 0.3s ease;
-            background-color: var(--white);
-        }
-        
-        .form-control:focus {
-            border-color: var(--primary-purple);
-            box-shadow: 0 0 0 0.2rem rgba(59, 30, 120, 0.25);
-            outline: none;
-        }
-        
-        .form-label {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 600;
-            color: var(--primary-purple);
-            margin-bottom: 8px;
-        }
-        
-        .btn-register {
-            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
-            border: none;
-            border-radius: 25px;
-            padding: 18px;
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--white);
-            font-family: 'Poppins', sans-serif;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-register:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(59, 30, 120, 0.3);
-            color: var(--white);
-        }
-        
-        .package-selection {
-            background: var(--gray-light);
-            border-radius: 15px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        
-        .package-option {
-            border: 2px solid var(--gray-medium);
-            border-radius: 15px;
-            padding: 20px;
-            margin: 10px 0;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .package-option:hover {
-            border-color: var(--primary-purple);
-            transform: translateY(-2px);
-        }
-        
-        .package-option.selected {
-            border-color: var(--accent-yellow);
-            background-color: rgba(255, 215, 0, 0.1);
-        }
-        
-        .package-price {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--primary-purple);
-        }
-        
-        .form-check-input:checked {
-            background-color: var(--primary-purple);
-            border-color: var(--primary-purple);
-        }
-        
-        .floating-shapes {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
-        
-        .shape {
-            position: absolute;
-            background: rgba(255, 215, 0, 0.1);
-            border-radius: 50%;
-            animation: float 10s ease-in-out infinite;
-        }
-        
-        .shape:nth-child(1) {
-            width: 120px;
-            height: 120px;
-            top: 10%;
-            left: 5%;
-            animation-delay: 0s;
-        }
-        
-        .shape:nth-child(2) {
-            width: 80px;
-            height: 80px;
-            top: 70%;
-            right: 8%;
-            animation-delay: 4s;
-        }
-        
-        .shape:nth-child(3) {
-            width: 100px;
-            height: 100px;
-            bottom: 10%;
-            left: 10%;
-            animation-delay: 8s;
-        }
-        
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0px) scale(1);
-            }
-            50% {
-                transform: translateY(-30px) scale(1.1);
-            }
-        }
+      }
+
+      /* Accessibility */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .error-region {
+        min-height: 18px;
+      }
     </style>
-</head>
-<body>
-    <!-- Floating Shapes Background -->
-    <div class="floating-shapes">
-        <div class="shape"></div>
-        <div class="shape"></div>
-        <div class="shape"></div>
-    </div>
-    
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="register-card">
-                    <!-- Header -->
-                    <div class="register-header">
-                        <h1 class="mb-3">
-                            <i class="fas fa-dumbbell fa-2x"></i>
-                        </h1>
-                        <h2 class="fw-bold">STAMINA GYM</h2>
-                        <p class="mb-0 opacity-75">Đăng ký thành viên mới</p>
-                    </div>
-                    
-                    <!-- Registration Form -->
-                    <div class="register-form">
-                        <!-- Error Message -->
-                        <c:if test="${not empty error}">
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <i class="fas fa-exclamation-circle me-2"></i>
-                                ${error}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        </c:if>
-                        
-                        <!-- Success Message -->
-                        <c:if test="${not empty success}">
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <i class="fas fa-check-circle me-2"></i>
-                                ${success}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        </c:if>
-                        
-                        <form action="${pageContext.request.contextPath}/register" method="post" id="registerForm">
-                            <div class="row">
-                                <!-- Personal Information -->
-                                <div class="col-lg-6">
-                                    <h5 class="text-primary mb-4">
-                                        <i class="fas fa-user me-2"></i>Thông Tin Cá Nhân
-                                    </h5>
-                                    
-                                    <div class="mb-3">
-                                        <label for="fullName" class="form-label">
-                                            <i class="fas fa-id-card me-2"></i>Họ và Tên *
-                                        </label>
-                                        <input type="text" class="form-control" id="fullName" name="fullName" 
-                                               placeholder="Nhập họ và tên đầy đủ" required>
-                                    </div>
-                                    
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="email" class="form-label">
-                                                <i class="fas fa-envelope me-2"></i>Email *
-                                            </label>
-                                            <input type="email" class="form-control" id="email" name="email" 
-                                                   placeholder="example@email.com" required>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="phone" class="form-label">
-                                                <i class="fas fa-phone me-2"></i>Số Điện Thoại *
-                                            </label>
-                                            <input type="tel" class="form-control" id="phone" name="phone" 
-                                                   placeholder="0123456789" required>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="dateOfBirth" class="form-label">
-                                                <i class="fas fa-calendar me-2"></i>Ngày Sinh
-                                            </label>
-                                            <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth">
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="gender" class="form-label">
-                                                <i class="fas fa-venus-mars me-2"></i>Giới Tính
-                                            </label>
-                                            <select class="form-control" id="gender" name="gender">
-                                                <option value="">Chọn giới tính</option>
-                                                <option value="male">Nam</option>
-                                                <option value="female">Nữ</option>
-                                                <option value="other">Khác</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <label for="address" class="form-label">
-                                            <i class="fas fa-map-marker-alt me-2"></i>Địa Chỉ
-                                        </label>
-                                        <textarea class="form-control" id="address" name="address" rows="3" 
-                                                  placeholder="Nhập địa chỉ đầy đủ"></textarea>
-                                    </div>
-                                </div>
-                                
-                                <!-- Account & Package Information -->
-                                <div class="col-lg-6">
-                                    <h5 class="text-primary mb-4">
-                                        <i class="fas fa-key me-2"></i>Thông Tin Tài Khoản
-                                    </h5>
-                                    
-                                    <div class="mb-3">
-                                        <label for="username" class="form-label">
-                                            <i class="fas fa-user-circle me-2"></i>Tên Đăng Nhập *
-                                        </label>
-                                        <input type="text" class="form-control" id="username" name="username" 
-                                               placeholder="Nhập tên đăng nhập" required>
-                                    </div>
-                                    
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="password" class="form-label">
-                                                <i class="fas fa-lock me-2"></i>Mật Khẩu *
-                                            </label>
-                                            <input type="password" class="form-control" id="password" name="password" 
-                                                   placeholder="Nhập mật khẩu" required>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="confirmPassword" class="form-label">
-                                                <i class="fas fa-lock me-2"></i>Xác Nhận Mật Khẩu *
-                                            </label>
-                                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" 
-                                                   placeholder="Nhập lại mật khẩu" required>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Package Selection -->
-                                    <div class="package-selection">
-                                        <h6 class="text-primary mb-3">
-                                            <i class="fas fa-crown me-2"></i>Chọn Gói Membership
-                                        </h6>
-                                        
-                                        <%-- Mock data for packages using JSTL --%>
-                                        <c:set var="packages" value="basic,premium,vip" />
-                                        <c:set var="packageNames" value="Basic,Premium,VIP" />
-                                        <c:set var="packagePrices" value="300K,500K,800K" />
-                                        <c:set var="packageDescriptions" value="Sử dụng cơ bản|Tất cả + PT 2 buổi/tháng|Tất cả + PT không giới hạn" />
-                                        
-                                        <c:forEach var="i" begin="0" end="2">
-                                            <div class="package-option" data-package="${i}">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="packageType" 
-                                                           id="package${i}" value="${i == 0 ? 'basic' : (i == 1 ? 'premium' : 'vip')}">
-                                                    <label class="form-check-label w-100" for="package${i}">
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                            <div>
-                                                                <h6 class="mb-1">${i == 0 ? 'Basic' : (i == 1 ? 'Premium' : 'VIP')}</h6>
-                                                                <small class="text-muted">
-                                                                    ${i == 0 ? 'Sử dụng cơ bản' : (i == 1 ? 'Tất cả + PT 2 buổi/tháng' : 'Tất cả + PT không giới hạn')}
-                                                                </small>
-                                                            </div>
-                                                            <div class="package-price">
-                                                                ${i == 0 ? '300K' : (i == 1 ? '500K' : '800K')}/tháng
-                                                            </div>
-                                                        </div>
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </c:forEach>
-                                    </div>
-                                    
-                                    <!-- Emergency Contact -->
-                                    <h6 class="text-primary mb-3">
-                                        <i class="fas fa-phone-alt me-2"></i>Liên Hệ Khẩn Cấp
-                                    </h6>
-                                    
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="emergencyName" class="form-label">Tên Người Liên Hệ</label>
-                                            <input type="text" class="form-control" id="emergencyName" name="emergencyName" 
-                                                   placeholder="Tên người thân">
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="emergencyPhone" class="form-label">Số Điện Thoại</label>
-                                            <input type="tel" class="form-control" id="emergencyPhone" name="emergencyPhone" 
-                                                   placeholder="Số điện thoại khẩn cấp">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Terms and Conditions -->
-                            <div class="mt-4">
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="agreeTerms" name="agreeTerms" required>
-                                    <label class="form-check-label" for="agreeTerms">
-                                        Tôi đồng ý với <a href="#" class="text-decoration-none">Điều khoản và Điều kiện</a> 
-                                        của Stamina Gym *
-                                    </label>
-                                </div>
-                                
-                                <div class="form-check mb-4">
-                                    <input class="form-check-input" type="checkbox" id="receiveUpdates" name="receiveUpdates">
-                                    <label class="form-check-label" for="receiveUpdates">
-                                        Tôi muốn nhận thông tin cập nhật về các chương trình và ưu đãi từ Stamina Gym
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <!-- Submit Buttons -->
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <button type="submit" class="btn btn-register w-100">
-                                        <i class="fas fa-user-plus me-2"></i>
-                                        <span id="registerText">Đăng Ký Thành Viên</span>
-                                        <span id="registerSpinner" class="loading d-none"></span>
-                                    </button>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <a href="${pageContext.request.contextPath}/views/login.jsp" 
-                                       class="btn btn-outline-primary w-100">
-                                        <i class="fas fa-sign-in-alt me-2"></i>Đã có tài khoản? Đăng nhập
-                                    </a>
-                                </div>
-                            </div>
-                        </form>
-                        
-                        <!-- Links -->
-                        <div class="text-center mt-4">
-                            <a href="${pageContext.request.contextPath}/index.jsp" class="text-decoration-none">
-                                <i class="fas fa-home me-1"></i>Về trang chủ
-                            </a>
-                            <span class="mx-2">|</span>
-                            <a href="#" class="text-decoration-none">
-                                <i class="fas fa-question-circle me-1"></i>Cần hỗ trợ?
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header"></header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="register-card">
+        <!-- Logo -->
+        <div class="logo">
+          <div class="logo-text">logo</div>
         </div>
-    </div>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
+        <!-- Title -->
+        <div class="page-title">ĐĂNG KÝ TÀI KHOẢN</div>
+
+        <!-- Register Form -->
+        <form
+          id="registerForm"
+          method="post"
+          action="${pageContext.request.contextPath}/register"
+        >
+          <!-- Username -->
+          <div class="form-group">
+            <label for="username" class="sr-only">Username</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              class="form-input"
+              placeholder="username"
+              required
+              aria-describedby="username-error"
+            />
+            <div
+              id="username-error"
+              class="error-message error-region"
+              role="alert"
+              aria-live="polite"
+            ></div>
+          </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            <label for="password" class="sr-only">Mật khẩu</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-input"
+              placeholder="mật khẩu"
+              required
+              aria-describedby="password-error"
+            />
+            <div
+              id="password-error"
+              class="error-message error-region"
+              role="alert"
+              aria-live="polite"
+            ></div>
+          </div>
+
+          <!-- Remember Me -->
+          <div class="checkbox-group">
+            <input
+              type="checkbox"
+              id="rememberMe"
+              name="rememberMe"
+              class="checkbox-input"
+            />
+            <label for="rememberMe" class="checkbox-label"
+              >ghi nhớ đăng nhập</label
+            >
+          </div>
+
+          <!-- Register Button -->
+          <button type="submit" class="register-btn" id="registerBtn">
+            <span id="registerText">ĐĂNG KÝ</span>
+            <div class="loading-spinner" id="loadingSpinner"></div>
+          </button>
+        </form>
+
+        <!-- Google Register -->
+        <button type="button" class="google-btn" id="googleBtn">
+          <div class="google-icon"></div>
+          ĐĂNG KÝ VỚI GOOGLE
+        </button>
+
+        <!-- Login Section -->
+        <div class="login-section">
+          <div class="login-text">BẠN ĐÃ CÓ TÀI KHOẢN?</div>
+          <button type="button" class="login-btn" id="loginBtn">
+            ĐĂNG NHẬP
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-text">
+        FOOTER - nhưng cái này ngắn gọn hơn footer trên có thông tin cơ bản thôi
+      </div>
+    </footer>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Package selection
-            const packageOptions = document.querySelectorAll('.package-option');
-            const packageRadios = document.querySelectorAll('input[name="packageType"]');
-            
-            packageOptions.forEach((option, index) => {
-                option.addEventListener('click', function() {
-                    // Remove selected class from all options
-                    packageOptions.forEach(opt => opt.classList.remove('selected'));
-                    // Add selected class to clicked option
-                    this.classList.add('selected');
-                    // Check the corresponding radio button
-                    packageRadios[index].checked = true;
-                });
-            });
-            
-            // Form validation
-            const form = document.getElementById('registerForm');
-            const password = document.getElementById('password');
-            const confirmPassword = document.getElementById('confirmPassword');
-            
-            confirmPassword.addEventListener('input', function() {
-                if (password.value !== confirmPassword.value) {
-                    confirmPassword.setCustomValidity('Mật khẩu không khớp');
-                } else {
-                    confirmPassword.setCustomValidity('');
-                }
-            });
-            
-            // Form submission with loading state
-            const registerText = document.getElementById('registerText');
-            const registerSpinner = document.getElementById('registerSpinner');
-            const submitButton = form.querySelector('button[type="submit"]');
-            
-            form.addEventListener('submit', function(e) {
-                // Show loading state
-                submitButton.disabled = true;
-                registerText.classList.add('d-none');
-                registerSpinner.classList.remove('d-none');
-                
-                // For demo purposes, simulate server delay
-                // In real app, form will submit normally
-                setTimeout(() => {
-                    // Reset button state after demo delay
-                    submitButton.disabled = false;
-                    registerText.classList.remove('d-none');
-                    registerSpinner.classList.add('d-none');
-                }, 2000);
-            });
-            
-            // Auto-hide alerts
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                setTimeout(() => {
-                    const bsAlert = new bootstrap.Alert(alert);
-                    bsAlert.close();
-                }, 5000);
-            });
-            
-            // Phone number formatting
-            const phoneInput = document.getElementById('phone');
-            phoneInput.addEventListener('input', function(e) {
-                // Remove all non-digits
-                let value = e.target.value.replace(/\D/g, '');
-                // Format as needed (simple example)
-                if (value.length > 3) {
-                    value = value.slice(0, 4) + '-' + value.slice(4, 7) + '-' + value.slice(7, 10);
-                }
-                e.target.value = value;
-            });
+      document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('registerForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const registerBtn = document.getElementById('registerBtn');
+        const registerText = document.getElementById('registerText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const usernameError = document.getElementById('username-error');
+        const passwordError = document.getElementById('password-error');
+
+        // Form validation
+        function validateForm() {
+          let isValid = true;
+
+          // Clear previous errors
+          usernameError.classList.remove('show');
+          passwordError.classList.remove('show');
+
+          // Validate username
+          if (!usernameInput.value.trim()) {
+            usernameError.textContent = 'Vui lòng nhập tên đăng nhập';
+            usernameError.classList.add('show');
+            isValid = false;
+          }
+
+          // Validate password
+          if (!passwordInput.value.trim()) {
+            passwordError.textContent = 'Vui lòng nhập mật khẩu';
+            passwordError.classList.add('show');
+            isValid = false;
+          }
+
+          return isValid;
+        }
+
+        // Form submission
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+
+          if (!validateForm()) {
+            return;
+          }
+
+          // Show loading state
+          registerBtn.disabled = true;
+          registerText.style.display = 'none';
+          loadingSpinner.style.display = 'inline-block';
+
+          // Simulate form submission
+          setTimeout(() => {
+            // Reset button state
+            registerBtn.disabled = false;
+            registerText.style.display = 'inline';
+            loadingSpinner.style.display = 'none';
+
+            // In real application, form would submit here
+            // form.submit();
+
+            // For demo purposes, show success message
+            alert('Đăng ký thành công! (Demo)');
+          }, 2000);
         });
+
+        // Real-time validation
+        usernameInput.addEventListener('blur', function () {
+          if (!this.value.trim()) {
+            usernameError.textContent = 'Vui lòng nhập tên đăng nhập';
+            usernameError.classList.add('show');
+          } else {
+            usernameError.classList.remove('show');
+          }
+        });
+
+        passwordInput.addEventListener('blur', function () {
+          if (!this.value.trim()) {
+            passwordError.textContent = 'Vui lòng nhập mật khẩu';
+            passwordError.classList.add('show');
+          } else {
+            passwordError.classList.remove('show');
+          }
+        });
+
+        // Clear errors on input
+        usernameInput.addEventListener('input', function () {
+          usernameError.classList.remove('show');
+        });
+
+        passwordInput.addEventListener('input', function () {
+          passwordError.classList.remove('show');
+        });
+
+        // Google register button
+        document
+          .getElementById('googleBtn')
+          .addEventListener('click', function () {
+            alert('Chức năng đăng ký Google sẽ được triển khai');
+          });
+
+        // Login button
+        document
+          .getElementById('loginBtn')
+          .addEventListener('click', function () {
+            window.location.href =
+              '${pageContext.request.contextPath}/views/login.jsp';
+          });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') {
+            const inputs = [usernameInput, passwordInput];
+            const currentIndex = inputs.indexOf(e.target);
+            if (currentIndex < inputs.length - 1) {
+              inputs[currentIndex + 1].focus();
+            } else {
+              form.dispatchEvent(new Event('submit'));
+            }
+          }
+        });
+      });
     </script>
-</body>
+  </body>
 </html>
