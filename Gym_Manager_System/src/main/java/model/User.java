@@ -23,6 +23,9 @@ public class User {
     private Date lastLogin;
     private String status; // active, inactive, suspended
     private String profileImage;
+    private String avatarUrl;
+    private java.sql.Timestamp createdAt;
+    private java.sql.Timestamp updatedAt;
     private String notes;
 
     // Default constructor
@@ -47,6 +50,15 @@ public class User {
 
     public void setId(int id) {
         this.id = id;
+    }
+    
+    // Alias methods for userId (for DAO compatibility)
+    public int getUserId() {
+        return id;
+    }
+    
+    public void setUserId(int userId) {
+        this.id = userId;
     }
 
     public String getUsername() {
@@ -183,6 +195,30 @@ public class User {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
+
+    public java.sql.Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(java.sql.Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public java.sql.Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(java.sql.Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     @Override

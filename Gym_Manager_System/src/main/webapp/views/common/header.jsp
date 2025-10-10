@@ -204,11 +204,12 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         </ul>
       </nav>
       <c:choose>
-        <c:when test="${sessionScope.user != null}">
-          <div class="btn">
-            ${sessionScope.user.fullName != null ? sessionScope.user.fullName :
-            'Admin User'}
-          </div>
+        <c:when test="${not empty sessionScope.userId}">
+          <a
+            href="${pageContext.request.contextPath}/auth/logout"
+            class="btn"
+            >ĐĂNG XUẤT</a
+          >
         </c:when>
         <c:otherwise>
           <a
