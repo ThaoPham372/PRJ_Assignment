@@ -343,7 +343,24 @@
           method="post"
           action="${pageContext.request.contextPath}/register"
         >
-          <!-- Username -->
+                <!-- Full name -->
+        <div class="form-group">
+          <label for="fullname" class="sr-only">Họ và tên (Fullname)</label>
+          <input
+            type="text"
+            id="fullname"
+            name="fullname"
+            class="form-input"
+            placeholder="Họ và tên"
+            required
+            maxlength="100"
+            aria-describedby="fullname-error"
+            value="${param.fullname}" 
+          />
+          <div id="fullname-error" class="error-message error-region" role="alert" aria-live="polite"></div>
+        </div>
+
+              <!-- Username -->
           <div class="form-group">
             <label for="username" class="sr-only">Username</label>
             <input
@@ -362,7 +379,8 @@
               aria-live="polite"
             ></div>
           </div>
-
+              
+              
           <!-- Password -->
           <div class="form-group">
             <label for="password" class="sr-only">Mật khẩu</label>
@@ -382,20 +400,70 @@
               aria-live="polite"
             ></div>
           </div>
+              
+        <!-- Confirm password -->
+        <div class="form-group">
+          <label for="confirmPassword" class="sr-only">Xác nhận mật khẩu</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            class="form-input"
+            placeholder="xác nhận mật khẩu"
+            required
+            aria-describedby="confirmPassword-error"
+          />
+          <div id="confirmPassword-error" class="error-message error-region" role="alert" aria-live="polite"></div>
+        </div>
 
-          <!-- Remember Me -->
-          <div class="checkbox-group">
-            <input
-              type="checkbox"
-              id="rememberMe"
-              name="rememberMe"
-              class="checkbox-input"
-            />
-            <label for="rememberMe" class="checkbox-label"
-              >ghi nhớ đăng nhập</label
-            >
-          </div>
+        
+        <!-- Ngày sinh -->
+        <div class="form-group">
+          <label for="dob" class="sr-only">Ngày sinh</label>
+          <input
+            type="date"
+            id="dob"
+            name="dob"
+            class="form-input"
+            aria-describedby="dob-error"
+            value="${param.dob}" 
+          />
+          <div id="dob-error" class="error-message error-region" role="alert" aria-live="polite"></div>
+        </div>
 
+        <!-- Giới tính -->
+        <div class="form-group">
+          <label for="gender" class="sr-only">Giới tính</label>
+          <select
+            id="gender"
+            name="gender"
+            class="form-input"
+            aria-describedby="gender-error"
+          >
+            <option value="">-- Chọn --</option>
+            <option value="M" ${param.gender == 'M' ? 'selected' : ''}>Nam</option>
+            <option value="F" ${param.gender == 'F' ? 'selected' : ''}>Nữ</option>
+            <option value="O" ${param.gender == 'O' ? 'selected' : ''}>Khác</option>
+          </select>
+          <div id="gender-error" class="error-message error-region" role="alert" aria-live="polite"></div>
+        </div>
+          
+                <!-- Email -->
+      <div class="form-group">
+        <label for="email" class="sr-only">Email liên hệ</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          class="form-input"
+          placeholder="email liên hệ"
+          required
+          aria-describedby="email-error"
+           value="${param.email}"  
+        />
+        <div id="email-error" class="error-message error-region" role="alert" aria-live="polite"></div>
+      </div>
+  
           <!-- Register Button -->
           <button type="submit" class="register-btn" id="registerBtn">
             <span id="registerText">ĐĂNG KÝ</span>
