@@ -39,12 +39,63 @@ file="/views/common/header.jsp" %>
   }
 
   .hero-section {
-    background: var(--gradient-primary);
+    position: relative;
     color: #fff;
-    padding: 80px 50px;
+    padding: 120px 50px;
     text-align: center;
     margin-bottom: 60px;
     border-radius: 20px;
+    overflow: hidden;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  .hero-section::before {
+    content: '';
+    position: absolute;
+    top: -10%;
+    left: -10%;
+    right: -10%;
+    bottom: -10%;
+    background: url('${pageContext.request.contextPath}/images/service/group.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: brightness(1) contrast(1.1) saturate(1.1);
+    z-index: 1;
+    transform: scale(1.1);
+    transition: all 0.3s ease;
+  }
+
+  .hero-section::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(20, 26, 73, 0.7) 0%,
+      rgba(20, 26, 73, 0.6) 100%
+    );
+    z-index: 2;
+  }
+
+  .hero-section:hover::before {
+    transform: scale(1.15);
+    filter: brightness(1.1) contrast(1.15) saturate(1.15);
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    max-width: 1000px;
   }
 
   .hero-section h1 {
@@ -195,11 +246,13 @@ file="/views/common/header.jsp" %>
   </a>
 
   <section class="hero-section">
-    <h1>GROUP TRAINING</h1>
-    <p>
-      Lớp tập nhóm tạo động lực và gắn kết, giúp bạn có thêm bạn bè và động lực
-      tập luyện mỗi ngày trong môi trường thân thiện và chuyên nghiệp.
-    </p>
+    <div class="hero-content">
+      <h1>GROUP TRAINING</h1>
+      <p>
+        Lớp tập nhóm tạo động lực và gắn kết, giúp bạn có thêm bạn bè và động
+        lực tập luyện mỗi ngày trong môi trường thân thiện và chuyên nghiệp.
+      </p>
+    </div>
   </section>
 
   <div class="content-section">
@@ -280,7 +333,11 @@ file="/views/common/header.jsp" %>
       Đăng ký ngay để được trải nghiệm lớp tập nhóm miễn phí và nhận ưu đãi đặc
       biệt.
     </p>
-    <a href="#" class="cta-btn">ĐĂNG KÝ NGAY</a>
+    <a
+      href="${pageContext.request.contextPath}/views/register.jsp"
+      class="cta-btn"
+      >ĐĂNG KÝ NGAY</a
+    >
   </div>
 </main>
 

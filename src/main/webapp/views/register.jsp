@@ -27,14 +27,35 @@
       }
 
       body {
-        font-family: 'Arial', sans-serif;
-        background: var(--gray-bg);
-        background-image: radial-gradient(circle, #ddd 1px, transparent 1px);
-        background-size: 20px 20px;
+        font-family: 'Inter', sans-serif;
+        background: url('${pageContext.request.contextPath}/images/home/backrough.jpg')
+          no-repeat center center fixed;
+        background-size: cover;
         min-height: 100vh;
         display: flex;
         flex-direction: column;
         color: var(--white);
+        position: relative;
+      }
+
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          rgba(20, 26, 70, 0.95) 0%,
+          rgba(30, 42, 92, 0.9) 100%
+        );
+        z-index: 0;
+      }
+
+      .main-content {
+        position: relative;
+        z-index: 1;
       }
 
       /* Header */
@@ -55,12 +76,37 @@
 
       .register-card {
         background: var(--primary);
-        border-radius: 25px;
-        padding: 50px 40px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         width: 100%;
-        max-width: 420px;
-        border: 2px solid var(--primary);
+        max-width: 500px;
+        border: none;
+        position: relative;
+        animation: fadeInUp 0.6s ease-out;
+      }
+
+      @keyframes borderGradient {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
       /* Logo */
@@ -69,12 +115,38 @@
         margin-bottom: 20px;
       }
 
-      .logo-text {
-        font-size: 2.2rem;
-        font-weight: 900;
-        color: var(--accent);
-        text-transform: lowercase;
-        letter-spacing: 1px;
+      .logo-image {
+        width: 150px;
+        height: auto;
+        margin-bottom: 30px;
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        animation: logoFloat 6s ease-in-out infinite;
+        transition: all 0.3s ease;
+      }
+
+      .logo-image:hover {
+        filter: drop-shadow(0 6px 8px rgba(236, 139, 90, 0.2));
+        transform: scale(1.05);
+      }
+
+      @keyframes logoFloat {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-5px);
+        }
       }
 
       /* Title */
@@ -89,17 +161,24 @@
       }
 
       /* Form */
+      .form-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
       .form-group {
+        flex: 1;
         margin-bottom: 20px;
       }
 
       .form-input {
         width: 100%;
-        padding: 15px 20px;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        font-size: 1rem;
-        background: var(--white);
+        padding: 12px 15px;
+        background: white;
+        border: 2px solid transparent;
+        border-radius: 4px;
+        font-size: 0.9rem;
         color: var(--text-dark);
         transition: all 0.3s ease;
       }
@@ -107,27 +186,95 @@
       .form-input:focus {
         outline: none;
         border-color: var(--accent);
-        box-shadow: 0 0 0 2px rgba(236, 139, 90, 0.2);
+        box-shadow: 0 0 0 2px rgba(236, 139, 90, 0.1);
       }
 
       .form-input::placeholder {
         color: var(--text-light);
+        text-transform: uppercase;
+        font-size: 0.8rem;
+      }
+
+      /* Date Input Styling */
+      .form-group {
+        position: relative;
+      }
+
+      .date-label {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-light);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        pointer-events: none;
+        transition: all 0.3s ease;
+      }
+
+      input[type='date'] {
+        position: relative;
+        padding-left: 90px;
+      }
+
+      input[type='date']::-webkit-calendar-picker-indicator {
+        position: absolute;
+        right: 10px;
+        cursor: pointer;
+      }
+
+      /* Select Styling */
+      select.form-input {
+        appearance: none;
+        padding-right: 30px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M8 11.5l-5-5h10l-5 5z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+      }
+
+      select.form-input option {
+        color: var(--text-dark);
+        font-size: 0.9rem;
       }
 
       /* Checkbox */
       .checkbox-group {
         display: flex;
         align-items: center;
-        margin-bottom: 25px;
+        gap: 10px;
+        margin: 20px 0;
       }
 
       .checkbox-input {
-        margin-right: 10px;
-        transform: scale(1.1);
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.3s ease;
+      }
+
+      .checkbox-input:checked {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+
+      .checkbox-input:checked::before {
+        content: '✓';
+        position: absolute;
+        color: white;
+        font-size: 14px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
       }
 
       .checkbox-label {
-        color: var(--white);
+        color: rgba(255, 255, 255, 0.8);
         font-size: 0.9rem;
         cursor: pointer;
       }
@@ -138,13 +285,13 @@
         background: var(--support);
         color: var(--primary);
         border: none;
-        padding: 18px;
-        border-radius: 8px;
-        font-size: 1rem;
+        padding: 15px 30px;
+        border-radius: 4px;
+        font-size: 0.9rem;
         font-weight: 700;
         cursor: pointer;
         transition: all 0.3s ease;
-        margin-bottom: 15px;
+        margin: 20px 0;
         text-transform: uppercase;
         letter-spacing: 1px;
       }
@@ -152,7 +299,7 @@
       .register-btn:hover:not(:disabled) {
         background: #f4d03f;
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(255, 222, 89, 0.4);
+        box-shadow: 0 4px 8px rgba(255, 222, 89, 0.4);
       }
 
       .register-btn:disabled {
@@ -164,43 +311,64 @@
       /* Google Button */
       .google-btn {
         width: 100%;
-        background: var(--white);
+        background: white;
         color: var(--text-dark);
         border: 1px solid var(--border);
-        padding: 15px;
-        border-radius: 8px;
+        padding: 12px 20px;
+        border-radius: 4px;
         font-size: 0.9rem;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
-        margin-bottom: 25px;
+        margin: 15px 0 25px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .google-btn::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 120%;
+        height: 120%;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.8) 0%,
+          transparent 60%
+        );
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+        transition: transform 0.5s ease, opacity 0.3s ease;
       }
 
       .google-btn:hover {
         background: #f8f9fa;
         border-color: var(--accent);
         transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .google-btn:active::after {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 1;
+        transition: 0s;
       }
 
       .google-icon {
-        width: 18px;
-        height: 18px;
-        background: conic-gradient(
-          from 0deg,
-          #ea4335,
-          #fbbc05,
-          #34a853,
-          #4285f4,
-          #ea4335
-        );
-        border-radius: 50%;
-        display: inline-block;
+        width: 24px;
+        height: 24px;
+        margin-right: 12px;
+        transition: transform 0.3s ease;
+      }
+
+      .google-btn:hover .google-icon {
+        transform: scale(1.1) rotate(-5deg);
       }
 
       /* Login Section */
@@ -223,7 +391,7 @@
         color: var(--white);
         border: none;
         padding: 12px 30px;
-        border-radius: 8px;
+        border-radius: 4px;
         font-size: 0.9rem;
         font-weight: 600;
         cursor: pointer;
@@ -331,7 +499,11 @@
       <div class="register-card">
         <!-- Logo -->
         <div class="logo">
-          <div class="logo-text">logo</div>
+          <img
+            src="${pageContext.request.contextPath}/images/common/logo.png"
+            alt="GymFit Logo"
+            class="logo-image"
+          />
         </div>
 
         <!-- Title -->
@@ -343,57 +515,83 @@
           method="post"
           action="${pageContext.request.contextPath}/register"
         >
-          <!-- Username -->
+          <div class="form-row">
+            <div class="form-group">
+              <input
+                type="text"
+                id="firstName"
+                name="firstName"
+                class="form-input"
+                placeholder="TÊN ĐỆM"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <input
+                type="text"
+                id="lastName"
+                name="lastName"
+                class="form-input"
+                placeholder="TÊN"
+                required
+              />
+            </div>
+          </div>
+
           <div class="form-group">
-            <label for="username" class="sr-only">Username</label>
+            <input
+              type="date"
+              id="birthDate"
+              name="birthDate"
+              class="form-input"
+              required
+            />
+            <label for="birthDate" class="date-label">ngày sinh</label>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <select id="gender" name="gender" class="form-input" required>
+                <option value="" disabled selected>giới tính</option>
+                <option value="male">Nam</option>
+                <option value="female">Nữ</option>
+                <option value="other">Khác</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <select
+                id="accountType"
+                name="accountType"
+                class="form-input"
+                required
+              >
+                <option value="" disabled selected>type-account</option>
+                <option value="user">Người dùng</option>
+                <option value="pt">Huấn luyện viên</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
             <input
               type="text"
               id="username"
               name="username"
               class="form-input"
-              placeholder="username"
+              placeholder="username không chứa ký tự đặc biệt, dấu cách trống....."
               required
-              aria-describedby="username-error"
             />
-            <div
-              id="username-error"
-              class="error-message error-region"
-              role="alert"
-              aria-live="polite"
-            ></div>
           </div>
 
-          <!-- Password -->
           <div class="form-group">
-            <label for="password" class="sr-only">Mật khẩu</label>
             <input
               type="password"
               id="password"
               name="password"
               class="form-input"
-              placeholder="mật khẩu"
+              placeholder="mật khẩu mới"
               required
-              aria-describedby="password-error"
             />
-            <div
-              id="password-error"
-              class="error-message error-region"
-              role="alert"
-              aria-live="polite"
-            ></div>
-          </div>
-
-          <!-- Remember Me -->
-          <div class="checkbox-group">
-            <input
-              type="checkbox"
-              id="rememberMe"
-              name="rememberMe"
-              class="checkbox-input"
-            />
-            <label for="rememberMe" class="checkbox-label"
-              >ghi nhớ đăng nhập</label
-            >
           </div>
 
           <!-- Register Button -->
@@ -405,7 +603,11 @@
 
         <!-- Google Register -->
         <button type="button" class="google-btn" id="googleBtn">
-          <div class="google-icon"></div>
+          <img
+            src="${pageContext.request.contextPath}/images/common/Gg.png"
+            alt="Google Logo"
+            class="google-icon"
+          />
           ĐĂNG KÝ VỚI GOOGLE
         </button>
 

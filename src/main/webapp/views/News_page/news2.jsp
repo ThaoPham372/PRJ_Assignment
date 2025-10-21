@@ -77,7 +77,15 @@
         object-fit: cover;
         border-radius: 15px;
         margin-bottom: 40px;
-        box-shadow: 0 10px 30px var(--shadow);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        filter: contrast(1.1) brightness(1.05);
+        transition: all 0.3s ease;
+      }
+
+      .article-banner:hover {
+        transform: scale(1.01);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        filter: contrast(1.15) brightness(1.1);
       }
 
       .article-content {
@@ -154,13 +162,25 @@
         max-width: 800px;
         height: auto;
         border-radius: 15px;
-        box-shadow: 0 8px 25px var(--shadow);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        filter: contrast(1.1) brightness(1.05);
+        object-fit: contain;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 20px;
       }
 
       .timeline-image:hover {
         transform: scale(1.02);
-        box-shadow: 0 12px 35px var(--shadow-hover);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        filter: contrast(1.15) brightness(1.1);
+      }
+
+      .timeline-image-container {
+        background: linear-gradient(135deg, rgba(20, 26, 73, 0.05) 0%, rgba(20, 26, 73, 0.1) 100%);
+        padding: 20px;
+        border-radius: 20px;
+        margin: 40px 0;
       }
 
       .cta-section {
@@ -296,12 +316,10 @@
       </article>
 
       <img
-        src="https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-        alt="Chương trình giảm cân khoa học"
+        src="${pageContext.request.contextPath}/images/news/menu.jpg"
+        alt="Thực đơn dinh dưỡng cho người tập gym"
         class="article-banner"
         loading="lazy"
-        decoding="async"
-        referrerpolicy="no-referrer"
       />
 
       <div class="article-content">
@@ -315,12 +333,10 @@
 
         <div class="timeline-image-container">
           <img
-            src="https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
-            alt="Lộ trình 8 tuần giảm cân khoa học"
+            src="${pageContext.request.contextPath}/images/news/menu2.webp"
+            alt="Thực đơn dinh dưỡng chi tiết"
             class="timeline-image"
             loading="lazy"
-            decoding="async"
-            referrerpolicy="no-referrer"
           />
         </div>
 
@@ -422,7 +438,7 @@
           trình 8 tuần giảm cân khoa học để có được vóc dáng mơ ước và sức khỏe
           tốt nhất.
         </p>
-        <a href="#" class="btn">ĐĂNG KÝ NGAY</a>
+        <a href="${pageContext.request.contextPath}/views/register.jsp" class="btn">ĐĂNG KÝ NGAY</a>
       </div>
     </main>
 

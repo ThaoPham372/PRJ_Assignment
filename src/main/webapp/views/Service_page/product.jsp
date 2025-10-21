@@ -39,25 +39,72 @@ file="/views/common/header.jsp" %>
   }
 
   .hero-section {
-    background: var(--gradient-primary);
+    position: relative;
     color: #fff;
-    padding: 80px 50px;
+    padding: 100px 50px;
     text-align: center;
     margin-bottom: 60px;
     border-radius: 20px;
+    overflow: hidden;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('${pageContext.request.contextPath}/images/service/pro7.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: brightness(0.9) contrast(1.1);
+    z-index: 1;
+  }
+
+  .hero-section::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(20, 26, 73, 0.85) 0%,
+      rgba(20, 26, 73, 0.75) 100%
+    );
+    z-index: 2;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    max-width: 1000px;
   }
 
   .hero-section h1 {
-    font-size: 3rem;
+    font-size: 3.5rem;
     font-weight: 900;
     margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: -0.5px;
   }
 
   .hero-section p {
-    font-size: 1.2rem;
-    opacity: 0.9;
-    max-width: 600px;
+    font-size: 1.3rem;
+    opacity: 0.95;
+    max-width: 700px;
     margin: 0 auto;
+    line-height: 1.6;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
   }
 
   .products-grid {
@@ -83,10 +130,18 @@ file="/views/common/header.jsp" %>
 
   .product-card img {
     width: 100%;
-    height: 200px;
-    object-fit: cover;
+    height: 250px;
+    object-fit: contain;
     border-radius: 15px;
     margin-bottom: 20px;
+    padding: 20px;
+    background: rgba(20, 26, 73, 0.05);
+    transition: all 0.3s ease;
+  }
+
+  .product-card:hover img {
+    background: rgba(20, 26, 73, 0.1);
+    transform: scale(1.05);
   }
 
   .product-card h3 {
@@ -229,49 +284,71 @@ file="/views/common/header.jsp" %>
   </a>
 
   <section class="hero-section">
-    <h1>SẢN PHẨM DINH DƯỠNG</h1>
-    <p>
-      Bổ sung dinh dưỡng chất lượng cao để hỗ trợ quá trình tập luyện và phát
-      triển cơ bắp của bạn.
-    </p>
+    <div class="hero-content">
+      <h1>SẢN PHẨM DINH DƯỠNG</h1>
+      <p>
+        Bổ sung dinh dưỡng chất lượng cao để hỗ trợ quá trình tập luyện và phát
+        triển cơ bắp của bạn.
+      </p>
+    </div>
   </section>
 
   <div class="products-grid">
     <div class="product-card">
       <img
-        src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+        src="${pageContext.request.contextPath}/images/service/pro1.jpeg"
         alt="Whey Protein"
+        loading="lazy"
       />
       <h3>Whey Protein</h3>
-      <p>
-        Bổ sung protein chất lượng cao, giúp phục hồi và phát triển cơ bắp sau
-        tập luyện.
-      </p>
+      <p>Bổ sung protein, giúp phục hồi và phát triển cơ bắp sau tập luyện.</p>
       <div class="product-price">1,200,000đ</div>
       <div class="product-actions">
-        <a href="#" class="btn-buy">Mua ngay</a>
-        <a href="#" class="btn-cart"><i class="fas fa-shopping-cart"></i></a>
+        <a
+          href="javascript:void(0)"
+          onclick="alert('Chức năng mua hàng đang được phát triển!')"
+          class="btn-buy"
+          >Mua ngay</a
+        >
+        <a
+          href="javascript:void(0)"
+          onclick="alert('Chức năng giỏ hàng đang được phát triển!')"
+          class="btn-cart"
+          ><i class="fas fa-shopping-cart"></i
+        ></a>
       </div>
     </div>
 
     <div class="product-card">
       <img
-        src="https://images.unsplash.com/photo-1594736797933-d0c29c8a0a8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-        alt="Creatine"
+        src="${pageContext.request.contextPath}/images/service/pro2.jpg"
+        alt="Creatine Monohydrate"
+        loading="lazy"
       />
       <h3>Creatine Monohydrate</h3>
       <p>Tăng cường sức mạnh và sức bền, hỗ trợ tập luyện cường độ cao.</p>
       <div class="product-price">800,000đ</div>
       <div class="product-actions">
-        <a href="#" class="btn-buy">Mua ngay</a>
-        <a href="#" class="btn-cart"><i class="fas fa-shopping-cart"></i></a>
+        <a
+          href="javascript:void(0)"
+          onclick="alert('Chức năng mua hàng đang được phát triển!')"
+          class="btn-buy"
+          >Mua ngay</a
+        >
+        <a
+          href="javascript:void(0)"
+          onclick="alert('Chức năng giỏ hàng đang được phát triển!')"
+          class="btn-cart"
+          ><i class="fas fa-shopping-cart"></i
+        ></a>
       </div>
     </div>
 
     <div class="product-card">
       <img
-        src="https://images.unsplash.com/photo-1594736797933-d0c29c8a0a8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-        alt="BCAA"
+        src="${pageContext.request.contextPath}/images/service/pro3.jpg"
+        alt="BCAA Essential"
+        loading="lazy"
       />
       <h3>BCAA Essential</h3>
       <p>
@@ -279,50 +356,93 @@ file="/views/common/header.jsp" %>
       </p>
       <div class="product-price">600,000đ</div>
       <div class="product-actions">
-        <a href="#" class="btn-buy">Mua ngay</a>
-        <a href="#" class="btn-cart"><i class="fas fa-shopping-cart"></i></a>
+        <a
+          href="javascript:void(0)"
+          onclick="alert('Chức năng mua hàng đang được phát triển!')"
+          class="btn-buy"
+          >Mua ngay</a
+        >
+        <a
+          href="javascript:void(0)"
+          onclick="alert('Chức năng giỏ hàng đang được phát triển!')"
+          class="btn-cart"
+          ><i class="fas fa-shopping-cart"></i
+        ></a>
       </div>
     </div>
 
     <div class="product-card">
       <img
-        src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-        alt="Pre-Workout"
+        src="${pageContext.request.contextPath}/images/service/pro4.jpg"
+        alt="Pre-Workout Energy"
+        loading="lazy"
       />
       <h3>Pre-Workout Energy</h3>
       <p>Tăng cường năng lượng và tập trung trước khi tập luyện.</p>
       <div class="product-price">900,000đ</div>
       <div class="product-actions">
-        <a href="#" class="btn-buy">Mua ngay</a>
-        <a href="#" class="btn-cart"><i class="fas fa-shopping-cart"></i></a>
+        <a
+          href="javascript:void(0)"
+          onclick="alert('Chức năng mua hàng đang được phát triển!')"
+          class="btn-buy"
+          >Mua ngay</a
+        >
+        <a
+          href="javascript:void(0)"
+          onclick="alert('Chức năng giỏ hàng đang được phát triển!')"
+          class="btn-cart"
+          ><i class="fas fa-shopping-cart"></i
+        ></a>
       </div>
     </div>
 
     <div class="product-card">
       <img
-        src="https://images.unsplash.com/photo-1594736797933-d0c29c8a0a8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+        src="${pageContext.request.contextPath}/images/service/pro5.jpg"
         alt="Mass Gainer"
+        loading="lazy"
       />
       <h3>Mass Gainer</h3>
       <p>Hỗ trợ tăng cân và tăng cơ cho người gầy, bổ sung calo và protein.</p>
       <div class="product-price">1,500,000đ</div>
       <div class="product-actions">
-        <a href="#" class="btn-buy">Mua ngay</a>
-        <a href="#" class="btn-cart"><i class="fas fa-shopping-cart"></i></a>
+        <a
+          href="javascript:void(0)"
+          onclick="alert('Chức năng mua hàng đang được phát triển!')"
+          class="btn-buy"
+          >Mua ngay</a
+        >
+        <a
+          href="javascript:void(0)"
+          onclick="alert('Chức năng giỏ hàng đang được phát triển!')"
+          class="btn-cart"
+          ><i class="fas fa-shopping-cart"></i
+        ></a>
       </div>
     </div>
 
     <div class="product-card">
       <img
-        src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+        src="${pageContext.request.contextPath}/images/service/pro6.jpg"
         alt="Multivitamin"
+        loading="lazy"
       />
       <h3>Multivitamin</h3>
       <p>Bổ sung vitamin và khoáng chất thiết yếu cho cơ thể khỏe mạnh.</p>
       <div class="product-price">500,000đ</div>
       <div class="product-actions">
-        <a href="#" class="btn-buy">Mua ngay</a>
-        <a href="#" class="btn-cart"><i class="fas fa-shopping-cart"></i></a>
+        <a
+          href="javascript:void(0)"
+          onclick="alert('Chức năng mua hàng đang được phát triển!')"
+          class="btn-buy"
+          >Mua ngay</a
+        >
+        <a
+          href="javascript:void(0)"
+          onclick="alert('Chức năng giỏ hàng đang được phát triển!')"
+          class="btn-cart"
+          ><i class="fas fa-shopping-cart"></i
+        ></a>
       </div>
     </div>
   </div>
@@ -333,7 +453,12 @@ file="/views/common/header.jsp" %>
       Đăng ký ngay để được tư vấn miễn phí về sản phẩm phù hợp và nhận ưu đãi
       đặc biệt.
     </p>
-    <a href="#" class="cta-btn">TƯ VẤN NGAY</a>
+    <a
+      href="javascript:void(0)"
+      onclick="alert('Chức năng tư vấn sẽ được triển khai sớm!')"
+      class="cta-btn"
+      >TƯ VẤN NGAY</a
+    >
   </div>
 </main>
 

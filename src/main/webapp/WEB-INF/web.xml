@@ -20,6 +20,15 @@
         <url-pattern>/home</url-pattern>
     </servlet-mapping>
     
+    <!-- Admin Dashboard Servlet -->
+    <!-- Note: This servlet uses @WebServlet annotation, so this configuration is optional -->
+    <!-- But included here for documentation purposes -->
+    <servlet>
+        <servlet-name>AdminDashboardServlet</servlet-name>
+        <servlet-class>com.gym.controller.AdminDashboardServlet</servlet-class>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+    
     <!-- Welcome file list -->
     <welcome-file-list>
         <welcome-file>home.jsp</welcome-file>

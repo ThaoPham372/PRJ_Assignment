@@ -27,14 +27,35 @@
       }
 
       body {
-        font-family: 'Arial', sans-serif;
-        background: var(--gray-bg);
-        background-image: radial-gradient(circle, #ddd 1px, transparent 1px);
-        background-size: 20px 20px;
+        font-family: 'Inter', sans-serif;
+        background: url('${pageContext.request.contextPath}/images/home/backrough.jpg')
+          no-repeat center center fixed;
+        background-size: cover;
         min-height: 100vh;
         display: flex;
         flex-direction: column;
         color: var(--white);
+        position: relative;
+      }
+
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          rgba(20, 26, 70, 0.95) 0%,
+          rgba(30, 42, 92, 0.9) 100%
+        );
+        z-index: 0;
+      }
+
+      .main-content {
+        position: relative;
+        z-index: 1;
       }
 
       /* Header */
@@ -55,12 +76,72 @@
 
       .login-card {
         background: var(--primary);
-        border-radius: 25px;
-        padding: 50px 40px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         width: 100%;
-        max-width: 420px;
-        border: 2px solid var(--primary);
+        max-width: 400px;
+        border: none;
+        position: relative;
+        animation: fadeInUp 0.6s ease-out;
+        overflow: hidden;
+      }
+
+      .login-card::before,
+      .login-card::after {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: var(--accent);
+        opacity: 0.05;
+        z-index: 0;
+      }
+
+      .login-card::before {
+        top: -100px;
+        left: -100px;
+        animation: floatBubble 8s ease-in-out infinite;
+      }
+
+      .login-card::after {
+        bottom: -100px;
+        right: -100px;
+        animation: floatBubble 12s ease-in-out infinite reverse;
+      }
+
+      @keyframes floatBubble {
+        0%,
+        100% {
+          transform: translate(0, 0);
+        }
+        50% {
+          transform: translate(20px, -20px);
+        }
+      }
+
+      @keyframes borderGradient {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
       /* Logo */
@@ -69,12 +150,38 @@
         margin-bottom: 40px;
       }
 
-      .logo-text {
-        font-size: 2.2rem;
-        font-weight: 900;
-        color: var(--accent);
-        text-transform: lowercase;
-        letter-spacing: 1px;
+      .logo-image {
+        width: 150px;
+        height: auto;
+        margin-bottom: 30px;
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        animation: logoFloat 6s ease-in-out infinite;
+        transition: all 0.3s ease;
+      }
+
+      .logo-image:hover {
+        filter: drop-shadow(0 6px 8px rgba(236, 139, 90, 0.2));
+        transform: scale(1.05);
+      }
+
+      @keyframes logoFloat {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-5px);
+        }
       }
 
       /* Form */
@@ -84,39 +191,90 @@
 
       .form-input {
         width: 100%;
-        padding: 15px 20px;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        font-size: 1rem;
-        background: var(--white);
+        padding: 12px 15px;
+        background: white;
+        border: 2px solid transparent;
+        border-radius: 4px;
+        font-size: 0.9rem;
         color: var(--text-dark);
         transition: all 0.3s ease;
+        transform-origin: top;
+        animation: formIn 0.6s ease-out backwards;
+      }
+
+      .form-input:nth-child(1) {
+        animation-delay: 0.2s;
+      }
+      .form-input:nth-child(2) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes formIn {
+        from {
+          opacity: 0;
+          transform: translateX(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
       }
 
       .form-input:focus {
         outline: none;
         border-color: var(--accent);
-        box-shadow: 0 0 0 2px rgba(236, 139, 90, 0.2);
+        box-shadow: 0 0 0 2px rgba(236, 139, 90, 0.1);
+        transform: translateY(-2px);
       }
 
       .form-input::placeholder {
         color: var(--text-light);
+        text-transform: lowercase;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+      }
+
+      .form-input:focus::placeholder {
+        opacity: 0.7;
+        transform: translateX(5px);
       }
 
       /* Checkbox */
       .checkbox-group {
         display: flex;
         align-items: center;
-        margin-bottom: 25px;
+        gap: 10px;
+        margin: 20px 0;
       }
 
       .checkbox-input {
-        margin-right: 10px;
-        transform: scale(1.1);
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.3s ease;
+      }
+
+      .checkbox-input:checked {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+
+      .checkbox-input:checked::before {
+        content: '✓';
+        position: absolute;
+        color: white;
+        font-size: 14px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
       }
 
       .checkbox-label {
-        color: var(--white);
+        color: rgba(255, 255, 255, 0.8);
         font-size: 0.9rem;
         cursor: pointer;
       }
@@ -127,21 +285,21 @@
         background: var(--support);
         color: var(--primary);
         border: none;
-        padding: 18px;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-weight: 700;
+        padding: 12px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
-        margin-bottom: 15px;
+        margin: 15px 0;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
       }
 
       .login-btn:hover:not(:disabled) {
         background: #f4d03f;
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(255, 222, 89, 0.4);
+        box-shadow: 0 4px 8px rgba(255, 222, 89, 0.4);
       }
 
       .login-btn:disabled {
@@ -170,43 +328,64 @@
       /* Google Button */
       .google-btn {
         width: 100%;
-        background: var(--white);
+        background: white;
         color: var(--text-dark);
         border: 1px solid var(--border);
-        padding: 15px;
-        border-radius: 8px;
+        padding: 12px 20px;
+        border-radius: 4px;
         font-size: 0.9rem;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
-        margin-bottom: 25px;
+        margin: 15px 0 25px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .google-btn::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 120%;
+        height: 120%;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.8) 0%,
+          transparent 60%
+        );
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+        transition: transform 0.5s ease, opacity 0.3s ease;
       }
 
       .google-btn:hover {
         background: #f8f9fa;
         border-color: var(--accent);
         transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .google-btn:active::after {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 1;
+        transition: 0s;
       }
 
       .google-icon {
-        width: 18px;
-        height: 18px;
-        background: conic-gradient(
-          from 0deg,
-          #ea4335,
-          #fbbc05,
-          #34a853,
-          #4285f4,
-          #ea4335
-        );
-        border-radius: 50%;
-        display: inline-block;
+        width: 24px;
+        height: 24px;
+        margin-right: 12px;
+        transition: transform 0.3s ease;
+      }
+
+      .google-btn:hover .google-icon {
+        transform: scale(1.1) rotate(-5deg);
       }
 
       /* Register Section */
@@ -229,7 +408,7 @@
         color: var(--white);
         border: none;
         padding: 12px 30px;
-        border-radius: 8px;
+        border-radius: 4px;
         font-size: 0.9rem;
         font-weight: 600;
         cursor: pointer;
@@ -246,14 +425,30 @@
 
       /* Error Messages */
       .error-message {
-        color: var(--error);
+        color: #ff6b6b;
         font-size: 0.8rem;
-        margin-top: 5px;
+        margin-top: 8px;
+        padding: 8px;
+        border-radius: 4px;
+        background: rgba(255, 107, 107, 0.1);
+        border-left: 3px solid #ff6b6b;
         display: none;
+        animation: fadeIn 0.3s ease;
       }
 
       .error-message.show {
         display: block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
       /* Footer */
@@ -272,13 +467,13 @@
       /* Loading Spinner */
       .loading-spinner {
         display: none;
-        width: 16px;
-        height: 16px;
-        border: 2px solid var(--primary);
-        border-top: 2px solid transparent;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top: 2px solid white;
         border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-left: 8px;
+        animation: spin 0.8s linear infinite;
+        margin-left: 10px;
       }
 
       @keyframes spin {
@@ -288,6 +483,18 @@
         100% {
           transform: rotate(360deg);
         }
+      }
+
+      .loading-spinner::before {
+        content: '';
+        position: absolute;
+        top: -4px;
+        left: -4px;
+        right: -4px;
+        bottom: -4px;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        animation: spin 1.5s linear infinite;
       }
 
       /* Responsive */
@@ -337,7 +544,11 @@
       <div class="login-card">
         <!-- Logo -->
         <div class="logo">
-          <div class="logo-text">logo</div>
+          <img
+            src="${pageContext.request.contextPath}/images/common/logo.png"
+            alt="GymFit Logo"
+            class="logo-image"
+          />
         </div>
 
         <!-- Login Form -->
@@ -348,7 +559,6 @@
         >
           <!-- Username -->
           <div class="form-group">
-            <label for="username" class="sr-only">User Name</label>
             <input
               type="text"
               id="username"
@@ -356,19 +566,11 @@
               class="form-input"
               placeholder="user name"
               required
-              aria-describedby="username-error"
             />
-            <div
-              id="username-error"
-              class="error-message error-region"
-              role="alert"
-              aria-live="polite"
-            ></div>
           </div>
 
           <!-- Password -->
           <div class="form-group">
-            <label for="password" class="sr-only">Mật khẩu</label>
             <input
               type="password"
               id="password"
@@ -376,14 +578,7 @@
               class="form-input"
               placeholder="mật khẩu"
               required
-              aria-describedby="password-error"
             />
-            <div
-              id="password-error"
-              class="error-message error-region"
-              role="alert"
-              aria-live="polite"
-            ></div>
           </div>
 
           <!-- Remember Me -->
@@ -401,8 +596,7 @@
 
           <!-- Login Button -->
           <button type="submit" class="login-btn" id="loginBtn">
-            <span id="loginText">ĐĂNG NHẬP</span>
-            <div class="loading-spinner" id="loadingSpinner"></div>
+            ĐĂNG NHẬP
           </button>
         </form>
 
@@ -413,7 +607,11 @@
 
         <!-- Google Login -->
         <button type="button" class="google-btn" id="googleBtn">
-          <div class="google-icon"></div>
+          <img
+            src="${pageContext.request.contextPath}/images/logo/Gg.png"
+            alt="Google Logo"
+            class="google-icon"
+          />
           TIẾP TỤC VỚI GOOGLE
         </button>
 
@@ -426,13 +624,6 @@
         </div>
       </div>
     </main>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="footer-text">
-        FOOTER - nhưng cái này ngắn gọn hơn footer trên có thông tin cơ bản thôi
-      </div>
-    </footer>
 
     <script>
       document.addEventListener('DOMContentLoaded', function () {
@@ -537,7 +728,8 @@
         document
           .getElementById('registerBtn')
           .addEventListener('click', function () {
-            alert('Chức năng đăng ký sẽ được triển khai');
+            window.location.href =
+              '${pageContext.request.contextPath}/views/register.jsp';
           });
 
         // Forgot password link

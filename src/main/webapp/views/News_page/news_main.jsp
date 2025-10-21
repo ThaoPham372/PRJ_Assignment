@@ -1,11 +1,11 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ include
-file="/views/common/header.jsp" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ include file="/views/common/header.jsp" %>
 
 <style>
   :root {
     --primary: #141a46;
     --primary-light: #1e2a5c;
-    --accent: #ec8b5e;
+    --accent: #ec8b5a;
     --accent-hover: #d67a4f;
     --text: #2c3e50;
     --text-light: #5a6c7d;
@@ -14,7 +14,7 @@ file="/views/common/header.jsp" %>
     --shadow: rgba(0, 0, 0, 0.1);
     --shadow-hover: rgba(0, 0, 0, 0.15);
     --gradient-primary: linear-gradient(135deg, #141a46 0%, #1e2a5c 100%);
-    --gradient-accent: linear-gradient(135deg, #ec8b5e 0%, #d67a4f 100%);
+    --gradient-accent: linear-gradient(135deg, #ec8b5a 0%, #d67a4f 100%);
     --gradient-hero: linear-gradient(
       180deg,
       var(--accent) 0%,
@@ -108,6 +108,7 @@ file="/views/common/header.jsp" %>
     transition: all 0.4s ease;
     position: relative;
     overflow: hidden;
+    cursor: pointer;
   }
 
   .highlight::before {
@@ -143,12 +144,6 @@ file="/views/common/header.jsp" %>
     height: 300px;
     border-radius: 15px;
     object-fit: cover;
-    background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
-      linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
-      linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
-    background-size: 20px 20px;
-    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
     transition: transform 0.3s ease;
     box-shadow: 0 8px 25px var(--shadow);
   }
@@ -170,6 +165,26 @@ file="/views/common/header.jsp" %>
     font-size: 1.1rem;
     color: var(--text-light);
     line-height: 1.6;
+  }
+
+  .btn {
+    background: var(--gradient-accent);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 28px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(236, 139, 94, 0.3);
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(236, 139, 94, 0.4);
   }
 
   /* DIVIDER */
@@ -195,6 +210,7 @@ file="/views/common/header.jsp" %>
     box-shadow: 0 8px 30px var(--shadow);
     transition: all 0.4s ease;
     position: relative;
+    cursor: pointer;
   }
 
   .card::before {
@@ -222,12 +238,6 @@ file="/views/common/header.jsp" %>
     width: 100%;
     height: 200px;
     object-fit: cover;
-    background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
-      linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
-      linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
-    background-size: 20px 20px;
-    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
     transition: transform 0.3s ease;
   }
 
@@ -340,8 +350,8 @@ file="/views/common/header.jsp" %>
   <div class="wrap">
     <h1>Bài viết nổi bật</h1>
     <p>
-      Nội dung đoạn văn bản của bạn — mô tả ngắn về chuyên mục tin tức, sự kiện
-      và khuyến mãi của GymFit.
+      Cập nhật những tin tức, sự kiện và khuyến mãi mới nhất từ GymFit. 
+      Khám phá các mẹo tập luyện, chế độ dinh dưỡng và câu chuyện thành công của các thành viên.
     </p>
   </div>
 </section>
@@ -349,7 +359,7 @@ file="/views/common/header.jsp" %>
 <!-- FEATURED + 3 CARDS -->
 <div class="section">
   <!-- Featured article -->
-  <article class="highlight">
+  <article class="highlight" onclick="window.location.href='${pageContext.request.contextPath}/views/News_page/news4.jsp'">
     <div class="hl-grid">
       <img
         class="hl-img"
@@ -366,9 +376,7 @@ file="/views/common/header.jsp" %>
           Tuần đầu khai trương tặng 01 buổi PT trải nghiệm và voucher ưu đãi đến
           40%.
         </p>
-        <a class="btn" href="${pageContext.request.contextPath}/news4.jsp"
-          >XEM CHI TIẾT</a
-        >
+        <a class="btn" href="${pageContext.request.contextPath}/views/News_page/news4.jsp">XEM CHI TIẾT</a>
       </div>
     </div>
   </article>
@@ -378,7 +386,7 @@ file="/views/common/header.jsp" %>
 
   <!-- Three cards -->
   <section class="cards">
-    <article class="card">
+    <article class="card" onclick="window.location.href='${pageContext.request.contextPath}/views/News_page/news1.jsp'">
       <img
         src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
         alt="Yoga buổi sáng"
@@ -391,34 +399,34 @@ file="/views/common/header.jsp" %>
         <p>Lịch mới 2-4-6. Tập nhẹ nhàng – căn chỉnh – giảm căng cơ vai gáy.</p>
         <a
           class="btn"
-          href="${pageContext.request.contextPath}/news1.jsp"
+          href="${pageContext.request.contextPath}/views/News_page/news1.jsp"
           style="align-self: center"
+          onclick="event.stopPropagation()"
           >XEM THÊM</a
         >
       </div>
     </article>
 
-    <article class="card">
+    <article class="card" onclick="window.location.href='${pageContext.request.contextPath}/views/News_page/news2.jsp'">
       <img
-        src="https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-        alt="Chương trình giảm cân"
+        src="${pageContext.request.contextPath}/images/news/menu2.webp"
+        alt="Chương trình giảm cân khoa học"
         loading="lazy"
-        decoding="async"
-        referrerpolicy="no-referrer"
       />
       <div class="c-body">
         <h3>8 tuần giảm cân khoa học</h3>
         <p>Kết hợp tập luyện – dinh dưỡng – theo dõi InBody mỗi 2 tuần.</p>
         <a
           class="btn"
-          href="${pageContext.request.contextPath}/news2.jsp"
+          href="${pageContext.request.contextPath}/views/News_page/news2.jsp"
           style="align-self: center"
+          onclick="event.stopPropagation()"
           >XEM THÊM</a
         >
       </div>
     </article>
 
-    <article class="card">
+    <article class="card" onclick="window.location.href='${pageContext.request.contextPath}/views/News_page/news3.jsp'">
       <img
         src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
         alt="Khuyến mãi thành viên"
@@ -431,8 +439,9 @@ file="/views/common/header.jsp" %>
         <p>Voucher tới 30% cho gói 6–12 tháng. Số lượng có hạn.</p>
         <a
           class="btn"
-          href="${pageContext.request.contextPath}/news3.jsp"
+          href="${pageContext.request.contextPath}/views/News_page/news3.jsp"
           style="align-self: center"
+          onclick="event.stopPropagation()"
           >XEM THÊM</a
         >
       </div>
@@ -450,7 +459,6 @@ file="/views/common/header.jsp" %>
         function () {
           if (!img.dataset.fallback) {
             img.dataset.fallback = '1';
-            // Use a reliable placeholder service
             img.src =
               'https://via.placeholder.com/800x600/141a46/ffffff?text=Gym+Image';
             img.style.opacity = '0.7';
@@ -485,6 +493,19 @@ file="/views/common/header.jsp" %>
     el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
     observer.observe(el);
   });
-</script>
+  </script>
+
+<!-- Floating Buttons -->
+<div class="floating-buttons">
+  <button class="floating-btn tu-van" onclick="alert('Chức năng tư vấn sẽ được triển khai sớm!')">
+    <i class="fas fa-user-tie"></i> TƯ VẤN
+  </button>
+  <button class="floating-btn chat-bot" onclick="alert('Chức năng chat bot đang được phát triển!')">
+    <i class="fas fa-comments"></i> CHAT BOT
+  </button>
+</div>
+
+<!-- Add floating buttons CSS -->
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/floating-buttons.css">
 
 <%@ include file="/views/common/footer.jsp" %>

@@ -75,9 +75,16 @@
         width: 100%;
         height: 400px;
         object-fit: cover;
-        border-radius: 15px;
+        border-radius: 20px;
         margin-bottom: 40px;
-        box-shadow: 0 10px 30px var(--shadow);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+        filter: contrast(1.1) brightness(1.05);
+      }
+
+      .article-banner:hover {
+        transform: scale(1.01);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
       }
 
       .article-content {
@@ -130,10 +137,28 @@
       .highlight-box {
         background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
         border-left: 4px solid var(--accent);
-        padding: 25px;
-        margin: 30px 0;
-        border-radius: 0 10px 10px 0;
-        box-shadow: 0 4px 15px var(--shadow);
+        padding: 30px;
+        margin: 40px 0;
+        border-radius: 0 15px 15px 0;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .highlight-box::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(236, 139, 90, 0.1) 0%, transparent 100%);
+        z-index: 0;
+      }
+
+      .highlight-box p {
+        position: relative;
+        z-index: 1;
       }
 
       .highlight-box p {
@@ -171,114 +196,171 @@
       }
 
       .offer-card {
-        background: var(--gradient-primary);
+        background: linear-gradient(145deg, var(--primary) 0%, var(--primary-light) 100%);
         color: #fff;
-        padding: 25px;
-        border-radius: 15px;
+        padding: 35px;
+        border-radius: 20px;
         text-align: center;
         position: relative;
         overflow: hidden;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        transition: all 0.4s ease;
+      }
+
+      .offer-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        border-color: rgba(255, 255, 255, 0.2);
+        background: linear-gradient(145deg, var(--primary-light) 0%, var(--primary) 100%);
       }
 
       .offer-card::before {
         content: '';
         position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 100%;
-        height: 100%;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
         background: linear-gradient(
-          45deg,
-          transparent,
-          rgba(255, 255, 255, 0.1),
-          transparent
+          145deg,
+          rgba(255, 255, 255, 0.1) 0%,
+          transparent 100%
         );
-        transform: rotate(45deg);
-        transition: all 0.3s ease;
+        opacity: 0;
+        transition: opacity 0.4s ease;
       }
 
       .offer-card:hover::before {
-        animation: shimmer 1.5s ease-in-out;
-      }
-
-      @keyframes shimmer {
-        0% {
-          transform: translateX(-100%) translateY(-100%) rotate(45deg);
-        }
-        100% {
-          transform: translateX(100%) translateY(100%) rotate(45deg);
-        }
+        opacity: 1;
       }
 
       .offer-card h4 {
-        color: var(--accent);
-        font-size: 1.3rem;
-        margin-bottom: 10px;
-        font-weight: 700;
+        color: var(--support);
+        font-size: 1.4rem;
+        margin-bottom: 15px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
       }
 
       .offer-card .price {
-        font-size: 2rem;
+        font-size: 2.2rem;
         font-weight: 900;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
         color: #fff;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
 
       .offer-card .original-price {
         text-decoration: line-through;
-        opacity: 0.7;
-        font-size: 1.2rem;
-        margin-right: 10px;
+        opacity: 0.6;
+        font-size: 1.3rem;
+        margin-right: 12px;
+        color: rgba(255, 255, 255, 0.8);
       }
 
       .offer-card .discount {
         background: var(--accent);
         color: #fff;
-        padding: 5px 10px;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        font-weight: 600;
+        padding: 8px 15px;
+        border-radius: 25px;
+        font-size: 1rem;
+        font-weight: 700;
         display: inline-block;
-        margin-bottom: 15px;
+        margin: 15px 0;
+        box-shadow: 0 4px 15px rgba(236, 139, 90, 0.3);
+        transition: all 0.3s ease;
+      }
+
+      .offer-card:hover .discount {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(236, 139, 90, 0.4);
       }
 
       .offer-card p {
         margin: 0;
-        opacity: 0.9;
-        font-size: 0.95rem;
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 1rem;
+        line-height: 1.6;
+        font-weight: 500;
       }
 
       .urgency-box {
-        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
         color: #fff;
-        padding: 20px;
-        border-radius: 15px;
+        padding: 35px;
+        border-radius: 20px;
         text-align: center;
-        margin: 30px 0;
-        animation: pulse 2s infinite;
+        margin: 40px 0;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(20, 26, 73, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
       }
 
-      @keyframes pulse {
+      .urgency-box::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(236, 139, 90, 0.2) 0%, transparent 100%);
+        z-index: 1;
+      }
+
+      .urgency-box::after {
+        content: '';
+        position: absolute;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+          45deg,
+          transparent 0%,
+          rgba(255, 255, 255, 0.1) 50%,
+          transparent 100%
+        );
+        animation: shine 3s infinite;
+        z-index: 2;
+      }
+
+      @keyframes shine {
         0% {
-          transform: scale(1);
-        }
-        50% {
-          transform: scale(1.02);
+          transform: translateX(-100%) translateY(-100%);
         }
         100% {
-          transform: scale(1);
+          transform: translateX(50%) translateY(50%);
         }
       }
 
       .urgency-box h3 {
-        color: #fff;
-        margin-bottom: 10px;
-        font-size: 1.3rem;
+        color: var(--support);
+        margin-bottom: 15px;
+        font-size: 1.6rem;
+        font-weight: 800;
+        position: relative;
+        z-index: 3;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .urgency-box h3 i {
+        color: var(--support);
+        font-size: 1.8rem;
       }
 
       .urgency-box p {
         margin: 0;
         font-weight: 600;
+        font-size: 1.1rem;
+        position: relative;
+        z-index: 3;
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.6;
       }
 
       .cta-section {
@@ -426,12 +508,10 @@
       </article>
 
       <img
-        src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+        src="${pageContext.request.contextPath}/images/news/sale.jpg"
         alt="Ưu đãi hội viên GymFit"
         class="article-banner"
         loading="lazy"
-        decoding="async"
-        referrerpolicy="no-referrer"
       />
 
       <div class="article-content">
@@ -444,20 +524,18 @@
         </p>
 
         <div class="urgency-box">
-          <h3>⚠️ Ưu đãi có thời hạn!</h3>
-          <p>Chỉ áp dụng đến hết ngày 31/12/2024. Số lượng có hạn!</p>
+          <h3><i class="fas fa-clock"></i> Ưu đãi có thời hạn!</h3>
+          <p>Chỉ áp dụng đến hết ngày 31/12/2024 • Số lượng có hạn!</p>
         </div>
 
         <h3>Gói ưu đãi đặc biệt</h3>
 
         <div class="offer-image-container">
           <img
-            src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+            src="${pageContext.request.contextPath}/images/news/sale2.jpg"
             alt="Gói ưu đãi đặc biệt GymFit"
             class="offer-image"
             loading="lazy"
-            decoding="async"
-            referrerpolicy="no-referrer"
           />
         </div>
 
@@ -611,7 +689,7 @@
           nhất để bạn bắt đầu hành trình tập luyện tại GymFit. Hãy liên hệ với
           chúng tôi ngay hôm nay!
         </p>
-        <a href="#" class="btn">ĐĂNG KÝ NGAY</a>
+        <a href="${pageContext.request.contextPath}/views/register.jsp" class="btn">ĐĂNG KÝ NGAY</a>
       </div>
     </main>
 

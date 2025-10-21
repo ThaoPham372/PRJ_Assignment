@@ -271,12 +271,10 @@ file="/views/common/header.jsp" %>
   </article>
 
   <img
-    src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+    src="${pageContext.request.contextPath}/images/news/yoga1.jpeg"
     alt="Yoga buổi sáng tại GymFit"
     class="article-banner"
     loading="lazy"
-    decoding="async"
-    referrerpolicy="no-referrer"
   />
 
   <div class="article-content">
@@ -290,12 +288,10 @@ file="/views/common/header.jsp" %>
 
     <div class="schedule-image-container">
       <img
-        src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+        src="${pageContext.request.contextPath}/images/news/yoga2.jpeg"
         alt="Lịch học Yoga buổi sáng"
         class="schedule-image"
         loading="lazy"
-        decoding="async"
-        referrerpolicy="no-referrer"
       />
     </div>
 
@@ -383,7 +379,9 @@ file="/views/common/header.jsp" %>
       cùng chúng tôi để cảm nhận năng lượng tích cực và sự cân bằng trong cuộc
       sống.
     </p>
-    <a href="#" class="btn">ĐĂNG KÝ NGAY</a>
+    <a href="${pageContext.request.contextPath}/views/register.jsp" class="btn"
+      >ĐĂNG KÝ NGAY</a
+    >
   </div>
 </main>
 
