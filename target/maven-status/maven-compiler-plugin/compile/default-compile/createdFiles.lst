@@ -1,2 +1,15 @@
-com\gym\controller\AdminDashboardServlet.class
-com\gym\controller\HomeServlet.class
+com/gym/service/RegistrationService.class
+com/gym/service/RegistrationService$RegisterResult.class
+com/gym/controller/HomeServlet.class
+com/gym/util/DatabaseUtil.class
+com/gym/model/User.class
+com/gym/controller/AdminDashboardServlet.class
+com/gym/controller/RegisterServlet.class
+com/gym/service/PasswordService.class
+com/gym/service/LoginService$LoginResult.class
+com/gym/service/RegistrationService$RegisterRequest.class
+com/gym/dao/UserDAO.class
+com/gym/controller/PTDashboardServlet.class
+com/gym/dao/RoleDAO.class
+com/gym/controller/LoginServlet.class
+com/gym/service/LoginService.class

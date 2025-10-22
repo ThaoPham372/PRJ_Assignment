@@ -1,3 +1,12 @@
-D:\gym_management\src\main\java\com\gym\controller\HomeServlet.java
-D:\gym_management\src\main\java\com\gym\controller\PTDashboardServlet.java
-D:\gym_management\src\main\java\com\gym\controller\AdminDashboardServlet.java
+/Users/thanhnam/namdev/thao_project/PRJ_Assignment/src/main/java/com/gym/controller/AdminDashboardServlet.java
+/Users/thanhnam/namdev/thao_project/PRJ_Assignment/src/main/java/com/gym/util/DatabaseUtil.java
+/Users/thanhnam/namdev/thao_project/PRJ_Assignment/src/main/java/com/gym/dao/UserDAO.java
+/Users/thanhnam/namdev/thao_project/PRJ_Assignment/src/main/java/com/gym/service/RegistrationService.java
+/Users/thanhnam/namdev/thao_project/PRJ_Assignment/src/main/java/com/gym/controller/HomeServlet.java
+/Users/thanhnam/namdev/thao_project/PRJ_Assignment/src/main/java/com/gym/controller/PTDashboardServlet.java
+/Users/thanhnam/namdev/thao_project/PRJ_Assignment/src/main/java/com/gym/service/PasswordService.java
+/Users/thanhnam/namdev/thao_project/PRJ_Assignment/src/main/java/com/gym/dao/RoleDAO.java
+/Users/thanhnam/namdev/thao_project/PRJ_Assignment/src/main/java/com/gym/controller/RegisterServlet.java
+/Users/thanhnam/namdev/thao_project/PRJ_Assignment/src/main/java/com/gym/service/LoginService.java
+/Users/thanhnam/namdev/thao_project/PRJ_Assignment/src/main/java/com/gym/controller/LoginServlet.java
+/Users/thanhnam/namdev/thao_project/PRJ_Assignment/src/main/java/com/gym/model/User.java
