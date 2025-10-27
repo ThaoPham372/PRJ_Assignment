@@ -424,7 +424,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         <ul class="sidebar-menu">
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/dashboard.jsp"
+              href="${pageContext.request.contextPath}/admin/dashboard"
               class="sidebar-menu-link active"
             >
               <i class="fas fa-home"></i>

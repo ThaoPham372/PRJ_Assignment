@@ -7,6 +7,13 @@ import java.sql.*;
 /**
  * UserDAO - Data Access Object for users table
  * Handles user registration, duplicate checks, and login history
+ * 
+ * ADD MORE -----------------------
+ * + getUsers()
+ * + updateUser(User user)
+ * + deleteUser() Change status
+ * + changePassword()
+ * --------------------------------
  */
 public class UserDAO {
 

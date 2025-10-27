@@ -719,12 +719,13 @@
         });
 
         // Google login button
+        /*
         document
           .getElementById('googleBtn')
           .addEventListener('click', function () {
             alert('Chức năng đăng nhập Google sẽ được triển khai');
           });
-
+         */ 
         // Register button
         document
           .getElementById('registerBtn')
