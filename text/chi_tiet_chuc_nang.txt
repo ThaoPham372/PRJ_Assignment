@@ -1,0 +1,315 @@
+📊 BẢN CHI TIẾT - PHÂN TÍCH CHỨC NĂNG
+DỰ ÁN FitZ - HỆ THỐNG QUẢN LÝ PHÒNG GYM
+==========================================
+
+1. MỤC TIÊU DỰ ÁN
+==================
+
+Pain Points hiện tại:
+- Quản lý thủ công: 60% thời gian lãng phí cho giấy tờ
+- Tỷ lệ churn 35%/năm do thiếu engagement
+- Không tracking progress → khách thiếu motivation
+- Limited payment options → mất revenue opportunities
+
+2. CUSTOMER-FACING FEATURES
+===========================
+
+2.1 Registration & Onboarding:
+-------------------------------
+- Email verification với welcome gift
+- Social login (Google, Facebook)
+- Personalized goal setting (weight loss, muscle gain, endurance)
+
+2.2 Booking & Payment System:
+-----------------------------
+Package Selection:
+- Standard, Premium, VIP memberships
+- Flexible duration options (1 tháng, 3 tháng, 6 tháng, 1 năm)
+
+PT Booking:
+- Chọn trainer theo specialty, rating, availability
+- Package deals vs single sessions
+- Auto-scheduling cho regular appointments
+
+Group Classes:
+- Yoga, HIIT, Zumba với real-time capacity
+- Waitlist management
+- Class difficulty levels và prerequisites
+
+Payment Options:
+- MoMo, ZaloPay, QR codes
+- Installment options cho long-term packages
+- Auto-renewal với notification
+
+2.3 Health & Progress Tracking:
+-------------------------------
+Daily Metrics:
+- Weight, BMI, body fat percentage
+- Manual input + integration với smart scales
+- Photo progress tracking
+
+Workout Analytics:
+- Calories burned tracking
+- Workout frequency và consistency streaks
+- Exercise performance trends
+- Personal records tracking
+
+Visual Progress:
+- Before/after photo comparisons
+- Measurement charts (waist, chest, arms, etc.)
+- Goal progress indicators
+- Achievement milestones
+
+AI Insights:
+- Personalized workout recommendations
+- Nutrition suggestions based on goals
+- Progress predictions và goal timeline
+- Form improvement suggestions
+
+2.4 AI-Powered Features:
+------------------------
+24/7 Chatbot:
+- Workout advice cho specific goals
+- Nutrition tips và meal suggestions
+- Form correction guidance
+- Equipment usage instructions
+- FAQ về gym policies
+
+Meal Planner:
+- AI-generated meal plans based on goals (weight loss/gain, muscle building)
+- Calorie và macro tracking
+- Grocery list generation
+- Recipe suggestions
+
+Smart Suggestions:
+- Optimal workout times based on gym traffic
+- Class recommendations based on past preferences
+- Rest day suggestions based on workout intensity
+- Equipment alternatives khi busy
+
+2.5 E-commerce Integration:
+---------------------------
+Product Catalog:
+- Supplements (protein, pre-workout, vitamins)
+- Gym equipment (resistance bands, gloves, bottles)
+- Apparel (workout clothes, shoes)
+- Healthy snacks và meal replacements
+
+Smart Recommendations:
+- AI suggests products based on workout goals
+- Complement recommendations (protein + shaker)
+- Timing-based suggestions (pre-workout before sessions)
+
+Loyalty Program:
+- Points for purchases, referrals, attendance
+- Tier-based benefits (bronze, silver, gold)
+- Exclusive member discounts
+- Birthday và anniversary rewards
+
+2.6 Mobile Experience:
+----------------------
+QR Check-in:
+- Contactless gym access
+- Automatic attendance tracking
+- Integration với membership status
+- Guest pass management
+
+Offline Sync:
+- Works without internet connection
+- Syncs workout data khi reconnected
+- Cached class schedules và trainer info
+
+Push Notifications:
+- Workout reminders (customizable timing)
+- Class updates và cancellations
+- Promotional offers
+- Achievement celebrations
+
+3. ADMIN/MANAGER FEATURES
+=========================
+
+3.1 Member Management:
+----------------------
+360° Member Profiles:
+- Personal info (contact, emergency contact, medical conditions)
+- Health metrics history với trend analysis
+- Attendance patterns và frequency
+- Payment history và outstanding balances
+- Trainer assignments và session history
+- Goal progress tracking
+- Communication log (emails, calls, complaints)
+
+Contract Management:
+- Package creation với flexible terms
+- Upgrade/downgrade workflows
+- Renewal notifications và automation
+- Payment scheduling và overdue management
+- Freeze/hold account options
+- Cancellation processes với retention offers
+
+Performance Analytics:
+- Top members by attendance, spending, referrals
+- Retention rates by package type
+- Engagement scores based on app usage
+- Lifetime value calculations
+- Churn risk assessment với early warning
+
+3.2 Service Operations:
+-----------------------
+PT Management:
+- Trainer scheduling với availability blocks
+- Client-trainer matching based on goals và compatibility
+- Session notes và progress tracking
+- Performance metrics (retention, satisfaction, revenue)
+- Certification tracking và renewal reminders
+
+Class Optimization:
+- Real-time capacity monitoring
+- Auto-adjust class sizes based on historical demand
+- Seasonal schedule planning
+- Instructor assignment optimization
+- Equipment requirement planning
+
+Equipment Monitoring:
+- Usage tracking per equipment
+- Maintenance schedule automation
+- Breakdown reporting và repair tracking
+- Utilization analysis để optimize floor layout
+- Replacement planning based on wear patterns
+
+Pool Management:
+- Water quality monitoring và alerts
+- Chemical level tracking
+- Safety equipment checks
+- Capacity management với time slots
+- Temperature control và energy optimization
+
+3.3 Business Intelligence:
+--------------------------
+Real-time Dashboard:
+- Revenue streams breakdown (memberships, PT, products, classes)
+- Daily/weekly/monthly performance metrics
+- Member activity levels và engagement
+- Trending services và peak hours
+- Conversion rates từ leads đến paid members
+
+Predictive Analytics:
+- Churn prediction với intervention recommendations
+- Demand forecasting cho classes và services
+- Seasonal trends analysis
+- Revenue projections based on current trends
+- Optimal pricing recommendations
+
+Performance Metrics:
+- Trainer productivity và client satisfaction
+- Class popularity và profitability
+- Equipment utilization rates
+- Space efficiency analysis
+- Customer acquisition cost và ROI
+
+3.4 Staff Management:
+---------------------
+Trainer Profiles:
+- Certifications với expiration tracking
+- Specialties và skill assessments
+- Client feedback aggregation
+- Revenue generation tracking
+- Professional development plans
+
+Schedule Optimization:
+- Auto-assign trainers based on demand patterns
+- Skill-based assignment cho specialized requests
+- Workload balancing để avoid burnout
+- Substitute assignment cho sick days/vacation
+
+Performance Tracking:
+- Client retention rates per trainer
+- Session cancellation rates
+- Punctuality và reliability metrics
+- Upselling success rates
+- Professional development progress
+
+3.5 Inventory & Pricing:
+------------------------
+Stock Management:
+- Real-time inventory levels
+- Auto-reorder triggers based on sales velocity
+- Supplier comparison và order management
+- Expiration date tracking cho supplements
+- Loss/damage reporting
+
+Dynamic Pricing:
+- AI-powered price optimization based on demand
+- Competitor price monitoring
+- Seasonal pricing adjustments
+- Bundle pricing strategies
+- Member vs non-member pricing tiers
+
+Sales Analytics:
+- Best sellers by category và season
+- Profit margin analysis per product
+- Cross-selling success rates
+- Inventory turnover optimization
+- Supplier performance evaluation
+
+4. ADVANCED FEATURES
+====================
+
+4.1 Gamification & Social:
+---------------------------
+Achievement System:
+- Workout streak badges (7, 30, 100 days)
+- Weight loss milestones
+- Strength progression achievements
+- Class attendance rewards
+- Social engagement badges
+
+Community Features:
+- Member challenges (step count, weight loss, strength)
+- Leaderboards với privacy controls
+- Progress sharing với friends
+- Success story showcases
+- Peer motivation system
+
+Referral Program:
+- Tiered rewards cho successful referrals
+- Tracking referral conversion rates
+- Social sharing tools
+- Referrer recognition program
+
+4.2 AI Innovation:
+------------------
+Form Checker:
+- Camera-based workout form analysis
+- Real-time feedback during exercises
+- Injury prevention alerts
+- Technique improvement suggestions
+- Progress tracking in form quality
+
+Nutrition Scanner:
+- Photo food logging với automatic calorie estimation
+- Nutritional breakdown analysis
+- Meal timing optimization
+- Macro balance recommendations
+- Restaurant meal identification
+
+Predictive Health:
+- Early warning cho potential injuries
+- Plateau detection với solution suggestions
+- Optimal rest period recommendations
+- Performance decline alerts
+- Health trend analysis
+
+5. LUỒNG HOẠT ĐỘNG CHI TIẾT
+===========================
+
+User Journey:
+Registration → Profile Setup → Goal Setting → Package Selection → 
+Payment → Welcome Pack → First Workout → Progress Tracking → 
+AI Recommendations → Continuous Engagement → Renewal/Upgrade
+
+Admin Journey:
+Member Onboarding → Service Assignment → Performance Monitoring → 
+Business Analytics → Revenue Optimization → Staff Management → 
+Customer Retention → Growth Planning
+

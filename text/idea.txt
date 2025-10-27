@@ -1,0 +1,360 @@
+
+📑 PROJECT PROPOSAL
+HỆ THỐNG QUẢN LÝ PHÒNG GYM – FitZ
+
+1. Executive Summary (Tóm tắt điều hành)
+Tên dự án: FitZ – Hệ thống quản lý phòng gym toàn diện
+
+
+Mục tiêu: Chuyển đổi số toàn bộ hoạt động quản lý phòng gym truyền thống
+
+
+Tác động dự kiến:
+
+
++40% tỷ lệ giữ chân khách hàng
+
+
++35% doanh thu
+
+
+-60% thời gian quản lý
+
+
+
+2. Problem Statement & Market Opportunity (Vấn đề & Cơ hội)
+Thách thức hiện tại:
+Quản lý thủ công: 60% thời gian lãng phí giấy tờ
+
+
+Thiếu tương tác: Tỷ lệ rời bỏ khách hàng 35%/năm
+
+
+Thanh toán hạn chế: Chỉ nhận tiền mặt → mất cơ hội doanh thu
+
+
+Không theo dõi tiến độ → Khách thiếu động lực
+
+
+Cơ hội thị trường:
+Thị trường fitness VN tăng trưởng 15%/năm (2024)
+
+
+Các phòng gym vừa & nhỏ chậm chuyển đổi số
+
+
+Xu hướng digital health tăng mạnh sau COVID
+
+
+
+3. Customer-facing Features (Dịch vụ cho khách hàng)
+Đăng ký/Đăng nhập (Email verification, quà tặng chào mừng)
+
+
+Đăng ký gói tập/buổi lẻ online (Thanh toán MoMo, ZaloPay, QR Code)
+
+
+Quản lý lịch tập (Nhắc nhở tự động qua App & Email/SMS)
+
+
+Theo dõi sức khỏe định kỳ (Biểu đồ, báo cáo tiến độ)
+
+
+Mua sắm sản phẩm online (Protein, supplements, equipment)
+
+
+AI Chatbot tư vấn (lịch tập, dinh dưỡng, sức khỏe)
+
+
+Đặt lịch Personal Training (Trainer chuyên nghiệp, sync lịch, thanh toán online)
+
+
+Xem thống kê cá nhân (Calories, BMI, badges, báo cáo tuần)
+
+
+Đồng bộ đa thiết bị (giống Messenger, login → đồng bộ toàn bộ dữ liệu)
+
+
+
+4. Admin/Manager Features (Dành cho quản trị)
+Quản lý thành viên (CRUD, hợp đồng, membership, check-in)
+
+
+Quản lý dịch vụ (PT, Group classes, Pool access)
+
+
+Quản lý sản phẩm (Inventory, pricing, AI forecast)
+
+
+Quản lý session đăng nhập & thao tác user
+
+
+Báo cáo doanh thu (Dashboard real-time, charts, AI analytics)
+
+
+Quản lý nhân viên (Lịch làm việc, chứng chỉ, đánh giá hiệu suất)
+
+
+Theo dõi thiết bị (Usage, bảo trì định kỳ)
+
+
+Marketing automation (Email campaigns, upsell)
+
+
+Phân tích khách hàng (Retention, churn prediction, popular services)
+
+
+Đồng bộ đa thiết bị cho admin (VD: đăng nhập trên web + app)
+
+
+
+5. System Information Management (Thông tin quản lý trong hệ thống)
+5.1. Khách hàng (Members)
+Thông tin cá nhân, sức khỏe, lịch sử tập luyện
+
+
+Membership packages & payment history
+
+
+Top performance (best members, highest attendance, longest retention)
+
+
+5.2. Nhân viên (Staff/Trainers)
+Thông tin, chứng chỉ
+
+
+Lịch làm việc, ca trực
+
+
+Hiệu suất & đánh giá từ khách hàng
+
+
+Top performance (trainer có nhiều booking/doanh thu nhất)
+
+
+5.3. Dịch vụ & sản phẩm
+Catalog, giá, lịch trình
+
+
+Tồn kho & nhà cung cấp
+
+
+Top performance (dịch vụ/sản phẩm bán chạy nhất)
+
+
+
+6. Roadmap Triển khai
+🔥 Phase 1: Core Foundation
+Đăng ký/Đăng nhập + Email verification
+
+
+Membership Management
+
+
+Health Tracking (BMI, cân nặng)
+
+
+Schedule Booking
+
+
+🛒 Phase 2: Commerce & Services
+E-commerce Platform
+
+
+PT Booking
+
+
+AI Chatbot Support
+
+
+Admin Dashboard
+
+
+📈 Phase 3: Advanced Analytics
+Health Analytics
+
+
+Business Intelligence
+
+
+Marketing Automation
+
+
+🎮 Phase 4: Innovation Features
+Social Features (cộng đồng, thử thách)
+
+
+IoT Integration (Smart equipment sync)
+
+
+Advanced AI (Form checking, Nutrition Planning)
+
+
+
+7. Technology Stack (Công nghệ đề xuất)
+Web/App: ReactJS, NextJS, Flutter
+
+
+Backend: Node.js, Spring Boot, REST API
+
+
+Database: MySQL/PostgreSQL, Redis cache
+
+
+Cloud: AWS/Azure, Firebase push notification
+
+
+AI/ML: LangChain, LLMs, TensorFlow Lite (nutrition + prediction)
+
+
+Security: JWT, OAuth2, QR code access
+
+
+
+8. Use Case & Examples (Phụ lục – Demo thực tế)
+Quản lý thành viên (Dashboard Admin → Nguyễn Văn A, Quick Actions)
+
+
+Quản lý dịch vụ (PT sessions, Group classes, Pool access)
+
+
+Quản lý sản phẩm (Inventory alerts, Dynamic pricing, AI suggestions)
+
+
+Doanh thu & Marketing automation (Monthly Revenue Report, Campaign “Back to Gym”)
+
+
+AI Chatbot Coach (Virtual trainer, Meal planner, Smart pricing)
+
+
+Scan QR Code vào phòng tập
+
+
+
+Các chức năng đề cử:
+2.1 Quản lý Thành viên (CRUD customers, contracts, packages)
+Dashboard tìm kiếm nhanh → “Nguyễn Văn A” → hiện profile: gói tập, số lần check-in, trạng thái.
+
+
+Quick Actions: [Gia hạn] [Đổi gói] [Gửi tin nhắn].
+
+
+Hỗ trợ note mục tiêu tập luyện.
+ → Tăng tốc đăng ký/gia hạn, giảm sai sót thông tin.
+
+
+
+2.2 Quản lý Dịch vụ (PT, Group Classes, Pool Access)
+PT sessions → hiển thị số buổi, doanh thu, cảnh báo khi FULL.
+
+
+Group classes → real-time slots, auto tối ưu (tăng/giảm chỗ).
+
+
+Pool → giám sát usage + chất lượng nước.
+
+
+AI Suggestion: mở thêm lớp, khuyến mãi giờ thấp điểm.
+ → Tối ưu capacity +25%, revenue +35%.
+
+
+
+2.3 Quản lý Sản phẩm (Inventory, Pricing, Stock Alerts)
+Stock real-time, cảnh báo low/critical.
+
+
+Auto-suggest đặt hàng, chọn supplier, adjust giá.
+
+
+Dynamic pricing so với đối thủ + combo thông minh.
+
+
+Mobile: scan barcode, approve orders, photo returns.
+ → Zero stock-out, profit margin +23%.
+
+
+
+2.4 Báo cáo Doanh thu & Marketing Automation
+Revenue dashboard: Membership, PT, Product → tổng doanh thu + % tăng trưởng.
+
+
+Top performers: Trainer, Product, Service.
+
+
+Real-time charts theo giờ/ngày/tuần.
+
+
+Campaign automation (email, promo) → đo lường open, click, conversion, ROI.
+ → Quản lý nắm xu hướng nhanh, marketing hiệu quả (ROI 340%).
+
+
+
+
+2.5 AI Chatbot Coach (Virtual Trainer)
+Chatbot tư vấn qua text hoặc voice:
+
+
+Gợi ý chế độ ăn (dựa vào lịch tập + BMI).
+
+
+Trả lời câu hỏi: “Tập cơ ngực thì nên tập bài nào?”.
+
+
+Tích hợp LangChain + LLM → giả lập huấn luyện viên ảo.
+ → Match Req 9 (AI), Req 10 (UX).
+
+
+
+2.6  AI Statistic & Prediction Dashboard
+Biểu đồ: số hội viên mới, doanh thu theo tháng, dịch vụ hot.
+
+
+AI dự đoán:
+
+
+Tháng nào nhiều người đăng ký nhất.
+
+
+Dịch vụ nào sẽ hot (Yoga, Boxing, PT cá nhân).
+
+2.7 Scan QR Code để vào phòng tập
+Mỗi hội viên có QR Code cá nhân để check-in.
+
+
+Kiểm soát hạn sử dụng và quyền truy cập (Standard, Premium…).
+
+
+Hỗ trợ quét nhanh bằng cổng tự động, giảm tải cho lễ tân.
+ → Check-in <5 giây, tăng tính bảo mật & trải nghiệm chuyên nghiệp.
+
+
+2.8  Meal & Nutrition Planner with AI (người dùng có thể được sử dụng trải nghiệm free → sau đó bán gói)
+Ngoài bài tập, hệ thống quản lý chế độ ăn:
+
+
+User nhập dữ liệu ăn uống → AI tính calories.
+
+
+AI sinh thực đơn phù hợp mục tiêu (giảm mỡ, tăng cơ).
+
+
+Tích hợp API dinh dưỡng (hoặc dataset).
+ → Thêm chiều sâu, không chỉ quản lý hội viên mà còn “care lifestyle”.
+
+
+2.9 . Smart Membership Pricing
+Hệ thống phân tích dữ liệu hội viên → AI đề xuất gói tập phù hợp:
+
+
+Nếu user tập nhiều → gợi ý gói dài hạn để tiết kiệm.
+
+
+Nếu user mới → gợi ý gói ngắn + PT để không bỏ cuộc.
+
+
+Giúp Gym Owner tối ưu doanh thu.
+
+
+
+
+
