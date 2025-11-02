@@ -1,5 +1,6 @@
 package com.gym.model;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 /**
@@ -16,10 +17,26 @@ public class User {
     private String status;
     private boolean emailVerified;
     private Timestamp createdDate;
+    private Timestamp updatedDate;
     private Timestamp lastLogin;
     private int failedLoginAttempts;
     private Timestamp lockedUntil;
 
+    // New fields
+    private String gender;
+    private String address;
+    private String avatarUrl;
+    private BigDecimal height;  // DECIMAL(5,2)
+    private BigDecimal weight;  // DECIMAL(5,2)
+    private BigDecimal bmi;     // DECIMAL(4,2)
+
+    // Emergency contact fields
+    private String emergencyContactName;
+    private String emergencyContactPhone;
+    private String emergencyContactRelation;
+    private String emergencyContactAddress;
+
+    // Getters & Setters
     public long getId() { return id; }
     public void setId(long id) { this.id = id; }
 
@@ -44,6 +61,9 @@ public class User {
     public Timestamp getCreatedDate() { return createdDate; }
     public void setCreatedDate(Timestamp createdDate) { this.createdDate = createdDate; }
 
+    public Timestamp getUpdatedDate() { return updatedDate; }
+    public void setUpdatedDate(Timestamp updatedDate) { this.updatedDate = updatedDate; }
+
     public Timestamp getLastLogin() { return lastLogin; }
     public void setLastLogin(Timestamp lastLogin) { this.lastLogin = lastLogin; }
 
@@ -52,6 +72,34 @@ public class User {
 
     public Timestamp getLockedUntil() { return lockedUntil; }
     public void setLockedUntil(Timestamp lockedUntil) { this.lockedUntil = lockedUntil; }
+
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+
+    public BigDecimal getHeight() { return height; }
+    public void setHeight(BigDecimal height) { this.height = height; }
+
+    public BigDecimal getWeight() { return weight; }
+    public void setWeight(BigDecimal weight) { this.weight = weight; }
+
+    public BigDecimal getBmi() { return bmi; }
+    public void setBmi(BigDecimal bmi) { this.bmi = bmi; }
+
+    public String getEmergencyContactName() { return emergencyContactName; }
+    public void setEmergencyContactName(String emergencyContactName) { this.emergencyContactName = emergencyContactName; }
+
+    public String getEmergencyContactPhone() { return emergencyContactPhone; }
+    public void setEmergencyContactPhone(String emergencyContactPhone) { this.emergencyContactPhone = emergencyContactPhone; }
+
+    public String getEmergencyContactRelation() { return emergencyContactRelation; }
+    public void setEmergencyContactRelation(String emergencyContactRelation) { this.emergencyContactRelation = emergencyContactRelation; }
+
+    public String getEmergencyContactAddress() { return emergencyContactAddress; }
+    public void setEmergencyContactAddress(String emergencyContactAddress) { this.emergencyContactAddress = emergencyContactAddress; }
 }
-
-

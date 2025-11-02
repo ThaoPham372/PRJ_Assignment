@@ -459,7 +459,7 @@
           GymFit Đà Nẵng. Chúng tôi cam kết mang đến cho bạn những trải nghiệm
           tập luyện tốt nhất với đội ngũ chuyên nghiệp và thiết bị tiên tiến.
         </p>
-        <a href="${pageContext.request.contextPath}/views/register.jsp" class="btn">ĐĂNG KÝ NGAY</a>
+        <a href="${pageContext.request.contextPath}/register" class="btn">ĐĂNG KÝ NGAY</a>
       </div>
     </main>
 

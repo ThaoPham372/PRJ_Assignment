@@ -1,5 +1,8 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ include
-file="/views/common/header.jsp" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ include file="/views/common/header.jsp" %>
 
 <style>
   :root {
@@ -293,159 +296,96 @@ file="/views/common/header.jsp" %>
     </div>
   </section>
 
-  <div class="products-grid">
-    <div class="product-card">
-      <img
-        src="${pageContext.request.contextPath}/images/service/pro1.jpeg"
-        alt="Whey Protein"
-        loading="lazy"
-      />
-      <h3>Whey Protein</h3>
-      <p>Bổ sung protein, giúp phục hồi và phát triển cơ bắp sau tập luyện.</p>
-      <div class="product-price">1,200,000đ</div>
-      <div class="product-actions">
-        <a
-          href="javascript:void(0)"
-          onclick="alert('Chức năng mua hàng đang được phát triển!')"
-          class="btn-buy"
-          >Mua ngay</a
-        >
-        <a
-          href="javascript:void(0)"
-          onclick="alert('Chức năng giỏ hàng đang được phát triển!')"
-          class="btn-cart"
-          ><i class="fas fa-shopping-cart"></i
-        ></a>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <img
-        src="${pageContext.request.contextPath}/images/service/pro2.jpg"
-        alt="Creatine Monohydrate"
-        loading="lazy"
-      />
-      <h3>Creatine Monohydrate</h3>
-      <p>Tăng cường sức mạnh và sức bền, hỗ trợ tập luyện cường độ cao.</p>
-      <div class="product-price">800,000đ</div>
-      <div class="product-actions">
-        <a
-          href="javascript:void(0)"
-          onclick="alert('Chức năng mua hàng đang được phát triển!')"
-          class="btn-buy"
-          >Mua ngay</a
-        >
-        <a
-          href="javascript:void(0)"
-          onclick="alert('Chức năng giỏ hàng đang được phát triển!')"
-          class="btn-cart"
-          ><i class="fas fa-shopping-cart"></i
-        ></a>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <img
-        src="${pageContext.request.contextPath}/images/service/pro3.jpg"
-        alt="BCAA Essential"
-        loading="lazy"
-      />
-      <h3>BCAA Essential</h3>
-      <p>
-        Bổ sung axit amin thiết yếu, giảm mệt mỏi và tăng cường phục hồi cơ bắp.
-      </p>
-      <div class="product-price">600,000đ</div>
-      <div class="product-actions">
-        <a
-          href="javascript:void(0)"
-          onclick="alert('Chức năng mua hàng đang được phát triển!')"
-          class="btn-buy"
-          >Mua ngay</a
-        >
-        <a
-          href="javascript:void(0)"
-          onclick="alert('Chức năng giỏ hàng đang được phát triển!')"
-          class="btn-cart"
-          ><i class="fas fa-shopping-cart"></i
-        ></a>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <img
-        src="${pageContext.request.contextPath}/images/service/pro4.jpg"
-        alt="Pre-Workout Energy"
-        loading="lazy"
-      />
-      <h3>Pre-Workout Energy</h3>
-      <p>Tăng cường năng lượng và tập trung trước khi tập luyện.</p>
-      <div class="product-price">900,000đ</div>
-      <div class="product-actions">
-        <a
-          href="javascript:void(0)"
-          onclick="alert('Chức năng mua hàng đang được phát triển!')"
-          class="btn-buy"
-          >Mua ngay</a
-        >
-        <a
-          href="javascript:void(0)"
-          onclick="alert('Chức năng giỏ hàng đang được phát triển!')"
-          class="btn-cart"
-          ><i class="fas fa-shopping-cart"></i
-        ></a>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <img
-        src="${pageContext.request.contextPath}/images/service/pro5.jpg"
-        alt="Mass Gainer"
-        loading="lazy"
-      />
-      <h3>Mass Gainer</h3>
-      <p>Hỗ trợ tăng cân và tăng cơ cho người gầy, bổ sung calo và protein.</p>
-      <div class="product-price">1,500,000đ</div>
-      <div class="product-actions">
-        <a
-          href="javascript:void(0)"
-          onclick="alert('Chức năng mua hàng đang được phát triển!')"
-          class="btn-buy"
-          >Mua ngay</a
-        >
-        <a
-          href="javascript:void(0)"
-          onclick="alert('Chức năng giỏ hàng đang được phát triển!')"
-          class="btn-cart"
-          ><i class="fas fa-shopping-cart"></i
-        ></a>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <img
-        src="${pageContext.request.contextPath}/images/service/pro6.jpg"
-        alt="Multivitamin"
-        loading="lazy"
-      />
-      <h3>Multivitamin</h3>
-      <p>Bổ sung vitamin và khoáng chất thiết yếu cho cơ thể khỏe mạnh.</p>
-      <div class="product-price">500,000đ</div>
-      <div class="product-actions">
-        <a
-          href="javascript:void(0)"
-          onclick="alert('Chức năng mua hàng đang được phát triển!')"
-          class="btn-buy"
-          >Mua ngay</a
-        >
-        <a
-          href="javascript:void(0)"
-          onclick="alert('Chức năng giỏ hàng đang được phát triển!')"
-          class="btn-cart"
-          ><i class="fas fa-shopping-cart"></i
-        ></a>
-      </div>
-    </div>
+  <!-- Search and Filter -->
+  <div style="margin-bottom: 30px; display: flex; gap: 15px; flex-wrap: wrap;">
+    <form method="get" action="${pageContext.request.contextPath}/products" style="flex: 1; min-width: 300px;">
+      <input type="text" name="q" value="${searchKeyword}" placeholder="Tìm kiếm sản phẩm..." 
+             style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
+    </form>
+    <select name="type" onchange="window.location.href='${pageContext.request.contextPath}/products?type=' + this.value + (document.querySelector('input[name=q]').value ? '&q=' + document.querySelector('input[name=q]').value : '')" 
+            style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
+      <option value="">Tất cả loại</option>
+      <option value="supplement" ${selectedType == 'supplement' ? 'selected' : ''}>Thực phẩm bổ sung</option>
+      <option value="equipment" ${selectedType == 'equipment' ? 'selected' : ''}>Thiết bị</option>
+      <option value="clothing" ${selectedType == 'clothing' ? 'selected' : ''}>Trang phục</option>
+      <option value="other" ${selectedType == 'other' ? 'selected' : ''}>Khác</option>
+    </select>
   </div>
+
+  <c:if test="${not empty message}">
+    <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+      ${message}
+    </div>
+  </c:if>
+  <c:if test="${not empty error}">
+    <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+      ${error}
+    </div>
+  </c:if>
+
+  <div class="products-grid">
+    <c:choose>
+      <c:when test="${not empty products}">
+        <c:forEach var="p" items="${products}">
+          <div class="product-card">
+            <img
+              src="${pageContext.request.contextPath}/images/products/${p.productId}.png"
+              onerror="this.src='${pageContext.request.contextPath}/images/placeholder.png';"
+              alt="${fn:escapeXml(p.productName)}"
+              loading="lazy"
+            />
+            <h3>${fn:escapeXml(p.productName)}</h3>
+            <p>${fn:escapeXml(p.productType.displayName)}</p>
+            <div class="product-price">
+              <fmt:formatNumber value="${p.price}" type="currency" currencySymbol="đ" maxFractionDigits="0"/>
+              <span style="font-size: 0.9rem; color: #666;">/ ${fn:escapeXml(p.unit)}</span>
+            </div>
+            <div style="margin: 10px 0; color: ${p.stockQuantity > 0 ? '#28a745' : '#dc3545'}; font-weight: 600;">
+              <c:choose>
+                <c:when test="${p.stockQuantity > 0}">✓ Còn hàng (${p.stockQuantity})</c:when>
+                <c:otherwise>✗ Hết hàng</c:otherwise>
+              </c:choose>
+            </div>
+            <div class="product-actions">
+              <form method="post" action="${pageContext.request.contextPath}/cart/add" style="display: inline;" id="addToCartForm_${p.productId}">
+                <input type="hidden" name="productId" value="${p.productId}"/>
+                <input type="hidden" name="quantity" value="1"/>
+                <button type="submit" class="btn-cart" ${p.stockQuantity <= 0 ? 'disabled' : ''} 
+                        title="${p.stockQuantity <= 0 ? 'Sản phẩm hết hàng' : 'Thêm vào giỏ hàng'}">
+                  <i class="fas fa-shopping-cart"></i>
+                </button>
+              </form>
+            </div>
+          </div>
+        </c:forEach>
+      </c:when>
+      <c:otherwise>
+        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #666;">
+          <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+          <h3>Không tìm thấy sản phẩm</h3>
+          <p>Vui lòng thử tìm kiếm với từ khóa khác hoặc chọn loại sản phẩm khác.</p>
+        </div>
+      </c:otherwise>
+    </c:choose>
+  </div>
+
+  <!-- Pagination -->
+  <c:if test="${totalPages > 1}">
+    <div style="display: flex; justify-content: center; gap: 10px; margin-top: 40px;">
+      <c:if test="${page > 1}">
+        <a href="${pageContext.request.contextPath}/products?page=${page - 1}${searchKeyword != null ? '&q=' : ''}${searchKeyword != null ? fn:escapeXml(searchKeyword) : ''}${selectedType != null ? '&type=' : ''}${selectedType != null ? fn:escapeXml(selectedType) : ''}" 
+           class="btn btn-outline">Trước</a>
+      </c:if>
+      <c:forEach var="i" begin="${page > 3 ? page - 2 : 1}" end="${page < totalPages - 2 ? page + 2 : totalPages}">
+        <a href="${pageContext.request.contextPath}/products?page=${i}${searchKeyword != null ? '&q=' : ''}${searchKeyword != null ? fn:escapeXml(searchKeyword) : ''}${selectedType != null ? '&type=' : ''}${selectedType != null ? fn:escapeXml(selectedType) : ''}"
+           class="btn ${i == page ? 'btn-primary' : 'btn-outline'}">${i}</a>
+      </c:forEach>
+      <c:if test="${page < totalPages}">
+        <a href="${pageContext.request.contextPath}/products?page=${page + 1}${searchKeyword != null ? '&q=' : ''}${searchKeyword != null ? fn:escapeXml(searchKeyword) : ''}${selectedType != null ? '&type=' : ''}${selectedType != null ? fn:escapeXml(selectedType) : ''}"
+           class="btn btn-outline">Sau</a>
+      </c:if>
+    </div>
+  </c:if>
 
   <div class="cta-section">
     <h3>Mua sản phẩm dinh dưỡng ngay hôm nay!</h3>
@@ -461,5 +401,19 @@ file="/views/common/header.jsp" %>
     >
   </div>
 </main>
+
+<script>
+  // Ensure forms submit correctly
+  document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('form[action*="/cart/add"]');
+    forms.forEach(form => {
+      form.addEventListener('submit', function(e) {
+        // Allow form to submit naturally - servlet will handle redirect
+        console.log('Submitting to cart:', this.action);
+        // Don't preventDefault - let the form submit normally
+      });
+    });
+  });
+</script>
 
 <%@ include file="/views/common/footer.jsp" %>

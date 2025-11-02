@@ -519,7 +519,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
               <i class="fas fa-home"></i> Về trang chủ
             </a>
             <a
-              href="${pageContext.request.contextPath}/views/login.jsp"
+              href="${pageContext.request.contextPath}/login"
               class="btn"
             >
               <i class="fas fa-sign-out-alt"></i> Đăng xuất

@@ -23,14 +23,32 @@ CREATE TABLE users (
     status ENUM('ACTIVE', 'INACTIVE', 'SUSPENDED') DEFAULT 'ACTIVE',
     email_verified BOOLEAN DEFAULT FALSE,
     created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     last_login TIMESTAMP NULL,
     failed_login_attempts INT DEFAULT 0,
     locked_until TIMESTAMP NULL,
-    
+
+    -- Thông tin cá nhân mở rộng
+    gender VARCHAR(10),
+    address VARCHAR(255) CHARACTER SET utf8mb4,
+    avatar_url VARCHAR(255),
+    height DECIMAL(5,2),       -- cm
+    weight DECIMAL(5,2),       -- kg
+    bmi DECIMAL(4,2),
+
+    -- Thông tin liên hệ khẩn cấp
+    emergency_contact_name VARCHAR(100) CHARACTER SET utf8mb4,
+    emergency_contact_phone VARCHAR(20),
+    emergency_contact_relation VARCHAR(50) CHARACTER SET utf8mb4,
+    emergency_contact_address VARCHAR(255) CHARACTER SET utf8mb4,
+
     INDEX idx_users_username (username),
     INDEX idx_users_email (email),
     INDEX idx_users_status (status)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) 
+ENGINE=InnoDB 
+DEFAULT CHARSET=utf8mb4 
+COLLATE=utf8mb4_unicode_ci;
 
 -- Roles Table
 CREATE TABLE roles (

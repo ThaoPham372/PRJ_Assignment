@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -152,6 +152,76 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         filter: brightness(1.05);
       }
 
+      /* Auth actions layout */
+      .auth-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      /* Cart Icon */
+      .cart-icon-wrapper {
+        position: relative;
+        margin-right: 10px;
+      }
+
+      .cart-icon-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 50%;
+        color: #fff;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .cart-icon-link:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: scale(1.1);
+      }
+
+      .cart-icon-link i {
+        font-size: 1.3rem;
+      }
+
+      .cart-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #dc3545;
+        color: #fff;
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border: 2px solid var(--primary);
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
+      }
+
+      .cart-badge.empty {
+        display: none;
+      }
+
+      /* Outline button for username */
+      .btn-outline {
+        background: transparent;
+        color: #fff;
+        border: 2px solid rgba(255, 255, 255, 0.6);
+        box-shadow: none;
+      }
+      .btn-outline:hover {
+        background: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+      }
+
       @media (max-width: 900px) {
         header {
           flex-direction: column;
@@ -180,7 +250,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li>
             <a
-              href="${pageContext.request.contextPath}/views/Service_page/services_main.jsp"
+              href="${pageContext.request.contextPath}/services"
               >SERVICES</a
             >
           </li>
@@ -205,17 +275,62 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
       </nav>
       <c:choose>
         <c:when test="${sessionScope.user != null}">
-          <div class="btn">
-            ${sessionScope.user.username != null ? sessionScope.user.username :
-            'User'}
+          <c:set var="dashboardHref" value="${pageContext.request.contextPath}/home" />
+          <c:if test="${not empty sessionScope.userRoles}">
+            <c:choose>
+              <c:when test="${fn:contains(sessionScope.userRoles, 'ADMIN')}">
+                <c:set var="dashboardHref" value="${pageContext.request.contextPath}/admin/dashboard" />
+              </c:when>
+              <c:when test="${fn:contains(sessionScope.userRoles, 'PT')}">
+                <c:set var="dashboardHref" value="${pageContext.request.contextPath}/pt/dashboard" />
+              </c:when>
+              <c:when test="${fn:contains(sessionScope.userRoles, 'USER')}">
+                <c:set var="dashboardHref" value="${pageContext.request.contextPath}/member/dashboard" />
+              </c:when>
+              <c:when test="${fn:contains(sessionScope.userRoles, 'MEMBER')}">
+                <c:set var="dashboardHref" value="${pageContext.request.contextPath}/member/dashboard" />
+              </c:when>
+            </c:choose>
+          </c:if>
+          
+          <%-- Load cart count if user is logged in --%>
+          <c:set var="cartCount" value="0" />
+          <c:if test="${sessionScope.user != null && sessionScope.user.id != null}">
+            <%
+              try {
+                Long userId = com.gym.util.SessionUtil.getUserId(request);
+                if (userId != null) {
+                  com.gym.service.shop.CartService cartService = new com.gym.service.shop.CartServiceImpl();
+                  java.util.List<com.gym.model.shop.CartItem> cartItems = cartService.view(userId);
+                  int count = cartItems != null ? cartItems.size() : 0;
+                  pageContext.setAttribute("cartCount", count);
+                }
+              } catch (Exception e) {
+                // Silently fail, cart count will be 0
+                pageContext.setAttribute("cartCount", 0);
+              }
+            %>
+          </c:if>
+          
+          <div class="auth-actions">
+            <%-- Cart Icon --%>
+            <div class="cart-icon-wrapper">
+              <a href="${pageContext.request.contextPath}/cart" class="cart-icon-link" title="Giỏ hàng">
+                <i class="fas fa-shopping-cart"></i>
+                <c:if test="${cartCount > 0}">
+                  <span class="cart-badge">${cartCount > 99 ? '99+' : cartCount}</span>
+                </c:if>
+              </a>
+            </div>
+            
+            <a href="${dashboardHref}" class="btn btn-outline">
+              ${sessionScope.user.username != null ? sessionScope.user.username : 'User'}
+            </a>
+            <a href="${pageContext.request.contextPath}/logout" class="btn">ĐĂNG XUẤT</a>
           </div>
         </c:when>
         <c:otherwise>
-          <a
-            href="${pageContext.request.contextPath}/views/login.jsp"
-            class="btn"
-            >ĐĂNG NHẬP</a
-          >
+          <a href="${pageContext.request.contextPath}/login" class="btn">ĐĂNG NHẬP</a>
         </c:otherwise>
       </c:choose>
     </header>

@@ -568,7 +568,7 @@
         <form
           id="loginForm"
           method="post"
-          action="${pageContext.request.contextPath}/login"
+          action="${pageContext.request.contextPath}/auth?action=login"
         >
           <!-- Username -->
           <div class="form-group">
@@ -621,26 +621,20 @@
           <a href="#" id="forgotPassword">Quên mật khẩu?</a>
         </div>
 
-        <!-- Google Login
-        <button type="button" class="google-btn" id="googleBtn">
-          <img
-            src="${pageContext.request.contextPath}/images/logo/Gg.png"
-            alt="Google Logo"
-            class="google-icon"
-          />
-          TIẾP TỤC VỚI GOOGLE
-        </button> -->
+        <!-- Google Login -->
+        <div id="g_id_signin_login" style="margin-top: 10px;"></div>
 
         <!-- Register Section -->
         <div class="register-section">
           <div class="register-text">BẠN CHƯA CÓ TÀI KHOẢN?</div>
-          <button type="button" class="register-btn" id="registerBtn">
+          <a href="${pageContext.request.contextPath}/register" class="register-btn" style="display:inline-block; text-align:center;">
             ĐĂNG KÝ
-          </button>
+          </a>
         </div>
       </div>
     </main>
 
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
       document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('loginForm');
@@ -718,20 +712,42 @@
           passwordError.classList.remove('show');
         });
 
-        // Google login button
-        document
-          .getElementById('googleBtn')
-          .addEventListener('click', function () {
-            alert('Chức năng đăng nhập Google sẽ được triển khai');
+        // Initialize Google Sign-In
+        function initializeGoogleSignIn() {
+          if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) return;
+          google.accounts.id.initialize({
+            client_id: '${initParam['google.client.id']}',
+            callback: function (response) {
+              fetch('${pageContext.request.contextPath}/auth/google-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ credential: response.credential })
+              })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                  if (data && data.success) {
+                    window.location.href = data.redirectUrl;
+                  } else {
+                    alert('Đăng nhập Google thất bại' + (data && data.message ? ': ' + data.message : ''));
+                  }
+                })
+                .catch(function (err) { console.error(err); alert('Có lỗi xảy ra khi đăng nhập Google'); });
+            },
+            auto_select: false,
+            cancel_on_tap_outside: true
           });
+          var el = document.getElementById('g_id_signin_login');
+          if (el) {
+            google.accounts.id.renderButton(el, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with' });
+          }
+        }
+        if (typeof google !== 'undefined') {
+          initializeGoogleSignIn();
+        } else {
+          window.addEventListener('load', initializeGoogleSignIn);
+        }
 
-        // Register button
-        document
-          .getElementById('registerBtn')
-          .addEventListener('click', function () {
-            window.location.href =
-              '${pageContext.request.contextPath}/views/register.jsp';
-          });
+        // Register button handled by anchor link (no JS redirect to avoid delay)
 
         // Forgot password link
         document

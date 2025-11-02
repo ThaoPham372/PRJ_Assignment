@@ -1,5 +1,8 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ include
-file="/views/common/header.jsp" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ include file="/views/common/header.jsp" %>
 
 <style>
   :root {
@@ -405,70 +408,125 @@ file="/views/common/header.jsp" %>
       </button>
 
       <div class="product-items">
-        <a
-          href="${pageContext.request.contextPath}/views/Service_page/product.jsp"
-          class="product-item"
-          id="product1"
-        >
-          <div class="img-wrapper">
-            <img
-              src="${pageContext.request.contextPath}/images/service/pro1.jpeg"
-              alt="Whey Protein cao cấp"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-          <h3>SẢN PHẨM</h3>
-          <p>Whey Protein cao cấp</p>
-        </a>
-        <a
-          href="${pageContext.request.contextPath}/views/Service_page/product.jsp"
-          class="product-item"
-          id="product2"
-        >
-          <div class="img-wrapper">
-            <img
-              src="${pageContext.request.contextPath}/images/service/pro2.jpg"
-              alt="Creatine Monohydrate"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-          <h3>SẢN PHẨM</h3>
-          <p>Creatine Monohydrate</p>
-        </a>
-        <a
-          href="${pageContext.request.contextPath}/views/Service_page/product.jsp"
-          class="product-item"
-          id="product3"
-        >
-          <div class="img-wrapper">
-            <img
-              src="${pageContext.request.contextPath}/images/service/pro3.jpg"
-              alt="BCAA Essential"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-          <h3>SẢN PHẨM</h3>
-          <p>BCAA Essential</p>
-        </a>
-        <a
-          href="${pageContext.request.contextPath}/views/Service_page/product.jsp"
-          class="product-item"
-          id="product4"
-        >
-          <div class="img-wrapper">
-            <img
-              src="${pageContext.request.contextPath}/images/service/pro4.jpg"
-              alt="Pre-Workout Energy"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-          <h3>SẢN PHẨM</h3>
-          <p>Pre-Workout Energy</p>
-        </a>
+        <c:choose>
+          <c:when test="${not empty products}">
+            <c:forEach var="p" items="${products}" varStatus="loop" end="3">
+              <c:if test="${loop.index < 4}">
+                <a
+                  href="${pageContext.request.contextPath}/products"
+                  class="product-item"
+                  id="product${loop.index + 1}"
+                  data-product-id="${p.productId}"
+                >
+                  <div class="img-wrapper">
+                    <img
+                      src="${pageContext.request.contextPath}/images/products/${p.productId}.png"
+                      onerror="this.src='${pageContext.request.contextPath}/images/placeholder.png';"
+                      alt="${fn:escapeXml(p.productName)}"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <h3>${fn:escapeXml(p.productName)}</h3>
+                  <p>${fn:escapeXml(p.productType.displayName)}</p>
+                </a>
+              </c:if>
+            </c:forEach>
+            <!-- Đảm bảo luôn có đủ 4 items -->
+            <c:if test="${products.size() < 4}">
+              <c:forEach begin="${products.size()}" end="3" varStatus="emptyLoop">
+                <a
+                  href="${pageContext.request.contextPath}/products"
+                  class="product-item"
+                  id="product${emptyLoop.index + 1}"
+                >
+                  <div class="img-wrapper">
+                    <img
+                      src="${pageContext.request.contextPath}/images/placeholder.png"
+                      onerror="this.src='${pageContext.request.contextPath}/images/placeholder.png';"
+                      alt="Sản phẩm"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <h3>Sản phẩm sắp có</h3>
+                  <p>Đang cập nhật</p>
+                </a>
+              </c:forEach>
+            </c:if>
+          </c:when>
+          <c:otherwise>
+            <!-- Fallback khi không có sản phẩm -->
+            <a
+              href="${pageContext.request.contextPath}/views/Service_page/product.jsp"
+              class="product-item"
+              id="product1"
+            >
+              <div class="img-wrapper">
+                <img
+                  src="${pageContext.request.contextPath}/images/placeholder.png"
+                  onerror="this.src='${pageContext.request.contextPath}/images/placeholder.png';"
+                  alt="Sản phẩm"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <h3>Không có sản phẩm</h3>
+              <p>Vui lòng quay lại sau</p>
+            </a>
+            <a
+              href="${pageContext.request.contextPath}/views/Service_page/product.jsp"
+              class="product-item"
+              id="product2"
+            >
+              <div class="img-wrapper">
+                <img
+                  src="${pageContext.request.contextPath}/images/placeholder.png"
+                  onerror="this.src='${pageContext.request.contextPath}/images/placeholder.png';"
+                  alt="Sản phẩm"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <h3>Không có sản phẩm</h3>
+              <p>Vui lòng quay lại sau</p>
+            </a>
+            <a
+              href="${pageContext.request.contextPath}/views/Service_page/product.jsp"
+              class="product-item"
+              id="product3"
+            >
+              <div class="img-wrapper">
+                <img
+                  src="${pageContext.request.contextPath}/images/placeholder.png"
+                  onerror="this.src='${pageContext.request.contextPath}/images/placeholder.png';"
+                  alt="Sản phẩm"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <h3>Không có sản phẩm</h3>
+              <p>Vui lòng quay lại sau</p>
+            </a>
+            <a
+              href="${pageContext.request.contextPath}/views/Service_page/product.jsp"
+              class="product-item"
+              id="product4"
+            >
+              <div class="img-wrapper">
+                <img
+                  src="${pageContext.request.contextPath}/images/placeholder.png"
+                  onerror="this.src='${pageContext.request.contextPath}/images/placeholder.png';"
+                  alt="Sản phẩm"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <h3>Không có sản phẩm</h3>
+              <p>Vui lòng quay lại sau</p>
+            </a>
+          </c:otherwise>
+        </c:choose>
       </div>
 
       <button class="carousel-nav" id="nextBtn" onclick="changeProduct(1)">
@@ -497,43 +555,54 @@ file="/views/common/header.jsp" %>
 
 <!-- SCRIPT -->
 <script>
-  // Product carousel data
+  // Product carousel data from server
   const products = [
-    {
-      name: 'SẢN PHẨM',
-      description: 'Whey Protein cao cấp',
-      image: '${pageContext.request.contextPath}/images/service/pro1.jpeg',
-    },
-    {
-      name: 'SẢN PHẨM',
-      description: 'Creatine Monohydrate',
-      image: '${pageContext.request.contextPath}/images/service/pro2.jpg',
-    },
-    {
-      name: 'SẢN PHẨM',
-      description: 'BCAA Essential',
-      image: '${pageContext.request.contextPath}/images/service/pro3.jpg',
-    },
-    {
-      name: 'SẢN PHẨM',
-      description: 'Pre-Workout Energy',
-      image: '${pageContext.request.contextPath}/images/service/pro4.jpg',
-    },
-    {
-      name: 'SẢN PHẨM',
-      description: 'Mass Gainer',
-      image: '${pageContext.request.contextPath}/images/service/pro1.jpeg',
-    },
-    {
-      name: 'SẢN PHẨM',
-      description: 'Multivitamin',
-      image: '${pageContext.request.contextPath}/images/service/pro2.jpg',
-    },
+    <c:choose>
+      <c:when test="${not empty products}">
+        <c:forEach var="p" items="${products}" varStatus="loop">
+          {
+            id: ${p.productId},
+            name: '<c:out value="${p.productName}" escapeXml="true" />',
+            description: '<c:out value="${p.productType.displayName}" escapeXml="true" />',
+            image: '${pageContext.request.contextPath}/images/products/${p.productId}.png'
+          }<c:if test="${!loop.last}">,</c:if>
+        </c:forEach>
+      </c:when>
+      <c:otherwise>
+        // Fallback products khi không có dữ liệu
+        {
+          id: 0,
+          name: 'Sản phẩm mẫu 1',
+          description: 'Thực phẩm bổ sung',
+          image: '${pageContext.request.contextPath}/images/placeholder.png',
+        },
+        {
+          id: 0,
+          name: 'Sản phẩm mẫu 2',
+          description: 'Thiết bị',
+          image: '${pageContext.request.contextPath}/images/placeholder.png',
+        },
+        {
+          id: 0,
+          name: 'Sản phẩm mẫu 3',
+          description: 'Trang phục',
+          image: '${pageContext.request.contextPath}/images/placeholder.png',
+        },
+        {
+          id: 0,
+          name: 'Sản phẩm mẫu 4',
+          description: 'Khác',
+          image: '${pageContext.request.contextPath}/images/placeholder.png',
+        }
+      </c:otherwise>
+    </c:choose>
   ];
 
   let currentIndex = 0;
 
   function changeProduct(direction) {
+    if (products.length === 0) return;
+    
     currentIndex += direction;
 
     // Loop through products
@@ -548,16 +617,38 @@ file="/views/common/header.jsp" %>
 
     productItems.forEach((id, index) => {
       const product = document.getElementById(id);
+      if (!product) return;
+      
       const productIndex = (currentIndex + index) % products.length;
       const productData = products[productIndex];
 
       product.style.opacity = '0';
 
       setTimeout(() => {
-        product.querySelector('img').src = productData.image;
-        product.querySelector('img').alt = productData.name;
-        product.querySelector('h3').textContent = productData.name;
-        product.querySelector('p').textContent = productData.description;
+        const img = product.querySelector('img');
+        const h3 = product.querySelector('h3');
+        const p = product.querySelector('p');
+        
+        if (img) {
+          img.src = productData.image || '${pageContext.request.contextPath}/images/placeholder.png';
+          img.alt = productData.name || 'Sản phẩm';
+          // Reset onerror handler
+          img.onerror = function() {
+            this.src = '${pageContext.request.contextPath}/images/placeholder.png';
+          };
+        }
+        if (h3) {
+          h3.textContent = productData.name || 'Sản phẩm';
+        }
+        if (p) {
+          p.textContent = productData.description || 'Sản phẩm';
+        }
+        
+        // Update product ID if exists
+        if (productData.id) {
+          product.setAttribute('data-product-id', productData.id);
+        }
+        
         product.style.opacity = '1';
       }, 150);
     });

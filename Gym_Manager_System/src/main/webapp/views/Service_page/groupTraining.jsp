@@ -334,7 +334,7 @@ file="/views/common/header.jsp" %>
       biệt.
     </p>
     <a
-      href="${pageContext.request.contextPath}/views/register.jsp"
+      href="${pageContext.request.contextPath}/register"
       class="cta-btn"
       >ĐĂNG KÝ NGAY</a
     >

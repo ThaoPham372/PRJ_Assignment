@@ -438,7 +438,7 @@
           trình 8 tuần giảm cân khoa học để có được vóc dáng mơ ước và sức khỏe
           tốt nhất.
         </p>
-        <a href="${pageContext.request.contextPath}/views/register.jsp" class="btn">ĐĂNG KÝ NGAY</a>
+        <a href="${pageContext.request.contextPath}/register" class="btn">ĐĂNG KÝ NGAY</a>
       </div>
     </main>
 

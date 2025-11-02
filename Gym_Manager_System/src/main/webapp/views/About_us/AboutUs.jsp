@@ -747,7 +747,7 @@ file="/views/common/header.jsp" %>
   </div>
 
   <a
-    href="${pageContext.request.contextPath}/views/register.jsp"
+    href="${pageContext.request.contextPath}/register"
     class="register-btn"
   >
     ĐĂNG KÝ NGAY

@@ -689,7 +689,7 @@
           nhất để bạn bắt đầu hành trình tập luyện tại GymFit. Hãy liên hệ với
           chúng tôi ngay hôm nay!
         </p>
-        <a href="${pageContext.request.contextPath}/views/register.jsp" class="btn">ĐĂNG KÝ NGAY</a>
+        <a href="${pageContext.request.contextPath}/register" class="btn">ĐĂNG KÝ NGAY</a>
       </div>
     </main>
 

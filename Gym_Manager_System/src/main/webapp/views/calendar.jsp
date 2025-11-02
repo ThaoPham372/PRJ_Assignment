@@ -467,7 +467,7 @@ file="/views/common/header.jsp" %>
     </p>
     <div class="cta-buttons">
       <a
-        href="${pageContext.request.contextPath}/views/register.jsp"
+        href="${pageContext.request.contextPath}/register"
         class="btn-primary"
       >
         <i class="fas fa-user-plus"></i> ĐĂNG KÝ NGAY

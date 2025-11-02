@@ -528,7 +528,7 @@ file="/views/common/header.jsp" %>
     <h1>Chào mừng đến với GymFit</h1>
     <p>Nơi thay đổi bản thân và sức khỏe của bạn</p>
     <button
-      onclick="window.location.href='${pageContext.request.contextPath}/views/register.jsp'"
+      onclick="window.location.href='${pageContext.request.contextPath}/register'"
     >
       Đăng ký ngay
     </button>

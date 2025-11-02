@@ -379,7 +379,7 @@ file="/views/common/header.jsp" %>
       cùng chúng tôi để cảm nhận năng lượng tích cực và sự cân bằng trong cuộc
       sống.
     </p>
-    <a href="${pageContext.request.contextPath}/views/register.jsp" class="btn"
+    <a href="${pageContext.request.contextPath}/register" class="btn"
       >ĐĂNG KÝ NGAY</a
     >
   </div>
