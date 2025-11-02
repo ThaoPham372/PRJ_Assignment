@@ -1,8 +1,12 @@
 package com.gym.service;
 
-import com.gym.dao.UserDAO;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import com.gym.dao.RoleDAO;
-import java.util.*;
+import com.gym.dao.UserDAO;
+import com.gym.model.User;
 
 /**
  * RegistrationService - Handles user registration business logic
@@ -21,6 +25,7 @@ public class RegistrationService {
 
     /**
      * Register a new user
+     * 
      * @param request Registration request data
      * @return Registration result
      */
@@ -30,7 +35,7 @@ public class RegistrationService {
 
         // Validate input
         validateInput(request, errors);
-        
+
         if (!errors.isEmpty()) {
             result.setSuccess(false);
             result.setErrors(errors);
@@ -41,7 +46,7 @@ public class RegistrationService {
         if (userDAO.existsByUsername(request.getUsername())) {
             errors.add("Tên đăng nhập đã tồn tại");
         }
-        
+
         if (userDAO.existsByEmail(request.getEmail())) {
             errors.add("Email đã được sử dụng");
         }
@@ -57,12 +62,11 @@ public class RegistrationService {
         String salt = passwordService.generateSalt();
 
         // Create user in database
-        long userId = userDAO.insertUser(
-            request.getUsername(),
-            request.getEmail(),
-            passwordHash,
-            salt
-        );
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordHash);
+        long userId = userDAO.insertUser(user);
 
         if (userId == -1) {
             result.setSuccess(false);
@@ -70,23 +74,24 @@ public class RegistrationService {
             return result;
         }
 
-        // Assign USER role
-        Long userRoleId = roleDAO.findRoleIdByName("USER");
+        // Assign role based on user selection
+        String roleName = request.getRoleType() != null ? request.getRoleType() : "USER";
+        Long userRoleId = roleDAO.findRoleIdByName(roleName);
         if (userRoleId == null) {
             // Create default roles if they don't exist
             roleDAO.createDefaultRoles();
-            userRoleId = roleDAO.findRoleIdByName("USER");
+            userRoleId = roleDAO.findRoleIdByName(roleName);
         }
 
         if (userRoleId != null) {
             boolean roleAssigned = roleDAO.assignUserRole(userId, userRoleId);
             if (!roleAssigned) {
-                System.err.println("Warning: Failed to assign USER role to user " + userId);
+                System.err.println("Warning: Failed to assign " + roleName + " role to user " + userId);
             }
         }
 
         // Log registration
-        userDAO.insertLoginHistory(userId, request.getIpAddress(), request.getUserAgent());
+        
 
         // Success
         result.setSuccess(true);
@@ -145,11 +150,13 @@ public class RegistrationService {
         private String email;
         private String password;
         private String confirmPassword;
+        private String roleType;
         private String ipAddress;
         private String userAgent;
 
         // Constructors
-        public RegisterRequest() {}
+        public RegisterRequest() {
+        }
 
         public RegisterRequest(String username, String email, String password, String confirmPassword) {
             this.username = username;
@@ -159,23 +166,61 @@ public class RegistrationService {
         }
 
         // Getters and Setters
-        public String getUsername() { return username; }
-        public void setUsername(String username) { this.username = username; }
+        public String getUsername() {
+            return username;
+        }
 
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
+        public void setUsername(String username) {
+            this.username = username;
+        }
 
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
+        public String getEmail() {
+            return email;
+        }
 
-        public String getConfirmPassword() { return confirmPassword; }
-        public void setConfirmPassword(String confirmPassword) { this.confirmPassword = confirmPassword; }
+        public void setEmail(String email) {
+            this.email = email;
+        }
 
-        public String getIpAddress() { return ipAddress; }
-        public void setIpAddress(String ipAddress) { this.ipAddress = ipAddress; }
+        public String getPassword() {
+            return password;
+        }
 
-        public String getUserAgent() { return userAgent; }
-        public void setUserAgent(String userAgent) { this.userAgent = userAgent; }
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public String getConfirmPassword() {
+            return confirmPassword;
+        }
+
+        public void setConfirmPassword(String confirmPassword) {
+            this.confirmPassword = confirmPassword;
+        }
+
+        public String getIpAddress() {
+            return ipAddress;
+        }
+
+        public void setIpAddress(String ipAddress) {
+            this.ipAddress = ipAddress;
+        }
+
+        public String getUserAgent() {
+            return userAgent;
+        }
+
+        public void setUserAgent(String userAgent) {
+            this.userAgent = userAgent;
+        }
+
+        public String getRoleType() {
+            return roleType;
+        }
+
+        public void setRoleType(String roleType) {
+            this.roleType = roleType;
+        }
     }
 
     /**
@@ -192,16 +237,36 @@ public class RegistrationService {
         }
 
         // Getters and Setters
-        public boolean isSuccess() { return success; }
-        public void setSuccess(boolean success) { this.success = success; }
+        public boolean isSuccess() {
+            return success;
+        }
 
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
+        public void setSuccess(boolean success) {
+            this.success = success;
+        }
 
-        public long getUserId() { return userId; }
-        public void setUserId(long userId) { this.userId = userId; }
+        public String getMessage() {
+            return message;
+        }
 
-        public List<String> getErrors() { return errors; }
-        public void setErrors(List<String> errors) { this.errors = errors; }
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public long getUserId() {
+            return userId;
+        }
+
+        public void setUserId(long userId) {
+            this.userId = userId;
+        }
+
+        public List<String> getErrors() {
+            return errors;
+        }
+
+        public void setErrors(List<String> errors) {
+            this.errors = errors;
+        }
     }
 }

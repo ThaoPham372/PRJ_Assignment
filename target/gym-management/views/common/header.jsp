@@ -170,9 +170,20 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
   <body>
     <!-- HEADER -->
     <header>
-      <a href="${pageContext.request.contextPath}/home.jsp" class="logo"
-        >🏋️ GymFit</a
-      >
+      <a href="${pageContext.request.contextPath}/home.jsp" class="logo">
+        <img
+          src="${pageContext.request.contextPath}/images/logo/logo.png"
+          alt="GymFit Logo"
+          style="
+            height: 2.5em;
+            width: auto;
+            margin-right: 12px;
+            max-height: 50px;
+            object-fit: contain;
+          "
+        />
+        GymFit
+      </a>
       <nav>
         <ul>
           <li>

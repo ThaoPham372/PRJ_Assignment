@@ -1,5 +1,5 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
+prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -501,9 +501,10 @@
         <!-- Logo -->
         <div class="logo">
           <img
-            src="${pageContext.request.contextPath}/images/common/logo.png"
+            src="${pageContext.request.contextPath}/images/logo/logo.png"
             alt="GymFit Logo"
             class="logo-image"
+            style="height: 300px; width: auto"
           />
         </div>
 
@@ -512,15 +513,33 @@
 
         <!-- Success/Error Messages -->
         <c:if test="${registerSuccess == true}">
-          <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
+          <div
+            style="
+              background: #d4edda;
+              color: #155724;
+              padding: 15px;
+              border-radius: 4px;
+              margin-bottom: 20px;
+              border: 1px solid #c3e6cb;
+            "
+          >
             <strong>Thành công!</strong> ${successMessage}
           </div>
         </c:if>
 
         <c:if test="${registerSuccess == false && errors != null}">
-          <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+          <div
+            style="
+              background: #f8d7da;
+              color: #721c24;
+              padding: 15px;
+              border-radius: 4px;
+              margin-bottom: 20px;
+              border: 1px solid #f5c6cb;
+            "
+          >
             <strong>Lỗi đăng ký:</strong>
-            <ul style="margin: 5px 0 0 20px;">
+            <ul style="margin: 5px 0 0 20px">
               <c:forEach var="error" items="${errors}">
                 <li>${error}</li>
               </c:forEach>
@@ -580,6 +599,15 @@
             />
           </div>
 
+          <!-- Role Selection -->
+          <div class="form-group">
+            <select id="roleType" name="roleType" class="form-input" required>
+              <option value="">Chọn loại tài khoản</option>
+              <option value="USER">Thành viên (Member)</option>
+              <option value="PT">Huấn luyện viên (Personal Trainer)</option>
+            </select>
+          </div>
+
           <!-- Register Button -->
           <button type="submit" class="register-btn" id="registerBtn">
             <span id="registerText">ĐĂNG KÝ</span>
@@ -619,6 +647,8 @@
         const form = document.getElementById('registerForm');
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const roleTypeSelect = document.getElementById('roleType');
         const registerBtn = document.getElementById('registerBtn');
         const registerText = document.getElementById('registerText');
         const loadingSpinner = document.getElementById('loadingSpinner');
@@ -644,6 +674,20 @@
           if (!passwordInput.value.trim()) {
             passwordError.textContent = 'Vui lòng nhập mật khẩu';
             passwordError.classList.add('show');
+            isValid = false;
+          }
+
+          // Validate password confirmation
+          if (passwordInput.value !== confirmPasswordInput.value) {
+            passwordError.textContent =
+              'Mật khẩu và xác nhận mật khẩu không khớp';
+            passwordError.classList.add('show');
+            isValid = false;
+          }
+
+          // Validate role selection
+          if (!roleTypeSelect.value) {
+            alert('Vui lòng chọn loại tài khoản');
             isValid = false;
           }
 

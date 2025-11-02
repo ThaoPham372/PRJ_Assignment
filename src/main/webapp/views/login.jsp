@@ -1,5 +1,5 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
+prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -546,17 +546,27 @@
         <!-- Logo -->
         <div class="logo">
           <img
-            src="${pageContext.request.contextPath}/images/common/logo.png"
+            src="${pageContext.request.contextPath}/images/logo/logo.png"
             alt="GymFit Logo"
             class="logo-image"
+            style="height: 300px; width: auto"
           />
         </div>
 
         <!-- Error Messages -->
         <c:if test="${loginError == true && errors != null}">
-          <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+          <div
+            style="
+              background: #f8d7da;
+              color: #721c24;
+              padding: 15px;
+              border-radius: 4px;
+              margin-bottom: 20px;
+              border: 1px solid #f5c6cb;
+            "
+          >
             <strong>Lỗi đăng nhập:</strong>
-            <ul style="margin: 5px 0 0 20px;">
+            <ul style="margin: 5px 0 0 20px">
               <c:forEach var="error" items="${errors}">
                 <li>${error}</li>
               </c:forEach>

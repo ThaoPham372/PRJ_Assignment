@@ -447,7 +447,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
             <i class="fas fa-users"></i>
           </div>
           <div class="stat-content">
-            <h3>24</h3>
+            <h3>${totalStudents != null ? totalStudents : 0}</h3>
             <p>Tổng học viên</p>
           </div>
         </div>
@@ -456,7 +456,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
             <i class="fas fa-user-check"></i>
           </div>
           <div class="stat-content">
-            <h3>20</h3>
+            <h3>${activeStudents != null ? activeStudents : 0}</h3>
             <p>Đang hoạt động</p>
           </div>
         </div>
@@ -465,7 +465,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
             <i class="fas fa-trophy"></i>
           </div>
           <div class="stat-content">
-            <h3>15</h3>
+            <h3>${achievedGoalCount != null ? achievedGoalCount : 0}</h3>
             <p>Đạt mục tiêu</p>
           </div>
         </div>
@@ -473,191 +473,98 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
       <!-- Search & Filter -->
       <div class="search-filter">
-        <div class="search-bar">
-          <div class="form-group">
-            <label>Tìm kiếm học viên</label>
-            <input
-              type="text"
-              placeholder="Nhập tên, ID hoặc số điện thoại..."
-            />
+        <form action="${pageContext.request.contextPath}/pt/students/search" method="get">
+          <div class="search-bar">
+            <div class="form-group">
+              <label>Tìm kiếm học viên</label>
+              <input
+                type="text"
+                name="keyword"
+                placeholder="Nhập tên, ID hoặc số điện thoại..."
+                value="${searchTerm != null ? searchTerm : ''}"
+              />
+            </div>
+            <div class="form-group">
+              <label>Gói tập</label>
+              <select name="package">
+                <option value="">Tất cả</option>
+                <option value="Personal Training" ${packageFilter == 'Personal Training' ? 'selected' : ''}>Personal Training</option>
+                <option value="Weight Loss" ${packageFilter == 'Weight Loss' ? 'selected' : ''}>Weight Loss</option>
+                <option value="Bodybuilding" ${packageFilter == 'Bodybuilding' ? 'selected' : ''}>Bodybuilding</option>
+                <option value="Yoga" ${packageFilter == 'Yoga' ? 'selected' : ''}>Yoga</option>
+              </select>
+            </div>
+            <button type="submit" class="btn"><i class="fas fa-search"></i> Tìm kiếm</button>
           </div>
-          <div class="form-group">
-            <label>Gói tập</label>
-            <select>
-              <option value="">Tất cả</option>
-              <option>Personal Training</option>
-              <option>Weight Loss</option>
-              <option>Bodybuilding</option>
-              <option>Yoga</option>
-            </select>
-          </div>
-          <button class="btn"><i class="fas fa-search"></i> Tìm kiếm</button>
-        </div>
+        </form>
       </div>
 
       <!-- Students Grid -->
       <div class="students-grid">
-        <!-- Student Card 1 -->
-        <div class="student-card" onclick="openStudentDetail(1)">
-          <div class="student-header">
-            <div class="student-avatar">
-              <i class="fas fa-user"></i>
+        <c:choose>
+          <c:when test="${students != null && !empty students}">
+            <c:forEach var="student" items="${students}">
+              <div class="student-card" onclick="openStudentDetail(${student.id})">
+                <div class="student-header">
+                  <div class="student-avatar">
+                    <i class="fas fa-user"></i>
+                  </div>
+                  <div class="student-info">
+                    <h3>${student.name != null ? student.name : 'N/A'}</h3>
+                    <p class="package">${student.packageName != null ? student.packageName : 'Personal Training'}</p>
+                  </div>
+                </div>
+                <div class="student-details">
+                  <div class="detail-item">
+                    <i class="fas fa-phone"></i>
+                    <span>${student.phone != null && !empty student.phone ? student.phone : 'Chưa có'}</span>
+                  </div>
+                  <div class="detail-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>${student.email != null ? student.email : 'N/A'}</span>
+                  </div>
+                  <div class="detail-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>${student.trainingMonths != null ? student.trainingMonths : 0} tháng</span>
+                  </div>
+                  <div class="detail-item">
+                    <i class="fas fa-dumbbell"></i>
+                    <span>${student.sessionCount != null ? student.sessionCount : 0} buổi tập</span>
+                  </div>
+                </div>
+                <div class="progress-section">
+                  <div class="progress-label">
+                    <span>Tiến độ ${student.progressType != null ? student.progressType : 'tập luyện'}</span>
+                    <span>${student.progress != null ? student.progress : 0}%</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${student.progress != null ? student.progress : 0}%"></div>
+                  </div>
+                </div>
+                <div class="student-actions">
+                  <button
+                    class="btn btn-info btn-sm"
+                    onclick="event.stopPropagation(); openStudentDetail(${student.id})"
+                  >
+                    <i class="fas fa-eye"></i> Chi tiết
+                  </button>
+                  <button
+                    class="btn btn-sm"
+                    onclick="event.stopPropagation(); updateProgress(${student.id})"
+                  >
+                    <i class="fas fa-edit"></i> Cập nhật
+                  </button>
+                </div>
+              </div>
+            </c:forEach>
+          </c:when>
+          <c:otherwise>
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-light);">
+              <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.3;"></i>
+              <p style="font-size: 1.2rem;">Không tìm thấy học viên phù hợp.</p>
             </div>
-            <div class="student-info">
-              <h3>Nguyễn Văn A</h3>
-              <p class="package">Personal Training Premium</p>
-            </div>
-          </div>
-          <div class="student-details">
-            <div class="detail-item">
-              <i class="fas fa-phone"></i>
-              <span>0912345678</span>
-            </div>
-            <div class="detail-item">
-              <i class="fas fa-envelope"></i>
-              <span>nguyenvana@gmail.com</span>
-            </div>
-            <div class="detail-item">
-              <i class="fas fa-calendar"></i>
-              <span>3 tháng</span>
-            </div>
-            <div class="detail-item">
-              <i class="fas fa-dumbbell"></i>
-              <span>48 buổi tập</span>
-            </div>
-          </div>
-          <div class="progress-section">
-            <div class="progress-label">
-              <span>Tiến độ giảm cân</span>
-              <span>75%</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: 75%"></div>
-            </div>
-          </div>
-          <div class="student-actions">
-            <button
-              class="btn btn-info btn-sm"
-              onclick="event.stopPropagation(); openStudentDetail(1)"
-            >
-              <i class="fas fa-eye"></i> Chi tiết
-            </button>
-            <button
-              class="btn btn-sm"
-              onclick="event.stopPropagation(); updateProgress(1)"
-            >
-              <i class="fas fa-edit"></i> Cập nhật
-            </button>
-          </div>
-        </div>
-
-        <!-- Student Card 2 -->
-        <div class="student-card" onclick="openStudentDetail(2)">
-          <div class="student-header">
-            <div class="student-avatar">
-              <i class="fas fa-user"></i>
-            </div>
-            <div class="student-info">
-              <h3>Trần Thị B</h3>
-              <p class="package">Weight Loss Program</p>
-            </div>
-          </div>
-          <div class="student-details">
-            <div class="detail-item">
-              <i class="fas fa-phone"></i>
-              <span>0923456789</span>
-            </div>
-            <div class="detail-item">
-              <i class="fas fa-envelope"></i>
-              <span>tranthib@gmail.com</span>
-            </div>
-            <div class="detail-item">
-              <i class="fas fa-calendar"></i>
-              <span>2 tháng</span>
-            </div>
-            <div class="detail-item">
-              <i class="fas fa-dumbbell"></i>
-              <span>32 buổi tập</span>
-            </div>
-          </div>
-          <div class="progress-section">
-            <div class="progress-label">
-              <span>Tiến độ giảm cân</span>
-              <span>60%</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: 60%"></div>
-            </div>
-          </div>
-          <div class="student-actions">
-            <button
-              class="btn btn-info btn-sm"
-              onclick="event.stopPropagation(); openStudentDetail(2)"
-            >
-              <i class="fas fa-eye"></i> Chi tiết
-            </button>
-            <button
-              class="btn btn-sm"
-              onclick="event.stopPropagation(); updateProgress(2)"
-            >
-              <i class="fas fa-edit"></i> Cập nhật
-            </button>
-          </div>
-        </div>
-
-        <!-- Student Card 3 -->
-        <div class="student-card" onclick="openStudentDetail(3)">
-          <div class="student-header">
-            <div class="student-avatar">
-              <i class="fas fa-user"></i>
-            </div>
-            <div class="student-info">
-              <h3>Lê Văn C</h3>
-              <p class="package">Bodybuilding</p>
-            </div>
-          </div>
-          <div class="student-details">
-            <div class="detail-item">
-              <i class="fas fa-phone"></i>
-              <span>0934567890</span>
-            </div>
-            <div class="detail-item">
-              <i class="fas fa-envelope"></i>
-              <span>levanc@gmail.com</span>
-            </div>
-            <div class="detail-item">
-              <i class="fas fa-calendar"></i>
-              <span>6 tháng</span>
-            </div>
-            <div class="detail-item">
-              <i class="fas fa-dumbbell"></i>
-              <span>96 buổi tập</span>
-            </div>
-          </div>
-          <div class="progress-section">
-            <div class="progress-label">
-              <span>Tiến độ tăng cơ</span>
-              <span>85%</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: 85%"></div>
-            </div>
-          </div>
-          <div class="student-actions">
-            <button
-              class="btn btn-info btn-sm"
-              onclick="event.stopPropagation(); openStudentDetail(3)"
-            >
-              <i class="fas fa-eye"></i> Chi tiết
-            </button>
-            <button
-              class="btn btn-sm"
-              onclick="event.stopPropagation(); updateProgress(3)"
-            >
-              <i class="fas fa-edit"></i> Cập nhật
-            </button>
-          </div>
-        </div>
+          </c:otherwise>
+        </c:choose>
       </div>
     </div>
 
@@ -787,4 +694,3 @@ Học viên rất chăm chỉ, tiến bộ tốt. Cần tăng cường bài tậ
     </script>
   </body>
 </html>
-

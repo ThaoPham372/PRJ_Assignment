@@ -1,106 +1,90 @@
 package com.gym.dao;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+
 import com.gym.model.User;
-import com.gym.util.DatabaseUtil;
-import java.sql.*;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;   
+import javax.persistence.NoResultException;
+import javax.persistence.Persistence;
+import javax.persistence.TypedQuery;
 
 /**
  * UserDAO - Data Access Object for users table
  * Handles user registration, duplicate checks, and login history
  */
 public class UserDAO {
+    private EntityManagerFactory entityManagerFactory;
+
+    public UserDAO() {
+        // Lazy initialization
+        if (entityManagerFactory == null || !entityManagerFactory.isOpen()) {
+            entityManagerFactory = Persistence.createEntityManagerFactory("gym-pu");
+        }
+    }
 
     /**
      * Check if username already exists
      */
     public boolean existsByUsername(String username) {
-        String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, username);
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        try {
+            TypedQuery<Long> query = em.createQuery(
+                    "SELECT COUNT(u) FROM User u WHERE u.username = :username",
+                    Long.class);
+            query.setParameter("username", username);
+            return query.getSingleResult() > 0;
+        } catch (Exception e) {
             System.err.println("Error checking username existence: " + e.getMessage());
+            return false;
+        } finally {
+            em.close();
         }
-        
-        return false;
     }
 
     /**
      * Check if email already exists
      */
     public boolean existsByEmail(String email) {
-        String sql = "SELECT COUNT(*) FROM users WHERE email = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, email);
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        try {
+            TypedQuery<Long> query = em.createQuery(
+                    "SELECT COUNT(u) FROM User u WHERE u.email = :email",
+                    Long.class);
+            query.setParameter("email", email);
+            return query.getSingleResult() > 0;
+        } catch (Exception e) {
             System.err.println("Error checking email existence: " + e.getMessage());
+            return false;
+        } finally {
+            em.close();
         }
-        
-        return false;
     }
 
     /**
      * Insert new user and return generated ID
      */
-    public long insertUser(String username, String email, String passwordHash, String salt) {
-        String sql = "INSERT INTO users (username, email, password_hash, salt, status, email_verified, created_date) " +
-                    "VALUES (?, ?, ?, ?, 'ACTIVE', false, NOW())";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
-            stmt.setString(1, username);
-            stmt.setString(2, email);
-            stmt.setString(3, passwordHash);
-            stmt.setString(4, salt);
-            
-            int affectedRows = stmt.executeUpdate();
-            
-            if (affectedRows > 0) {
-                ResultSet generatedKeys = stmt.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    return generatedKeys.getLong(1);
-                }
+    public long insertUser(User user) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+        try {
+            transaction.begin();
+            em.persist(user);
+            em.flush(); // Ensure ID is generated
+            transaction.commit();
+            return user.getId();
+        } catch (Exception e) {
+            if (transaction.isActive()) {
+                transaction.rollback();
             }
-        } catch (SQLException e) {
             System.err.println("Error inserting user: " + e.getMessage());
-        }
-        
-        return -1; // Error
-    }
-
-    /**
-     * Insert login history record for registration
-     */
-    public void insertLoginHistory(long userId, String ipAddress, String userAgent) {
-        String sql = "INSERT INTO login_history (user_id, login_time, ip_address, user_agent, login_successful, failure_reason) " +
-                    "VALUES (?, NOW(), ?, ?, true, 'registration_success')";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setLong(1, userId);
-            stmt.setString(2, ipAddress);
-            stmt.setString(3, userAgent);
-            
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            System.err.println("Error inserting login history: " + e.getMessage());
+            throw new RuntimeException("Error inserting user", e);
+        } finally {
+            em.close();
         }
     }
 
@@ -108,110 +92,331 @@ public class UserDAO {
      * Find user by username for login
      */
     public User findByUsername(String username) {
-        String sql = "SELECT id, username, email, password_hash, salt, status, email_verified, created_date, last_login, failed_login_attempts, locked_until " +
-                    "FROM users WHERE username = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, username);
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                return mapResultSetToUser(rs);
-            }
-        } catch (SQLException e) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        try {
+            TypedQuery<User> query = em.createQuery(
+                    "SELECT u FROM User u WHERE u.username = :username",
+                    User.class);
+            query.setParameter("username", username);
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        } catch (Exception e) {
             System.err.println("Error finding user by username: " + e.getMessage());
+            return null;
+        } finally {
+            em.close();
         }
-        
-        return null;
     }
-    
+
+    /**
+     * Find active user by username (or email) with status filter
+     */
+    public User getUserByNameAndStatus(String name, String requiredStatus) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        try {
+            // Try username or email match with status
+            TypedQuery<User> query = em.createQuery(
+                    "SELECT u FROM User u WHERE (u.username = :name OR u.email = :name) AND u.status = :status",
+                    User.class);
+            query.setParameter("name", name);
+            query.setParameter("status", requiredStatus);
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        } catch (Exception e) {
+            System.err.println("Error getUserByNameAndStatus: " + e.getMessage());
+            return null;
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Find user by ID
+     */
+    public User findById(long userId) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        try {
+            return em.find(User.class, userId);
+        } catch (Exception e) {
+            System.err.println("Error finding user by ID: " + e.getMessage());
+            return null;
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Find user by ID (overload for backward compatibility with Connection
+     * parameter)
+     * 
+     * @deprecated Use findById(long userId) instead
+     */
+    @Deprecated
+    public User findById(Connection conn, long userId) throws SQLException {
+        return findById(userId);
+    }
+
     /**
      * Find user by username or email for login
      */
-    public User findByUsernameOrEmail(Connection conn, String usernameOrEmail) throws SQLException {
-        String sql = "SELECT id, username, email, password_hash, salt, status, email_verified, created_date, last_login, failed_login_attempts, locked_until " +
-                    "FROM users WHERE username = ? OR email = ?";
-        
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, usernameOrEmail);
-            stmt.setString(2, usernameOrEmail);
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                return mapResultSetToUser(rs);
-            }
+    public User findByUsernameOrEmail(String usernameOrEmail) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        try {
+            TypedQuery<User> query = em.createQuery(
+                    "SELECT u FROM User u WHERE u.username = :value OR u.email = :value",
+                    User.class);
+            query.setParameter("value", usernameOrEmail);
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        } catch (Exception e) {
+            System.err.println("Error finding user by username or email: " + e.getMessage());
+            return null;
+        } finally {
+            em.close();
         }
-        
-        return null;
     }
-    
+
+    /**
+     * Find user by username or email (overload for backward compatibility)
+     * 
+     * @deprecated Use findByUsernameOrEmail(String usernameOrEmail) instead
+     */
+    @Deprecated
+    public User findByUsernameOrEmail(Connection conn, String usernameOrEmail) throws SQLException {
+        return findByUsernameOrEmail(usernameOrEmail);
+    }
+
     /**
      * Increment failed login attempts
      */
-    public void incrementFailedLoginAttempts(Connection conn, long userId) throws SQLException {
-        String sql = "UPDATE users SET failed_login_attempts = failed_login_attempts + 1 WHERE id = ?";
-        
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, userId);
-            stmt.executeUpdate();
+    public void incrementFailedLoginAttempts(long userId) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+        try {
+            transaction.begin();
+            User user = em.find(User.class, userId);
+            if (user != null) {
+                user.setFailedLoginAttempts(user.getFailedLoginAttempts() + 1);
+                em.merge(user);
+            }
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            System.err.println("Error incrementing failed login attempts: " + e.getMessage());
+            throw new RuntimeException("Error incrementing failed login attempts", e);
+        } finally {
+            em.close();
         }
     }
-    
+
+    /**
+     * Increment failed login attempts (overload for backward compatibility)
+     * 
+     * @deprecated Use incrementFailedLoginAttempts(long userId) instead
+     */
+    @Deprecated
+    public void incrementFailedLoginAttempts(Connection conn, long userId) throws SQLException {
+        incrementFailedLoginAttempts(userId);
+    }
+
     /**
      * Reset failed login attempts
      */
-    public void resetFailedLoginAttempts(Connection conn, long userId) throws SQLException {
-        String sql = "UPDATE users SET failed_login_attempts = 0, locked_until = NULL WHERE id = ?";
-        
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, userId);
-            stmt.executeUpdate();
+    public void resetFailedLoginAttempts(long userId) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+        try {
+            transaction.begin();
+            User user = em.find(User.class, userId);
+            if (user != null) {
+                user.setFailedLoginAttempts(0);
+                user.setLockedUntil(null);
+                em.merge(user);
+            }
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            System.err.println("Error resetting failed login attempts: " + e.getMessage());
+            throw new RuntimeException("Error resetting failed login attempts", e);
+        } finally {
+            em.close();
         }
     }
-    
+
+    /**
+     * Reset failed login attempts (overload for backward compatibility)
+     * 
+     * @deprecated Use resetFailedLoginAttempts(long userId) instead
+     */
+    @Deprecated
+    public void resetFailedLoginAttempts(Connection conn, long userId) throws SQLException {
+        resetFailedLoginAttempts(userId);
+    }
+
     /**
      * Lock account for specified minutes
      */
-    public void lockAccount(Connection conn, long userId, int minutes) throws SQLException {
-        String sql = "UPDATE users SET locked_until = DATE_ADD(NOW(), INTERVAL ? MINUTE) WHERE id = ?";
-        
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, minutes);
-            stmt.setLong(2, userId);
-            stmt.executeUpdate();
+    public void lockAccount(long userId, int minutes) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+        try {
+            transaction.begin();
+            User user = em.find(User.class, userId);
+            if (user != null) {
+                long lockedUntilMillis = System.currentTimeMillis() + (minutes * 60 * 1000L);
+                user.setLockedUntil(new Timestamp(lockedUntilMillis));
+                em.merge(user);
+            }
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            System.err.println("Error locking account: " + e.getMessage());
+            throw new RuntimeException("Error locking account", e);
+        } finally {
+            em.close();
         }
     }
-    
+
+    /**
+     * Lock account (overload for backward compatibility)
+     * 
+     * @deprecated Use lockAccount(long userId, int minutes) instead
+     */
+    @Deprecated
+    public void lockAccount(Connection conn, long userId, int minutes) throws SQLException {
+        lockAccount(userId, minutes);
+    }
+
     /**
      * Update last login time
      */
-    public void updateLastLogin(Connection conn, long userId) throws SQLException {
-        String sql = "UPDATE users SET last_login = NOW() WHERE id = ?";
-        
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, userId);
-            stmt.executeUpdate();
+    public void updateLastLogin(long userId) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+        try {
+            transaction.begin();
+            User user = em.find(User.class, userId);
+            if (user != null) {
+                user.setLastLogin(new Timestamp(System.currentTimeMillis()));
+                em.merge(user);
+            }
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            System.err.println("Error updating last login: " + e.getMessage());
+            throw new RuntimeException("Error updating last login", e);
+        } finally {
+            em.close();
         }
     }
-    
+
     /**
-     * Helper method to map ResultSet to User object
+     * Update last login (overload for backward compatibility)
+     * 
+     * @deprecated Use updateLastLogin(long userId) instead
      */
-    private User mapResultSetToUser(ResultSet rs) throws SQLException {
-        User user = new User();
-        user.setId(rs.getLong("id"));
-        user.setUsername(rs.getString("username"));
-        user.setEmail(rs.getString("email"));
-        user.setPasswordHash(rs.getString("password_hash"));
-        user.setSalt(rs.getString("salt"));
-        user.setStatus(rs.getString("status"));
-        user.setEmailVerified(rs.getBoolean("email_verified"));
-        user.setCreatedDate(rs.getTimestamp("created_date"));
-        user.setLastLogin(rs.getTimestamp("last_login"));
-        user.setFailedLoginAttempts(rs.getInt("failed_login_attempts"));
-        user.setLockedUntil(rs.getTimestamp("locked_until"));
-        return user;
+    @Deprecated
+    public void updateLastLogin(Connection conn, long userId) throws SQLException {
+        updateLastLogin(userId);
+    }
+
+    /**
+     * Update user password
+     */
+    public boolean updatePassword(long userId, String newPasswordHash) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+        try {
+            transaction.begin();
+            User user = em.find(User.class, userId);
+            if (user != null) {
+                user.setPassword(newPasswordHash);
+                em.merge(user);
+                transaction.commit();
+                return true;
+            } else {
+                transaction.rollback();
+                return false;
+            }
+        } catch (Exception e) {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            System.err.println("Error updating password: " + e.getMessage());
+            throw new RuntimeException("Error updating password", e);
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Update password (overload for backward compatibility)
+     * 
+     * @deprecated Use updatePassword(long userId, String newPasswordHash) instead
+     */
+    @Deprecated
+    public boolean updatePassword(Connection conn, long userId, String newPasswordHash) throws SQLException {
+        return updatePassword(userId, newPasswordHash);
+    }
+
+    /**
+     * Update user information
+     */
+    public boolean updateUser(User user) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+        try {
+            transaction.begin();
+            User merged = em.merge(user);
+            transaction.commit();
+            return merged != null;
+        } catch (Exception e) {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            System.err.println("Error updating user: " + e.getMessage());
+            throw new RuntimeException("Error updating user", e);
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Update user (overload for backward compatibility)
+     * 
+     * @deprecated Use updateUser(User user) instead
+     */
+    @Deprecated
+    public boolean updateUser(Connection conn, User user) throws SQLException {
+        return updateUser(user);
+    }
+
+    /**
+     * Trả về toàn bộ user (dùng cho dropdown chọn học viên)
+     */
+    public java.util.List<User> getAllUsers() {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        try {
+            TypedQuery<User> query = em.createQuery(
+                    "SELECT u FROM User u ORDER BY u.username",
+                    User.class);
+            return query.getResultList();
+        } catch (Exception e) {
+            System.err.println("Error getting all users: " + e.getMessage());
+            return new java.util.ArrayList<>();
+        } finally {
+            em.close();
+        }
     }
 }

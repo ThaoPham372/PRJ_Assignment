@@ -36,10 +36,20 @@ public class AdminDashboardServlet extends HttpServlet {
     String contextPath = request.getContextPath();
     String path = requestURI.substring(contextPath.length());
 
-    // Check if user is logged in (in production, you would check session and role)
+    // Check if user is logged in and has ADMIN role
     HttpSession session = request.getSession(false);
+    if (session == null || session.getAttribute("isLoggedIn") == null) {
+      response.sendRedirect(request.getContextPath() + "/views/login.jsp");
+      return;
+    }
 
-    // For demo purposes, we'll just forward to the JSP pages
+    // Check if user has ADMIN role
+    @SuppressWarnings("unchecked")
+    java.util.List<String> userRoles = (java.util.List<String>) session.getAttribute("userRoles");
+    if (userRoles == null || !userRoles.contains("ADMIN")) {
+      response.sendRedirect(request.getContextPath() + "/home");
+      return;
+    }
     String jspPath = "";
 
     switch (path) {

@@ -81,6 +81,11 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         transition: all 0.3s ease;
       }
 
+      .logo img {
+        max-height: 50px;
+        object-fit: contain;
+      }
+
       .logo:hover {
         color: var(--accent);
         transform: scale(1.05);
@@ -608,7 +613,18 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         href="${pageContext.request.contextPath}/views/PT/homePT.jsp"
         class="logo"
       >
-        🏋️ GymFit
+        <img
+          src="${pageContext.request.contextPath}/images/logo/logo.png"
+          alt="GymFit Logo"
+          style="
+            height: 2.5em;
+            width: auto;
+            margin-right: 12px;
+            max-height: 50px;
+            object-fit: contain;
+          "
+        />
+        GymFit
       </a>
 
       <div class="header-info">
@@ -638,7 +654,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
             <ul class="pt-menu-list">
               <li class="pt-menu-item">
                 <a
-                  href="${pageContext.request.contextPath}/views/PT/profile.jsp"
+                  href="${pageContext.request.contextPath}/pt/profile"
                   class="pt-menu-link"
                 >
                   <i class="fas fa-user-circle"></i>
@@ -647,7 +663,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
               </li>
               <li class="pt-menu-item">
                 <a
-                  href="${pageContext.request.contextPath}/views/PT/training_schedule.jsp"
+                  href="${pageContext.request.contextPath}/pt/schedule"
                   class="pt-menu-link"
                 >
                   <i class="fas fa-calendar-alt"></i>
@@ -656,7 +672,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
               </li>
               <li class="pt-menu-item">
                 <a
-                  href="${pageContext.request.contextPath}/views/PT/student_management.jsp"
+                  href="${pageContext.request.contextPath}/pt/students"
                   class="pt-menu-link"
                 >
                   <i class="fas fa-users"></i>
@@ -665,7 +681,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
               </li>
               <li class="pt-menu-item">
                 <a
-                  href="${pageContext.request.contextPath}/views/PT/chat.jsp"
+                  href="${pageContext.request.contextPath}/pt/chat"
                   class="pt-menu-link"
                 >
                   <i class="fas fa-comments"></i>
@@ -674,7 +690,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
               </li>
               <li class="pt-menu-item">
                 <a
-                  href="${pageContext.request.contextPath}/views/PT/reports.jsp"
+                  href="${pageContext.request.contextPath}/pt/reports"
                   class="pt-menu-link"
                 >
                   <i class="fas fa-chart-line"></i>
@@ -705,14 +721,11 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         cách chuyên nghiệp
       </p>
       <div class="hero-actions">
-        <a
-          href="${pageContext.request.contextPath}/views/PT/training_schedule.jsp"
-          class="btn"
-        >
+        <a href="${pageContext.request.contextPath}/pt/schedule" class="btn">
           Xem lịch tập
         </a>
         <a
-          href="${pageContext.request.contextPath}/views/PT/student_management.jsp"
+          href="${pageContext.request.contextPath}/pt/students"
           class="btn btn-secondary"
         >
           Quản lý học viên
@@ -760,7 +773,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
     <section class="features">
       <div
         class="feature-card"
-        onclick="window.location.href='${pageContext.request.contextPath}/views/PT/profile.jsp'"
+        onclick="window.location.href='${pageContext.request.contextPath}/pt/profile'"
       >
         <div class="feature-icon">
           <i class="fas fa-user-circle"></i>
@@ -774,7 +787,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
       <div
         class="feature-card"
-        onclick="window.location.href='${pageContext.request.contextPath}/views/PT/training_schedule.jsp'"
+        onclick="window.location.href='${pageContext.request.contextPath}/pt/schedule'"
       >
         <div class="feature-icon">
           <i class="fas fa-calendar-alt"></i>
@@ -788,7 +801,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
       <div
         class="feature-card"
-        onclick="window.location.href='${pageContext.request.contextPath}/views/PT/student_management.jsp'"
+        onclick="window.location.href='${pageContext.request.contextPath}/pt/students'"
       >
         <div class="feature-icon">
           <i class="fas fa-users"></i>
@@ -802,7 +815,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
       <div
         class="feature-card"
-        onclick="window.location.href='${pageContext.request.contextPath}/views/PT/chat.jsp'"
+        onclick="window.location.href='${pageContext.request.contextPath}/pt/chat'"
       >
         <div class="feature-icon">
           <i class="fas fa-comments"></i>
@@ -815,7 +828,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
       <div
         class="feature-card"
-        onclick="window.location.href='${pageContext.request.contextPath}/views/PT/reports.jsp'"
+        onclick="window.location.href='${pageContext.request.contextPath}/pt/reports'"
       >
         <div class="feature-icon">
           <i class="fas fa-chart-line"></i>
@@ -842,7 +855,21 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
     <footer>
       <div class="footer-container">
         <div class="footer-column">
-          <div class="footer-brand">🏋️ GymFit</div>
+          <div class="footer-brand">
+            <img
+              src="${pageContext.request.contextPath}/images/logo/logo.png"
+              alt="GymFit Logo"
+              style="
+                height: 2em;
+                width: auto;
+                margin-right: 10px;
+                vertical-align: middle;
+                max-height: 40px;
+                object-fit: contain;
+              "
+            />
+            GymFit
+          </div>
           <p>Nơi thay đổi sức khỏe và vóc dáng của bạn.</p>
           <p><i class="fas fa-phone"></i> 0123-456-789</p>
           <p><i class="fas fa-envelope"></i> contact@gymfit.vn</p>

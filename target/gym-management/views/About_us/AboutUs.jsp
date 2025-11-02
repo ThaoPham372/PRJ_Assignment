@@ -78,6 +78,7 @@ file="/views/common/header.jsp" %>
     letter-spacing: 2px;
     background: linear-gradient(135deg, var(--accent), var(--support));
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: gradientText 3s ease infinite;
   }
@@ -537,7 +538,24 @@ file="/views/common/header.jsp" %>
 <!-- Hero Section -->
 <section class="hero-section">
   <div class="hero-content">
-    <div class="hero-logo">🏋️ GYMFIT</div>
+    <div
+      class="hero-logo"
+      style="display: flex; align-items: center; justify-content: center"
+    >
+      <img
+        src="${pageContext.request.contextPath}/images/logo/logo.png"
+        alt="GymFit Logo"
+        style="
+          height: 3em;
+          width: auto;
+          margin-right: 20px;
+          vertical-align: middle;
+          max-height: 120px;
+          object-fit: contain;
+        "
+      />
+      GYMFIT
+    </div>
     <div class="hero-name"></div>
     <div class="hero-slogan">Không Gian Tập Luyện Đẳng Cấp</div>
 
@@ -641,7 +659,7 @@ file="/views/common/header.jsp" %>
 
   <div class="image-grid image-grid-4">
     <img
-      src="${pageContext.request.contextPath}/images/aboutUs/room.jpg"
+      src="${pageContext.request.contextPath}/images/aboutUs/room1.jpg"
       alt="Phòng tập chính"
       loading="lazy"
       class="hover-zoom"
@@ -653,7 +671,7 @@ file="/views/common/header.jsp" %>
       class="hover-zoom"
     />
     <img
-      src="${pageContext.request.contextPath}/images/aboutUs/PT1.jpeg"
+      src="${pageContext.request.contextPath}/images/aboutUs/room2.jpg"
       alt="Khu vực PT"
       loading="lazy"
       class="hover-zoom"
@@ -729,13 +747,10 @@ file="/views/common/header.jsp" %>
     <div class="cta-main">TƯ VẤN & CHAT BOT</div>
 
     <div class="support-buttons">
-      <button
-        class="support-btn"
-        onclick="alert('Chức năng tư vấn sẽ được triển khai sớm!')"
-      >
+      <a href="${pageContext.request.contextPath}/advisory" class="support-btn">
         <i class="fas fa-user-tie"></i>
         TƯ VẤN
-      </button>
+      </a>
       <button
         class="support-btn"
         onclick="alert('Chat Bot đang được phát triển!')"
@@ -768,12 +783,12 @@ file="/views/common/header.jsp" %>
 
 <!-- Floating Buttons -->
 <div class="floating-buttons">
-  <button
+  <a
+    href="${pageContext.request.contextPath}/advisory"
     class="floating-btn tu-van"
-    onclick="alert('Chức năng tư vấn sẽ được triển khai sớm!')"
   >
     <i class="fas fa-user-tie"></i> TƯ VẤN
-  </button>
+  </a>
   <button
     class="floating-btn chat-bot"
     onclick="alert('Chức năng chat bot đang được phát triển!')"

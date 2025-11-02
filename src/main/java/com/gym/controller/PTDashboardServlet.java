@@ -16,9 +16,7 @@ import javax.servlet.http.HttpSession;
 @WebServlet(name = "PTDashboardServlet", urlPatterns = {
     "/pt/dashboard",
     "/pt/home",
-    "/pt/profile",
     "/pt/schedule",
-    "/pt/students",
     "/pt/chat",
     "/pt/reports"
 })
@@ -30,9 +28,19 @@ public class PTDashboardServlet extends HttpServlet {
 
     HttpSession session = request.getSession(false);
 
-    // Check if user is logged in and is a PT
-    // TODO: Implement authentication logic
-    // For now, we'll just forward to the appropriate page
+    // Check if user is logged in and has PT role
+    if (session == null || session.getAttribute("isLoggedIn") == null) {
+      response.sendRedirect(request.getContextPath() + "/views/login.jsp");
+      return;
+    }
+
+    // Check if user has PT role
+    @SuppressWarnings("unchecked")
+    java.util.List<String> userRoles = (java.util.List<String>) session.getAttribute("userRoles");
+    if (userRoles == null || !userRoles.contains("PT")) {
+      response.sendRedirect(request.getContextPath() + "/home");
+      return;
+    }
 
     String path = request.getServletPath();
     String forwardPath = "";
@@ -46,11 +54,9 @@ public class PTDashboardServlet extends HttpServlet {
         forwardPath = "/views/PT/profile.jsp";
         break;
       case "/pt/schedule":
-        forwardPath = "/views/PT/training_schedule.jsp";
-        break;
-      case "/pt/students":
-        forwardPath = "/views/PT/student_management.jsp";
-        break;
+        // Đưa sang ScheduleServlet để lấy dữ liệu thật từ DB
+        response.sendRedirect(request.getContextPath() + "/ScheduleServlet?action=list");
+        return;
       case "/pt/chat":
         forwardPath = "/views/PT/chat.jsp";
         break;
@@ -71,4 +77,3 @@ public class PTDashboardServlet extends HttpServlet {
     doGet(request, response);
   }
 }
-

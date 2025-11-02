@@ -1,22 +1,23 @@
 package com.gym.controller;
 
-import com.gym.service.RegistrationService;
-import com.gym.service.RegistrationService.RegisterRequest;
-import com.gym.service.RegistrationService.RegisterResult;
+import java.io.IOException;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
+import com.gym.service.RegistrationService;
+import com.gym.service.RegistrationService.RegisterRequest;
+import com.gym.service.RegistrationService.RegisterResult;
 
 /**
  * RegisterServlet - Handles user registration requests
  * GET: Show registration form
  * POST: Process registration
  */
-@WebServlet(name = "RegisterServlet", urlPatterns = {"/register"})
+@WebServlet(name = "RegisterServlet", urlPatterns = { "/register" })
 public class RegisterServlet extends HttpServlet {
 
     private RegistrationService registrationService;
@@ -30,7 +31,7 @@ public class RegisterServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // Forward to registration JSP
         request.getRequestDispatcher("/views/register.jsp").forward(request, response);
     }
@@ -38,16 +39,18 @@ public class RegisterServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // Get form parameters
         String username = request.getParameter("username");
         String email = request.getParameter("email");
         String password = request.getParameter("password");
         String confirmPassword = request.getParameter("confirmPassword");
+        String roleType = request.getParameter("roleType"); // New parameter for role selection
 
         // Create registration request
         RegisterRequest registerRequest = new RegisterRequest(username, email, password, confirmPassword);
-        
+        registerRequest.setRoleType(roleType); // Set the selected role
+
         // Set IP address and user agent for audit
         registerRequest.setIpAddress(getClientIpAddress(request));
         registerRequest.setUserAgent(request.getHeader("User-Agent"));
@@ -59,7 +62,7 @@ public class RegisterServlet extends HttpServlet {
             // Registration successful
             request.setAttribute("registerSuccess", true);
             request.setAttribute("successMessage", result.getMessage());
-            
+
             // Clear form data
             request.setAttribute("username", "");
             request.setAttribute("email", "");
@@ -67,7 +70,7 @@ public class RegisterServlet extends HttpServlet {
             // Registration failed
             request.setAttribute("registerSuccess", false);
             request.setAttribute("errors", result.getErrors());
-            
+
             // Keep form data for re-display
             request.setAttribute("username", username);
             request.setAttribute("email", email);
@@ -85,12 +88,12 @@ public class RegisterServlet extends HttpServlet {
         if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
             return xForwardedFor.split(",")[0].trim();
         }
-        
+
         String xRealIp = request.getHeader("X-Real-IP");
         if (xRealIp != null && !xRealIp.isEmpty()) {
             return xRealIp;
         }
-        
+
         return request.getRemoteAddr();
     }
 }

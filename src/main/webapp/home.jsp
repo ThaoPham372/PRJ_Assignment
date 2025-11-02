@@ -711,7 +711,7 @@ file="/views/common/header.jsp" %>
   <div class="floating-buttons">
     <button
       class="floating-btn tu-van"
-      onclick="alert('Chức năng tư vấn sẽ được triển khai sớm!')"
+      onclick="window.location.href='${pageContext.request.contextPath}/advisory'"
     >
       <i class="fas fa-user-tie"></i> TƯ VẤN
     </button>

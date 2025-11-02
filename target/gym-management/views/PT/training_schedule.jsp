@@ -144,7 +144,8 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         gap: 20px;
       }
 
-      .calendar-nav button {
+      .calendar-nav button,
+      .calendar-nav a.calendar-nav-btn {
         background: var(--primary);
         color: #fff;
         border: none;
@@ -153,9 +154,14 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         border-radius: 50%;
         cursor: pointer;
         transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
       }
 
-      .calendar-nav button:hover {
+      .calendar-nav button:hover,
+      .calendar-nav a.calendar-nav-btn:hover {
         background: var(--accent);
         transform: scale(1.1);
       }
@@ -284,6 +290,21 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         background: var(--danger);
       }
 
+      /* Monthly calendar schedule chips */
+      .schedule-chip { color: #fff; padding: 6px 8px; border-radius: 5px; font-size: 0.75rem; margin-bottom: 4px; display: inline-block; }
+      .schedule-pending { background-color: #fbc02d; color: #000; }
+      .schedule-confirmed { background-color: #ff9800; }
+      .schedule-completed { background-color: #4caf50; }
+      .schedule-cancelled { background-color: #f44336; }
+      
+      /* Highlight user's sessions on calendar */
+      .schedule-chip.highlight-user {
+        border: 3px solid #141a49;
+        box-shadow: 0 0 8px rgba(20, 26, 73, 0.6);
+        font-weight: 700;
+        transform: scale(1.05);
+      }
+
       .session-list {
         background: var(--card);
         border-radius: 15px;
@@ -381,6 +402,36 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         color: #721c24;
       }
 
+      /* Unified status styles for list view */
+      .status-confirmed {
+        background-color: #ff9800;
+        color: #ffffff;
+        border-radius: 10px;
+        padding: 5px 10px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+      .status-rejected {
+        background-color: #f44336;
+        color: #ffffff;
+        border-radius: 10px;
+        padding: 5px 10px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+
+      /* Inline error message below submit button */
+      .error-message {
+        margin-top: 8px;
+        color: #dc3545;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-align: left;
+        opacity: 1;
+        transition: opacity 0.3s ease;
+      }
+      .error-message.fade-out { opacity: 0; }
+
       /* Modal */
       .modal {
         display: none;
@@ -474,7 +525,15 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
     </style>
   </head>
   <body>
+    <!-- Optional header include removed to avoid missing file error -->
+
     <div class="container">
+      <c:if test="${not empty error}">
+        <div style="margin-bottom:16px;padding:12px 16px;border-radius:8px;background:#f8d7da;color:#721c24;">
+          <i class="fas fa-exclamation-triangle"></i>
+          ${error}
+        </div>
+      </c:if>
       <a
         href="${pageContext.request.contextPath}/views/PT/homePT.jsp"
         class="btn btn-back"
@@ -501,13 +560,29 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
       <!-- Calendar Controls -->
       <div class="calendar-controls">
         <div class="calendar-nav">
-          <button onclick="previousMonth()">
+          <c:set var="navParams" value="&month=${prev_month}&year=${prev_year}"/>
+          <c:if test="${not empty defaultView}">
+            <c:set var="navParams" value="${navParams}&view=${defaultView}"/>
+          </c:if>
+          <c:if test="${not empty highlightUserId}">
+            <c:set var="navParams" value="${navParams}&user=${highlightUserId}"/>
+          </c:if>
+          <a href="ScheduleServlet?action=list${navParams}" class="calendar-nav-btn">
             <i class="fas fa-chevron-left"></i>
-          </button>
-          <div class="current-month" id="currentMonth">Tháng 10, 2025</div>
-          <button onclick="nextMonth()">
+          </a>
+          <div class="current-month" id="currentMonth">
+            Tháng ${calendar_month}, ${calendar_year}
+          </div>
+          <c:set var="navParamsNext" value="&month=${next_month}&year=${next_year}"/>
+          <c:if test="${not empty defaultView}">
+            <c:set var="navParamsNext" value="${navParamsNext}&view=${defaultView}"/>
+          </c:if>
+          <c:if test="${not empty highlightUserId}">
+            <c:set var="navParamsNext" value="${navParamsNext}&user=${highlightUserId}"/>
+          </c:if>
+          <a href="ScheduleServlet?action=list${navParamsNext}" class="calendar-nav-btn">
             <i class="fas fa-chevron-right"></i>
-          </button>
+          </a>
         </div>
         <div class="view-options">
           <button class="view-btn active" onclick="switchView('calendar')">
@@ -519,232 +594,200 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         </div>
       </div>
 
-      <!-- Calendar View -->
-      <div id="calendarView" class="calendar-grid">
-        <div class="calendar-header">
-          <div class="calendar-day-name">Thứ 2</div>
-          <div class="calendar-day-name">Thứ 3</div>
-          <div class="calendar-day-name">Thứ 4</div>
-          <div class="calendar-day-name">Thứ 5</div>
-          <div class="calendar-day-name">Thứ 6</div>
-          <div class="calendar-day-name">Thứ 7</div>
-          <div class="calendar-day-name">Chủ nhật</div>
-        </div>
-        <div class="calendar-days" id="calendarDays">
-          <!-- Days will be generated by JavaScript -->
-          <div class="calendar-day">
-            <div class="day-number">14</div>
-            <div class="session-item">9:00 - Nguyễn Văn A</div>
-            <div class="session-item">15:00 - Trần Thị B</div>
-          </div>
-          <div class="calendar-day today">
-            <div class="day-number">15</div>
-            <div class="session-item pending">
-              8:00 - Lê Văn C (Chờ xác nhận)
-            </div>
-            <div class="session-item">10:00 - Phạm Thị D</div>
-            <div class="session-item">14:00 - Hoàng Văn E</div>
-          </div>
-          <div class="calendar-day">
-            <div class="day-number">16</div>
-            <div class="session-item">7:00 - Vũ Thị F</div>
-          </div>
-          <div class="calendar-day">
-            <div class="day-number">17</div>
-            <div class="session-item">9:00 - Đỗ Văn G</div>
-            <div class="session-item completed">16:00 - Ngô Thị H</div>
-          </div>
-          <div class="calendar-day">
-            <div class="day-number">18</div>
-          </div>
-          <div class="calendar-day">
-            <div class="day-number">19</div>
-            <div class="session-item">10:00 - Bùi Văn I</div>
-          </div>
-          <div class="calendar-day">
-            <div class="day-number">20</div>
-            <div class="session-item cancelled">9:00 - Đinh Thị K (Đã hủy)</div>
-          </div>
-        </div>
-      </div>
+     <!-- Calendar View (rendered from DB via JS) -->
+     <div id="calendarView" class="calendar-grid">
+       <c:if test="${not empty highlightUserName}">
+         <div style="margin-bottom: 20px; padding: 12px 20px; background: linear-gradient(135deg, #141a49 0%, #1e2a5c 100%); color: #fff; border-radius: 10px; font-weight: 600; display: flex; align-items: center; gap: 10px;">
+           <i class="fas fa-user-circle"></i>
+           <span>Đang xem lịch của học viên: <strong>${highlightUserName}</strong></span>
+         </div>
+       </c:if>
+       <div class="calendar-header">
+         <div class="calendar-day-name">Thứ 2</div>
+         <div class="calendar-day-name">Thứ 3</div>
+         <div class="calendar-day-name">Thứ 4</div>
+         <div class="calendar-day-name">Thứ 5</div>
+         <div class="calendar-day-name">Thứ 6</div>
+         <div class="calendar-day-name">Thứ 7</div>
+         <div class="calendar-day-name">Chủ nhật</div>
+       </div>
+       <div class="calendar-days" id="calendarDays">
+         <!-- Leading blank cells to align the first day (Mon=1..Sun=7) -->
+         <c:if test="${not empty calendar_firstIso and calendar_firstIso gt 1}">
+           <c:forEach var="i" begin="1" end="${calendar_firstIso - 1}">
+             <div class="calendar-day other-month"></div>
+           </c:forEach>
+         </c:if>
+         <!-- Real days -->
+         <c:forEach var="d" begin="1" end="${calendar_days}">
+           <c:set var="monthStr" value="${calendar_month}"/>
+           <c:if test="${calendar_month lt 10}"><c:set var="monthStr" value="0${calendar_month}"/></c:if>
+           <c:set var="dayStr" value="${d}"/>
+           <c:if test="${d lt 10}"><c:set var="dayStr" value="0${d}"/></c:if>
+           <c:set var="dateKey" value="${calendar_year}-${monthStr}-${dayStr}" />
+           <div class="calendar-day">
+             <div class="day-number">${d}</div>
+             <c:forEach var="item" items="${scheduleMap[dateKey]}">
+               <c:set var="chipClass" value="schedule-chip schedule-${item.status}"/>
+               <c:if test="${not empty highlightUserId and item.userId == highlightUserId}">
+                 <c:set var="chipClass" value="${chipClass} highlight-user"/>
+               </c:if>
+               <div class="${chipClass}">${item.time} - ${item.userName}</div>
+             </c:forEach>
+           </div>
+         </c:forEach>
+       </div>
+     </div>
 
       <!-- List View -->
-      <div id="listView" class="session-list" style="display: none">
-        <h3>Danh sách buổi tập</h3>
-
-        <div class="session-card">
-          <div class="session-header">
-            <div class="session-title">Buổi tập với Nguyễn Văn A</div>
-            <span class="status-badge confirmed">Đã xác nhận</span>
-          </div>
-          <div class="session-time">
-            <i class="fas fa-clock"></i> Thứ 2, 14/10/2025 - 9:00 - 10:00
-          </div>
-          <div class="session-info">
-            <div class="info-item">
-              <i class="fas fa-user"></i>
-              <span>Nguyễn Văn A</span>
-            </div>
-            <div class="info-item">
-              <i class="fas fa-dumbbell"></i>
-              <span>Cardio & Strength</span>
-            </div>
-            <div class="info-item">
-              <i class="fas fa-map-marker-alt"></i>
-              <span>Phòng 1</span>
-            </div>
-          </div>
-          <div class="session-actions">
-            <button class="btn btn-success btn-sm">
-              <i class="fas fa-check"></i> Hoàn thành
-            </button>
-            <button class="btn btn-info btn-sm">
-              <i class="fas fa-edit"></i> Chỉnh sửa
-            </button>
-            <button class="btn btn-danger btn-sm">
-              <i class="fas fa-times"></i> Hủy
-            </button>
-          </div>
-        </div>
-
-        <div class="session-card">
-          <div class="session-header">
-            <div class="session-title">Buổi tập với Lê Văn C</div>
-            <span class="status-badge pending">Chờ xác nhận</span>
-          </div>
-          <div class="session-time">
-            <i class="fas fa-clock"></i> Thứ 3, 15/10/2025 - 8:00 - 9:00
-          </div>
-          <div class="session-info">
-            <div class="info-item">
-              <i class="fas fa-user"></i>
-              <span>Lê Văn C</span>
-            </div>
-            <div class="info-item">
-              <i class="fas fa-dumbbell"></i>
-              <span>Yoga</span>
-            </div>
-            <div class="info-item">
-              <i class="fas fa-map-marker-alt"></i>
-              <span>Phòng 2</span>
-            </div>
-          </div>
-          <div class="session-actions">
-            <button class="btn btn-success btn-sm">
-              <i class="fas fa-check"></i> Xác nhận
-            </button>
-            <button class="btn btn-danger btn-sm">
-              <i class="fas fa-times"></i> Từ chối
-            </button>
-          </div>
-        </div>
-
-        <div class="session-card">
-          <div class="session-header">
-            <div class="session-title">Buổi tập với Phạm Thị D</div>
-            <span class="status-badge confirmed">Đã xác nhận</span>
-          </div>
-          <div class="session-time">
-            <i class="fas fa-clock"></i> Thứ 3, 15/10/2025 - 10:00 - 11:00
-          </div>
-          <div class="session-info">
-            <div class="info-item">
-              <i class="fas fa-user"></i>
-              <span>Phạm Thị D</span>
-            </div>
-            <div class="info-item">
-              <i class="fas fa-dumbbell"></i>
-              <span>Weight Loss Program</span>
-            </div>
-            <div class="info-item">
-              <i class="fas fa-map-marker-alt"></i>
-              <span>Phòng 3</span>
-            </div>
-          </div>
-          <div class="session-actions">
-            <button class="btn btn-success btn-sm">
-              <i class="fas fa-check"></i> Hoàn thành
-            </button>
-            <button class="btn btn-info btn-sm">
-              <i class="fas fa-edit"></i> Chỉnh sửa
-            </button>
-            <button class="btn btn-danger btn-sm">
-              <i class="fas fa-times"></i> Hủy
-            </button>
-          </div>
-        </div>
-      </div>
+       <div id="listView" class="session-list" style="display: none">
+         <h3>Danh sách buổi tập</h3>
+         <c:if test="${empty schedules}"><i>Không có buổi tập nào.</i></c:if>
+         <c:forEach var="s" items="${schedules}">
+           <div class="session-card">
+             <div class="session-header">
+               <div class="session-title">Buổi tập với 
+                 <b>
+                   <c:forEach var="u" items="${users}"><c:if test="${u.id == s.userId}">${u.username}</c:if></c:forEach>
+                 </b>
+               </div>
+               <c:choose>
+                 <c:when test="${s.status == 'confirmed'}">
+                   <span class="status-confirmed">Đã xác nhận</span>
+                 </c:when>
+                 <c:when test="${s.status == 'rejected'}">
+                   <span class="status-rejected">Từ chối</span>
+                 </c:when>
+                 <c:otherwise>
+                   <span class="status-badge ${s.status}">
+                     <c:choose>
+                       <c:when test="${s.status == 'pending'}">Chờ xác nhận</c:when>
+                       <c:when test="${s.status == 'completed'}">Hoàn thành</c:when>
+                       <c:when test="${s.status == 'cancelled'}">Đã hủy</c:when>
+                       <c:otherwise>${s.status}</c:otherwise>
+                     </c:choose>
+                   </span>
+                 </c:otherwise>
+               </c:choose>
+             </div>
+             <div class="session-time">
+               <i class="fas fa-clock"></i> ${s.trainingDate} - ${s.startTime} ~ ${s.endTime}
+             </div>
+             <div class="session-info">
+               <div class="info-item"><i class="fas fa-user"></i>
+                 <c:forEach var="u" items="${users}"><c:if test="${u.id == s.userId}">${u.username}</c:if></c:forEach>
+               </div>
+               <div class="info-item"><i class="fas fa-dumbbell"></i> ${s.trainingType}</div>
+               <div class="info-item"><i class="fas fa-map-marker-alt"></i> ${s.location}</div>
+             </div>
+             <div class="session-actions">
+               <c:set var="monthYearParams2" value=""/>
+               <c:if test="${not empty calendar_month and not empty calendar_year}">
+                 <c:set var="monthYearParams2" value="&month=${calendar_month}&year=${calendar_year}"/>
+               </c:if>
+               <c:if test="${s.status == 'pending'}">
+                 <a href="ScheduleServlet?action=confirm&id=${s.id}${monthYearParams2}" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Xác nhận</a>
+                 <a href="ScheduleServlet?action=reject&id=${s.id}${monthYearParams2}" class="btn btn-danger btn-sm"><i class="fas fa-times"></i> Từ chối</a>
+               </c:if>
+               <c:if test="${s.status == 'confirmed'}">
+                 <a href="ScheduleServlet?action=complete&id=${s.id}${monthYearParams2}" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Hoàn thành</a>
+                 <a href="ScheduleServlet?action=cancel&id=${s.id}${monthYearParams2}" class="btn btn-danger btn-sm"><i class="fas fa-times"></i> Huỷ</a>
+               </c:if>
+               <a href="ScheduleServlet?action=edit&id=${s.id}${monthYearParams2}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Chỉnh sửa</a>
+               <a href="ScheduleServlet?action=delete&id=${s.id}${monthYearParams2}" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Xóa</a>
+             </div>
+           </div>
+         </c:forEach>
+       </div>
     </div>
 
     <!-- Modal tạo buổi tập -->
-    <div id="sessionModal" class="modal">
+     <div id="sessionModal" class="modal${(not empty editSchedule or showCreateModal) ? ' active' : ''}">
       <div class="modal-content">
         <div class="modal-header">
-          <h2><i class="fas fa-plus-circle"></i> Tạo buổi tập mới</h2>
+          <h2><i class="fas fa-plus-circle"></i> 
+            <c:choose>
+              <c:when test="${not empty editSchedule}">Chỉnh sửa buổi tập</c:when>
+              <c:otherwise>Tạo buổi tập mới</c:otherwise>
+            </c:choose>
+          </h2>
           <button class="close-btn" onclick="closeModal()">&times;</button>
         </div>
-        <form onsubmit="createSession(event)">
-          <div class="form-group">
-            <label>Học viên</label>
-            <select required>
-              <option value="">Chọn học viên</option>
-              <option>Nguyễn Văn A</option>
-              <option>Trần Thị B</option>
-              <option>Lê Văn C</option>
-            </select>
-          </div>
+        <form method="post" action="${pageContext.request.contextPath}/ScheduleServlet" >
+          <input type="hidden" name="action" value="${not empty editSchedule ? 'update' : 'create'}"/>
+          <c:if test="${not empty editSchedule}">
+            <input type="hidden" name="id" value="${editSchedule.id}"/>
+          </c:if>
+      <c:set var="selectedUserName" value=""/>
+      <c:if test="${not empty editSchedule}">
+        <c:forEach var="u" items="${users}">
+          <c:if test="${u.id == editSchedule.userId}">
+            <c:set var="selectedUserName" value="${u.username}"/>
+          </c:if>
+        </c:forEach>
+      </c:if>
+      <div class="form-group">
+        <label>Học viên</label>
+         <input id="studentNameInput" type="text" name="user_name" list="usersDataList" placeholder="Nhập tên học viên" value="${not empty form_user_name ? form_user_name : selectedUserName}" required />
+        <datalist id="usersDataList">
+          <c:forEach var="u" items="${users}">
+            <option value="${u.username}"></option>
+          </c:forEach>
+        </datalist>
+      </div>
           <div class="form-group">
             <label>Ngày tập</label>
-            <input type="date" required />
+             <input type="date" name="training_date" value="${not empty form_training_date ? form_training_date : editSchedule.trainingDate}" required/>
           </div>
           <div class="form-group">
             <label>Giờ bắt đầu</label>
-            <input type="time" required />
+             <input type="time" name="start_time" value="${not empty form_start_time ? form_start_time : editSchedule.startTime}" required/>
           </div>
           <div class="form-group">
             <label>Giờ kết thúc</label>
-            <input type="time" required />
+             <input type="time" name="end_time" value="${not empty form_end_time ? form_end_time : editSchedule.endTime}" required/>
           </div>
           <div class="form-group">
             <label>Loại tập</label>
-            <select required>
+             <select name="training_type" required>
               <option value="">Chọn loại tập</option>
-              <option>Cardio</option>
-              <option>Strength Training</option>
-              <option>Yoga</option>
-              <option>Weight Loss</option>
-              <option>Bodybuilding</option>
+               <c:set var="typeValue" value="${not empty form_training_type ? form_training_type : editSchedule.trainingType}"/>
+               <option value="Cardio" ${typeValue == 'Cardio' ? 'selected' : ''}>Cardio</option>
+               <option value="Strength Training" ${typeValue == 'Strength Training' ? 'selected' : ''}>Strength Training</option>
+               <option value="Yoga" ${typeValue == 'Yoga' ? 'selected' : ''}>Yoga</option>
+               <option value="Weight Loss" ${typeValue == 'Weight Loss' ? 'selected' : ''}>Weight Loss</option>
+               <option value="Bodybuilding" ${typeValue == 'Bodybuilding' ? 'selected' : ''}>Bodybuilding</option>
             </select>
           </div>
           <div class="form-group">
             <label>Địa điểm</label>
-            <input type="text" placeholder="Nhập phòng tập" required />
+             <input type="text" name="location" placeholder="Nhập phòng tập" value="${not empty form_location ? form_location : editSchedule.location}" required/>
           </div>
           <div class="form-group">
             <label>Ghi chú</label>
-            <textarea
-              rows="3"
-              placeholder="Nhập ghi chú (không bắt buộc)"
-            ></textarea>
+             <textarea name="note" rows="3" placeholder="Nhập ghi chú (không bắt buộc)">${not empty form_note ? form_note : editSchedule.note}</textarea>
           </div>
-          <div style="display: flex; gap: 10px; justify-content: flex-end">
-            <button
-              type="button"
-              class="btn"
-              style="background: #6c757d"
-              onclick="closeModal()"
-            >
-              Hủy
-            </button>
-            <button type="submit" class="btn">
-              <i class="fas fa-save"></i> Tạo buổi tập
-            </button>
+           <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center;">
+            <button type="button" class="btn" style="background: #6c757d" onclick="closeModal()">Hủy</button>
+            <button type="submit" class="btn"><i class="fas fa-save"></i> <c:choose><c:when test="${not empty editSchedule}">Lưu</c:when><c:otherwise>Tạo buổi tập</c:otherwise></c:choose></button>
           </div>
-        </form>
+           <c:if test="${not empty error}">
+             <div id="error-message" class="error-message">${error}</div>
+           </c:if>
+         </form>
       </div>
     </div>
-
     <script>
+      // Tự động chuyển view dựa trên defaultView parameter từ server
+      (function() {
+        const defaultView = '${defaultView}';
+        if (defaultView === 'calendar') {
+          switchView('calendar');
+        } else if (defaultView === 'list') {
+          switchView('list');
+        }
+      })();
+
       function switchView(view) {
         const calendarView = document.getElementById('calendarView');
         const listView = document.getElementById('listView');
@@ -763,27 +806,32 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         }
       }
 
-      function previousMonth() {
-        alert('Chuyển về tháng trước');
-      }
-
-      function nextMonth() {
-        alert('Chuyển sang tháng sau');
-      }
-
       function openModal() {
         document.getElementById('sessionModal').classList.add('active');
       }
 
       function closeModal() {
         document.getElementById('sessionModal').classList.remove('active');
+        window.location = 'ScheduleServlet?action=list';
       }
 
-      function createSession(e) {
-        e.preventDefault();
-        alert('Tạo buổi tập thành công!');
-        closeModal();
-      }
+      // Auto-hide error and focus back to student input
+      (function (){
+        const err = document.getElementById('error-message');
+        if (err) {
+          // Scroll mượt tới thông báo lỗi
+          try { err.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+          // Tự ẩn sau 3 giây rồi focus vào ô nhập tên học viên
+          setTimeout(()=>{
+            err.classList.add('fade-out');
+            setTimeout(()=>{
+              if (err) err.style.display = 'none';
+              const input = document.getElementById('studentNameInput');
+              if (input) input.focus();
+            }, 300);
+          }, 3000);
+        }
+      })();
     </script>
   </body>
 </html>
