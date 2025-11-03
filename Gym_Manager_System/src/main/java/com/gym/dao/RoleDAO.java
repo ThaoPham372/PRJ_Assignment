@@ -33,9 +33,15 @@ public class RoleDAO {
 
     /**
      * Assign role to user
+     * Uses INSERT IGNORE to avoid duplicate key errors if role already assigned
      */
     public boolean assignUserRole(long userId, long roleId) {
-        String sql = "INSERT INTO user_roles (user_id, role_id, assigned_date) VALUES (?, ?, NOW())";
+        // Check if role already assigned
+        if (userHasRoleId(userId, roleId)) {
+            return true;
+        }
+        
+        String sql = "INSERT IGNORE INTO user_roles (user_id, role_id, assigned_date) VALUES (?, ?, NOW())";
         
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -44,11 +50,42 @@ public class RoleDAO {
             stmt.setLong(2, roleId);
             
             int affectedRows = stmt.executeUpdate();
-            return affectedRows > 0;
+            if (affectedRows > 0) {
+                return true;
+            }
+            // Check again in case it was inserted by another thread
+            return userHasRoleId(userId, roleId);
         } catch (SQLException e) {
-            System.err.println("Error assigning user role: " + e.getMessage());
+            String errorMsg = e.getMessage();
+            if (errorMsg != null && (errorMsg.contains("Duplicate entry") || errorMsg.contains("UNIQUE constraint"))) {
+                return true;
+            }
+            System.err.println("[RoleDAO] Error assigning user role: " + errorMsg);
             return false;
         }
+    }
+    
+    /**
+     * Check if user has a specific role by role ID
+     */
+    private boolean userHasRoleId(long userId, long roleId) {
+        String sql = "SELECT COUNT(*) FROM user_roles WHERE user_id = ? AND role_id = ?";
+        
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setLong(1, userId);
+            stmt.setLong(2, roleId);
+            
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error checking user role: " + e.getMessage());
+        }
+        
+        return false;
     }
 
     /**
@@ -124,6 +161,7 @@ public class RoleDAO {
 
     /**
      * Create default roles if they don't exist
+     * @throws RuntimeException if roles cannot be created
      */
     public void createDefaultRoles() {
         String[] defaultRoles = {
@@ -132,13 +170,29 @@ public class RoleDAO {
         };
         
         try (Connection conn = DatabaseUtil.getConnection()) {
-            for (String sql : defaultRoles) {
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.executeUpdate();
+            conn.setAutoCommit(false); // Use transaction
+            
+            try {
+                for (String sql : defaultRoles) {
+                    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                        stmt.executeUpdate();
+                        // Extract role name from SQL for logging
+                        String roleName = sql.substring(sql.indexOf("VALUES") + 7, sql.indexOf(",", sql.indexOf("VALUES") + 7)).replace("'", "");
+                        System.out.println("[RoleDAO] Created/verified default role: " + roleName);
+                    }
                 }
+                conn.commit();
+                System.out.println("[RoleDAO] Successfully created/verified all default roles");
+            } catch (SQLException e) {
+                conn.rollback();
+                throw new RuntimeException("Failed to create default roles", e);
+            } finally {
+                conn.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            System.err.println("Error creating default roles: " + e.getMessage());
+            System.err.println("[RoleDAO] Error creating default roles: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to connect to database or create default roles", e);
         }
     }
 }

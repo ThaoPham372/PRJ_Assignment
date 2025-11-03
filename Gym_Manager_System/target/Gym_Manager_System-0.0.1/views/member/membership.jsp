@@ -196,32 +196,83 @@
             <c:when test="${not empty currentMembership}">
                 <div class="row align-items-center">
                     <div class="col-md-8">
-                        <h4 class="mb-2">${fn:escapeXml(currentMembership.displayName)}</h4>
+                        <h4 class="mb-2">${fn:escapeXml(currentMembership.packageName != null ? currentMembership.packageName : 'Gói tập')}</h4>
                         <p class="text-muted mb-2">
+                            Bạn đang dùng gói tập, hết hạn: 
                             <c:choose>
-                                <c:when test="${not empty currentMembership.membershipName}">
-                                    ${fn:escapeXml(currentMembership.membershipName)} Membership
+                                <c:when test="${currentMembership.endDate != null}">
+                                    <%
+                                        com.gym.model.membership.Membership mem = (com.gym.model.membership.Membership) request.getAttribute("currentMembership");
+                                        if (mem != null && mem.getEndDate() != null) {
+                                            java.time.LocalDate endDate = mem.getEndDate();
+                                            out.print(String.format("%02d/%02d/%04d", endDate.getDayOfMonth(), endDate.getMonthValue(), endDate.getYear()));
+                                        }
+                                    %>
                                 </c:when>
-                                <c:otherwise>
-                                    Gói thành viên đang hoạt động
-                                </c:otherwise>
+                                <c:otherwise>N/A</c:otherwise>
                             </c:choose>
                         </p>
                         <p class="mb-2">
                             <i class="fas fa-calendar me-2"></i>
                             <strong>Bắt đầu:</strong> 
-                            <fmt:formatDate value="${currentMembership.startDate}" pattern="dd/MM/yyyy" />
+                            <c:choose>
+                                <c:when test="${currentMembership.startDate != null}">
+                                    <%
+                                        com.gym.model.membership.Membership mem2 = (com.gym.model.membership.Membership) request.getAttribute("currentMembership");
+                                        if (mem2 != null && mem2.getStartDate() != null) {
+                                            java.time.LocalDate startDate = mem2.getStartDate();
+                                            out.print(String.format("%02d/%02d/%04d", startDate.getDayOfMonth(), startDate.getMonthValue(), startDate.getYear()));
+                                        }
+                                    %>
+                                </c:when>
+                                <c:otherwise>N/A</c:otherwise>
+                            </c:choose>
                         </p>
-                        <p class="mb-0">
+                        <p class="mb-2">
                             <i class="fas fa-calendar-times me-2"></i>
                             <strong>Hết hạn:</strong> 
-                            <fmt:formatDate value="${currentMembership.expiryDate}" pattern="dd/MM/yyyy" />
+                            <c:choose>
+                                <c:when test="${currentMembership.endDate != null}">
+                                    <%
+                                        com.gym.model.membership.Membership mem3 = (com.gym.model.membership.Membership) request.getAttribute("currentMembership");
+                                        if (mem3 != null && mem3.getEndDate() != null) {
+                                            java.time.LocalDate endDate = mem3.getEndDate();
+                                            out.print(String.format("%02d/%02d/%04d", endDate.getDayOfMonth(), endDate.getMonthValue(), endDate.getYear()));
+                                        }
+                                    %>
+                                </c:when>
+                                <c:otherwise>N/A</c:otherwise>
+                            </c:choose>
+                        </p>
+                        <p class="mb-0">
+                            <i class="fas fa-clock me-2"></i>
+                            <strong>Còn lại:</strong>
+                            <c:set var="endDate" value="${currentMembership.endDate}" />
+                            <c:set var="now" value="<%=java.time.LocalDate.now()%>" />
+                            <c:choose>
+                                <c:when test="${endDate != null && endDate.isAfter(now)}">
+                                    <c:set var="daysRemaining" value="${endDate.toEpochDay() - now.toEpochDay()}" />
+                                    <span style="color: var(--accent); font-weight: bold;">${daysRemaining} ngày</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span style="color: var(--danger); font-weight: bold;">Đã hết hạn</span>
+                                </c:otherwise>
+                            </c:choose>
                         </p>
                     </div>
                     <div class="col-md-4 text-end">
-                        <span class="badge bg-success" style="font-size: 1rem; padding: 10px 20px;">
-                            <i class="fas fa-check-circle"></i> Đang hoạt động
-                        </span>
+                        <c:choose>
+                            <c:when test="${currentMembership.status == 'ACTIVE'}">
+                                <span class="badge bg-success" style="font-size: 1rem; padding: 10px 20px;">
+                                    <i class="fas fa-check-circle"></i> Đang hoạt động
+                                </span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="badge bg-secondary" style="font-size: 1rem; padding: 10px 20px;">
+                                    ${fn:escapeXml(currentMembership.status)}
+                                </span>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </div>
             </c:when>
@@ -238,57 +289,47 @@
     <!-- Available Packages -->
     <div class="membership-card">
         <h4 class="membership-title">Gói Thành Viên Khác</h4>
+        <!-- Debug info -->
+        <c:if test="${empty packages}">
+            <div class="alert alert-warning">
+                <strong>Debug:</strong> packages attribute is empty or null.
+                <br>packages size: ${packages != null ? packages.size() : 'NULL'}
+            </div>
+        </c:if>
         <c:choose>
-            <c:when test="${not empty memberships}">
+            <c:when test="${not empty packages}">
                 <div class="row">
-                    <c:forEach items="${memberships}" var="membership">
+                    <c:forEach items="${packages}" var="pkg">
                         <div class="col-md-4 mb-3">
-                            <div class="package-card ${membership.isFeatured == true ? 'featured' : ''}">
-                                <c:if test="${membership.isFeatured == true}">
-                                    <div class="text-center mb-2">
-                                        <span class="badge bg-warning">Phổ Biến</span>
-                                    </div>
-                                </c:if>
+                            <div class="package-card">
                                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
-                                    <h5 class="mb-3" style="margin: 0;">${fn:escapeXml(membership.displayName)}</h5>
-                                    <c:if test="${currentMembershipId != null && currentMembershipId == membership.membershipId}">
+                                    <h5 class="mb-3" style="margin: 0;">${fn:escapeXml(pkg.name)}</h5>
+                                    <c:if test="${currentPackageId != null && currentPackageId == pkg.packageId}">
                                         <span class="badge bg-success">
                                             <i class="fas fa-check-circle"></i> Gói của bạn
                                         </span>
                                     </c:if>
                                 </div>
                                 <div class="price-display mb-3">
-                                    <fmt:formatNumber value="${membership.price}" type="number" maxFractionDigits="0" />đ
+                                    <fmt:formatNumber value="${pkg.price}" type="number" maxFractionDigits="0" />đ
                                 </div>
-                                <small class="text-muted">/ ${membership.durationMonths} ${membership.durationMonths == 1 ? 'tháng' : 'tháng'}</small>
+                                <small class="text-muted">/ ${pkg.durationMonths} ${pkg.durationMonths == 1 ? 'tháng' : 'tháng'}</small>
                                 
-                                <c:if test="${not empty membership.description}">
+                                <c:if test="${not empty pkg.description}">
                                     <p class="text-muted mt-2" style="font-size: 0.9rem;">
-                                        ${fn:escapeXml(membership.description)}
+                                        ${fn:escapeXml(pkg.description)}
                                     </p>
                                 </c:if>
                                 
-                                <ul class="list-unstyled mt-3">
-                                    <c:choose>
-                                        <c:when test="${not empty membership.features}">
-                                            <c:set var="featuresStr" value="${fn:replace(fn:replace(fn:replace(membership.features, '[', ''), ']', ''), '\"', '')}" />
-                                            <c:set var="featuresArray" value="${fn:split(featuresStr, ',')}" />
-                                            <c:forEach items="${featuresArray}" var="feature">
-                                                <c:set var="featureTrimmed" value="${fn:trim(feature)}" />
-                                                <c:if test="${not empty featureTrimmed}">
-                                                    <li><i class="fas fa-check text-success me-2"></i>${fn:escapeXml(featureTrimmed)}</li>
-                                                </c:if>
-                                            </c:forEach>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <li><i class="fas fa-info-circle text-muted me-2"></i>Chi tiết tính năng</li>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </ul>
+                                <c:if test="${pkg.maxSessions != null}">
+                                    <p class="text-muted mt-2" style="font-size: 0.9rem;">
+                                        <i class="fas fa-dumbbell me-2"></i>Tối đa ${pkg.maxSessions} buổi tập
+                                    </p>
+                                </c:if>
                                 
                                 <div style="margin-top: 20px;">
                                     <form method="post" action="${pageContext.request.contextPath}/member/membership/buyNow">
-                                        <input type="hidden" name="membershipId" value="${membership.membershipId}"/>
+                                        <input type="hidden" name="packageId" value="${pkg.packageId}"/>
                                         <button type="submit" class="btn-membership w-100">
                                             <i class="fas fa-credit-card"></i> Mua ngay
                                         </button>
@@ -326,13 +367,53 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><fmt:formatDate value="${currentMembership.createdAt}" pattern="dd/MM/yyyy" /></td>
-                            <td>${fn:escapeXml(currentMembership.displayName)}</td>
-                            <td><fmt:formatDate value="${currentMembership.startDate}" pattern="dd/MM/yyyy" /></td>
-                            <td><fmt:formatDate value="${currentMembership.expiryDate}" pattern="dd/MM/yyyy" /></td>
                             <td>
                                 <c:choose>
-                                    <c:when test="${currentMembership.status == 'active'}">
+                                    <c:when test="${currentMembership.createdDate != null}">
+                                        <%
+                                            com.gym.model.membership.Membership mem4 = (com.gym.model.membership.Membership) request.getAttribute("currentMembership");
+                                            if (mem4 != null && mem4.getCreatedDate() != null) {
+                                                java.time.LocalDateTime createdDate = mem4.getCreatedDate();
+                                                java.time.LocalDate date = createdDate.toLocalDate();
+                                                out.print(String.format("%02d/%02d/%04d", date.getDayOfMonth(), date.getMonthValue(), date.getYear()));
+                                            }
+                                        %>
+                                    </c:when>
+                                    <c:otherwise>N/A</c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td>${fn:escapeXml(currentMembership.packageName != null ? currentMembership.packageName : 'Gói tập')}</td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${currentMembership.startDate != null}">
+                                        <%
+                                            com.gym.model.membership.Membership mem5 = (com.gym.model.membership.Membership) request.getAttribute("currentMembership");
+                                            if (mem5 != null && mem5.getStartDate() != null) {
+                                                java.time.LocalDate startDate = mem5.getStartDate();
+                                                out.print(String.format("%02d/%02d/%04d", startDate.getDayOfMonth(), startDate.getMonthValue(), startDate.getYear()));
+                                            }
+                                        %>
+                                    </c:when>
+                                    <c:otherwise>N/A</c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${currentMembership.endDate != null}">
+                                        <%
+                                            com.gym.model.membership.Membership mem6 = (com.gym.model.membership.Membership) request.getAttribute("currentMembership");
+                                            if (mem6 != null && mem6.getEndDate() != null) {
+                                                java.time.LocalDate endDate = mem6.getEndDate();
+                                                out.print(String.format("%02d/%02d/%04d", endDate.getDayOfMonth(), endDate.getMonthValue(), endDate.getYear()));
+                                            }
+                                        %>
+                                    </c:when>
+                                    <c:otherwise>N/A</c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${currentMembership.status == 'ACTIVE'}">
                                         <span class="badge bg-success">Đang Hoạt Động</span>
                                     </c:when>
                                     <c:otherwise>
@@ -355,7 +436,7 @@
                     <h5 class="membership-title">Gia Hạn</h5>
                     <p class="text-muted mb-4">Gia hạn gói hiện tại</p>
                     <form method="post" action="${pageContext.request.contextPath}/member/membership/buyNow">
-                        <input type="hidden" name="membershipId" value="${currentMembership.membershipId}"/>
+                        <input type="hidden" name="packageId" value="${currentMembership.packageId}"/>
                         <button type="submit" class="btn-membership">
                             <i class="fas fa-credit-card me-2"></i>Gia Hạn Ngay
                         </button>

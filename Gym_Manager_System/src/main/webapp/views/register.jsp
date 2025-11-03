@@ -544,6 +544,20 @@
               value="${username != null ? username : ''}"
               required
             />
+            <div class="error-message" id="username-error"></div>
+          </div>
+
+          <div class="form-group">
+            <input
+              type="text"
+              id="name"
+              name="name"
+              class="form-input"
+              placeholder="Tên đầy đủ"
+              value="${name != null ? name : ''}"
+              required
+            />
+            <div class="error-message" id="name-error"></div>
           </div>
 
           <div class="form-group">
@@ -567,6 +581,7 @@
               placeholder="Mật khẩu"
               required
             />
+            <div class="error-message" id="password-error"></div>
           </div>
 
           <div class="form-group">
@@ -612,11 +627,13 @@
       document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('registerForm');
         const usernameInput = document.getElementById('username');
+        const nameInput = document.getElementById('name');
         const passwordInput = document.getElementById('password');
         const registerBtn = document.getElementById('registerBtn');
         const registerText = document.getElementById('registerText');
         const loadingSpinner = document.getElementById('loadingSpinner');
         const usernameError = document.getElementById('username-error');
+        const nameError = document.getElementById('name-error');
         const passwordError = document.getElementById('password-error');
 
         // Form validation
@@ -625,12 +642,24 @@
 
           // Clear previous errors
           usernameError.classList.remove('show');
+          nameError.classList.remove('show');
           passwordError.classList.remove('show');
 
           // Validate username
           if (!usernameInput.value.trim()) {
             usernameError.textContent = 'Vui lòng nhập tên đăng nhập';
             usernameError.classList.add('show');
+            isValid = false;
+          }
+
+          // Validate name
+          if (!nameInput.value.trim()) {
+            nameError.textContent = 'Vui lòng nhập tên đầy đủ';
+            nameError.classList.add('show');
+            isValid = false;
+          } else if (nameInput.value.trim().length < 2) {
+            nameError.textContent = 'Tên đầy đủ phải có ít nhất 2 ký tự';
+            nameError.classList.add('show');
             isValid = false;
           }
 
@@ -669,6 +698,18 @@
           }
         });
 
+        nameInput.addEventListener('blur', function () {
+          if (!this.value.trim()) {
+            nameError.textContent = 'Vui lòng nhập tên đầy đủ';
+            nameError.classList.add('show');
+          } else if (this.value.trim().length < 2) {
+            nameError.textContent = 'Tên đầy đủ phải có ít nhất 2 ký tự';
+            nameError.classList.add('show');
+          } else {
+            nameError.classList.remove('show');
+          }
+        });
+
         passwordInput.addEventListener('blur', function () {
           if (!this.value.trim()) {
             passwordError.textContent = 'Vui lòng nhập mật khẩu';
@@ -681,6 +722,10 @@
         // Clear errors on input
         usernameInput.addEventListener('input', function () {
           usernameError.classList.remove('show');
+        });
+
+        nameInput.addEventListener('input', function () {
+          nameError.classList.remove('show');
         });
 
         passwordInput.addEventListener('input', function () {
@@ -727,7 +772,7 @@
         // Keyboard navigation
         document.addEventListener('keydown', function (e) {
           if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') {
-            const inputs = [usernameInput, passwordInput];
+            const inputs = [usernameInput, nameInput, passwordInput];
             const currentIndex = inputs.indexOf(e.target);
             if (currentIndex < inputs.length - 1) {
               inputs[currentIndex + 1].focus();

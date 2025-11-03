@@ -501,12 +501,42 @@
                 
                 <div class="form-group">
                     <label class="form-label">
+                        <i class="fas fa-user"></i>
+                        Tên đầy đủ <span class="required">*</span>
+                    </label>
+                    <input type="text" class="form-control" name="name" 
+                           value="<c:out value='${profileData.name}'/>" 
+                           placeholder="Nhập tên đầy đủ của bạn" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
                         <i class="fas fa-envelope"></i>
                         Email
                     </label>
                     <input type="email" class="form-control" 
                            value="<c:out value='${profileData.email}'/>" readonly>
                     <div class="help-text">Email không thể thay đổi</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-phone-alt"></i>
+                        Số điện thoại
+                    </label>
+                    <input type="tel" class="form-control" name="phone" 
+                           value="<c:out value='${profileData.phone}'/>" 
+                           placeholder="VD: 0987654321" pattern="[0-9]{10}">
+                    <div class="help-text">Nhập 10 chữ số</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-birthday-cake"></i>
+                        Ngày sinh
+                    </label>
+                    <input type="date" class="form-control" name="dob" 
+                           value="<c:choose><c:when test='${profileData.dob != null}'><fmt:formatDate value='${profileData.dob}' pattern='yyyy-MM-dd'/></c:when><c:otherwise></c:otherwise></c:choose>">
                 </div>
                 
                 <div class="form-group">

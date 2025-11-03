@@ -3,6 +3,7 @@ package com.gym.service;
 import com.gym.dao.RoleDAO;
 import com.gym.dao.UserDAO;
 import com.gym.model.User;
+import com.gym.model.Student;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -18,11 +19,13 @@ public class GoogleAuthService {
 
     private final UserDAO userDAO;
     private final RoleDAO roleDAO;
+    private final StudentProfileService studentProfileService;
     private final String expectedClientId;
 
     public GoogleAuthService(String expectedClientId) {
         this.userDAO = new UserDAO();
         this.roleDAO = new RoleDAO();
+        this.studentProfileService = new StudentProfileService();
         this.expectedClientId = expectedClientId;
     }
 
@@ -77,24 +80,32 @@ public class GoogleAuthService {
             errors.add("Invalid Google user");
             return AuthResult.failed(errors);
         }
+        
         User existing = userDAO.findByEmail(googleUser.email);
         if (existing == null) {
             errors.add("Account not found. Please register first.");
             return AuthResult.failed(errors);
         }
+        
         if (!"ACTIVE".equalsIgnoreCase(existing.getStatus())) {
             errors.add("Account is not active");
             return AuthResult.failed(errors);
         }
         
         // Update avatar from Google if user doesn't have one or wants to sync
+        // Avatar is stored in User table
         if (googleUser.picture != null && !googleUser.picture.trim().isEmpty()) {
-            if (existing.getAvatarUrl() == null || existing.getAvatarUrl().trim().isEmpty()) {
-                // User doesn't have avatar, update with Google avatar
-                existing.setAvatarUrl(googleUser.picture);
-                userDAO.updateUser(existing);
+            try {
+                // Update avatar in User table if user doesn't have one
+                if (existing.getAvatarUrl() == null || existing.getAvatarUrl().trim().isEmpty()) {
+                    userDAO.updateAvatarUrl(existing.getId(), googleUser.picture);
+                    existing.setAvatarUrl(googleUser.picture);
+                }
+                // If user already has avatar, keep it (don't overwrite custom avatar)
+            } catch (Exception e) {
+                System.err.println("[GoogleAuthService] Error updating avatar: " + e.getMessage());
+                // Continue with login even if avatar update fails
             }
-            // If user already has avatar, keep it (don't overwrite custom avatar)
         }
         
         List<String> roles = roleDAO.getUserRoles(existing.getId());
@@ -123,27 +134,89 @@ public class GoogleAuthService {
 
         String salt = UUID.randomUUID().toString();
         String passwordHash = "GOOGLE_OAUTH_" + UUID.randomUUID();
-        
-        // Save Google avatar URL if available
-        String avatarUrl = (googleUser.picture != null && !googleUser.picture.trim().isEmpty()) 
-            ? googleUser.picture : null;
 
-        long userId = userDAO.insertUser(username, googleUser.email, passwordHash, salt, avatarUrl);
+        // Create user account - use Google name as full name
+        String fullName = (googleUser.name != null && !googleUser.name.trim().isEmpty()) 
+                         ? googleUser.name 
+                         : username;
+        long userId = userDAO.insertUser(username, fullName, googleUser.email, passwordHash, salt);
         if (userId <= 0) {
             errors.add("Failed to create account");
             return AuthResult.failed(errors);
         }
+        
+        // Update avatar from Google if available
+        if (googleUser.picture != null && !googleUser.picture.trim().isEmpty()) {
+            try {
+                userDAO.updateAvatarUrl(userId, googleUser.picture);
+            } catch (Exception e) {
+                System.err.println("[GoogleAuthService] Error setting avatar: " + e.getMessage());
+            }
+        }
+        
+        // Assign USER role
         Long userRoleId = roleDAO.findRoleIdByName("USER");
-        if (userRoleId != null) {
-            roleDAO.assignUserRole(userId, userRoleId);
+        if (userRoleId == null) {
+            try {
+                roleDAO.createDefaultRoles();
+                userRoleId = roleDAO.findRoleIdByName("USER");
+            } catch (Exception e) {
+                System.err.println("[GoogleAuthService] ERROR creating default roles: " + e.getMessage());
+            }
         }
-        User created = userDAO.findByUsernameOrEmail(googleUser.email);
+        if (userRoleId == null) {
+            userRoleId = 2L; // Fallback
+        }
+        
+        // Assign role
+        boolean roleAssigned = roleDAO.assignUserRole(userId, userRoleId);
+        if (!roleAssigned && !roleDAO.userHasRole(userId, "USER")) {
+            System.err.println("[GoogleAuthService] WARNING: Role assignment failed, will retry after loading user");
+        }
+        
+        // Create Student profile
+        // IMPORTANT: This must succeed for the system to work properly
+        // NOTE: students table only stores: user_id, weight, height, bmi, emergency_contact_*
+        // Avatar and other info (full_name, email, phone...) is stored in user table
+        try {
+            Student student = new Student();
+            student.setUserId((int) userId);
+            // Only set user_id - other fields will be NULL initially
+            // User can update them later via Dashboard
+            
+            studentProfileService.saveProfile(student);
+        } catch (Exception e) {
+            System.err.println("[GoogleAuthService] ERROR creating Student profile: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        // Load the created user
+        User created = userDAO.getUserById(userId);
         if (created == null) {
-            errors.add("Failed to load created account");
-            return AuthResult.failed(errors);
+            created = userDAO.findByEmail(googleUser.email);
+            if (created == null) {
+                errors.add("Failed to load created account");
+                return AuthResult.failed(errors);
+            }
         }
+        
+        // Verify and ensure role assignment
         List<String> roles = roleDAO.getUserRoles(created.getId());
-        return AuthResult.success(created, roles);
+        if (roles == null || roles.isEmpty() || !roles.contains("USER")) {
+            // Retry role assignment
+            if (userRoleId == null) {
+                userRoleId = roleDAO.findRoleIdByName("USER");
+                if (userRoleId == null) userRoleId = 2L;
+            }
+            roleDAO.assignUserRole(created.getId(), userRoleId);
+            roles = roleDAO.getUserRoles(created.getId());
+            
+            if (roles == null || roles.isEmpty() || !roles.contains("USER")) {
+                System.err.println("[GoogleAuthService] ERROR: User " + created.getId() + " does not have USER role");
+            }
+        }
+        
+        return AuthResult.success(created, roles != null ? roles : new ArrayList<>());
     }
 
     private String extractJson(String body, String key) {

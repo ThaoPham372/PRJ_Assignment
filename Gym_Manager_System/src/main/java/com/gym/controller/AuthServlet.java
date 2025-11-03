@@ -124,11 +124,12 @@ public class AuthServlet extends HttpServlet {
     private void handleRegister(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String username = request.getParameter("username");
+        String name = request.getParameter("name");
         String email = request.getParameter("email");
         String password = request.getParameter("password");
         String confirmPassword = request.getParameter("confirmPassword");
 
-        RegisterRequest registerRequest = new RegisterRequest(username, email, password, confirmPassword);
+        RegisterRequest registerRequest = new RegisterRequest(username, name, email, password, confirmPassword);
         registerRequest.setIpAddress(getClientIpAddress(request));
         registerRequest.setUserAgent(request.getHeader("User-Agent"));
 
@@ -137,11 +138,13 @@ public class AuthServlet extends HttpServlet {
             request.setAttribute("registerSuccess", true);
             request.setAttribute("successMessage", result.getMessage());
             request.setAttribute("username", "");
+            request.setAttribute("name", "");
             request.setAttribute("email", "");
         } else {
             request.setAttribute("registerSuccess", false);
             request.setAttribute("errors", result.getErrors());
             request.setAttribute("username", username);
+            request.setAttribute("name", name);
             request.setAttribute("email", email);
         }
 

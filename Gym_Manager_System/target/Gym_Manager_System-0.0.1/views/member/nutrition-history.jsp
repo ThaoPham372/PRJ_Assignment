@@ -214,46 +214,6 @@
         opacity: 1;
     }
 
-    .quick-date-buttons {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-top: 15px;
-        position: relative;
-        z-index: 1;
-    }
-
-    .quick-date-btn {
-        padding: 10px 20px;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-radius: 25px;
-        background: rgba(255, 255, 255, 0.15);
-        color: white;
-        font-weight: 600;
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .quick-date-btn:hover {
-        background: rgba(255, 255, 255, 0.25);
-        border-color: rgba(255, 255, 255, 0.5);
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        color: white;
-    }
-
-    .quick-date-btn.active {
-        background: var(--gradient-accent);
-        border-color: var(--accent);
-        box-shadow: 0 5px 20px rgba(236, 139, 94, 0.4);
-        color: white;
-    }
 
     .date-submit-btn {
         background: var(--gradient-accent);
@@ -460,14 +420,6 @@
             justify-content: center;
         }
 
-        .quick-date-buttons {
-            flex-direction: column;
-        }
-
-        .quick-date-btn {
-            width: 100%;
-            justify-content: center;
-        }
 
         .daily-stats {
             grid-template-columns: repeat(2, 1fr);
@@ -539,25 +491,6 @@
                 </button>
             </form>
 
-            <!-- Quick Date Buttons -->
-            <div class="quick-date-buttons">
-                <a href="javascript:void(0)" class="quick-date-btn" data-days="0" onclick="setQuickDateDays(0)">
-                    <i class="fas fa-calendar-day"></i>
-                    <span>Hôm Nay</span>
-                </a>
-                <a href="javascript:void(0)" class="quick-date-btn" data-days="1" onclick="setQuickDateDays(1)">
-                    <i class="fas fa-chevron-left"></i>
-                    <span>Hôm Qua</span>
-                </a>
-                <a href="javascript:void(0)" class="quick-date-btn" data-days="7" onclick="setQuickDateDays(7)">
-                    <i class="fas fa-calendar-week"></i>
-                    <span>7 Ngày Trước</span>
-                </a>
-                <a href="javascript:void(0)" class="quick-date-btn" data-days="30" onclick="setQuickDateDays(30)">
-                    <i class="fas fa-calendar"></i>
-                    <span>30 Ngày Trước</span>
-                </a>
-            </div>
         </div>
 
         <!-- History Content -->
@@ -670,59 +603,13 @@
 </div>
 
 <script>
-    // Set quick date by days ago
-    function setQuickDateDays(daysAgo) {
-        const datePicker = document.getElementById('datePicker');
-        if (!datePicker) return;
-        
-        const today = new Date();
-        const targetDate = new Date(today);
-        targetDate.setDate(today.getDate() - daysAgo);
-        
-        // Format as YYYY-MM-DD
-        const year = targetDate.getFullYear();
-        const month = String(targetDate.getMonth() + 1).padStart(2, '0');
-        const day = String(targetDate.getDate()).padStart(2, '0');
-        const dateStr = `${year}-${month}-${day}`;
-        
-        datePicker.value = dateStr;
-        
-        // Update active state
-        document.querySelectorAll('.quick-date-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.getAttribute('data-days') === String(daysAgo)) {
-                btn.classList.add('active');
-            }
-        });
-        
-        // Auto submit form
-        document.getElementById('datePickerForm').submit();
-    }
-
-    // Set active state for current selected date
+    // Initialize date picker on page load
     document.addEventListener('DOMContentLoaded', function() {
         const selectedDate = '${selectedDateStr != null ? selectedDateStr : todayStr}';
-        const todayStr = '${todayStr != null ? todayStr : ""}';
         const datePicker = document.getElementById('datePicker');
         
         if (datePicker && selectedDate) {
             datePicker.value = selectedDate;
-            
-            // Calculate which quick button should be active
-            if (selectedDate && todayStr) {
-                const selected = new Date(selectedDate + 'T00:00:00');
-                const today = new Date(todayStr + 'T00:00:00');
-                const diffTime = today - selected;
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                
-                // Highlight active quick button
-                document.querySelectorAll('.quick-date-btn').forEach(btn => {
-                    const days = parseInt(btn.getAttribute('data-days') || '-1');
-                    if (days === diffDays) {
-                        btn.classList.add('active');
-                    }
-                });
-            }
         }
 
         // Add animation on load

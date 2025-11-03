@@ -21,8 +21,9 @@ public class CartDao {
      */
     public List<CartItem> findByUserId(Long userId) {
         List<CartItem> items = new ArrayList<>();
+        // NOTE: Schema does not have image_path column in products table
         String sql = "SELECT c.cart_id, c.user_id, c.product_id, c.quantity, c.added_at, " +
-                    "p.product_name, p.price, p.unit, p.image_path " +
+                    "p.product_name, p.price, p.unit " +
                     "FROM cart c " +
                     "INNER JOIN products p ON c.product_id = p.product_id " +
                     "WHERE c.user_id = ? AND p.is_active = 1 " +
@@ -126,9 +127,22 @@ public class CartDao {
      * Clear all items for a user
      */
     public void clear(Long userId) {
+        clear(userId, null);
+    }
+
+    /**
+     * Clear all items for a user using provided connection (for transactions)
+     */
+    public void clear(Long userId, Connection conn) {
         String sql = "DELETE FROM cart WHERE user_id = ?";
 
-        try (Connection conn = DatabaseUtil.getConnection()) {
+        boolean shouldCloseConnection = false;
+        try {
+            if (conn == null) {
+                conn = DatabaseUtil.getConnection();
+                shouldCloseConnection = true;
+            }
+            
             if (conn == null) {
                 throw new SQLException("Database connection is null");
             }
@@ -140,6 +154,15 @@ public class CartDao {
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error clearing cart", e);
             throw new RuntimeException("Failed to clear cart", e);
+        } finally {
+            // Only close connection if we created it
+            if (shouldCloseConnection && conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    LOGGER.log(Level.WARNING, "Error closing connection", e);
+                }
+            }
         }
     }
 
@@ -159,7 +182,8 @@ public class CartDao {
         item.setProductName(rs.getString("product_name"));
         item.setPrice(rs.getBigDecimal("price"));
         item.setUnit(rs.getString("unit"));
-        item.setImagePath(rs.getString("image_path"));
+        // NOTE: image_path column does not exist in current schema
+        item.setImagePath(null);
         
         return item;
     }

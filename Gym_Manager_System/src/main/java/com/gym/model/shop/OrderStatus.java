@@ -4,11 +4,15 @@ package com.gym.model.shop;
  * Order status enumeration
  */
 public enum OrderStatus {
-    PENDING("pending", "Chờ xử lý"),
-    PROCESSING("processing", "Đang xử lý"),
-    SHIPPED("shipped", "Đã giao hàng"),
-    DELIVERED("delivered", "Đã nhận hàng"),
-    CANCELLED("cancelled", "Đã hủy");
+    PENDING("PENDING", "Chờ xử lý"),
+    CONFIRMED("CONFIRMED", "Đã xác nhận"),
+    PREPARING("PREPARING", "Đang chuẩn bị"),
+    READY("READY", "Sẵn sàng"),
+    PROCESSING("processing", "Đang xử lý"),  // Keep for backward compatibility
+    SHIPPED("shipped", "Đã giao hàng"),  // Keep for backward compatibility
+    COMPLETED("COMPLETED", "Hoàn thành"),
+    DELIVERED("delivered", "Đã nhận hàng"),  // Keep for backward compatibility
+    CANCELLED("CANCELLED", "Đã hủy");
 
     private final String code;
     private final String displayName;

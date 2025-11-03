@@ -4,8 +4,8 @@ import com.gym.model.membership.Membership;
 import com.gym.util.DatabaseUtil;
 
 import java.sql.*;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -14,99 +14,73 @@ import java.util.logging.Logger;
 
 /**
  * DAO for Membership entity
+ * Handles CRUD operations for memberships table
  */
-public class MembershipDao {
-    private static final Logger LOGGER = Logger.getLogger(MembershipDao.class.getName());
+public class MembershipDAO {
+    private static final Logger LOGGER = Logger.getLogger(MembershipDAO.class.getName());
 
     /**
-     * Find all active memberships ordered by display_order
+     * Create a new membership
+     * @param userId User ID
+     * @param packageId Package ID
+     * @param startDate Start date
+     * @param endDate End date (calculated: startDate + duration_months)
+     * @param notes Optional notes
+     * @return Generated membership_id
      */
-    public List<Membership> findAllActive() {
-        List<Membership> memberships = new ArrayList<>();
-        
-        // Try without dbo prefix first (like other DAOs: products, foods)
-        String sql = "SELECT membership_id, membership_name, display_name, description, price, " +
-                    "duration_months, features, is_featured, is_active, display_order, " +
-                    "image_path, created_at, updated_at " +
-                    "FROM memberships " +
-                    "WHERE is_active = 1 " +
-                    "ORDER BY display_order ASC";
+    public Long createMembership(Integer userId, Long packageId, LocalDate startDate, 
+                                 LocalDate endDate, String notes) {
+        String sql = "INSERT INTO memberships (user_id, package_id, start_date, end_date, " +
+                    "status, notes, created_date, updated_date) " +
+                    "VALUES (?, ?, ?, ?, 'ACTIVE', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
 
         try (Connection conn = DatabaseUtil.getConnection()) {
             if (conn == null) {
-                LOGGER.log(Level.SEVERE, "[MembershipDao] Database connection is null");
-                System.err.println("[MembershipDao] Database connection is null in findAllActive");
-                return memberships;
+                LOGGER.log(Level.SEVERE, "Database connection is null");
+                return null;
             }
             
-            // First check if table exists
-            System.out.println("[MembershipDao] ===== Checking if memberships table exists =====");
-            try (PreparedStatement checkStmt = conn.prepareStatement(
-                    "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'memberships'")) {
-                ResultSet rsCheck = checkStmt.executeQuery();
-                if (rsCheck.next()) {
-                    int tableExists = rsCheck.getInt(1);
-                    System.out.println("[MembershipDao] Table 'memberships' exists: " + (tableExists > 0));
-                    if (tableExists == 0) {
-                        System.err.println("[MembershipDao] ERROR: Table 'memberships' does not exist in database!");
-                        System.err.println("[MembershipDao] Please run the SQL script: memberships_table.sql");
-                        return memberships;
+            try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                stmt.setInt(1, userId);
+                stmt.setLong(2, packageId);
+                stmt.setDate(3, java.sql.Date.valueOf(startDate));
+                stmt.setDate(4, java.sql.Date.valueOf(endDate));
+                setStringOrNull(stmt, 5, notes);
+                
+                int affectedRows = stmt.executeUpdate();
+                if (affectedRows > 0) {
+                    try (ResultSet rs = stmt.getGeneratedKeys()) {
+                        if (rs.next()) {
+                            return rs.getLong(1);
+                        }
                     }
                 }
-            }
-            
-            System.out.println("[MembershipDao] Executing query: " + sql);
-            
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                ResultSet rs = stmt.executeQuery();
-                int count = 0;
-                while (rs.next()) {
-                    count++;
-                    try {
-                        Membership membership = mapResultSetToMembership(rs);
-                        memberships.add(membership);
-                        System.out.println("[MembershipDao] Loaded membership: " + membership.getMembershipName() + 
-                                          " (ID: " + membership.getMembershipId() + 
-                                          ", Display: " + membership.getDisplayName() + ")");
-                    } catch (Exception e) {
-                        System.err.println("[MembershipDao] Error mapping membership row " + count + ": " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                }
-                System.out.println("[MembershipDao] Total active memberships loaded: " + count);
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error finding all active memberships", e);
-            System.err.println("[MembershipDao] SQL Error: " + e.getMessage());
-            System.err.println("[MembershipDao] SQL State: " + e.getSQLState());
-            System.err.println("[MembershipDao] Error Code: " + e.getErrorCode());
-            
-            if (e.getMessage().contains("Invalid object name")) {
-                System.err.println("[MembershipDao] ========================================");
-                System.err.println("[MembershipDao] TABLE DOES NOT EXIST!");
-                System.err.println("[MembershipDao] Please run the SQL script: memberships_table.sql");
-                System.err.println("[MembershipDao] ========================================");
-            }
-            
-            e.printStackTrace();
-        } catch (Exception e) {
-            System.err.println("[MembershipDao] Unexpected error: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error creating membership", e);
+            throw new RuntimeException("Failed to create membership: " + e.getMessage(), e);
         }
         
-        System.out.println("[MembershipDao] Returning " + memberships.size() + " memberships");
-        return memberships;
+        return null;
     }
 
     /**
-     * Find membership by ID
+     * Find active membership for a user
+     * Returns membership with status = 'ACTIVE' and end_date >= CURDATE()
+     * @param userId User ID
+     * @return Optional Membership
      */
-    public Optional<Membership> findById(Long membershipId) {
-        String sql = "SELECT membership_id, membership_name, display_name, description, price, " +
-                    "duration_months, features, is_featured, is_active, display_order, " +
-                    "image_path, created_at, updated_at " +
-                    "FROM memberships " +
-                    "WHERE membership_id = ?";
+    public Optional<Membership> findActiveByUser(Integer userId) {
+        String sql = "SELECT m.membership_id, m.user_id, m.package_id, m.start_date, " +
+                    "m.end_date, m.status, m.notes, m.created_date, m.updated_date, " +
+                    "p.name as package_name, p.duration_months as package_duration_months, " +
+                    "p.price as package_price " +
+                    "FROM memberships m " +
+                    "INNER JOIN packages p ON m.package_id = p.package_id " +
+                    "WHERE m.user_id = ? AND m.status = 'ACTIVE' " +
+                    "AND m.end_date >= CURDATE() " +
+                    "ORDER BY m.end_date DESC " +
+                    "LIMIT 1";
 
         try (Connection conn = DatabaseUtil.getConnection()) {
             if (conn == null) {
@@ -115,65 +89,174 @@ public class MembershipDao {
             }
             
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setLong(1, membershipId);
+                stmt.setInt(1, userId);
                 ResultSet rs = stmt.executeQuery();
                 if (rs.next()) {
-                    return Optional.of(mapResultSetToMembership(rs));
+                    return Optional.of(mapResultSetToMembership(rs, true));
                 }
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error finding membership by ID: " + membershipId, e);
+            LOGGER.log(Level.SEVERE, "Error finding active membership for user: " + userId, e);
         }
         
         return Optional.empty();
     }
 
     /**
-     * Helper method to map ResultSet to Membership object
+     * Expire a membership (set status = 'EXPIRED')
      */
-    private Membership mapResultSetToMembership(ResultSet rs) throws SQLException {
-        Membership membership = new Membership();
-        
-        try {
-            membership.setMembershipId(rs.getLong("membership_id"));
-            membership.setMembershipName(rs.getString("membership_name"));
-            membership.setDisplayName(rs.getString("display_name"));
-            
-            // Description can be null
-            String description = rs.getString("description");
-            membership.setDescription(description);
-            
-            membership.setPrice(rs.getBigDecimal("price"));
-            membership.setDurationMonths(rs.getInt("duration_months"));
-            
-            // Features can be null
-            String features = rs.getString("features");
-            membership.setFeatures(features);
-            
-            // Handle BOOLEAN/TINYINT fields (MySQL boolean)
-            membership.setIsFeatured(rs.getBoolean("is_featured"));
-            membership.setIsActive(rs.getBoolean("is_active"));
-            membership.setDisplayOrder(rs.getInt("display_order"));
-            
-            // Image path can be null
-            String imagePath = rs.getString("image_path");
-            membership.setImagePath(imagePath);
-            
-            Timestamp createdAt = rs.getTimestamp("created_at");
-            if (createdAt != null) {
-                membership.setCreatedAt(OffsetDateTime.ofInstant(createdAt.toInstant(), ZoneOffset.UTC));
+    public boolean expireMembership(Long membershipId) {
+        String sql = "UPDATE memberships SET status = 'EXPIRED', updated_date = CURRENT_TIMESTAMP " +
+                    "WHERE membership_id = ?";
+
+        try (Connection conn = DatabaseUtil.getConnection()) {
+            if (conn == null) {
+                LOGGER.log(Level.SEVERE, "Database connection is null");
+                return false;
             }
             
-            Timestamp updatedAt = rs.getTimestamp("updated_at");
-            if (updatedAt != null) {
-                membership.setUpdatedAt(OffsetDateTime.ofInstant(updatedAt.toInstant(), ZoneOffset.UTC));
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setLong(1, membershipId);
+                int affectedRows = stmt.executeUpdate();
+                return affectedRows > 0;
             }
         } catch (SQLException e) {
-            System.err.println("[MembershipDao] Error mapping ResultSet to Membership: " + e.getMessage());
-            throw e;
+            LOGGER.log(Level.SEVERE, "Error expiring membership: " + membershipId, e);
+            throw new RuntimeException("Failed to expire membership: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * List all memberships for a user (for history)
+     */
+    public List<Membership> listByUser(Integer userId) {
+        List<Membership> memberships = new ArrayList<>();
+        
+        String sql = "SELECT m.membership_id, m.user_id, m.package_id, m.start_date, " +
+                    "m.end_date, m.status, m.notes, m.created_date, m.updated_date, " +
+                    "p.name as package_name, p.duration_months as package_duration_months, " +
+                    "p.price as package_price " +
+                    "FROM memberships m " +
+                    "INNER JOIN packages p ON m.package_id = p.package_id " +
+                    "WHERE m.user_id = ? " +
+                    "ORDER BY m.created_date DESC";
+
+        try (Connection conn = DatabaseUtil.getConnection()) {
+            if (conn == null) {
+                LOGGER.log(Level.SEVERE, "Database connection is null");
+                return memberships;
+            }
+            
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, userId);
+                ResultSet rs = stmt.executeQuery();
+                while (rs.next()) {
+                    memberships.add(mapResultSetToMembership(rs, true));
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error listing memberships for user: " + userId, e);
+        }
+        
+        return memberships;
+    }
+
+    /**
+     * Find all expired memberships for a user (for auto-expire logic)
+     */
+    public List<Membership> findExpiredByUser(Integer userId) {
+        List<Membership> memberships = new ArrayList<>();
+        
+        String sql = "SELECT m.membership_id, m.user_id, m.package_id, m.start_date, " +
+                    "m.end_date, m.status, m.notes, m.created_date, m.updated_date, " +
+                    "p.name as package_name, p.duration_months as package_duration_months, " +
+                    "p.price as package_price " +
+                    "FROM memberships m " +
+                    "INNER JOIN packages p ON m.package_id = p.package_id " +
+                    "WHERE m.user_id = ? AND m.status = 'ACTIVE' " +
+                    "AND m.end_date < CURDATE()";
+
+        try (Connection conn = DatabaseUtil.getConnection()) {
+            if (conn == null) {
+                return memberships;
+            }
+            
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, userId);
+                ResultSet rs = stmt.executeQuery();
+                while (rs.next()) {
+                    memberships.add(mapResultSetToMembership(rs, true));
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error finding expired memberships for user: " + userId, e);
+        }
+        
+        return memberships;
+    }
+
+    /**
+     * Map ResultSet to Membership object
+     */
+    private Membership mapResultSetToMembership(ResultSet rs, boolean includePackageInfo) throws SQLException {
+        Membership membership = new Membership();
+        
+        membership.setMembershipId(rs.getLong("membership_id"));
+        membership.setUserId(rs.getInt("user_id"));
+        membership.setPackageId(rs.getLong("package_id"));
+        
+        Date startDate = rs.getDate("start_date");
+        if (startDate != null) {
+            membership.setStartDate(startDate.toLocalDate());
+        }
+        
+        Date endDate = rs.getDate("end_date");
+        if (endDate != null) {
+            membership.setEndDate(endDate.toLocalDate());
+        }
+        
+        membership.setStatus(rs.getString("status"));
+        
+        String notes = rs.getString("notes");
+        membership.setNotes(notes);
+        
+        Timestamp createdDate = rs.getTimestamp("created_date");
+        if (createdDate != null) {
+            membership.setCreatedDate(createdDate.toLocalDateTime());
+        }
+        
+        Timestamp updatedDate = rs.getTimestamp("updated_date");
+        if (updatedDate != null) {
+            membership.setUpdatedDate(updatedDate.toLocalDateTime());
+        }
+        
+        // Joined fields from packages (if included)
+        if (includePackageInfo) {
+            try {
+                membership.setPackageName(rs.getString("package_name"));
+                int durationMonths = rs.getInt("package_duration_months");
+                if (!rs.wasNull()) {
+                    membership.setPackageDurationMonths(durationMonths);
+                }
+                java.math.BigDecimal price = rs.getBigDecimal("package_price");
+                membership.setPackagePrice(price);
+            } catch (SQLException e) {
+                // Columns may not exist if join was not performed
+                // This is OK, just skip
+            }
         }
         
         return membership;
     }
-}
 
+    /**
+     * Helper: Set String or null
+     */
+    private void setStringOrNull(PreparedStatement stmt, int index, String value) throws SQLException {
+        if (value != null && !value.trim().isEmpty()) {
+            stmt.setString(index, value);
+        } else {
+            stmt.setNull(index, Types.VARCHAR);
+        }
+    }
+}

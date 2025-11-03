@@ -1,17 +1,21 @@
 package com.gym.model;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 /**
- * User entity representing a record in the users table.
- * This is a simple POJO used across DAO/Service layers.
+ * User entity representing a record in the user table.
+ * Contains only authentication and core user information.
+ * Student-specific information is stored in the Student entity.
  */
 public class User {
 
-    private long id;
-    private String username;
+    private long id;  // user_id (PK)
+    private String username;  // For login
+    private String name;  // Full name
     private String email;
+    private String phone;  // Phone number
+    private java.sql.Date dob;  // Date of birth
+    private String address;  // Address
     private String passwordHash;
     private String salt;
     private String status;
@@ -21,20 +25,7 @@ public class User {
     private Timestamp lastLogin;
     private int failedLoginAttempts;
     private Timestamp lockedUntil;
-
-    // New fields
-    private String gender;
-    private String address;
     private String avatarUrl;
-    private BigDecimal height;  // DECIMAL(5,2)
-    private BigDecimal weight;  // DECIMAL(5,2)
-    private BigDecimal bmi;     // DECIMAL(4,2)
-
-    // Emergency contact fields
-    private String emergencyContactName;
-    private String emergencyContactPhone;
-    private String emergencyContactRelation;
-    private String emergencyContactAddress;
 
     // Getters & Setters
     public long getId() { return id; }
@@ -43,8 +34,20 @@ public class User {
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public java.sql.Date getDob() { return dob; }
+    public void setDob(java.sql.Date dob) { this.dob = dob; }
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 
     public String getPasswordHash() { return passwordHash; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
@@ -73,33 +76,6 @@ public class User {
     public Timestamp getLockedUntil() { return lockedUntil; }
     public void setLockedUntil(Timestamp lockedUntil) { this.lockedUntil = lockedUntil; }
 
-    public String getGender() { return gender; }
-    public void setGender(String gender) { this.gender = gender; }
-
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
-
     public String getAvatarUrl() { return avatarUrl; }
     public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
-
-    public BigDecimal getHeight() { return height; }
-    public void setHeight(BigDecimal height) { this.height = height; }
-
-    public BigDecimal getWeight() { return weight; }
-    public void setWeight(BigDecimal weight) { this.weight = weight; }
-
-    public BigDecimal getBmi() { return bmi; }
-    public void setBmi(BigDecimal bmi) { this.bmi = bmi; }
-
-    public String getEmergencyContactName() { return emergencyContactName; }
-    public void setEmergencyContactName(String emergencyContactName) { this.emergencyContactName = emergencyContactName; }
-
-    public String getEmergencyContactPhone() { return emergencyContactPhone; }
-    public void setEmergencyContactPhone(String emergencyContactPhone) { this.emergencyContactPhone = emergencyContactPhone; }
-
-    public String getEmergencyContactRelation() { return emergencyContactRelation; }
-    public void setEmergencyContactRelation(String emergencyContactRelation) { this.emergencyContactRelation = emergencyContactRelation; }
-
-    public String getEmergencyContactAddress() { return emergencyContactAddress; }
-    public void setEmergencyContactAddress(String emergencyContactAddress) { this.emergencyContactAddress = emergencyContactAddress; }
 }

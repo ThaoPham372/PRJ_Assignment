@@ -119,10 +119,21 @@ public class GoogleAuthServlet extends HttpServlet {
     }
 
     private String determineRedirectUrl(java.util.List<String> roles) {
-        if (roles == null || roles.isEmpty()) return "/home";
-        if (roles.contains("ADMIN")) return "/admin/dashboard";
-        if (roles.contains("PT")) return "/pt/dashboard";
-        return "/home";
+        if (roles == null || roles.isEmpty()) {
+            System.out.println("[GoogleAuthServlet] No roles found, redirecting to /member/dashboard");
+            return "/member/dashboard";
+        }
+        if (roles.contains("ADMIN")) {
+            System.out.println("[GoogleAuthServlet] User is ADMIN, redirecting to /admin/dashboard");
+            return "/admin/dashboard";
+        }
+        if (roles.contains("PT")) {
+            System.out.println("[GoogleAuthServlet] User is PT, redirecting to /pt/dashboard");
+            return "/pt/dashboard";
+        }
+        // Default to member dashboard for USER, MEMBER, or any other role
+        System.out.println("[GoogleAuthServlet] User roles: " + roles.toString() + ", redirecting to /member/dashboard");
+        return "/member/dashboard";
     }
 
     private void sendSuccess(PrintWriter out, String message, String redirectUrl) {

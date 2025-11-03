@@ -2,6 +2,8 @@ package com.gym.service;
 
 import com.gym.dao.UserDAO;
 import com.gym.dao.RoleDAO;
+import com.gym.model.Student;
+import com.gym.model.User;
 import java.util.*;
 
 /**
@@ -12,11 +14,13 @@ public class RegistrationService {
     private UserDAO userDAO;
     private RoleDAO roleDAO;
     private PasswordService passwordService;
+    private StudentProfileService studentProfileService;
 
     public RegistrationService() {
         this.userDAO = new UserDAO();
         this.roleDAO = new RoleDAO();
         this.passwordService = new PasswordService();
+        this.studentProfileService = new StudentProfileService();
     }
 
     /**
@@ -56,9 +60,17 @@ public class RegistrationService {
         String passwordHash = passwordService.hashPassword(request.getPassword());
         String salt = passwordService.generateSalt();
 
+        // Get and trim name (full name)
+        String name = (request.getName() != null) ? request.getName().trim() : null;
+        System.out.println("[RegistrationService] Registering user:");
+        System.out.println("  - Username: " + request.getUsername());
+        System.out.println("  - Name (full name): " + name);
+        System.out.println("  - Email: " + request.getEmail());
+
         // Create user in database
         long userId = userDAO.insertUser(
             request.getUsername(),
+            name,  // Full name (trimmed)
             request.getEmail(),
             passwordHash,
             salt
@@ -69,29 +81,73 @@ public class RegistrationService {
             result.setErrors(Arrays.asList("Lỗi hệ thống khi tạo tài khoản"));
             return result;
         }
-
-        // Assign USER role
-        Long userRoleId = roleDAO.findRoleIdByName("USER");
-        if (userRoleId == null) {
-            // Create default roles if they don't exist
-            roleDAO.createDefaultRoles();
-            userRoleId = roleDAO.findRoleIdByName("USER");
-        }
-
-        if (userRoleId != null) {
-            boolean roleAssigned = roleDAO.assignUserRole(userId, userRoleId);
-            if (!roleAssigned) {
-                System.err.println("Warning: Failed to assign USER role to user " + userId);
+        
+        // Verify user was created
+        User createdUser = userDAO.getUserById(userId);
+        if (createdUser == null) {
+            createdUser = userDAO.findByEmail(request.getEmail());
+            if (createdUser == null) {
+                result.setSuccess(false);
+                result.setErrors(Arrays.asList("Lỗi hệ thống: Tài khoản đã được tạo nhưng không thể tải thông tin. Vui lòng thử đăng nhập."));
+                return result;
+            }
+        } else {
+            System.out.println("[RegistrationService] User loaded successfully by ID:");
+            System.out.println("  - Username: " + createdUser.getUsername());
+            System.out.println("  - Name (full name): " + createdUser.getName());
+            System.out.println("  - Email: " + createdUser.getEmail());
+            if (name != null && !name.equals(createdUser.getName())) {
+                System.err.println("[RegistrationService] WARNING: Name mismatch!");
+                System.err.println("  - Expected name: '" + name + "'");
+                System.err.println("  - Actual name in DB: '" + createdUser.getName() + "'");
             }
         }
 
-        // Log registration
-        userDAO.insertLoginHistory(userId, request.getIpAddress(), request.getUserAgent());
+        // Assign USER role
+        long actualUserId = (createdUser != null) ? createdUser.getId() : userId;
+        Long userRoleId = roleDAO.findRoleIdByName("USER");
+        if (userRoleId == null) {
+            try {
+                roleDAO.createDefaultRoles();
+                userRoleId = roleDAO.findRoleIdByName("USER");
+            } catch (Exception e) {
+                System.err.println("[RegistrationService] ERROR creating default roles: " + e.getMessage());
+            }
+        }
+        if (userRoleId == null) {
+            userRoleId = 2L; // Fallback
+        }
+        
+        // Assign role
+        boolean roleAssigned = roleDAO.assignUserRole(actualUserId, userRoleId);
+        if (!roleAssigned && !roleDAO.userHasRole(actualUserId, "USER")) {
+            result.setSuccess(false);
+            result.setErrors(Arrays.asList("Lỗi hệ thống: Không thể gán quyền người dùng. Vui lòng liên hệ quản trị viên."));
+            return result;
+        }
 
-        // Success
+        // Create Student record automatically when user registers
+        // IMPORTANT: This must succeed for the system to work properly
+        // NOTE: students table only stores: user_id, weight, height, bmi, emergency_contact_*
+        // Other info (full_name, email, phone...) is stored in user table
+        try {
+            Student student = new Student();
+            student.setUserId((int) actualUserId);
+            // Only set user_id - other fields will be NULL initially
+            // User can update them later via Dashboard
+            
+            studentProfileService.saveProfile(student);
+        } catch (Exception e) {
+            System.err.println("[RegistrationService] ERROR creating Student profile: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        // Log registration
+        userDAO.insertLoginHistory(actualUserId, request.getIpAddress(), request.getUserAgent());
+        
         result.setSuccess(true);
         result.setMessage("Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.");
-        result.setUserId(userId);
+        result.setUserId(actualUserId);
 
         return result;
     }
@@ -106,6 +162,12 @@ public class RegistrationService {
             errors.add("Tên đăng nhập phải có ít nhất 3 ký tự");
         } else if (!request.getUsername().matches("^[a-zA-Z0-9_]+$")) {
             errors.add("Tên đăng nhập chỉ được chứa chữ cái, số và dấu gạch dưới");
+        }
+
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
+            errors.add("Tên đầy đủ không được để trống");
+        } else if (request.getName().trim().length() < 2) {
+            errors.add("Tên đầy đủ phải có ít nhất 2 ký tự");
         }
 
         if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
@@ -142,6 +204,7 @@ public class RegistrationService {
      */
     public static class RegisterRequest {
         private String username;
+        private String name;  // Full name
         private String email;
         private String password;
         private String confirmPassword;
@@ -151,8 +214,9 @@ public class RegistrationService {
         // Constructors
         public RegisterRequest() {}
 
-        public RegisterRequest(String username, String email, String password, String confirmPassword) {
+        public RegisterRequest(String username, String name, String email, String password, String confirmPassword) {
             this.username = username;
+            this.name = name;
             this.email = email;
             this.password = password;
             this.confirmPassword = confirmPassword;
@@ -161,6 +225,9 @@ public class RegistrationService {
         // Getters and Setters
         public String getUsername() { return username; }
         public void setUsername(String username) { this.username = username; }
+
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
 
         public String getEmail() { return email; }
         public void setEmail(String email) { this.email = email; }

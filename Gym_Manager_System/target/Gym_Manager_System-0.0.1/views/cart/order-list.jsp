@@ -291,18 +291,52 @@
                                 </div>
                                 <div class="order-date">
                                     <i class="far fa-calendar"></i> 
-                                    <fmt:formatDate value="${order.orderDate}" pattern="dd/MM/yyyy HH:mm" />
+                                    <c:choose>
+                                        <c:when test="${order.orderDate != null}">
+                                            <fmt:formatDate value="${order.orderDateAsDate}" pattern="dd/MM/yyyy HH:mm" />
+                                        </c:when>
+                                        <c:otherwise>
+                                            N/A
+                                        </c:otherwise>
+                                    </c:choose>
                                 </div>
                                 <div class="payment-method" style="margin-top: 8px;">
                                     <i class="fas fa-credit-card"></i> 
-                                    ${order.paymentMethod != null ? order.paymentMethod.displayName : 'N/A'}
+                                    <c:set var="orderPayments" value="${paymentsMap[order.orderId]}" />
+                                    <c:choose>
+                                        <c:when test="${not empty orderPayments}">
+                                            <c:forEach items="${orderPayments}" var="payment" varStatus="loop">
+                                                ${payment.method.displayName}<c:if test="${!loop.last}">, </c:if>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            N/A
+                                        </c:otherwise>
+                                    </c:choose>
                                 </div>
                             </div>
                             <div class="order-status-badges">
-                                <span class="status-badge status-${order.paymentStatus.code}">
-                                    <i class="fas fa-${order.paymentStatus.code == 'paid' ? 'check-circle' : order.paymentStatus.code == 'pending' ? 'clock' : 'times-circle'}"></i>
-                                    ${order.paymentStatus.displayName}
-                                </span>
+                                <c:set var="orderPayments" value="${paymentsMap[order.orderId]}" />
+                                <c:choose>
+                                    <c:when test="${not empty orderPayments}">
+                                        <c:set var="hasPaid" value="false" />
+                                        <c:forEach items="${orderPayments}" var="payment">
+                                            <c:if test="${payment.status.code == 'paid'}">
+                                                <c:set var="hasPaid" value="true" />
+                                            </c:if>
+                                        </c:forEach>
+                                        <span class="status-badge status-${hasPaid ? 'paid' : 'pending'}">
+                                            <i class="fas fa-${hasPaid ? 'check-circle' : 'clock'}"></i>
+                                            ${hasPaid ? 'Đã thanh toán' : 'Chờ thanh toán'}
+                                        </span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="status-badge status-pending">
+                                            <i class="fas fa-clock"></i>
+                                            Chờ thanh toán
+                                        </span>
+                                    </c:otherwise>
+                                </c:choose>
                                 <span class="status-badge status-${order.orderStatus.code}">
                                     <i class="fas fa-${order.orderStatus.code == 'delivered' ? 'check-double' : order.orderStatus.code == 'processing' ? 'spinner' : order.orderStatus.code == 'shipped' ? 'truck' : 'ban'}"></i>
                                     ${order.orderStatus.displayName}

@@ -38,16 +38,16 @@ public interface CheckoutService {
     String processMoMoPayment(Long orderId, String baseUrl);
     
     /**
-     * Process membership checkout and create order + user membership
+     * Process package checkout and create order + membership
      * @param userId user ID
-     * @param membershipId membership ID
+     * @param packageId package ID (from packages table)
      * @param paymentMethod payment method
      * @param deliveryName customer name
      * @param deliveryPhone customer phone
      * @return created order
      */
-    Order checkoutMembership(Long userId, Long membershipId, PaymentMethod paymentMethod,
-                             String deliveryName, String deliveryPhone);
+    Order checkoutPackage(Long userId, Long packageId, PaymentMethod paymentMethod,
+                         String deliveryName, String deliveryPhone);
     
     /**
      * Process checkout with both membership and cart items

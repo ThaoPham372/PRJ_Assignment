@@ -307,23 +307,28 @@
                         </c:choose>
                     </h3>
                     
-                    <!-- Membership Display (membership checkout only) -->
-                    <c:if test="${isMembershipCheckout and not empty membership}">
+                    <!-- Package Display (package checkout only) -->
+                    <c:if test="${isMembershipCheckout and not empty selectedPackage}">
                         <div class="order-item">
                             <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #141a46 0%, #1e2a5c 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
                                 <i class="fas fa-crown"></i>
                             </div>
                             <div class="item-details">
-                                <h4>${fn:escapeXml(membership.displayName)}</h4>
+                                <h4>${fn:escapeXml(selectedPackage.name)}</h4>
                                 <div class="item-quantity">
-                                    Thời hạn: ${membership.durationMonths} ${membership.durationMonths == 1 ? 'tháng' : 'tháng'}
+                                    Thời hạn: ${selectedPackage.durationMonths} ${selectedPackage.durationMonths == 1 ? 'tháng' : 'tháng'}
                                 </div>
-                                <c:if test="${not empty membership.description}">
-                                    <p style="margin-top: 5px; color: #5a6c7d; font-size: 0.9rem;">${fn:escapeXml(membership.description)}</p>
+                                <c:if test="${not empty selectedPackage.description}">
+                                    <p style="margin-top: 5px; color: #5a6c7d; font-size: 0.9rem;">${fn:escapeXml(selectedPackage.description)}</p>
+                                </c:if>
+                                <c:if test="${selectedPackage.maxSessions != null}">
+                                    <p style="margin-top: 5px; color: #5a6c7d; font-size: 0.9rem;">
+                                        <i class="fas fa-dumbbell"></i> Tối đa ${selectedPackage.maxSessions} buổi tập
+                                    </p>
                                 </c:if>
                             </div>
                             <div class="item-price">
-                                <fmt:formatNumber value="${membership.price}" type="currency" currencySymbol="đ" maxFractionDigits="0"/>
+                                <fmt:formatNumber value="${selectedPackage.price}" type="currency" currencySymbol="đ" maxFractionDigits="0"/>
                             </div>
                         </div>
                     </c:if>
@@ -356,8 +361,8 @@
                         </c:if>
                     </c:if>
                     
-                    <!-- Show message if membership checkout but no membership (shouldn't happen) -->
-                    <c:if test="${isMembershipCheckout and empty membership}">
+                    <!-- Show message if package checkout but no package (shouldn't happen) -->
+                    <c:if test="${isMembershipCheckout and empty selectedPackage}">
                         <div style="text-align: center; padding: 40px; color: #999;">
                             <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
                             <p>Không tìm thấy gói thành viên</p>

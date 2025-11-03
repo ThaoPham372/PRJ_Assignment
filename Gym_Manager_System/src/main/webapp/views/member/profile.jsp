@@ -449,7 +449,7 @@
             </div>
             <div class="profile-info">
                 <h1 class="profile-name">
-                    <c:out value="${profileData.username != null ? profileData.username : 'Member'}" />
+                    <c:out value="${profileData.name != null && !empty profileData.name ? profileData.name : (profileData.username != null ? profileData.username : 'Member')}" />
                 </h1>
                 <div class="profile-meta">
                     <div class="profile-meta-item">
@@ -511,11 +511,46 @@
             
             <div class="info-item">
                 <div class="info-label">
+                    <i class="fas fa-user"></i>
+                    Tên đầy đủ
+                </div>
+                <div class="info-value ${empty profileData.name ? 'empty' : ''}">
+                    <c:out value="${profileData.name != null && !empty profileData.name ? profileData.name : 'Chưa cập nhật'}" />
+                </div>
+            </div>
+            
+            <div class="info-item">
+                <div class="info-label">
                     <i class="fas fa-envelope"></i>
                     Email
                 </div>
                 <div class="info-value">
                     <c:out value="${profileData.email != null ? profileData.email : 'N/A'}" />
+                </div>
+            </div>
+            
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-phone-alt"></i>
+                    Số điện thoại
+                </div>
+                <div class="info-value ${empty profileData.phone ? 'empty' : ''}">
+                    <c:out value="${profileData.phone != null ? profileData.phone : 'Chưa cập nhật'}" />
+                </div>
+            </div>
+            
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-birthday-cake"></i>
+                    Ngày sinh
+                </div>
+                <div class="info-value ${empty profileData.dob ? 'empty' : ''}">
+                    <c:choose>
+                        <c:when test="${profileData.dob != null}">
+                            <fmt:formatDate value="${profileData.dob}" pattern="dd/MM/yyyy" />
+                        </c:when>
+                        <c:otherwise>Chưa cập nhật</c:otherwise>
+                    </c:choose>
                 </div>
             </div>
             

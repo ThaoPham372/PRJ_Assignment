@@ -90,15 +90,13 @@ public class CheckoutServiceImpl implements CheckoutService {
         // Step 3: Generate order number
         String orderNumber = generateOrderNumber(userId);
 
-        // Step 4: Create order object
+        // Step 4: Create order object (NOTE: payment info is now in payments table, not orders)
         Order order = new Order();
         order.setUserId(userId);
         order.setOrderNumber(orderNumber);
         order.setOrderDate(OffsetDateTime.now(ZoneOffset.UTC));
         order.setTotalAmount(totalAmount);
         order.setDiscountAmount(BigDecimal.ZERO);
-        order.setPaymentMethod(paymentMethod);
-        order.setPaymentStatus(PaymentStatus.PENDING); // Always PENDING initially
         order.setOrderStatus(OrderStatus.PENDING);
         
         // Set delivery information
@@ -126,14 +124,17 @@ public class CheckoutServiceImpl implements CheckoutService {
                 // 5.2: Insert order items (pass connection for transaction)
                 orderItemDao.insertBatch(orderId, orderItems, conn);
 
-                // 5.3: Decrease stock with lock
-                productDao.decreaseStockBatch(productQuantities);
+                // 5.3: Decrease stock with lock (use transaction connection)
+                productDao.decreaseStockBatch(productQuantities, conn);
 
-                // 5.4: Clear cart
-                cartDao.clear(userId);
+                // 5.4: Clear cart (use transaction connection)
+                cartDao.clear(userId, conn);
 
-                // 5.5: Update payment status (already set during insert, but explicit update) (pass connection for transaction)
-                orderDao.updatePayment(orderId, PaymentStatus.PENDING, paymentMethod, conn);
+                // 5.5: Create payment record in payments table (PENDING status) (use transaction connection)
+                com.gym.service.PaymentService paymentService = new com.gym.service.PaymentServiceImpl();
+                Integer userIdInt = userId.intValue();
+                BigDecimal finalAmount = totalAmount.subtract(order.getDiscountAmount() != null ? order.getDiscountAmount() : BigDecimal.ZERO);
+                paymentService.createPaymentForOrder(userIdInt, orderId, finalAmount, paymentMethod, null, conn);
 
                 // COMMIT
                 conn.commit();
@@ -230,44 +231,49 @@ public class CheckoutServiceImpl implements CheckoutService {
 
 
     @Override
-    public Order checkoutMembership(Long userId, Long membershipId, PaymentMethod paymentMethod,
-                                     String deliveryName, String deliveryPhone) {
-        // Get membership
-        com.gym.dao.membership.MembershipDao membershipDao = new com.gym.dao.membership.MembershipDao();
-        Optional<com.gym.model.membership.Membership> membershipOpt = membershipDao.findById(membershipId);
-        if (membershipOpt.isEmpty()) {
-            throw new RuntimeException("Membership not found: " + membershipId);
+    public Order checkoutPackage(Long userId, Long packageId, PaymentMethod paymentMethod,
+                                 String deliveryName, String deliveryPhone) {
+        // Get package from packages table
+        com.gym.service.membership.MembershipService membershipService = 
+            new com.gym.service.membership.MembershipServiceImpl();
+        java.util.Optional<com.gym.model.membership.Package> packageOpt = 
+            membershipService.getPackageById(packageId);
+        
+        if (packageOpt.isEmpty()) {
+            throw new RuntimeException("Package not found: " + packageId);
         }
         
-        com.gym.model.membership.Membership membership = membershipOpt.get();
+        com.gym.model.membership.Package pkg = packageOpt.get();
+        if (!pkg.getIsActive()) {
+            throw new IllegalStateException("Package is not active: " + packageId);
+        }
         
-        // Create order item for membership
+        // Create order item for package
         List<OrderItem> orderItems = new ArrayList<>();
         OrderItem orderItem = new OrderItem();
-        orderItem.setProductId(null); // Membership is not a product
-        orderItem.setProductName("Gói thành viên: " + membership.getDisplayName());
+        orderItem.setProductId(null); // Package is not a product
+        orderItem.setPackageId(packageId); // Set package_id for package items
+        orderItem.setProductName("Gói tập: " + pkg.getName());
         orderItem.setQuantity(1);
-        orderItem.setUnitPrice(membership.getPrice());
+        orderItem.setUnitPrice(pkg.getPrice());
         orderItem.setDiscountAmount(BigDecimal.ZERO);
-        orderItem.setSubtotal(membership.getPrice());
+        orderItem.setSubtotal(pkg.getPrice());
         orderItems.add(orderItem);
         
         // Generate order number
         String orderNumber = generateOrderNumber(userId);
         
-        // Create order
+        // Create order (NOTE: payment info is now in payments table, not orders)
         Order order = new Order();
         order.setUserId(userId);
         order.setOrderNumber(orderNumber);
         order.setOrderDate(OffsetDateTime.now(ZoneOffset.UTC));
-        order.setTotalAmount(membership.getPrice());
+        order.setTotalAmount(pkg.getPrice());
         order.setDiscountAmount(BigDecimal.ZERO);
-        order.setPaymentMethod(paymentMethod);
-        order.setPaymentStatus(com.gym.model.shop.PaymentStatus.PENDING);
         order.setOrderStatus(com.gym.model.shop.OrderStatus.PENDING);
         order.setDeliveryName(deliveryName);
         order.setDeliveryPhone(deliveryPhone);
-        order.setDeliveryMethod(DeliveryMethod.PICKUP); // Membership doesn't need delivery
+        order.setDeliveryMethod(DeliveryMethod.PICKUP); // Package doesn't need delivery
         
         // Transaction
         Connection conn = null;
@@ -284,18 +290,26 @@ public class CheckoutServiceImpl implements CheckoutService {
                 Long orderId = orderDao.insert(order, conn);
                 order.setOrderId(orderId);
                 
-                // Insert order items (membership as order item) (pass connection for transaction)
+                // Insert order items (package as order item) (pass connection for transaction)
                 orderItemDao.insertBatch(orderId, orderItems, conn);
                 
-                // Create user membership (only if payment is successful for now, or always for pending)
-                com.gym.dao.membership.UserMembershipDao userMembershipDao = 
-                    new com.gym.dao.membership.UserMembershipDao();
-                java.time.LocalDate startDate = java.time.LocalDate.now();
-                java.time.LocalDate expiryDate = startDate.plusMonths(membership.getDurationMonths());
-                userMembershipDao.create(userId, membershipId, startDate, expiryDate, orderId);
+                // Create membership using MembershipService
+                // This will:
+                // 1. Calculate startDate = CURRENT_DATE
+                // 2. Calculate endDate = startDate + duration_months
+                // 3. Check and expire any expired memberships
+                // 4. Create membership with status = 'ACTIVE'
+                Integer userIdInt = userId.intValue();
+                com.gym.model.membership.Membership membership = 
+                    membershipService.purchasePackage(userIdInt, packageId, null);
                 
-                // Update payment status (pass connection for transaction)
-                orderDao.updatePayment(orderId, com.gym.model.shop.PaymentStatus.PENDING, paymentMethod, conn);
+                System.out.println("[CheckoutService] Created membership ID: " + membership.getMembershipId() + 
+                                 " for package ID: " + packageId);
+                
+                // Create payment record in payments table (transaction_type = 'PACKAGE') (use transaction connection)
+                com.gym.service.PaymentService paymentService = new com.gym.service.PaymentServiceImpl();
+                paymentService.createPaymentForMembership(userIdInt, membership.getMembershipId(), 
+                                                         pkg.getPrice(), paymentMethod, null, conn);
                 
                 // COMMIT
                 conn.commit();
@@ -314,13 +328,13 @@ public class CheckoutServiceImpl implements CheckoutService {
                 if (conn != null) {
                     conn.rollback();
                 }
-                LOGGER.log(Level.SEVERE, "Error during membership checkout transaction", e);
-                throw new RuntimeException("Membership checkout failed: " + e.getMessage(), e);
+                LOGGER.log(Level.SEVERE, "Error during package checkout transaction", e);
+                throw new RuntimeException("Package checkout failed: " + e.getMessage(), e);
             }
             
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error establishing transaction connection", e);
-            throw new RuntimeException("Membership checkout failed: " + e.getMessage(), e);
+            throw new RuntimeException("Package checkout failed: " + e.getMessage(), e);
         } finally {
             if (conn != null) {
                 try {
@@ -338,35 +352,43 @@ public class CheckoutServiceImpl implements CheckoutService {
                                         DeliveryMethod deliveryMethod) 
             throws EmptyCartException, InsufficientStockException {
         
-        // Get membership
-        com.gym.dao.membership.MembershipDao membershipDao = new com.gym.dao.membership.MembershipDao();
-        Optional<com.gym.model.membership.Membership> membershipOpt = membershipDao.findById(membershipId);
-        if (membershipOpt.isEmpty()) {
-            throw new RuntimeException("Membership not found: " + membershipId);
-        }
-        com.gym.model.membership.Membership membership = membershipOpt.get();
+        // NOTE: This method uses old signature with membershipId for backward compatibility
+        // Internally convert to packageId (membershipId is treated as packageId)
+        Long packageId = membershipId;
         
-        // Get cart items (allow empty cart since we have membership)
+        // Get package from packages table
+        com.gym.service.membership.MembershipService membershipService = 
+            new com.gym.service.membership.MembershipServiceImpl();
+        java.util.Optional<com.gym.model.membership.Package> packageOpt = 
+            membershipService.getPackageById(packageId);
+        
+        if (packageOpt.isEmpty()) {
+            throw new RuntimeException("Package not found: " + packageId);
+        }
+        com.gym.model.membership.Package pkg = packageOpt.get();
+        
+        // Get cart items (allow empty cart since we have package)
         List<CartItem> cartItems = cartDao.findByUserId(userId);
         if (cartItems == null) {
             cartItems = new ArrayList<>();
         }
         
-        // Build order items: membership + cart items
+        // Build order items: package + cart items
         List<OrderItem> orderItems = new ArrayList<>();
         BigDecimal totalAmount = BigDecimal.ZERO;
         Map<Long, Integer> productQuantities = new HashMap<>();
         
-        // Add membership as order item
-        OrderItem membershipOrderItem = new OrderItem();
-        membershipOrderItem.setProductId(null); // Membership is not a product
-        membershipOrderItem.setProductName("Gói thành viên: " + membership.getDisplayName());
-        membershipOrderItem.setQuantity(1);
-        membershipOrderItem.setUnitPrice(membership.getPrice());
-        membershipOrderItem.setDiscountAmount(BigDecimal.ZERO);
-        membershipOrderItem.setSubtotal(membership.getPrice());
-        orderItems.add(membershipOrderItem);
-        totalAmount = totalAmount.add(membership.getPrice());
+        // Add package as order item
+        OrderItem packageOrderItem = new OrderItem();
+        packageOrderItem.setProductId(null); // Package is not a product
+        packageOrderItem.setPackageId(packageId); // Set package_id for package items
+        packageOrderItem.setProductName("Gói tập: " + pkg.getName());
+        packageOrderItem.setQuantity(1);
+        packageOrderItem.setUnitPrice(pkg.getPrice());
+        packageOrderItem.setDiscountAmount(BigDecimal.ZERO);
+        packageOrderItem.setSubtotal(pkg.getPrice());
+        orderItems.add(packageOrderItem);
+        totalAmount = totalAmount.add(pkg.getPrice());
         
         // Add cart items to order items
         for (CartItem cartItem : cartItems) {
@@ -401,16 +423,13 @@ public class CheckoutServiceImpl implements CheckoutService {
         // Generate order number
         String orderNumber = generateOrderNumber(userId);
         
-        // Create order
+        // Create order (NOTE: payment info is now in payments table, not orders)
         Order order = new Order();
         order.setUserId(userId);
         order.setOrderNumber(orderNumber);
         order.setOrderDate(OffsetDateTime.now(ZoneOffset.UTC));
         order.setTotalAmount(totalAmount);
         order.setDiscountAmount(BigDecimal.ZERO);
-        order.setFinalAmount(totalAmount);
-        order.setPaymentMethod(paymentMethod);
-        order.setPaymentStatus(PaymentStatus.PENDING);
         order.setOrderStatus(OrderStatus.PENDING);
         order.setDeliveryName(deliveryName);
         order.setDeliveryAddress(deliveryAddress);
@@ -435,25 +454,38 @@ public class CheckoutServiceImpl implements CheckoutService {
                 // Insert order items (membership + products) (pass connection for transaction)
                 orderItemDao.insertBatch(orderId, orderItems, conn);
                 
-                // Decrease stock for products only (membership doesn't have stock)
+                // Decrease stock for products only (membership doesn't have stock) (use transaction connection)
                 if (!productQuantities.isEmpty()) {
-                    productDao.decreaseStockBatch(productQuantities);
+                    productDao.decreaseStockBatch(productQuantities, conn);
                 }
                 
-                // Create user membership
-                com.gym.dao.membership.UserMembershipDao userMembershipDao = 
-                    new com.gym.dao.membership.UserMembershipDao();
-                java.time.LocalDate startDate = java.time.LocalDate.now();
-                java.time.LocalDate expiryDate = startDate.plusMonths(membership.getDurationMonths());
-                userMembershipDao.create(userId, membershipId, startDate, expiryDate, orderId);
+                // Create membership using MembershipService
+                // NOTE: MembershipService creates its own connection for membership creation
+                // This is acceptable as membership is a separate entity
+                Integer userIdInt = userId.intValue();
+                com.gym.model.membership.Membership membership = 
+                    membershipService.purchasePackage(userIdInt, packageId, null);
                 
-                // Clear cart (only after successful transaction)
+                // Clear cart (only after successful transaction) (use transaction connection)
                 if (!cartItems.isEmpty()) {
-                    cartDao.clear(userId);
+                    cartDao.clear(userId, conn);
                 }
                 
-                // Update payment status (pass connection for transaction)
-                orderDao.updatePayment(orderId, PaymentStatus.PENDING, paymentMethod, conn);
+                // Create payment records (use transaction connection):
+                // 1. Payment for package (transaction_type = 'PACKAGE')
+                // 2. Payment for products (transaction_type = 'PRODUCT')
+                com.gym.service.PaymentService paymentService = new com.gym.service.PaymentServiceImpl();
+                
+                // Payment for package
+                BigDecimal packageAmount = pkg.getPrice();
+                paymentService.createPaymentForMembership(userIdInt, membership.getMembershipId(), 
+                                                         packageAmount, paymentMethod, null, conn);
+                
+                // Payment for products (if any)
+                if (!cartItems.isEmpty()) {
+                    BigDecimal productsAmount = totalAmount.subtract(packageAmount);
+                    paymentService.createPaymentForOrder(userIdInt, orderId, productsAmount, paymentMethod, null, conn);
+                }
                 
                 // COMMIT
                 conn.commit();

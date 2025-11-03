@@ -27,9 +27,10 @@ public class ProductDao {
         int offset = (page - 1) * pageSize;
         
         // Build SQL with MySQL pagination using LIMIT/OFFSET
+        // NOTE: Schema does not have image_path column
         StringBuilder sql = new StringBuilder(
             "SELECT product_id, product_name, product_type, price, stock_quantity, " +
-            "unit, is_active, image_path, created_at " +
+            "unit, is_active, created_at " +
             "FROM products " +
             "WHERE is_active = 1 "
         );
@@ -124,8 +125,9 @@ public class ProductDao {
      * Find product by ID
      */
     public Optional<Product> findById(Long productId) {
+        // NOTE: Schema does not have image_path column
         String sql = "SELECT product_id, product_name, product_type, price, stock_quantity, " +
-                    "unit, is_active, image_path, created_at " +
+                    "unit, is_active, created_at " +
                     "FROM products WHERE product_id = ?";
         
         try (Connection conn = DatabaseUtil.getConnection()) {
@@ -153,6 +155,16 @@ public class ProductDao {
      * @throws SQLException if insufficient stock
      */
     public void decreaseStockBatch(Map<Long, Integer> productQuantities) throws SQLException {
+        decreaseStockBatch(productQuantities, null);
+    }
+
+    /**
+     * Decrease stock for multiple products using provided connection (for transactions)
+     * @param productQuantities Map of productId -> quantity to decrease
+     * @param conn Connection to use (if null, creates new connection)
+     * @throws SQLException if insufficient stock
+     */
+    public void decreaseStockBatch(Map<Long, Integer> productQuantities, Connection conn) throws SQLException {
         if (productQuantities == null || productQuantities.isEmpty()) {
             return;
         }
@@ -160,7 +172,13 @@ public class ProductDao {
         String sql = "UPDATE products SET stock_quantity = stock_quantity - ? " +
                     "WHERE product_id = ? AND stock_quantity >= ?";
         
-        try (Connection conn = DatabaseUtil.getConnection()) {
+        boolean shouldCloseConnection = false;
+        try {
+            if (conn == null) {
+                conn = DatabaseUtil.getConnection();
+                shouldCloseConnection = true;
+            }
+            
             if (conn == null) {
                 throw new SQLException("Database connection is null");
             }
@@ -180,6 +198,15 @@ public class ProductDao {
                     }
                 }
             }
+        } finally {
+            // Only close connection if we created it
+            if (shouldCloseConnection && conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    LOGGER.log(Level.WARNING, "Error closing connection", e);
+                }
+            }
         }
     }
 
@@ -195,7 +222,10 @@ public class ProductDao {
         product.setStockQuantity(rs.getInt("stock_quantity"));
         product.setUnit(rs.getString("unit"));
         product.setActive(rs.getBoolean("is_active"));
-        product.setImagePath(rs.getString("image_path"));
+        
+        // NOTE: image_path column does not exist in current schema
+        // Set to null - can be added later if needed
+        product.setImagePath(null);
         
         Timestamp createdAt = rs.getTimestamp("created_at");
         if (createdAt != null) {

@@ -70,13 +70,21 @@ public class OrderServlet extends HttpServlet {
         try {
             List<Order> orders = orderDao.findByUserId(userId);
             
-            // Load order items for each order
+            // Load order items and payments for each order
+            com.gym.service.PaymentService paymentService = new com.gym.service.PaymentServiceImpl();
+            java.util.Map<Long, java.util.List<com.gym.model.Payment>> paymentsMap = new java.util.HashMap<>();
+            
             for (Order order : orders) {
                 List<com.gym.model.shop.OrderItem> items = orderItemDao.findByOrderId(order.getOrderId());
                 order.setItems(items);
+                
+                // Load payments for this order
+                List<com.gym.model.Payment> payments = paymentService.findPaymentsByOrder(order.getOrderId());
+                paymentsMap.put(order.getOrderId(), payments);
             }
             
             request.setAttribute("orders", orders);
+            request.setAttribute("paymentsMap", paymentsMap);
             request.getRequestDispatcher("/views/cart/order-list.jsp").forward(request, response);
         } catch (Exception e) {
             System.err.println("[OrderServlet] Error loading order list: " + e.getMessage());
@@ -119,6 +127,11 @@ public class OrderServlet extends HttpServlet {
             // Load order items
             List<com.gym.model.shop.OrderItem> items = orderItemDao.findByOrderId(orderId);
             order.setItems(items);
+
+            // Load payments for this order
+            com.gym.service.PaymentService paymentService = new com.gym.service.PaymentServiceImpl();
+            List<com.gym.model.Payment> payments = paymentService.findPaymentsByOrder(orderId);
+            request.setAttribute("payments", payments);
 
             request.setAttribute("order", order);
             request.getRequestDispatcher("/views/cart/success.jsp").forward(request, response);
@@ -164,6 +177,11 @@ public class OrderServlet extends HttpServlet {
             // Load order items
             List<com.gym.model.shop.OrderItem> items = orderItemDao.findByOrderId(orderId);
             order.setItems(items);
+
+            // Load payments for this order (for payment history display)
+            com.gym.service.PaymentService paymentService = new com.gym.service.PaymentServiceImpl();
+            List<com.gym.model.Payment> payments = paymentService.findPaymentsByOrder(orderId);
+            request.setAttribute("payments", payments);
 
             request.setAttribute("order", order);
             request.getRequestDispatcher("/views/cart/order-detail.jsp").forward(request, response);

@@ -3,6 +3,7 @@ package com.gym.dao.shop;
 import com.gym.model.shop.OrderItem;
 import com.gym.util.DatabaseUtil;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,9 +32,12 @@ public class OrderItemDao {
             return;
         }
         
-        String sql = "INSERT INTO order_items (order_id, product_id, product_name, quantity, " +
-                    "unit_price, discount_amount) " +
-                    "VALUES (?, ?, ?, ?, ?, ?)";
+        // NOTE: Schema mới dùng bảng order_details (thay vì order_items)
+        // Cột: order_detail_id, order_id, product_id, package_id, product_name, quantity, 
+        //      unit_price, discount_percent, discount_amount, subtotal (generated), notes
+        String sql = "INSERT INTO order_details (order_id, product_id, package_id, product_name, quantity, " +
+                    "unit_price, discount_percent, discount_amount, notes) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         boolean shouldCloseConnection = false;
         try {
@@ -49,16 +53,34 @@ public class OrderItemDao {
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 for (OrderItem item : items) {
                     stmt.setLong(1, orderId);
-                    // Handle null product_id for membership items
-                    if (item.getProductId() != null) {
+                    // product_id: NULL for packages, value for products
+                    if (item.getProductId() != null && item.getProductId() > 0) {
                         stmt.setLong(2, item.getProductId());
                     } else {
                         stmt.setNull(2, Types.BIGINT);
                     }
-                    stmt.setString(3, item.getProductName());
-                    stmt.setInt(4, item.getQuantity());
-                    stmt.setBigDecimal(5, item.getUnitPrice());
-                    stmt.setBigDecimal(6, item.getDiscountAmount());
+                    // package_id: NULL for products, value for packages
+                    if (item.getPackageId() != null && item.getPackageId() > 0) {
+                        stmt.setLong(3, item.getPackageId());
+                    } else {
+                        stmt.setNull(3, Types.BIGINT);
+                    }
+                    stmt.setString(4, item.getProductName());
+                    stmt.setInt(5, item.getQuantity());
+                    stmt.setBigDecimal(6, item.getUnitPrice());
+                    // discount_percent - calculate from discount_amount if needed
+                    BigDecimal discountPercent = BigDecimal.ZERO;
+                    if (item.getDiscountPercent() != null) {
+                        discountPercent = item.getDiscountPercent();
+                    } else if (item.getDiscountAmount() != null && item.getUnitPrice() != null && item.getUnitPrice().compareTo(BigDecimal.ZERO) > 0) {
+                        // Calculate discount_percent from discount_amount
+                        discountPercent = item.getDiscountAmount()
+                            .divide(item.getUnitPrice(), 4, java.math.RoundingMode.HALF_UP)
+                            .multiply(BigDecimal.valueOf(100));
+                    }
+                    stmt.setBigDecimal(7, discountPercent);
+                    stmt.setBigDecimal(8, item.getDiscountAmount() != null ? item.getDiscountAmount() : BigDecimal.ZERO);
+                    setStringOrNull(stmt, 9, item.getNotes());
                     stmt.addBatch();
                 }
                 stmt.executeBatch();
@@ -84,9 +106,10 @@ public class OrderItemDao {
      */
     public List<OrderItem> findByOrderId(Long orderId) {
         List<OrderItem> items = new ArrayList<>();
-        String sql = "SELECT order_item_id, order_id, product_id, product_name, quantity, " +
-                    "unit_price, discount_amount, subtotal " +
-                    "FROM order_items WHERE order_id = ? ORDER BY order_item_id";
+        // NOTE: Schema mới dùng bảng order_details với cột order_detail_id
+        String sql = "SELECT order_detail_id, order_id, product_id, package_id, product_name, quantity, " +
+                    "unit_price, discount_percent, discount_amount, subtotal, notes " +
+                    "FROM order_details WHERE order_id = ? ORDER BY order_detail_id";
 
         try (Connection conn = DatabaseUtil.getConnection()) {
             if (conn == null) {
@@ -109,20 +132,48 @@ public class OrderItemDao {
 
     private OrderItem mapResultSetToOrderItem(ResultSet rs) throws SQLException {
         OrderItem item = new OrderItem();
-        item.setOrderItemId(rs.getLong("order_item_id"));
+        // Schema mới: order_detail_id (thay vì order_item_id)
+        item.setOrderItemId(rs.getLong("order_detail_id"));
         item.setOrderId(rs.getLong("order_id"));
-        // Handle NULL product_id for membership items
+        
+        // product_id can be NULL for packages
         Long productId = rs.getLong("product_id");
         if (rs.wasNull()) {
             productId = null;
         }
         item.setProductId(productId);
+        
+        // package_id can be NULL for products
+        Long packageId = rs.getLong("package_id");
+        if (rs.wasNull()) {
+            packageId = null;
+        }
+        item.setPackageId(packageId);
+        
         item.setProductName(rs.getString("product_name"));
         item.setQuantity(rs.getInt("quantity"));
         item.setUnitPrice(rs.getBigDecimal("unit_price"));
+        
+        // New columns in order_details
+        BigDecimal discountPercent = rs.getBigDecimal("discount_percent");
+        item.setDiscountPercent(discountPercent);
+        
         item.setDiscountAmount(rs.getBigDecimal("discount_amount"));
         item.setSubtotal(rs.getBigDecimal("subtotal"));
+        item.setNotes(rs.getString("notes"));
+        
         return item;
+    }
+
+    /**
+     * Helper: Set String or null
+     */
+    private void setStringOrNull(PreparedStatement stmt, int index, String value) throws SQLException {
+        if (value != null && !value.trim().isEmpty()) {
+            stmt.setString(index, value);
+        } else {
+            stmt.setNull(index, Types.VARCHAR);
+        }
     }
 }
 

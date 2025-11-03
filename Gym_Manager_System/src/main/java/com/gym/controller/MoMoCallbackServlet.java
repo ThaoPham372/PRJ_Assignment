@@ -2,6 +2,8 @@ package com.gym.controller;
 
 import com.gym.dao.shop.OrderDao;
 import com.gym.model.shop.PaymentStatus;
+import com.gym.service.PaymentService;
+import com.gym.service.PaymentServiceImpl;
 import com.gym.service.shop.MoMoPaymentService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -15,17 +17,21 @@ import java.io.IOException;
  * Servlet to handle MoMo payment callbacks
  * - Return URL: User redirect after payment
  * - Notify URL: MoMo webhook to notify payment result
+ * 
+ * NOTE: Now uses payments table instead of orders.payment_status
  */
 @WebServlet(name = "MoMoCallbackServlet", urlPatterns = {"/order/momo/*"})
 public class MoMoCallbackServlet extends HttpServlet {
     private OrderDao orderDao;
     private MoMoPaymentService momoService;
+    private PaymentService paymentService;
 
     @Override
     public void init() throws ServletException {
         super.init();
         this.orderDao = new OrderDao();
         this.momoService = new MoMoPaymentService();
+        this.paymentService = new PaymentServiceImpl();
     }
 
     @Override
@@ -62,6 +68,7 @@ public class MoMoCallbackServlet extends HttpServlet {
 
     /**
      * Handle return URL (user redirect)
+     * NOTE: Now uses payments table. Find payment by orderId or transId
      */
     private void handleReturnUrl(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -69,6 +76,7 @@ public class MoMoCallbackServlet extends HttpServlet {
         
         // MoMo returns these parameters
         String resultCode = request.getParameter("resultCode");
+        String transId = request.getParameter("transId");  // MoMo transaction ID (use as reference_id)
         
         if (orderIdStr == null || orderIdStr.trim().isEmpty()) {
             response.sendRedirect(request.getContextPath() + "/cart?error=invalid_order");
@@ -77,23 +85,40 @@ public class MoMoCallbackServlet extends HttpServlet {
 
         try {
             Long orderId = Long.parseLong(orderIdStr);
-            var orderOpt = orderDao.findById(orderId);
             
-            if (orderOpt.isEmpty()) {
-                response.sendRedirect(request.getContextPath() + "/cart?error=order_not_found");
+            // Find payment by orderId (for PRODUCT) or by referenceId/transId
+            var payments = paymentService.findPaymentsByOrder(orderId);
+            com.gym.model.Payment payment = null;
+            
+            if (transId != null && !transId.trim().isEmpty()) {
+                // Try to find by referenceId first
+                var paymentOpt = paymentService.findPaymentByReferenceId(transId);
+                if (paymentOpt.isPresent()) {
+                    payment = paymentOpt.get();
+                }
+            }
+            
+            // If not found by referenceId, get first payment for this order
+            if (payment == null && !payments.isEmpty()) {
+                payment = payments.get(0);  // Get most recent payment
+            }
+            
+            if (payment == null) {
+                System.err.println("[MoMoCallback] Payment not found for orderId: " + orderId);
+                response.sendRedirect(request.getContextPath() + "/cart?error=payment_not_found");
                 return;
             }
             
-            var order = orderOpt.get();
-            
             // If payment successful
             if ("0".equals(resultCode)) {
-                // Update payment status to PAID
-                orderDao.updatePayment(orderId, PaymentStatus.PAID, order.getPaymentMethod());
+                // Update payment status to PAID (and referenceId if available)
+                // This will also update order/membership status via PaymentService
+                ((com.gym.service.PaymentServiceImpl) paymentService).updatePaymentStatus(
+                    payment.getPaymentId(), PaymentStatus.PAID, transId);
                 response.sendRedirect(request.getContextPath() + "/order/success?orderId=" + orderId);
             } else {
                 // Payment failed or cancelled
-                orderDao.updatePayment(orderId, PaymentStatus.FAILED, order.getPaymentMethod());
+                paymentService.updatePaymentStatus(payment.getPaymentId(), PaymentStatus.FAILED);
                 request.getSession().setAttribute("error", "Thanh toán thất bại hoặc đã bị hủy");
                 response.sendRedirect(request.getContextPath() + "/cart?error=payment_failed");
             }
@@ -148,22 +173,45 @@ public class MoMoCallbackServlet extends HttpServlet {
                 return;
             }
             
-            // Find order by order number
-            var orderOpt = orderDao.findByOrderNumber(orderId);
-            if (orderOpt.isEmpty()) {
+            // Find payment by referenceId (transId from MoMo) or by order number
+            com.gym.model.Payment payment = null;
+            
+            // First try to find by referenceId (transId)
+            if (transId != null && !transId.trim().isEmpty()) {
+                var paymentOpt = paymentService.findPaymentByReferenceId(transId);
+                if (paymentOpt.isPresent()) {
+                    payment = paymentOpt.get();
+                }
+            }
+            
+            // If not found, try to find by order number
+            if (payment == null) {
+                var orderOpt = orderDao.findByOrderNumber(orderId);
+                if (orderOpt.isPresent()) {
+                    var payments = paymentService.findPaymentsByOrder(orderOpt.get().getOrderId());
+                    if (!payments.isEmpty()) {
+                        payment = payments.get(0);  // Get most recent payment
+                    }
+                }
+            }
+            
+            if (payment == null) {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                response.getWriter().write("Order not found");
+                response.getWriter().write("Payment not found");
                 return;
             }
             
-            var order = orderOpt.get();
+            // Update referenceId if not set yet and transId is available
+            // Note: We may need to add updateReferenceId method, but for now just update status
             
             // Update payment status based on MoMo response
             // orderStatus: 0 = Success, others = Failed/Cancelled
+            // Also update referenceId with transId from MoMo
             if (orderStatus == 0) {
-                orderDao.updatePayment(order.getOrderId(), PaymentStatus.PAID, order.getPaymentMethod());
+                ((com.gym.service.PaymentServiceImpl) paymentService).updatePaymentStatus(
+                    payment.getPaymentId(), PaymentStatus.PAID, transId);
             } else {
-                orderDao.updatePayment(order.getOrderId(), PaymentStatus.FAILED, order.getPaymentMethod());
+                paymentService.updatePaymentStatus(payment.getPaymentId(), PaymentStatus.FAILED);
             }
             
             // Return success to MoMo

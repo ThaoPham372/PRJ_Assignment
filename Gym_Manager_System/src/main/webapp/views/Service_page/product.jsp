@@ -305,10 +305,11 @@
     <select name="type" onchange="window.location.href='${pageContext.request.contextPath}/products?type=' + this.value + (document.querySelector('input[name=q]').value ? '&q=' + document.querySelector('input[name=q]').value : '')" 
             style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
       <option value="">Tất cả loại</option>
-      <option value="supplement" ${selectedType == 'supplement' ? 'selected' : ''}>Thực phẩm bổ sung</option>
-      <option value="equipment" ${selectedType == 'equipment' ? 'selected' : ''}>Thiết bị</option>
-      <option value="clothing" ${selectedType == 'clothing' ? 'selected' : ''}>Trang phục</option>
-      <option value="other" ${selectedType == 'other' ? 'selected' : ''}>Khác</option>
+      <option value="SUPPLEMENT" ${selectedType == 'SUPPLEMENT' || selectedType == 'supplement' ? 'selected' : ''}>Thực phẩm bổ sung</option>
+      <option value="EQUIPMENT" ${selectedType == 'EQUIPMENT' || selectedType == 'equipment' ? 'selected' : ''}>Thiết bị</option>
+      <option value="APPAREL" ${selectedType == 'APPAREL' || selectedType == 'clothing' ? 'selected' : ''}>Trang phục</option>
+      <option value="ACCESSORY" ${selectedType == 'ACCESSORY' || selectedType == 'accessory' ? 'selected' : ''}>Phụ kiện</option>
+      <option value="OTHER" ${selectedType == 'OTHER' || selectedType == 'other' ? 'selected' : ''}>Khác</option>
     </select>
   </div>
 

@@ -7,6 +7,7 @@ import com.gym.model.shop.PaymentMethod;
 import com.gym.model.shop.PaymentStatus;
 import com.gym.util.DatabaseUtil;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.time.ZoneOffset;
 import java.util.Optional;
@@ -31,9 +32,11 @@ public class OrderDao {
      * Insert new order using provided connection (for transactions)
      */
     public Long insert(Order order, Connection conn) {
+        // NOTE: Schema mới không còn payment_method và payment_status trong orders table
+        // Payment info được lưu trong bảng payments riêng
         String sql = "INSERT INTO orders (user_id, order_number, order_date, total_amount, " +
-                    "discount_amount, payment_method, payment_status, order_status, created_at) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+                    "discount_amount, order_status, delivery_method, delivery_address, delivery_phone, notes, created_at) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
 
         boolean shouldCloseConnection = false;
         try {
@@ -53,9 +56,17 @@ public class OrderDao {
                 stmt.setTimestamp(3, Timestamp.from(order.getOrderDate().toInstant()));
                 stmt.setBigDecimal(4, order.getTotalAmount());
                 stmt.setBigDecimal(5, order.getDiscountAmount());
-                stmt.setString(6, order.getPaymentMethod() != null ? order.getPaymentMethod().getCode() : null);
-                stmt.setString(7, order.getPaymentStatus() != null ? order.getPaymentStatus().getCode() : "pending");
-                stmt.setString(8, order.getOrderStatus() != null ? order.getOrderStatus().getCode() : "pending");
+                stmt.setString(6, order.getOrderStatus() != null ? order.getOrderStatus().getCode() : "pending");
+                
+                // Delivery information
+                if (order.getDeliveryMethod() != null) {
+                    stmt.setString(7, order.getDeliveryMethod().getCode());
+                } else {
+                    stmt.setString(7, "PICKUP");
+                }
+                setStringOrNull(stmt, 8, order.getDeliveryAddress());
+                setStringOrNull(stmt, 9, order.getDeliveryPhone());
+                setStringOrNull(stmt, 10, order.getNotes());
                 
                 int affectedRows = stmt.executeUpdate();
                 if (affectedRows > 0) {
@@ -90,10 +101,16 @@ public class OrderDao {
      * Find order by order number
      */
     public Optional<Order> findByOrderNumber(String orderNumber) {
-        String sql = "SELECT order_id, user_id, order_number, order_date, total_amount, " +
-                    "discount_amount, final_amount, payment_method, payment_status, " +
-                    "order_status, delivery_name, delivery_address, delivery_phone, delivery_method, created_at " +
-                    "FROM orders WHERE order_number = ?";
+        // NOTE: Schema mới không còn payment_method và payment_status trong orders table
+        // Schema có: delivery_notes (không phải delivery_name)
+        // JOIN với user table để lấy tên người dùng
+        String sql = "SELECT o.order_id, o.user_id, o.order_number, o.order_date, o.total_amount, " +
+                    "o.discount_amount, o.order_status, o.delivery_method, o.delivery_address, " +
+                    "o.delivery_phone, o.delivery_notes, o.notes, o.created_at, " +
+                    "u.name as user_name " +
+                    "FROM orders o " +
+                    "LEFT JOIN user u ON o.user_id = u.user_id " +
+                    "WHERE o.order_number = ?";
 
         try (Connection conn = DatabaseUtil.getConnection()) {
             if (conn == null) {
@@ -118,10 +135,16 @@ public class OrderDao {
      * Find order by ID
      */
     public Optional<Order> findById(Long orderId) {
-        String sql = "SELECT order_id, user_id, order_number, order_date, total_amount, " +
-                    "discount_amount, final_amount, payment_method, payment_status, " +
-                    "order_status, delivery_name, delivery_address, delivery_phone, delivery_method, created_at " +
-                    "FROM orders WHERE order_id = ?";
+        // NOTE: Schema mới không còn payment_method và payment_status trong orders table
+        // Schema có: delivery_notes (không phải delivery_name)
+        // JOIN với user table để lấy tên người dùng
+        String sql = "SELECT o.order_id, o.user_id, o.order_number, o.order_date, o.total_amount, " +
+                    "o.discount_amount, o.order_status, o.delivery_method, o.delivery_address, " +
+                    "o.delivery_phone, o.delivery_notes, o.notes, o.created_at, " +
+                    "u.name as user_name " +
+                    "FROM orders o " +
+                    "LEFT JOIN user u ON o.user_id = u.user_id " +
+                    "WHERE o.order_id = ?";
 
         try (Connection conn = DatabaseUtil.getConnection()) {
             if (conn == null) {
@@ -147,11 +170,17 @@ public class OrderDao {
      */
     public java.util.List<Order> findByUserId(Long userId) {
         java.util.List<Order> orders = new java.util.ArrayList<>();
-        String sql = "SELECT order_id, user_id, order_number, order_date, total_amount, " +
-                    "discount_amount, final_amount, payment_method, payment_status, " +
-                    "order_status, created_at " +
-                    "FROM orders WHERE user_id = ? " +
-                    "ORDER BY created_at DESC";
+        // NOTE: Schema mới không còn payment_method và payment_status trong orders table
+        // Schema có: delivery_notes (không phải delivery_name)
+        // JOIN với user table để lấy tên người dùng
+        String sql = "SELECT o.order_id, o.user_id, o.order_number, o.order_date, o.total_amount, " +
+                    "o.discount_amount, o.order_status, o.delivery_method, o.delivery_address, " +
+                    "o.delivery_phone, o.delivery_notes, o.notes, o.created_at, " +
+                    "u.name as user_name " +
+                    "FROM orders o " +
+                    "LEFT JOIN user u ON o.user_id = u.user_id " +
+                    "WHERE o.user_id = ? " +
+                    "ORDER BY o.created_at DESC";
 
         try (Connection conn = DatabaseUtil.getConnection()) {
             if (conn == null) {
@@ -181,10 +210,17 @@ public class OrderDao {
     }
     
     /**
-     * Update payment status and method using provided connection (for transactions)
+     * Update order status
      */
-    public void updatePayment(Long orderId, PaymentStatus paymentStatus, PaymentMethod paymentMethod, Connection conn) {
-        String sql = "UPDATE orders SET payment_status = ?, payment_method = ? WHERE order_id = ?";
+    public void updateOrderStatus(Long orderId, OrderStatus orderStatus) {
+        updateOrderStatus(orderId, orderStatus, null);
+    }
+
+    /**
+     * Update order status using provided connection (for transactions)
+     */
+    public void updateOrderStatus(Long orderId, OrderStatus orderStatus, Connection conn) {
+        String sql = "UPDATE orders SET order_status = ? WHERE order_id = ?";
 
         boolean shouldCloseConnection = false;
         try {
@@ -198,15 +234,14 @@ public class OrderDao {
             }
             
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, paymentStatus.getCode());
-                stmt.setString(2, paymentMethod != null ? paymentMethod.getCode() : null);
-                stmt.setLong(3, orderId);
+                stmt.setString(1, orderStatus.getCode());
+                stmt.setLong(2, orderId);
                 stmt.executeUpdate();
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error updating order payment: " + e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, "Error updating order status: " + e.getMessage(), e);
             e.printStackTrace();
-            throw new RuntimeException("Failed to update order payment: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to update order status: " + e.getMessage(), e);
         } finally {
             // Only close connection if we created it
             if (shouldCloseConnection && conn != null) {
@@ -217,6 +252,16 @@ public class OrderDao {
                 }
             }
         }
+    }
+
+    /**
+     * @deprecated Use PaymentService instead. This method is kept for backward compatibility.
+     */
+    @Deprecated
+    public void updatePayment(Long orderId, PaymentStatus paymentStatus, PaymentMethod paymentMethod, Connection conn) {
+        // This method is deprecated - payment info should be in payments table
+        // Keep method signature for compatibility but do nothing
+        LOGGER.warning("updatePayment() is deprecated. Use PaymentService instead.");
     }
 
     private Order mapResultSetToOrder(ResultSet rs) throws SQLException {
@@ -232,13 +277,20 @@ public class OrderDao {
         
         order.setTotalAmount(rs.getBigDecimal("total_amount"));
         order.setDiscountAmount(rs.getBigDecimal("discount_amount"));
-        order.setFinalAmount(rs.getBigDecimal("final_amount"));
+        // final_amount is computed column, may not exist in SELECT
+        try {
+            order.setFinalAmount(rs.getBigDecimal("final_amount"));
+        } catch (SQLException e) {
+            // Column doesn't exist, calculate from total - discount
+            BigDecimal total = order.getTotalAmount();
+            BigDecimal discount = order.getDiscountAmount() != null ? order.getDiscountAmount() : BigDecimal.ZERO;
+            order.setFinalAmount(total.subtract(discount));
+        }
         
-        String paymentMethodStr = rs.getString("payment_method");
-        order.setPaymentMethod(PaymentMethod.fromCode(paymentMethodStr));
-        
-        String paymentStatusStr = rs.getString("payment_status");
-        order.setPaymentStatus(PaymentStatus.fromCode(paymentStatusStr));
+        // NOTE: payment_method and payment_status are now in payments table, not orders
+        // Set to null - payment info should be loaded separately from payments table
+        order.setPaymentMethod(null);
+        order.setPaymentStatus(PaymentStatus.PENDING);
         
         String orderStatusStr = rs.getString("order_status");
         order.setOrderStatus(OrderStatus.fromCode(orderStatusStr));
@@ -247,7 +299,8 @@ public class OrderDao {
         java.sql.ResultSetMetaData metaData = rs.getMetaData();
         int columnCount = metaData.getColumnCount();
         boolean hasDeliveryName = false, hasDeliveryAddress = false, 
-                hasDeliveryPhone = false, hasDeliveryMethod = false;
+                hasDeliveryPhone = false, hasDeliveryMethod = false,
+                hasDeliveryNotes = false;
         
         for (int i = 1; i <= columnCount; i++) {
             String columnName = metaData.getColumnName(i).toLowerCase();
@@ -255,10 +308,24 @@ public class OrderDao {
             if ("delivery_address".equals(columnName)) hasDeliveryAddress = true;
             if ("delivery_phone".equals(columnName)) hasDeliveryPhone = true;
             if ("delivery_method".equals(columnName)) hasDeliveryMethod = true;
+            if ("delivery_notes".equals(columnName)) hasDeliveryNotes = true;
+            if ("user_name".equals(columnName)) hasDeliveryName = true; // Use user_name as delivery name fallback
         }
         
+        // Note: Schema có delivery_notes nhưng không có delivery_name
+        // deliveryName có thể lấy từ user table (user_name) hoặc để null
         if (hasDeliveryName) {
             order.setDeliveryName(rs.getString("delivery_name"));
+        } else {
+            // Try to get from user_name (JOIN with user table)
+            try {
+                String userName = rs.getString("user_name");
+                if (userName != null && !userName.trim().isEmpty()) {
+                    order.setDeliveryName(userName);
+                }
+            } catch (SQLException e) {
+                // Column may not exist, skip
+            }
         }
         if (hasDeliveryAddress) {
             order.setDeliveryAddress(rs.getString("delivery_address"));
@@ -272,6 +339,22 @@ public class OrderDao {
                 order.setDeliveryMethod(DeliveryMethod.fromCode(deliveryMethodStr));
             }
         }
+        // delivery_notes có thể dùng để set vào notes hoặc một field riêng
+        if (hasDeliveryNotes) {
+            String deliveryNotes = rs.getString("delivery_notes");
+            // Nếu chưa có deliveryName, có thể dùng delivery_notes
+            if (!hasDeliveryName && deliveryNotes != null) {
+                // Có thể parse delivery_notes để lấy tên nếu format cho phép
+                // Hoặc để null
+            }
+        }
+
+        // Notes field
+        try {
+            order.setNotes(rs.getString("notes"));
+        } catch (SQLException e) {
+            // Column may not exist, skip
+        }
         
         Timestamp createdAt = rs.getTimestamp("created_at");
         if (createdAt != null) {
@@ -279,6 +362,17 @@ public class OrderDao {
         }
         
         return order;
+    }
+
+    /**
+     * Helper: Set String or null
+     */
+    private void setStringOrNull(PreparedStatement stmt, int index, String value) throws SQLException {
+        if (value != null && !value.trim().isEmpty()) {
+            stmt.setString(index, value);
+        } else {
+            stmt.setNull(index, Types.VARCHAR);
+        }
     }
 }
 

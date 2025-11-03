@@ -6,14 +6,17 @@ import java.math.BigDecimal;
  * Order item model (snapshot at order time)
  */
 public class OrderItem {
-    private Long orderItemId;
+    private Long orderItemId;  // Maps to order_detail_id in DB (keeping field name for compatibility)
     private Long orderId;
     private Long productId;
+    private Long packageId;  // For membership packages
     private String productName;
     private Integer quantity;
     private BigDecimal unitPrice;
+    private BigDecimal discountPercent;  // New column in order_details
     private BigDecimal discountAmount;
-    private BigDecimal subtotal; // DB computed
+    private BigDecimal subtotal; // DB computed (GENERATED column)
+    private String notes;  // New column in order_details
 
     public OrderItem() {
     }
@@ -55,6 +58,14 @@ public class OrderItem {
         this.productId = productId;
     }
 
+    public Long getPackageId() {
+        return packageId;
+    }
+
+    public void setPackageId(Long packageId) {
+        this.packageId = packageId;
+    }
+
     public String getProductName() {
         return productName;
     }
@@ -93,6 +104,22 @@ public class OrderItem {
 
     public void setSubtotal(BigDecimal subtotal) {
         this.subtotal = subtotal;
+    }
+
+    public BigDecimal getDiscountPercent() {
+        return discountPercent;
+    }
+
+    public void setDiscountPercent(BigDecimal discountPercent) {
+        this.discountPercent = discountPercent;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
     /**

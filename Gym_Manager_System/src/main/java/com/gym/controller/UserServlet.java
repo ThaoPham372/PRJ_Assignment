@@ -179,11 +179,14 @@ public class UserServlet extends HttpServlet {
             return;
         }
 
-        Long userId = SessionUtil.getUserId(request);
-        if (userId == null) {
+        Long userIdLong = SessionUtil.getUserId(request);
+        if (userIdLong == null) {
             response.sendRedirect(request.getContextPath() + "/auth/login");
             return;
         }
+        
+        Long userId = userIdLong;
+        Integer userIdInt = userIdLong.intValue();
 
         // Get dashboard data from service
         Map<String, Object> dashboardData = userService.getDashboardData(userId);
@@ -191,6 +194,25 @@ public class UserServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/auth/login");
             return;
         }
+        
+        // Get membership info using the same method as membership.jsp
+        // This ensures consistency between dashboard and membership page
+        java.util.Optional<com.gym.model.membership.Membership> currentMembershipOpt = 
+            membershipService.getCurrentMembership(userIdInt);
+        
+        // If no active membership, try to get the most recent one from history
+        if (!currentMembershipOpt.isPresent()) {
+            java.util.List<com.gym.model.membership.Membership> membershipHistory = 
+                membershipService.getMembershipHistory(userIdInt);
+            
+            if (membershipHistory != null && !membershipHistory.isEmpty()) {
+                // Get the most recent membership
+                currentMembershipOpt = java.util.Optional.of(membershipHistory.get(0));
+            }
+        }
+        
+        // Set currentMembership to request attribute (same as membership.jsp)
+        request.setAttribute("currentMembership", currentMembershipOpt.orElse(null));
 
         request.setAttribute("dashboardData", dashboardData);
         request.getRequestDispatcher("/views/member/dashboard.jsp").forward(request, response);
@@ -750,77 +772,76 @@ public class UserServlet extends HttpServlet {
             return;
         }
         
-        Long userId = SessionUtil.getUserId(request);
-        if (userId == null) {
+        Long userIdLong = SessionUtil.getUserId(request);
+        if (userIdLong == null) {
             response.sendRedirect(request.getContextPath() + "/auth/login");
             return;
         }
+        Integer userId = userIdLong.intValue();
         
-        // Get all active memberships
-        System.out.println("[MemberServlet] ===== START: Loading memberships =====");
-        java.util.List<com.gym.model.membership.Membership> memberships = membershipService.getAllActiveMemberships();
-        System.out.println("[MemberServlet] Service returned " + memberships.size() + " active memberships");
+        // Get all active packages (to display available packages for purchase)
+        System.out.println("[MemberServlet] ===== Loading membership page =====");
+        System.out.println("[MemberServlet] Loading active packages...");
+        java.util.List<com.gym.model.membership.Package> packages = membershipService.getAllActivePackages();
+        System.out.println("[MemberServlet] Service returned " + packages.size() + " active packages");
         
-        if (memberships != null) {
-            System.out.println("[MemberServlet] Memberships list is NOT NULL");
-            if (memberships.isEmpty()) {
-                System.out.println("[MemberServlet] WARNING: Memberships list is EMPTY!");
-            } else {
-                System.out.println("[MemberServlet] Memberships list contains " + memberships.size() + " items:");
-                for (int i = 0; i < memberships.size(); i++) {
-                    com.gym.model.membership.Membership m = memberships.get(i);
-                    System.out.println("[MemberServlet]   [" + i + "] ID=" + m.getMembershipId() + 
-                                      ", Name=" + m.getMembershipName() + 
-                                      ", DisplayName=" + m.getDisplayName());
-                }
+        // Debug: Print package details
+        if (packages != null && !packages.isEmpty()) {
+            System.out.println("[MemberServlet] Packages list:");
+            for (int i = 0; i < packages.size(); i++) {
+                com.gym.model.membership.Package pkg = packages.get(i);
+                System.out.println("[MemberServlet]   [" + i + "] ID=" + pkg.getPackageId() + 
+                                 ", Name=" + pkg.getName() + 
+                                 ", Price=" + pkg.getPrice() + 
+                                 ", Active=" + pkg.getIsActive());
             }
         } else {
-            System.out.println("[MemberServlet] ERROR: Memberships list is NULL!");
+            System.out.println("[MemberServlet] WARNING: Packages list is empty or null!");
         }
         
         // Get user's current active membership
-        java.util.Optional<com.gym.model.membership.UserMembership> currentMembership = 
-            membershipService.getUserActiveMembership(userId);
+        java.util.Optional<com.gym.model.membership.Membership> currentMembership = 
+            membershipService.getCurrentMembership(userId);
         System.out.println("[MemberServlet] User " + userId + " has active membership: " + currentMembership.isPresent());
         
-        // Get user's membership ID if exists (to mark "Gói của bạn")
-        Long currentMembershipId = currentMembership.map(m -> m.getMembershipId()).orElse(null);
+        // Get user's current package ID if exists (to mark "Gói của bạn")
+        Long currentPackageId = currentMembership.map(m -> m.getPackageId()).orElse(null);
+        System.out.println("[MemberServlet] Current package ID: " + currentPackageId);
         
-        System.out.println("[MemberServlet] Setting request attributes:");
-        System.out.println("[MemberServlet]   - memberships: " + (memberships != null ? memberships.size() + " items" : "NULL"));
-        System.out.println("[MemberServlet]   - currentMembership: " + (currentMembership.isPresent() ? "Present" : "Empty"));
-        System.out.println("[MemberServlet]   - currentMembershipId: " + currentMembershipId);
-        
-        request.setAttribute("memberships", memberships);
+        // Set attributes for JSP
+        request.setAttribute("packages", packages);
         request.setAttribute("currentMembership", currentMembership.orElse(null));
-        request.setAttribute("currentMembershipId", currentMembershipId);
+        request.setAttribute("currentPackageId", currentPackageId);
         
+        System.out.println("[MemberServlet] Set request attributes:");
+        System.out.println("[MemberServlet]   - packages: " + (packages != null ? packages.size() + " items" : "NULL"));
+        System.out.println("[MemberServlet]   - currentMembership: " + (currentMembership.isPresent() ? "Present" : "Empty"));
+        System.out.println("[MemberServlet]   - currentPackageId: " + currentPackageId);
         System.out.println("[MemberServlet] Forwarding to membership.jsp");
-        System.out.println("[MemberServlet] ===== END: Loading memberships =====");
-        
+        System.out.println("[MemberServlet] ===== End loading membership page =====");
         request.getRequestDispatcher("/views/member/membership.jsp").forward(request, response);
     }
     
     private void buyMembershipNow(HttpServletRequest request, HttpServletResponse response, Long userId)
             throws ServletException, IOException {
         try {
-            String membershipIdStr = request.getParameter("membershipId");
-            if (membershipIdStr == null) {
-                request.getSession().setAttribute("error", "Không tìm thấy gói thành viên");
+            String packageIdStr = request.getParameter("packageId");
+            if (packageIdStr == null) {
+                request.getSession().setAttribute("error", "Không tìm thấy gói tập");
                 response.sendRedirect(request.getContextPath() + "/member/membership");
                 return;
             }
             
-            Long membershipId = Long.parseLong(membershipIdStr);
+            Long packageId = Long.parseLong(packageIdStr);
             
-            // Redirect to checkout with membership
-            request.getSession().setAttribute("membershipId", membershipId);
+            // Redirect to checkout with package (changed from membershipId to packageId)
+            request.getSession().setAttribute("packageId", packageId);
             response.sendRedirect(request.getContextPath() + "/checkout?type=membership");
             
         } catch (Exception e) {
-            System.err.println("Error buying membership: " + e.getMessage());
+            System.err.println("Error buying package: " + e.getMessage());
             e.printStackTrace();
-            request.getSession().setAttribute("error", "Lỗi khi mua gói thành viên");
+            request.getSession().setAttribute("error", "Lỗi khi mua gói tập");
             response.sendRedirect(request.getContextPath() + "/member/membership");
         }
     }

@@ -27,6 +27,7 @@ public class Order {
     private String deliveryAddress;
     private String deliveryPhone;
     private DeliveryMethod deliveryMethod;
+    private String notes;  // General notes for the order
 
     public Order() {
         this.items = new ArrayList<>();
@@ -66,6 +67,16 @@ public class Order {
 
     public void setOrderDate(OffsetDateTime orderDate) {
         this.orderDate = orderDate;
+    }
+
+    /**
+     * Get order date as java.util.Date for JSP fmt:formatDate compatibility
+     */
+    public java.util.Date getOrderDateAsDate() {
+        if (orderDate == null) {
+            return null;
+        }
+        return java.util.Date.from(orderDate.toInstant());
     }
 
     public BigDecimal getTotalAmount() {
@@ -163,6 +174,14 @@ public class Order {
 
     public void setDeliveryMethod(DeliveryMethod deliveryMethod) {
         this.deliveryMethod = deliveryMethod;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
     /**

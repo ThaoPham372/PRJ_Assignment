@@ -1,28 +1,43 @@
 package com.gym.model.membership;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
- * Membership model
- * Represents a membership package
+ * Membership model - Represents a user's membership subscription
+ * Maps to memberships table in database
  */
 public class Membership {
     private Long membershipId;
-    private String membershipName;
-    private String displayName;
-    private String description;
-    private BigDecimal price;
-    private Integer durationMonths;
-    private String features;  // JSON string or comma-separated
-    private Boolean isFeatured;
-    private Boolean isActive;
-    private Integer displayOrder;
-    private String imagePath;
-    private OffsetDateTime createdAt;
-    private OffsetDateTime updatedAt;
+    private Integer userId;  // INT in DB, FK to user(user_id)
+    private Long packageId;  // BIGINT in DB, FK to packages(package_id)
+    private LocalDate startDate;
+    private LocalDate endDate;  // Note: DB column is end_date, not expiry_date
+    private String status;  // ENUM: 'ACTIVE', 'EXPIRED', 'CANCELLED'
+    private String notes;  // TEXT, can be NULL
+    private LocalDateTime createdDate;
+    private LocalDateTime updatedDate;
+    
+    // Joined fields from packages table (for display)
+    private String packageName;
+    private Integer packageDurationMonths;
+    private java.math.BigDecimal packagePrice;
 
     public Membership() {
+    }
+
+    public Membership(Long membershipId, Integer userId, Long packageId, LocalDate startDate, 
+                     LocalDate endDate, String status, String notes, 
+                     LocalDateTime createdDate, LocalDateTime updatedDate) {
+        this.membershipId = membershipId;
+        this.userId = userId;
+        this.packageId = packageId;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.status = status;
+        this.notes = notes;
+        this.createdDate = createdDate;
+        this.updatedDate = updatedDate;
     }
 
     // Getters and Setters
@@ -34,101 +49,115 @@ public class Membership {
         this.membershipId = membershipId;
     }
 
-    public String getMembershipName() {
-        return membershipName;
+    public Integer getUserId() {
+        return userId;
     }
 
-    public void setMembershipName(String membershipName) {
-        this.membershipName = membershipName;
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 
-    public String getDisplayName() {
-        return displayName;
+    public Long getPackageId() {
+        return packageId;
     }
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+    public void setPackageId(Long packageId) {
+        this.packageId = packageId;
     }
 
-    public String getDescription() {
-        return description;
+    public LocalDate getStartDate() {
+        return startDate;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
     }
 
-    public BigDecimal getPrice() {
-        return price;
+    public LocalDate getEndDate() {
+        return endDate;
     }
 
-    public void setPrice(BigDecimal price) {
-        this.price = price;
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
     }
 
-    public Integer getDurationMonths() {
-        return durationMonths;
+    public String getStatus() {
+        return status;
     }
 
-    public void setDurationMonths(Integer durationMonths) {
-        this.durationMonths = durationMonths;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    public String getFeatures() {
-        return features;
+    public String getNotes() {
+        return notes;
     }
 
-    public void setFeatures(String features) {
-        this.features = features;
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
-    public Boolean getIsFeatured() {
-        return isFeatured;
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
     }
 
-    public void setIsFeatured(Boolean isFeatured) {
-        this.isFeatured = isFeatured;
+    public void setCreatedDate(LocalDateTime createdDate) {
+        this.createdDate = createdDate;
     }
 
-    public Boolean getIsActive() {
-        return isActive;
+    public LocalDateTime getUpdatedDate() {
+        return updatedDate;
     }
 
-    public void setIsActive(Boolean isActive) {
-        this.isActive = isActive;
+    public void setUpdatedDate(LocalDateTime updatedDate) {
+        this.updatedDate = updatedDate;
     }
 
-    public Integer getDisplayOrder() {
-        return displayOrder;
+    // Joined fields from packages
+    public String getPackageName() {
+        return packageName;
     }
 
-    public void setDisplayOrder(Integer displayOrder) {
-        this.displayOrder = displayOrder;
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
     }
 
-    public String getImagePath() {
-        return imagePath;
+    public Integer getPackageDurationMonths() {
+        return packageDurationMonths;
     }
 
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
+    public void setPackageDurationMonths(Integer packageDurationMonths) {
+        this.packageDurationMonths = packageDurationMonths;
     }
 
-    public OffsetDateTime getCreatedAt() {
-        return createdAt;
+    public java.math.BigDecimal getPackagePrice() {
+        return packagePrice;
     }
 
-    public void setCreatedAt(OffsetDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setPackagePrice(java.math.BigDecimal packagePrice) {
+        this.packagePrice = packagePrice;
     }
 
-    public OffsetDateTime getUpdatedAt() {
-        return updatedAt;
+    /**
+     * Check if membership is currently active (status = ACTIVE and not expired)
+     */
+    public boolean isActive() {
+        return "ACTIVE".equalsIgnoreCase(status) && 
+               endDate != null && 
+               endDate.isAfter(java.time.LocalDate.now()) || endDate.isEqual(java.time.LocalDate.now());
     }
 
-    public void setUpdatedAt(OffsetDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    /**
+     * Calculate remaining days until expiry
+     */
+    public long getRemainingDays() {
+        if (endDate == null) {
+            return 0;
+        }
+        java.time.LocalDate today = java.time.LocalDate.now();
+        if (endDate.isBefore(today)) {
+            return 0;
+        }
+        return java.time.temporal.ChronoUnit.DAYS.between(today, endDate);
     }
 }
-
-

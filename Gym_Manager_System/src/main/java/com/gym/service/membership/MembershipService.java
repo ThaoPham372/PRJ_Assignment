@@ -1,9 +1,8 @@
 package com.gym.service.membership;
 
 import com.gym.model.membership.Membership;
-import com.gym.model.membership.UserMembership;
+import com.gym.model.membership.Package;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,29 +12,46 @@ import java.util.Optional;
 public interface MembershipService {
     
     /**
-     * Get all active memberships
+     * Get all active packages (optionally filtered by gym_id)
      */
-    List<Membership> getAllActiveMemberships();
+    List<Package> getAllActivePackages(Integer gymId);
     
     /**
-     * Get membership by ID
+     * Get all active packages
      */
-    Optional<Membership> getMembershipById(Long membershipId);
+    List<Package> getAllActivePackages();
     
     /**
-     * Get active membership for a user
+     * Get package by ID
      */
-    Optional<UserMembership> getUserActiveMembership(Long userId);
+    Optional<Package> getPackageById(Long packageId);
     
     /**
-     * Check if user has a specific membership
+     * Get current active membership for a user
+     * Returns membership with status = ACTIVE and end_date >= today
      */
-    boolean hasMembership(Long userId, Long membershipId);
+    Optional<Membership> getCurrentMembership(Integer userId);
     
     /**
-     * Create user membership after payment
+     * Check and expire memberships that have passed end_date
+     * Automatically sets status = 'EXPIRED' for expired memberships
      */
-    UserMembership createUserMembership(Long userId, Long membershipId, Long orderId);
+    void checkAndExpire(Integer userId);
+    
+    /**
+     * Purchase a package (create new membership)
+     * Flow:
+     * 1. Get package from packages table
+     * 2. startDate = CURRENT_DATE
+     * 3. endDate = startDate + duration_months (from package)
+     * 4. Create membership with status = 'ACTIVE'
+     * 5. If user has expired ACTIVE memberships, auto-expire them
+     * @return Created Membership
+     */
+    Membership purchasePackage(Integer userId, Long packageId, String notes);
+    
+    /**
+     * Get membership history for a user
+     */
+    List<Membership> getMembershipHistory(Integer userId);
 }
-
-

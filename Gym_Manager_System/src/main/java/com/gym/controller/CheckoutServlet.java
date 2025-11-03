@@ -110,16 +110,29 @@ public class CheckoutServlet extends HttpServlet {
         
         PaymentMethod paymentMethod = PaymentMethod.fromCode(paymentMethodStr);
 
-        // Check if this is a membership checkout
-        Object membershipIdObj = request.getSession().getAttribute("membershipId");
-        Long membershipId = null;
-        if (membershipIdObj != null) {
-            membershipId = (Long) membershipIdObj;
-        } else if (request.getParameter("membershipId") != null) {
+        // Check if this is a membership checkout (changed from membershipId to packageId)
+        Object packageIdObj = request.getSession().getAttribute("packageId");
+        Long packageId = null;
+        if (packageIdObj != null) {
+            packageId = (Long) packageIdObj;
+        } else if (request.getParameter("packageId") != null) {
             try {
-                membershipId = Long.parseLong(request.getParameter("membershipId"));
+                packageId = Long.parseLong(request.getParameter("packageId"));
             } catch (NumberFormatException e) {
                 // Ignore
+            }
+        }
+        // Backward compatibility: also check for old membershipId parameter
+        if (packageId == null) {
+            Object membershipIdObj = request.getSession().getAttribute("membershipId");
+            if (membershipIdObj != null) {
+                packageId = (Long) membershipIdObj;
+            } else if (request.getParameter("membershipId") != null) {
+                try {
+                    packageId = Long.parseLong(request.getParameter("membershipId"));
+                } catch (NumberFormatException e) {
+                    // Ignore
+                }
             }
         }
 
@@ -131,14 +144,15 @@ public class CheckoutServlet extends HttpServlet {
                 return;
             }
             
-            if (membershipId != null) {
-                // MEMBERSHIP CHECKOUT ONLY - Handle membership checkout (no cart items)
-                System.out.println("[CheckoutServlet] Processing membership checkout for membershipId: " + membershipId);
-                order = checkoutService.checkoutMembership(userId, membershipId, paymentMethod, 
+            if (packageId != null) {
+                // MEMBERSHIP CHECKOUT ONLY - Handle package checkout (no cart items)
+                System.out.println("[CheckoutServlet] Processing package checkout for packageId: " + packageId);
+                order = checkoutService.checkoutPackage(userId, packageId, paymentMethod, 
                         deliveryName.trim(), deliveryPhone.trim());
                 
-                // Clear membership from session after successful checkout
-                request.getSession().removeAttribute("membershipId");
+                // Clear packageId from session after successful checkout
+                request.getSession().removeAttribute("packageId");
+                request.getSession().removeAttribute("membershipId"); // Clear old key too
             } else {
                 // CART CHECKOUT ONLY - Handle regular product checkout (no membership)
                 System.out.println("[CheckoutServlet] Processing cart checkout");
@@ -242,79 +256,89 @@ public class CheckoutServlet extends HttpServlet {
 
     private void showCheckout(HttpServletRequest request, HttpServletResponse response, Long userId)
             throws ServletException, IOException {
-        // Check if this is a membership checkout or cart checkout
+        // Check if this is a package checkout or cart checkout
         String type = request.getParameter("type");
-        boolean isMembershipCheckout = "membership".equals(type);
-        Object membershipIdObj = request.getSession().getAttribute("membershipId");
+        boolean isPackageCheckout = "membership".equals(type); // Keep "membership" for backward compatibility
+        Object packageIdObj = request.getSession().getAttribute("packageId");
+        // Backward compatibility: also check for old membershipId
+        if (packageIdObj == null) {
+            packageIdObj = request.getSession().getAttribute("membershipId");
+        }
         
         // Check cart first - if cart has items and no explicit type=membership, it's cart checkout
         var cartItemsCheck = cartService.view(userId);
         boolean hasCartItems = cartItemsCheck != null && !cartItemsCheck.isEmpty();
         
         // Determine checkout type:
-        // - If type=membership parameter exists, it's membership checkout
-        // - If no type parameter but has membershipId in session AND no cart items, it's membership checkout
-        // - If has cart items and no explicit type=membership, it's cart checkout (clear membership)
-        boolean isMembershipOnly = false;
+        // - If type=membership parameter exists, it's package checkout
+        // - If no type parameter but has packageId in session AND no cart items, it's package checkout
+        // - If has cart items and no explicit type=membership, it's cart checkout (clear package)
+        boolean isPackageOnly = false;
         
-        if (isMembershipCheckout) {
-            // Explicit membership checkout from membership page
-            isMembershipOnly = true;
+        if (isPackageCheckout) {
+            // Explicit package checkout from membership page
+            isPackageOnly = true;
         } else if (hasCartItems) {
-            // Has cart items - prioritize cart checkout, clear any membership in session
-            isMembershipOnly = false;
-            if (membershipIdObj != null) {
-                request.getSession().removeAttribute("membershipId");
+            // Has cart items - prioritize cart checkout, clear any package in session
+            isPackageOnly = false;
+            if (packageIdObj != null) {
+                request.getSession().removeAttribute("packageId");
+                request.getSession().removeAttribute("membershipId"); // Clear old key too
             }
-        } else if (membershipIdObj != null) {
-            // No cart items but has membership in session - membership checkout
-            isMembershipOnly = true;
+        } else if (packageIdObj != null) {
+            // No cart items but has package in session - package checkout
+            isPackageOnly = true;
         }
         
-        com.gym.model.membership.Membership membership = null;
+        com.gym.model.membership.Package selectedPackage = null;
         java.util.List<com.gym.model.shop.CartItem> cartItems = new java.util.ArrayList<>();
         java.math.BigDecimal total = java.math.BigDecimal.ZERO;
         
-        if (isMembershipOnly) {
-            // MEMBERSHIP CHECKOUT ONLY - Load only membership, ignore cart
+        if (isPackageOnly) {
+            // PACKAGE CHECKOUT ONLY - Load only package, ignore cart
             try {
-                Long membershipId = null;
-                if (membershipIdObj != null) {
-                    membershipId = (Long) membershipIdObj;
+                Long packageId = null;
+                if (packageIdObj != null) {
+                    packageId = (Long) packageIdObj;
+                } else if (request.getParameter("packageId") != null) {
+                    packageId = Long.parseLong(request.getParameter("packageId"));
+                    request.getSession().setAttribute("packageId", packageId);
                 } else if (request.getParameter("membershipId") != null) {
-                    membershipId = Long.parseLong(request.getParameter("membershipId"));
-                    // Store in session for persistence
-                    request.getSession().setAttribute("membershipId", membershipId);
+                    // Backward compatibility
+                    packageId = Long.parseLong(request.getParameter("membershipId"));
+                    request.getSession().setAttribute("packageId", packageId);
                 }
                 
-                if (membershipId != null) {
+                if (packageId != null) {
                     com.gym.service.membership.MembershipService membershipService = 
                         new com.gym.service.membership.MembershipServiceImpl();
-                    java.util.Optional<com.gym.model.membership.Membership> membershipOpt = 
-                        membershipService.getMembershipById(membershipId);
-                    if (membershipOpt.isPresent()) {
-                        membership = membershipOpt.get();
-                        total = membership.getPrice();
+                    java.util.Optional<com.gym.model.membership.Package> packageOpt = 
+                        membershipService.getPackageById(packageId);
+                    if (packageOpt.isPresent()) {
+                        selectedPackage = packageOpt.get();
+                        total = selectedPackage.getPrice();
                     } else {
-                        // Membership not found, clear session and redirect
+                        // Package not found, clear session and redirect
+                        request.getSession().removeAttribute("packageId");
                         request.getSession().removeAttribute("membershipId");
                         response.sendRedirect(request.getContextPath() + "/member/membership");
                         return;
                     }
                 } else {
-                    // No membership ID, redirect to membership page
+                    // No package ID, redirect to membership page
                     response.sendRedirect(request.getContextPath() + "/member/membership");
                     return;
                 }
             } catch (Exception e) {
-                System.err.println("[CheckoutServlet] Error loading membership: " + e.getMessage());
+                System.err.println("[CheckoutServlet] Error loading package: " + e.getMessage());
                 e.printStackTrace();
+                request.getSession().removeAttribute("packageId");
                 request.getSession().removeAttribute("membershipId");
                 response.sendRedirect(request.getContextPath() + "/member/membership");
                 return;
             }
         } else {
-            // CART CHECKOUT ONLY - Load only cart items, ignore membership
+            // CART CHECKOUT ONLY - Load only cart items, ignore package
             cartItems = cartService.view(userId);
             total = cartService.calculateTotal(cartItems);
             
@@ -328,8 +352,8 @@ public class CheckoutServlet extends HttpServlet {
         // Set attributes
         request.setAttribute("cart", cartItems);
         request.setAttribute("total", total);
-        request.setAttribute("membership", membership);
-        request.setAttribute("isMembershipCheckout", isMembershipOnly);
+        request.setAttribute("selectedPackage", selectedPackage); // Changed from "membership" to "selectedPackage"
+        request.setAttribute("isMembershipCheckout", isPackageOnly); // Keep name for backward compatibility
         request.getRequestDispatcher("/views/cart/checkout.jsp").forward(request, response);
     }
 }

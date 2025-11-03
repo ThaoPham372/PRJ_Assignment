@@ -693,17 +693,18 @@
                     </c:choose>
                 </div>
                 <div class="welcome-text">
-                    <h2>Chào mừng, <c:out value="${dashboardData != null ? dashboardData.memberName : 'Thành viên'}"/>!</h2>
+                    <h2>Xin chào, <c:out value="${dashboardData != null ? dashboardData.memberName : 'Thành viên'}"/>!</h2>
                     <div class="welcome-meta">
                         <div class="welcome-meta-item">
                             <i class="fas fa-crown"></i>
                             <span><strong>Trạng thái:</strong> 
                                 <c:choose>
-                                    <c:when test="${not empty dashboardData && dashboardData.packageType == 'ACTIVE'}">Đang hoạt động</c:when>
-                                    <c:when test="${not empty dashboardData && dashboardData.packageType == 'INACTIVE'}">Không hoạt động</c:when>
-                                    <c:when test="${not empty dashboardData && dashboardData.packageType == 'SUSPENDED'}">Tạm khóa</c:when>
-                                    <c:when test="${not empty dashboardData}"><c:out value="${dashboardData.packageType}"/></c:when>
-                                    <c:otherwise>N/A</c:otherwise>
+                                    <c:when test="${not empty currentMembership && not empty currentMembership.packageName}">
+                                        ${fn:escapeXml(currentMembership.packageName)}
+                                    </c:when>
+                                    <c:otherwise>
+                                        Chưa đăng ký gói tập nào.
+                                    </c:otherwise>
                                 </c:choose>
                             </span>
                         </div>
@@ -753,10 +754,22 @@
             <div class="stat-label">Thời gian còn lại</div>
             <div class="stat-value">
                 <c:choose>
-                    <c:when test="${not empty dashboardData.stats && not empty dashboardData.stats.packageRemaining}">
-                        ${dashboardData.stats.packageRemaining}
+                    <c:when test="${not empty currentMembership && currentMembership.endDate != null}">
+                        <c:set var="endDate" value="${currentMembership.endDate}" />
+                        <c:set var="now" value="<%=java.time.LocalDate.now()%>" />
+                        <c:choose>
+                            <c:when test="${endDate != null && endDate.isAfter(now)}">
+                                <c:set var="daysRemaining" value="${endDate.toEpochDay() - now.toEpochDay()}" />
+                                <span style="color: var(--accent); font-weight: bold;">${daysRemaining} ngày</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span style="color: #dc3545; font-weight: bold;">Đã hết hạn</span>
+                            </c:otherwise>
+                        </c:choose>
                     </c:when>
-                    <c:otherwise>--</c:otherwise>
+                    <c:otherwise>
+                        <span style="color: #999;">Chưa đăng ký gói</span>
+                    </c:otherwise>
                 </c:choose>
             </div>
         </div>
