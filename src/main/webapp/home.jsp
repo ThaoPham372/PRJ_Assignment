@@ -717,9 +717,9 @@ file="/views/common/header.jsp" %>
     </button>
     <button
       class="floating-btn chat-bot"
-      onclick="alert('Chức năng chat bot đang được phát triển!')"
+      onclick="openGymfitChatbot()"
     >
-      <i class="fas fa-comments"></i> CHAT BOT
+      <i class="fas fa-comments"></i> GYMFIT AI
     </button>
   </div>
 

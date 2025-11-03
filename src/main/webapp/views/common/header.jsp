@@ -27,6 +27,12 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
       href="${pageContext.request.contextPath}/css/styles.css"
       rel="stylesheet"
     />
+    
+    <!-- Chatbot CSS -->
+    <link
+      href="${pageContext.request.contextPath}/css/chatbot.css"
+      rel="stylesheet"
+    />
 
     <style>
       :root {
@@ -253,5 +259,8 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
     <!-- Main Content Container -->
     <main class="container-fluid py-4"></main>
+    
+    <!-- Chatbot JavaScript -->
+    <script src="${pageContext.request.contextPath}/js/chatbot.js"></script>
   </body>
 </html>
