@@ -4,8 +4,6 @@ package model;
 import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 
@@ -15,7 +13,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "students")
 @PrimaryKeyJoinColumn(name = "user_id")
-public class Student extends User implements Serializable {
+public class Member extends User implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
@@ -34,10 +32,10 @@ public class Student extends User implements Serializable {
     @Column(name = "emergency_contact_address")
     private String emergencyContactAddress;
 
-    public Student() {
+    public Member() {
     }
 
-    public Student(Integer userId) {
+    public Member(Integer userId) {
         super(userId);
     }
 
@@ -107,10 +105,10 @@ public class Student extends User implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Student)) {
+        if (!(object instanceof Member)) {
             return false;
         }
-        Student other = (Student) object;
+        Member other = (Member) object;
         if ((getUserId() == null && getUserId() != null) || (getUserId() != null && !this.getUserId().equals(getUserId()))) {
             return false;
         }
@@ -119,7 +117,7 @@ public class Student extends User implements Serializable {
 
     @Override
     public String toString() {
-        return "model.Student[ userid=" + getUserId() + ", height="+ height +"]";
+        return "model.Member[ userid=" + getUserId() + ", height="+ height +"]";
     }
 
 }

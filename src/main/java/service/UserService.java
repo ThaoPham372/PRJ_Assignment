@@ -9,30 +9,36 @@ import java.util.List;
     Note: 
  */
 public class UserService {
-    
+
     private final UserDAO userDAO;
-    
+
     public UserService() {
         userDAO = new UserDAO();
     }
-    
-    //User
+
+    // User
     public List<User> getAll() {
-        return userDAO.findAll();
+        List<User> users = userDAO.findAll();
+        sortById(users);
+        return users;
     }
-    
+
+    private void sortById(List<User> users) {
+        users.sort((u1, u2) -> Integer.compare(u1.getUserId(), u2.getUserId()));
+    }
+
     public User getUserById(int id) {
         return userDAO.findById(id);
     }
-    
-    public User getUserByName(String name) {
-        return userDAO.findByName(name);
+
+    public User getUserByUserame(String username) {
+        return userDAO.findByUsername(username);
     }
-    
+
     public User getUserByEmail(String email) {
         return userDAO.findByEmail(email);
     }
-    
+
     public int add(User user) {
         return userDAO.save(user);
     }

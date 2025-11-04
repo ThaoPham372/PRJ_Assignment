@@ -398,7 +398,7 @@
       <aside class="sidebar">
         <div class="sidebar-header">
           <a
-            href="${pageContext.request.contextPath}/views/admin/admin_home.jsp"
+            href="${pageContext.request.contextPath}/admin/admin-home"
             class="sidebar-brand"
           >
             <i class="fas fa-dumbbell"></i>
@@ -422,7 +422,7 @@
         <ul class="sidebar-menu">
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/dashboard.jsp"
+              href="${pageContext.request.contextPath}/admin/dashboard"
               class="sidebar-menu-link"
             >
               <i class="fas fa-home"></i>
@@ -431,7 +431,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/profile.jsp"
+              href="${pageContext.request.contextPath}/admin/profile"
               class="sidebar-menu-link active"
             >
               <i class="fas fa-user-circle"></i>
@@ -449,7 +449,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/member_management.jsp"
+              href="${pageContext.request.contextPath}/admin/member-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-users"></i>
@@ -458,7 +458,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/service_schedule.jsp"
+              href="${pageContext.request.contextPath}/admin/service-schedule"
               class="sidebar-menu-link"
             >
               <i class="fas fa-calendar-alt"></i>
@@ -467,7 +467,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/trainer_management.jsp"
+              href="${pageContext.request.contextPath}/admin/trainer-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-chalkboard-teacher"></i>
@@ -476,7 +476,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/order_management.jsp"
+              href="${pageContext.request.contextPath}/admin/order-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-box"></i>
@@ -485,7 +485,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/payment_finance.jsp"
+              href="${pageContext.request.contextPath}/admin/payment-finance"
               class="sidebar-menu-link"
             >
               <i class="fas fa-money-bill-wave"></i>
@@ -494,7 +494,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/reports.jsp"
+              href="${pageContext.request.contextPath}/admin/reports"
               class="sidebar-menu-link"
             >
               <i class="fas fa-chart-line"></i>
@@ -511,7 +511,7 @@
           <h1><i class="fas fa-user-circle"></i> Profile của Admin</h1>
           <div class="top-bar-actions">
             <a
-              href="${pageContext.request.contextPath}/views/admin/dashboard.jsp"
+              href="${pageContext.request.contextPath}/admin/dashboard"
               class="btn btn-outline"
             >
               <i class="fas fa-arrow-left"></i> Quay lại

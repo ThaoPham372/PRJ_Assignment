@@ -39,8 +39,13 @@ public class GenericDAO<T> extends BaseDAO {
     }
 
     public List<T> findAll() {
-        return em.createQuery("SELECT e FROM " + entityClass.getSimpleName() + " e", entityClass)
-                .getResultList();
+        try {
+            return em.createQuery("SELECT e FROM " + entityClass.getSimpleName() + " e", entityClass)
+                    .getResultList();
+        } catch (Exception e){
+            System.out.println("Error: Find ALL ---> ");
+        }
+        return List.of();
     }
     
     public T findByField(String fieldName, Object value){

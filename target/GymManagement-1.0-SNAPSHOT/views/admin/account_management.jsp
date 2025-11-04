@@ -474,15 +474,56 @@
                         align-items: stretch;
                     }
                 }
+
+                .alert {
+                    width: 100%;
+                    position: fixed;
+                    padding: 10px;
+                    border-radius: 5px;
+                    margin-bottom: 15px;
+                    z-index: 1100;
+                    animation: fadeOut 5s forwards; /* tự ẩn sau 5 giây */
+                }
+                .alert-success {
+                    background-color: #d4edda;
+                    color: #155724;
+                }
+                .alert-danger {
+                    background-color: #f8d7da;
+                    color: #721c24;
+                }
+                @keyframes fadeOut {
+                    0%, 80% {
+                        opacity: 1;
+                    }
+                    100% {
+                        opacity: 0;
+                        visibility: hidden;
+                    }
+                }
             </style>
         </head>
         <body>
+            <c:if test="${not empty message}">
+                <div class="alert alert-success auto-hide">
+                    ${message}
+                </div>
+            </c:if>
+
+            <c:if test="${not empty error}">
+                <div class="alert alert-danger auto-hide">
+                    ${error}
+                </div>
+            </c:if>
+
+
+
             <div class="admin-container">
                 <!-- Sidebar -->
                 <aside class="sidebar">
                     <div class="sidebar-header">
                         <a
-                            href="${pageContext.request.contextPath}/views/admin/admin_home.jsp"
+                            href="${pageContext.request.contextPath}/admin/admin-home"
                             class="sidebar-brand"
                             >
                             <i class="fas fa-dumbbell"></i>
@@ -506,7 +547,7 @@
                     <ul class="sidebar-menu">
                         <li class="sidebar-menu-item">
                             <a
-                                href="${pageContext.request.contextPath}/views/admin/dashboard.jsp"
+                                href="${pageContext.request.contextPath}/admin/dashboard"
                                 class="sidebar-menu-link"
                                 >
                                 <i class="fas fa-home"></i>
@@ -515,7 +556,7 @@
                         </li>
                         <li class="sidebar-menu-item">
                             <a
-                                href="${pageContext.request.contextPath}/views/admin/profile.jsp"
+                                href="${pageContext.request.contextPath}/admin/profile"
                                 class="sidebar-menu-link"
                                 >
                                 <i class="fas fa-user-circle"></i>
@@ -533,7 +574,7 @@
                         </li>
                         <li class="sidebar-menu-item">
                             <a
-                                href="${pageContext.request.contextPath}/views/admin/member_management.jsp"
+                                href="${pageContext.request.contextPath}/admin/member-management"
                                 class="sidebar-menu-link"
                                 >
                                 <i class="fas fa-users"></i>
@@ -542,7 +583,7 @@
                         </li>
                         <li class="sidebar-menu-item">
                             <a
-                                href="${pageContext.request.contextPath}/views/admin/service_schedule.jsp"
+                                href="${pageContext.request.contextPath}/admin/service-schedule"
                                 class="sidebar-menu-link"
                                 >
                                 <i class="fas fa-calendar-alt"></i>
@@ -551,7 +592,7 @@
                         </li>
                         <li class="sidebar-menu-item">
                             <a
-                                href="${pageContext.request.contextPath}/views/admin/trainer_management.jsp"
+                                href="${pageContext.request.contextPath}/admin/trainer-management"
                                 class="sidebar-menu-link"
                                 >
                                 <i class="fas fa-chalkboard-teacher"></i>
@@ -560,7 +601,7 @@
                         </li>
                         <li class="sidebar-menu-item">
                             <a
-                                href="${pageContext.request.contextPath}/views/admin/order_management.jsp"
+                                href="${pageContext.request.contextPath}/admin/order-management"
                                 class="sidebar-menu-link"
                                 >
                                 <i class="fas fa-box"></i>
@@ -569,7 +610,7 @@
                         </li>
                         <li class="sidebar-menu-item">
                             <a
-                                href="${pageContext.request.contextPath}/views/admin/payment_finance.jsp"
+                                href="${pageContext.request.contextPath}/admin/payment-finance"
                                 class="sidebar-menu-link"
                                 >
                                 <i class="fas fa-money-bill-wave"></i>
@@ -578,7 +619,7 @@
                         </li>
                         <li class="sidebar-menu-item">
                             <a
-                                href="${pageContext.request.contextPath}/views/admin/reports.jsp"
+                                href="${pageContext.request.contextPath}/admin/reports"
                                 class="sidebar-menu-link"
                                 >
                                 <i class="fas fa-chart-line"></i>
@@ -597,7 +638,7 @@
                         </h1>
                         <div class="top-bar-actions">
                             <a
-                                href="${pageContext.request.contextPath}/views/admin/dashboard.jsp"
+                                href="${pageContext.request.contextPath}/admin/dashboard"
                                 class="btn btn-outline"
                                 >
                                 <i class="fas fa-arrow-left"></i> Quay lại
@@ -610,18 +651,19 @@
                         <!-- Actions Bar -->
                         <div class="actions-bar">
                             <div class="filter-group">
-                                <select class="filter-select" id="roleFilter">
-                                    <option value="all">Tất cả vai trò</option>
-                                    <option value="admin">Admin</option>
-                                    <option value="user">User</option>
-                                    <option value="pt">PT (Personal Trainer)</option>
+                                <select class="filter-select" id="roleFilter" onchange="handleChange(event)">
+                                    <option value="all" ${role == null || role == 'all' ? 'selected' : ''}>Tất cả vai trò</option>
+                                    <option value="admin" ${role == 'admin' ? 'selected' : ''}>Admin</option>
+                                    <option value="user" ${role == 'user' ? 'selected' : ''}>User</option>
+                                    <option value="trainer" ${role == 'trainer' ? 'selected' : ''}>PT (Personal Trainer)</option>
                                 </select>
 
-                                <select class="filter-select" id="statusFilter">
-                                    <option value="all">Tất cả trạng thái</option>
-                                    <option value="active">Đang hoạt động</option>
-                                    <option value="inactive">Ngưng hoạt động</option>
+                                <select class="filter-select" id="statusFilter" onchange="handleChange(event)">
+                                    <option value="all" ${status == null || status == 'all' ? 'selected' : ''}>Tất cả trạng thái</option>
+                                    <option value="active" ${status == 'active' ? 'selected' : ''}>Đang hoạt động</option>
+                                    <option value="inactive" ${status == 'inactive' ? 'selected' : ''}>Ngưng hoạt động</option>
                                 </select>
+
                             </div>
 
                             <button class="btn" onclick="openAddModal()">
@@ -663,13 +705,6 @@
                                                         <i class="fas fa-edit"></i>
                                                     </button>
                                                     <button
-                                                        class="btn-icon btn-permissions"
-                                                        onclick="openPermissionsModal${account.userId})"
-                                                        title="Phân quyền"
-                                                        >
-                                                        <i class="fas fa-key"></i>
-                                                    </button>
-                                                    <button
                                                         class="btn-icon btn-delete"
                                                         onclick="deleteAccount(${account.userId})"
                                                         title="Xóa"
@@ -698,6 +733,7 @@
                     </div>
                     <form action="${pageContext.request.contextPath}/admin/account-management" method="post" id="accountForm" >
                         <input type="hidden" name="action" value="addAccount" />
+                        
                         <div class="form-group">
                             <label class="form-label">Họ và tên</label>
                             <input type="text" class="form-input" name="name" value="" />
@@ -803,6 +839,11 @@
                     </form>
                 </div>
             </div>
+            <c:if test="${not empty errorMessage}">
+                <script>
+                    alert("${errorMessage}");
+                </script>
+            </c:if>
 
             <script>
                 function openAddModal() {
@@ -836,12 +877,7 @@
                             })
                             .catch(err => console.error('Lỗi tải dữ liệu:', err));
                 }
-
-                function openPermissionsModal(id) {
-                    document.getElementById('permissionsModal').classList.add('active');
-                    console.log('Set permissions for account:', id);
-                }
-
+                
                 function closeModal(modalId) {
                     document.getElementById(modalId).classList.remove('active');
                 }
@@ -865,6 +901,26 @@
                     }
                 }
 
+                function handleChange(event) {
+                    const role = document.getElementById('roleFilter').value;
+                    const status = document.getElementById('statusFilter').value;
+
+                    let query = '?';
+                    if (role !== 'all') {
+                        query += `role=` + role + `&`;
+                    }
+                    if (status !== 'all') {
+                        query += `status=` + status + `&`;
+                    }
+
+                    // Remove trailing '&' or '?' if exists
+                    if (query.endsWith('&') || query.endsWith('?')) {
+                        query = query.slice(0, -1);
+                    }
+                    query += '&action=filter';
+                    
+                    window.location.href = `${contextPath}/admin/account-management` + query;
+                }
 
                 // Close modal when clicking outside
                 window.onclick = function (event) {

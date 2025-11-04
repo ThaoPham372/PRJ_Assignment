@@ -8,11 +8,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import model.Admin;
-import model.Student;
+import model.Member;
 import model.Trainer;
 import model.User;
 import service.AdminService;
-import service.StudentService;
+import service.MemberService;
 import service.TrainerService;
 import service.UserService;
 
@@ -41,9 +41,9 @@ public class TestServlet extends HttpServlet{
         TrainerService trainerService = new TrainerService();
         trainerService.add(t);
         
-        Student s = new Student();
+        Member s = new Member();
         s.setBmi(30f);
-        StudentService studentService = new StudentService();
+        MemberService studentService = new MemberService();
         studentService.add(s);
     }
     

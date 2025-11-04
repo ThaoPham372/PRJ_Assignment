@@ -433,7 +433,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/profile.jsp"
+              href="${pageContext.request.contextPath}/admin/profile"
               class="sidebar-menu-link"
             >
               <i class="fas fa-user-circle"></i>
@@ -451,7 +451,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/member_management.jsp"
+              href="${pageContext.request.contextPath}/admin/member-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-users"></i>
@@ -460,7 +460,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/service_schedule.jsp"
+              href="${pageContext.request.contextPath}/admin/service-schedule"
               class="sidebar-menu-link"
             >
               <i class="fas fa-calendar-alt"></i>
@@ -469,7 +469,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/trainer_management.jsp"
+              href="${pageContext.request.contextPath}/admin/trainer-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-chalkboard-teacher"></i>
@@ -478,7 +478,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/order_management.jsp"
+              href="${pageContext.request.contextPath}/admin/order-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-box"></i>
@@ -487,7 +487,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/payment_finance.jsp"
+              href="${pageContext.request.contextPath}/admin/payment-finance"
               class="sidebar-menu-link"
             >
               <i class="fas fa-money-bill-wave"></i>
@@ -496,7 +496,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/reports.jsp"
+              href="${pageContext.request.contextPath}/admin/reports"
               class="sidebar-menu-link"
             >
               <i class="fas fa-chart-line"></i>

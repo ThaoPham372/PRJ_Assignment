@@ -20,52 +20,58 @@ public class UserDAO {
     }
 
     public List<User> findAll() {
-        System.out.println(">>User: FIND ALL");
-        System.out.println("result: ");
         List<User> users = genericDAO.findAll();
-        if (users != null) {
-            System.out.println("");
-            for (User a : users) {
-                System.out.println(a);
-            }
-        }
-        System.out.println("-----------------------------");
         return users != null ? users : List.of();
     }
 
     public User findById(int id) {
         System.out.println(">>User: Find by ID");
-        User user = genericDAO.findById(id);
-        System.out.println("result: " + user);
-        System.out.println("-------------------------------");
+        User user;
+        try {
+            user = genericDAO.findById(id);
+            System.out.println("result: " + user);
+        } catch (Exception e) {
+            System.out.println("UserDAO -> Error find by id: " + e.getMessage());
+            return null;
+        }
+        System.out.println("------------------------------- FOUND");
         return user;
     }
 
-    public User findByName(String name) {
-        System.out.println(">>User: Find By Name");
-        User user = genericDAO.findByField("name", name);
-        System.out.println("result: " + user);
-        System.out.println("---------------------------");
+    public User findByUsername(String username) {
+        User user;
+        try {
+            user = genericDAO.findByField("username", username);
+        } catch (Exception e) {
+            System.out.println("UserDAO -> Error find by user name: " + e.getMessage());
+            return null;
+        }
         return user;
     }
 
     public User findByEmail(String email) {
         System.out.println(">>User: Find By Email");
-        User user = genericDAO.findByField("email", email);
-        System.out.println("result: " + user);
-        System.out.println("---------------------------");
+        User user;
+        try {
+            user = genericDAO.findByField("email", email);
+            System.out.println("result: " + user);
+        } catch (Exception e) {
+            System.out.println("UserDAO -> Error find by email: " + e.getMessage());
+            return null;
+        }
+        System.out.println("--------------------------- FOUND");
         return user;
     }
 
     public int existsByUsername(String name) {
         System.out.println(">>User: Exist By Username");
         User user = null;
-        try{
+        try {
             user = genericDAO.findByField("name", name);
-        } catch(Exception e) {
+        } catch (Exception e) {
             System.out.println("Result: " + user);
         }
-            
+
         System.out.println("-------------------------------");
         return user != null ? user.getUserId() : -1;
     }

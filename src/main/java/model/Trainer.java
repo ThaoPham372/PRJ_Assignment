@@ -13,6 +13,7 @@ import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
 
 /*
     Note: 
@@ -23,11 +24,12 @@ import jakarta.persistence.TemporalType;
 public class Trainer extends User implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     @Column(name = "hiredDate")
     @Temporal(TemporalType.DATE)
     private Date hiredDate;
-    // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
+    // @Max(value=?) @Min(value=?)//if you know range of your decimal fields
+    // consider using these annotations to enforce field validation
     @Column(name = "salary")
     private Double salary;
     @Column(name = "star")
@@ -39,7 +41,7 @@ public class Trainer extends User implements Serializable {
     public Trainer(Integer userId) {
         super(userId);
     }
-    
+
     public Date getHiredDate() {
         return hiredDate;
     }
@@ -78,7 +80,8 @@ public class Trainer extends User implements Serializable {
             return false;
         }
         Trainer other = (Trainer) object;
-        if ((this.getUserId() == null && other.getUserId() != null) || (this.getUserId() != null && !this.getUserId().equals(other.getUserId()))) {
+        if ((this.getUserId() == null && other.getUserId() != null)
+                || (this.getUserId() != null && !this.getUserId().equals(other.getUserId()))) {
             return false;
         }
         return true;
@@ -86,9 +89,8 @@ public class Trainer extends User implements Serializable {
 
     @Override
     public String toString() {
-        return "Trainer{id=" + this.getUserId() + ", hiredDate=" + hiredDate + ", salary=" + salary + ", star=" + star + '}';
+        return "Trainer{id=" + this.getUserId() + ", hiredDate=" + hiredDate + ", salary=" + salary + ", star=" + star
+                + '}';
     }
-
-    
 
 }

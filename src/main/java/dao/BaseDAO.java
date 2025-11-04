@@ -4,10 +4,20 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
-public abstract class BaseDAO<T> {
+public abstract class BaseDAO {
 
-    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("gym-pu"); // tên persistence-unit
-
+    private static EntityManagerFactory emf = null;
+    
+    static {
+        try {
+            emf = Persistence.createEntityManagerFactory("gym-pu");
+        } catch (Exception e) {
+            System.out.println("======================================================");
+            System.out.println("CANNOT connect to Databse : " + e.getMessage());
+            System.out.println("======================================================");
+        }
+    }
+    
     protected EntityManager em;
 
     public BaseDAO() {
