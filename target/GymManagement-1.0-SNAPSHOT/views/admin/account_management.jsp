@@ -857,25 +857,25 @@
                 }
 
                 function openEditModal(id) {
-                    fetch(`${contextPath}/admin/account-management?action=edit&id=` + id)
-                            .then(response => response.json())
-                            .then(user => {
-                                const form = document.querySelector('#accountForm');
-                                form.action = `${contextPath}/admin/account-management?id=` + id; 
-                                form.method = 'post';
-                                form.querySelector('input[name="action"]').value = 'updateAccount';
-                                
-                                document.getElementById('accountModal').classList.add('active');
-                                document.getElementById('modalTitle').textContent = 'Chỉnh sửa tài khoản';
+                    fetch(`${contextPath}/admin/account-management?action=editAccount&id=` + id)
+                    .then(response => response.json())
+                    .then(user => {
+                        const form = document.querySelector('#accountForm');
+                        form.action = `${contextPath}/admin/account-management?id=` + id; 
+                        form.method = 'post';
+                        form.querySelector('input[name="action"]').value = 'updateAccount';
+                        
+                        document.getElementById('accountModal').classList.add('active');
+                        document.getElementById('modalTitle').textContent = 'Chỉnh sửa tài khoản';
 
-                                // Điền dữ liệu vào form
-                                document.querySelector('input[name="name"]').value = user.name;
-                                document.querySelector('input[name="email"]').value = user.email;
-                                document.querySelector('input[name="username"]').value = user.username;
-                                document.querySelector('select[name="status"]').value = user.status = user.status.toLowerCase();
-                                document.querySelector('select[name="role"]').value = user.role = user.role.toLowerCase();
-                            })
-                            .catch(err => console.error('Lỗi tải dữ liệu:', err));
+                        // Điền dữ liệu vào form
+                        document.querySelector('input[name="name"]').value = user.name;
+                        document.querySelector('input[name="email"]').value = user.email;
+                        document.querySelector('input[name="username"]').value = user.username;
+                        document.querySelector('select[name="status"]').value = user.status = user.status.toLowerCase();
+                        document.querySelector('select[name="role"]').value = user.role = user.role.toLowerCase();
+                    })
+                    .catch(err => console.error('Lỗi tải dữ liệu:', err));
                 }
                 
                 function closeModal(modalId) {
@@ -917,7 +917,7 @@
                     if (query.endsWith('&') || query.endsWith('?')) {
                         query = query.slice(0, -1);
                     }
-                    query += '&action=filter';
+                    query += '&action=filterAccounts';
                     
                     window.location.href = `${contextPath}/admin/account-management` + query;
                 }
