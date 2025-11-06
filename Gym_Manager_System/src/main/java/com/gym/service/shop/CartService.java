@@ -1,5 +1,6 @@
 package com.gym.service.shop;
 
+import com.gym.dto.CartItemDTO;
 import com.gym.model.shop.CartItem;
 
 import java.util.List;
@@ -9,9 +10,9 @@ import java.util.List;
  */
 public interface CartService {
     /**
-     * Get all cart items for a user
+     * Get all cart items for a user (as DTOs with product details)
      */
-    List<CartItem> view(Long userId);
+    List<CartItemDTO> view(Long userId);
     
     /**
      * Add product to cart (or update quantity if exists)
@@ -31,7 +32,7 @@ public interface CartService {
     /**
      * Calculate total amount for cart items
      */
-    java.math.BigDecimal calculateTotal(List<CartItem> items);
+    java.math.BigDecimal calculateTotal(List<CartItemDTO> items);
 }
 
 

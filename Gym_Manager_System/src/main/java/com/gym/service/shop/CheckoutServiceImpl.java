@@ -2,14 +2,12 @@ package com.gym.service.shop;
 
 import com.gym.dao.shop.*;
 import com.gym.model.shop.*;
-import com.gym.util.DatabaseUtil;
+import com.gym.util.JPAUtil;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Implementation of CheckoutService with transaction handling
+ * Implementation of CheckoutService with JPA transaction handling
  */
 public class CheckoutServiceImpl implements CheckoutService {
     private static final Logger LOGGER = Logger.getLogger(CheckoutServiceImpl.class.getName());
@@ -94,7 +92,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         Order order = new Order();
         order.setUserId(userId);
         order.setOrderNumber(orderNumber);
-        order.setOrderDate(OffsetDateTime.now(ZoneOffset.UTC));
+        order.setOrderDate(LocalDateTime.now());
         order.setTotalAmount(totalAmount);
         order.setDiscountAmount(BigDecimal.ZERO);
         order.setOrderStatus(OrderStatus.PENDING);
@@ -105,39 +103,36 @@ public class CheckoutServiceImpl implements CheckoutService {
         order.setDeliveryPhone(deliveryPhone);
         order.setDeliveryMethod(deliveryMethod);
 
-        // Step 5: BEGIN TRANSACTION
-        Connection conn = null;
+        // Step 5: BEGIN JPA TRANSACTION
+        EntityManager em = null;
+        EntityTransaction transaction = null;
         try {
-            conn = DatabaseUtil.getConnection();
-            if (conn == null) {
-                throw new SQLException("Database connection is null");
-            }
-            
-            // Disable auto-commit for transaction
-            conn.setAutoCommit(false);
+            em = JPAUtil.createEntityManager();
+            transaction = em.getTransaction();
+            transaction.begin();
 
             try {
-                // 5.1: Insert order (pass connection for transaction)
-                Long orderId = orderDao.insert(order, conn);
+                // 5.1: Insert order (pass EntityManager for transaction)
+                Long orderId = orderDao.insert(order, em);
                 order.setOrderId(orderId);
 
-                // 5.2: Insert order items (pass connection for transaction)
-                orderItemDao.insertBatch(orderId, orderItems, conn);
+                // 5.2: Insert order items (pass EntityManager for transaction)
+                orderItemDao.insertBatch(orderId, orderItems, em);
 
-                // 5.3: Decrease stock with lock (use transaction connection)
-                productDao.decreaseStockBatch(productQuantities, conn);
+                // 5.3: Decrease stock with lock (use transaction EntityManager)
+                productDao.decreaseStockBatchWithEntityManager(productQuantities, em);
 
-                // 5.4: Clear cart (use transaction connection)
-                cartDao.clear(userId, conn);
+                // 5.4: Clear cart (use transaction EntityManager)
+                cartDao.clear(userId, em);
 
-                // 5.5: Create payment record in payments table (PENDING status) (use transaction connection)
+                // 5.5: Create payment record in payments table (PENDING status) (use transaction EntityManager)
                 com.gym.service.PaymentService paymentService = new com.gym.service.PaymentServiceImpl();
                 Integer userIdInt = userId.intValue();
-                BigDecimal finalAmount = totalAmount.subtract(order.getDiscountAmount() != null ? order.getDiscountAmount() : BigDecimal.ZERO);
-                paymentService.createPaymentForOrder(userIdInt, orderId, finalAmount, paymentMethod, null, conn);
+                // Use totalAmount for payment (discount already applied in totalAmount calculation)
+                paymentService.createPaymentForOrder(userIdInt, orderId, totalAmount, paymentMethod, null, em);
 
                 // COMMIT
-                conn.commit();
+                transaction.commit();
                 
                 // Reload order with items from DB to get computed values
                 Optional<Order> reloadedOrder = orderDao.findById(orderId);
@@ -149,10 +144,10 @@ public class CheckoutServiceImpl implements CheckoutService {
                 
                 return order;
                 
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 // ROLLBACK on any error
-                if (conn != null) {
-                    conn.rollback();
+                if (transaction != null && transaction.isActive()) {
+                    transaction.rollback();
                 }
                 LOGGER.log(Level.SEVERE, "Error during checkout transaction", e);
                 
@@ -164,18 +159,13 @@ public class CheckoutServiceImpl implements CheckoutService {
                 throw new RuntimeException("Checkout failed: " + e.getMessage(), e);
             }
             
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error establishing transaction connection", e);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error establishing transaction", e);
             throw new RuntimeException("Checkout failed: " + e.getMessage(), e);
         } finally {
-            // Restore auto-commit and close connection if needed
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    // Note: Don't close connection here if using connection pool
-                } catch (SQLException e) {
-                    LOGGER.log(Level.WARNING, "Error restoring auto-commit", e);
-                }
+            // Close EntityManager if we created it
+            if (em != null && em.isOpen()) {
+                em.close();
             }
         }
     }
@@ -216,7 +206,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         String orderInfo = "Thanh toan don hang " + order.getOrderNumber();
         
         // Get amount (in VND)
-        BigDecimal amount = order.getFinalAmount() != null ? order.getFinalAmount() : order.getTotalAmount();
+        BigDecimal amount = order.getTotalAmount();
         
         String paymentUrl = momoService.createPaymentRequest(
             order.getOrderNumber(),
@@ -267,7 +257,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         Order order = new Order();
         order.setUserId(userId);
         order.setOrderNumber(orderNumber);
-        order.setOrderDate(OffsetDateTime.now(ZoneOffset.UTC));
+        order.setOrderDate(LocalDateTime.now());
         order.setTotalAmount(pkg.getPrice());
         order.setDiscountAmount(BigDecimal.ZERO);
         order.setOrderStatus(com.gym.model.shop.OrderStatus.PENDING);
@@ -275,44 +265,42 @@ public class CheckoutServiceImpl implements CheckoutService {
         order.setDeliveryPhone(deliveryPhone);
         order.setDeliveryMethod(DeliveryMethod.PICKUP); // Package doesn't need delivery
         
-        // Transaction
-        Connection conn = null;
+        // JPA Transaction
+        EntityManager em = null;
+        EntityTransaction transaction = null;
         try {
-            conn = DatabaseUtil.getConnection();
-            if (conn == null) {
-                throw new SQLException("Database connection is null");
-            }
-            
-            conn.setAutoCommit(false);
+            em = JPAUtil.createEntityManager();
+            transaction = em.getTransaction();
+            transaction.begin();
             
             try {
-                // Insert order (pass connection for transaction)
-                Long orderId = orderDao.insert(order, conn);
+                // Insert order (pass EntityManager for transaction)
+                Long orderId = orderDao.insert(order, em);
                 order.setOrderId(orderId);
                 
-                // Insert order items (package as order item) (pass connection for transaction)
-                orderItemDao.insertBatch(orderId, orderItems, conn);
+                // Insert order items (package as order item) (pass EntityManager for transaction)
+                orderItemDao.insertBatch(orderId, orderItems, em);
                 
                 // Create membership using MembershipService
                 // This will:
                 // 1. Calculate startDate = CURRENT_DATE
                 // 2. Calculate endDate = startDate + duration_months
                 // 3. Check and expire any expired memberships
-                // 4. Create membership with status = 'ACTIVE'
+                // 4. Create membership with status = NULL (waiting for payment confirmation)
                 Integer userIdInt = userId.intValue();
                 com.gym.model.membership.Membership membership = 
                     membershipService.purchasePackage(userIdInt, packageId, null);
                 
                 System.out.println("[CheckoutService] Created membership ID: " + membership.getMembershipId() + 
-                                 " for package ID: " + packageId);
+                                 " (status=NULL - chờ thanh toán) for package ID: " + packageId);
                 
-                // Create payment record in payments table (transaction_type = 'PACKAGE') (use transaction connection)
+                // Create payment record in payments table (transaction_type = 'PACKAGE') (use transaction EntityManager)
                 com.gym.service.PaymentService paymentService = new com.gym.service.PaymentServiceImpl();
                 paymentService.createPaymentForMembership(userIdInt, membership.getMembershipId(), 
-                                                         pkg.getPrice(), paymentMethod, null, conn);
+                                                         pkg.getPrice(), paymentMethod, null, em);
                 
                 // COMMIT
-                conn.commit();
+                transaction.commit();
                 
                 // Reload order
                 Optional<Order> reloadedOrder = orderDao.findById(orderId);
@@ -324,24 +312,20 @@ public class CheckoutServiceImpl implements CheckoutService {
                 
                 return order;
                 
-            } catch (SQLException e) {
-                if (conn != null) {
-                    conn.rollback();
+            } catch (Exception e) {
+                if (transaction != null && transaction.isActive()) {
+                    transaction.rollback();
                 }
                 LOGGER.log(Level.SEVERE, "Error during package checkout transaction", e);
                 throw new RuntimeException("Package checkout failed: " + e.getMessage(), e);
             }
             
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error establishing transaction connection", e);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error establishing transaction", e);
             throw new RuntimeException("Package checkout failed: " + e.getMessage(), e);
         } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                } catch (SQLException e) {
-                    LOGGER.log(Level.WARNING, "Error restoring auto-commit", e);
-                }
+            if (em != null && em.isOpen()) {
+                em.close();
             }
         }
     }
@@ -427,7 +411,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         Order order = new Order();
         order.setUserId(userId);
         order.setOrderNumber(orderNumber);
-        order.setOrderDate(OffsetDateTime.now(ZoneOffset.UTC));
+        order.setOrderDate(LocalDateTime.now());
         order.setTotalAmount(totalAmount);
         order.setDiscountAmount(BigDecimal.ZERO);
         order.setOrderStatus(OrderStatus.PENDING);
@@ -436,42 +420,42 @@ public class CheckoutServiceImpl implements CheckoutService {
         order.setDeliveryPhone(deliveryPhone);
         order.setDeliveryMethod(deliveryMethod);
         
-        // Transaction
-        Connection conn = null;
+        // JPA Transaction
+        EntityManager em = null;
+        EntityTransaction transaction = null;
         try {
-            conn = DatabaseUtil.getConnection();
-            if (conn == null) {
-                throw new SQLException("Database connection is null");
-            }
-            
-            conn.setAutoCommit(false);
+            em = JPAUtil.createEntityManager();
+            transaction = em.getTransaction();
+            transaction.begin();
             
             try {
-                // Insert order (pass connection for transaction)
-                Long orderId = orderDao.insert(order, conn);
+                // Insert order (pass EntityManager for transaction)
+                Long orderId = orderDao.insert(order, em);
                 order.setOrderId(orderId);
                 
-                // Insert order items (membership + products) (pass connection for transaction)
-                orderItemDao.insertBatch(orderId, orderItems, conn);
+                // Insert order items (membership + products) (pass EntityManager for transaction)
+                orderItemDao.insertBatch(orderId, orderItems, em);
                 
-                // Decrease stock for products only (membership doesn't have stock) (use transaction connection)
+                // Decrease stock for products only (membership doesn't have stock) (use transaction EntityManager)
                 if (!productQuantities.isEmpty()) {
-                    productDao.decreaseStockBatch(productQuantities, conn);
+                    productDao.decreaseStockBatchWithEntityManager(productQuantities, em);
                 }
                 
                 // Create membership using MembershipService
-                // NOTE: MembershipService creates its own connection for membership creation
-                // This is acceptable as membership is a separate entity
+                // NOTE: Membership is created with status=NULL (waiting for payment confirmation)
                 Integer userIdInt = userId.intValue();
                 com.gym.model.membership.Membership membership = 
                     membershipService.purchasePackage(userIdInt, packageId, null);
                 
-                // Clear cart (only after successful transaction) (use transaction connection)
+                System.out.println("[CheckoutService] Created membership ID: " + membership.getMembershipId() + 
+                                 " (status=NULL - chờ thanh toán) for package+cart checkout");
+                
+                // Clear cart (only after successful transaction) (use transaction EntityManager)
                 if (!cartItems.isEmpty()) {
-                    cartDao.clear(userId, conn);
+                    cartDao.clear(userId, em);
                 }
                 
-                // Create payment records (use transaction connection):
+                // Create payment records (use transaction EntityManager):
                 // 1. Payment for package (transaction_type = 'PACKAGE')
                 // 2. Payment for products (transaction_type = 'PRODUCT')
                 com.gym.service.PaymentService paymentService = new com.gym.service.PaymentServiceImpl();
@@ -479,16 +463,16 @@ public class CheckoutServiceImpl implements CheckoutService {
                 // Payment for package
                 BigDecimal packageAmount = pkg.getPrice();
                 paymentService.createPaymentForMembership(userIdInt, membership.getMembershipId(), 
-                                                         packageAmount, paymentMethod, null, conn);
+                                                         packageAmount, paymentMethod, null, em);
                 
                 // Payment for products (if any)
                 if (!cartItems.isEmpty()) {
                     BigDecimal productsAmount = totalAmount.subtract(packageAmount);
-                    paymentService.createPaymentForOrder(userIdInt, orderId, productsAmount, paymentMethod, null, conn);
+                    paymentService.createPaymentForOrder(userIdInt, orderId, productsAmount, paymentMethod, null, em);
                 }
                 
                 // COMMIT
-                conn.commit();
+                transaction.commit();
                 
                 // Reload order with items
                 Optional<Order> reloadedOrder = orderDao.findById(orderId);
@@ -500,10 +484,10 @@ public class CheckoutServiceImpl implements CheckoutService {
                 
                 return order;
                 
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 // ROLLBACK on any error - cart is NOT cleared
-                if (conn != null) {
-                    conn.rollback();
+                if (transaction != null && transaction.isActive()) {
+                    transaction.rollback();
                 }
                 LOGGER.log(Level.SEVERE, "Error during checkout with membership transaction", e);
                 
@@ -515,16 +499,12 @@ public class CheckoutServiceImpl implements CheckoutService {
                 throw new RuntimeException("Checkout with membership failed: " + e.getMessage(), e);
             }
             
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error establishing transaction connection", e);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error establishing transaction", e);
             throw new RuntimeException("Checkout with membership failed: " + e.getMessage(), e);
         } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                } catch (SQLException e) {
-                    LOGGER.log(Level.WARNING, "Error restoring auto-commit", e);
-                }
+            if (em != null && em.isOpen()) {
+                em.close();
             }
         }
     }
@@ -538,4 +518,3 @@ public class CheckoutServiceImpl implements CheckoutService {
         return "ORD" + timestamp + "-" + userId;
     }
 }
-

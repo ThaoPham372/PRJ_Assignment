@@ -195,6 +195,14 @@
     </style>
 
 <div class="container mt-5">
+    <!-- Back Button -->
+    <div class="mb-4">
+        <a href="${pageContext.request.contextPath}/member/dashboard" class="btn-back">
+            <i class="fas fa-arrow-left"></i>
+            <span>Quay lại Dashboard</span>
+        </a>
+    </div>
+
     <!-- Support Header -->
     <div class="support-card text-center">
         <h2 class="support-title">Hỗ Trợ Khách Hàng</h2>

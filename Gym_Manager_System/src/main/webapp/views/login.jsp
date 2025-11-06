@@ -618,7 +618,7 @@
 
         <!-- Forgot Password -->
         <div class="forgot-link">
-          <a href="#" id="forgotPassword">Quên mật khẩu?</a>
+          <a href="${pageContext.request.contextPath}/auth/forgot-password">Quên mật khẩu?</a>
         </div>
 
         <!-- Google Login -->
@@ -749,13 +749,7 @@
 
         // Register button handled by anchor link (no JS redirect to avoid delay)
 
-        // Forgot password link
-        document
-          .getElementById('forgotPassword')
-          .addEventListener('click', function (e) {
-            e.preventDefault();
-            alert('Chức năng quên mật khẩu sẽ được triển khai');
-          });
+        // Forgot password link - handled by href, no JS needed
 
         // Keyboard navigation
         document.addEventListener('keydown', function (e) {

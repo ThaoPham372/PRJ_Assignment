@@ -291,7 +291,7 @@ public class CheckoutServlet extends HttpServlet {
         }
         
         com.gym.model.membership.Package selectedPackage = null;
-        java.util.List<com.gym.model.shop.CartItem> cartItems = new java.util.ArrayList<>();
+        java.util.List<com.gym.dto.CartItemDTO> cartItems = new java.util.ArrayList<>();
         java.math.BigDecimal total = java.math.BigDecimal.ZERO;
         
         if (isPackageOnly) {

@@ -1,21 +1,51 @@
 package com.gym.model.shop;
 
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 /**
- * Order item model (snapshot at order time)
+ * Order item model (snapshot at order time) - JPA Entity
  */
+@Entity
+@Table(name = "order_details")
 public class OrderItem {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "order_detail_id")
     private Long orderItemId;  // Maps to order_detail_id in DB (keeping field name for compatibility)
+    
+    @Column(name = "order_id")
     private Long orderId;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", insertable = false, updatable = false)
+    private Order order;
+    
+    @Column(name = "product_id")
     private Long productId;
+    
+    @Column(name = "package_id")
     private Long packageId;  // For membership packages
+    
+    @Column(name = "product_name", length = 255)
     private String productName;
+    
+    @Column(name = "quantity")
     private Integer quantity;
+    
+    @Column(name = "unit_price", precision = 15, scale = 2)
     private BigDecimal unitPrice;
+    
+    @Column(name = "discount_percent", precision = 5, scale = 2)
     private BigDecimal discountPercent;  // New column in order_details
+    
+    @Column(name = "discount_amount", precision = 15, scale = 2)
     private BigDecimal discountAmount;
+    
+    @Column(name = "subtotal", precision = 15, scale = 2, insertable = false, updatable = false)
     private BigDecimal subtotal; // DB computed (GENERATED column)
+    
+    @Column(name = "notes", length = 500)
     private String notes;  // New column in order_details
 
     public OrderItem() {
@@ -48,6 +78,17 @@ public class OrderItem {
 
     public void setOrderId(Long orderId) {
         this.orderId = orderId;
+    }
+    
+    public Order getOrder() {
+        return order;
+    }
+    
+    public void setOrder(Order order) {
+        this.order = order;
+        if (order != null) {
+            this.orderId = order.getOrderId();
+        }
     }
 
     public Long getProductId() {

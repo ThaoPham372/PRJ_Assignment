@@ -106,6 +106,21 @@ public class CartServlet extends HttpServlet {
         var cartItems = cartService.view(userId);
         var total = cartService.calculateTotal(cartItems);
 
+        // Debug logging
+        System.out.println("[CartServlet] ========== VIEW CART DEBUG ==========");
+        System.out.println("[CartServlet] User ID: " + userId);
+        System.out.println("[CartServlet] Cart items count: " + (cartItems != null ? cartItems.size() : "NULL"));
+        if (cartItems != null && !cartItems.isEmpty()) {
+            for (var item : cartItems) {
+                System.out.println("[CartServlet] Item: " + item.getProductName() + 
+                                 " | Price: " + item.getPrice() + 
+                                 " | Qty: " + item.getQuantity() + 
+                                 " | Subtotal: " + item.getSubtotal());
+            }
+        }
+        System.out.println("[CartServlet] Total calculated: " + total);
+        System.out.println("[CartServlet] ==========================================");
+
         request.setAttribute("cart", cartItems);
         request.setAttribute("total", total);
 

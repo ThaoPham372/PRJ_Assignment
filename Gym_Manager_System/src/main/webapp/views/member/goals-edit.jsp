@@ -401,9 +401,9 @@
                         <h1><i class="fas fa-bullseye me-2"></i>Cài đặt mục tiêu</h1>
                         <p>Thiết lập mục tiêu tập luyện và sức khỏe của bạn để có kế hoạch phù hợp</p>
                     </div>
-                    <a href="${pageContext.request.contextPath}/member/dashboard" class="btn-outline-secondary" style="color: white; border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.1);">
+                    <a href="${pageContext.request.contextPath}/member/dashboard" class="btn-back" style="border-color: white; color: white;">
                         <i class="fas fa-arrow-left"></i>
-                        <span>Quay lại</span>
+                        <span>Quay lại Dashboard</span>
                     </a>
                 </div>
             </div>

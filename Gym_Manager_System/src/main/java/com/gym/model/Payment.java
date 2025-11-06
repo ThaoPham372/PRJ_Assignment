@@ -2,26 +2,71 @@ package com.gym.model;
 
 import com.gym.model.shop.PaymentMethod;
 import com.gym.model.shop.PaymentStatus;
-
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
  * Payment model - Represents a payment transaction
- * Maps to payments table in database
+ * Maps to payments table in database - JPA Entity
  */
+@Entity
+@Table(name = "payments")
 public class Payment {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "payment_id")
     private Integer paymentId;
+    
+    @Column(name = "user_id")
     private Integer userId;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private User user;
+    
+    @Column(name = "amount", precision = 15, scale = 2)
     private BigDecimal amount;
+    
+    @Column(name = "payment_date")
     private LocalDateTime paymentDate;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "method", length = 50)
     private PaymentMethod method;  // Use shop.PaymentMethod enum
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 50)
     private PaymentStatus status;  // Use shop.PaymentStatus enum
+    
+    @Column(name = "reference_id", length = 255)
     private String referenceId;  // Unique reference (e.g., MoMo transaction ID)
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "transaction_type", length = 50)
     private TransactionType transactionType;
+    
+    @Column(name = "membership_id")
     private Long membershipId;  // For PACKAGE transactions
+    
+    @Column(name = "order_id")
     private Long orderId;       // For PRODUCT transactions
+    
+    @Column(name = "notes", length = 1000)
     private String notes;
+    
+    @Column(name = "paid_at")
+    private LocalDateTime paidAt;  // Timestamp when payment was confirmed (status = PAID)
+    
+    @Column(name = "external_ref", length = 255)
+    private String externalRef;  // External reference from payment gateway (VNPay, MoMo, etc.)
+    
+    @PrePersist
+    protected void onCreate() {
+        if (paymentDate == null) {
+            paymentDate = LocalDateTime.now();
+        }
+    }
 
     public Payment() {
     }
@@ -124,6 +169,30 @@ public class Payment {
     public void setNotes(String notes) {
         this.notes = notes;
     }
+    
+    public User getUser() {
+        return user;
+    }
+    
+    public void setUser(User user) {
+        this.user = user;
+    }
+    
+    public LocalDateTime getPaidAt() {
+        return paidAt;
+    }
+    
+    public void setPaidAt(LocalDateTime paidAt) {
+        this.paidAt = paidAt;
+    }
+    
+    public String getExternalRef() {
+        return externalRef;
+    }
+    
+    public void setExternalRef(String externalRef) {
+        this.externalRef = externalRef;
+    }
 
     /**
      * Transaction Type enum
@@ -194,6 +263,9 @@ public class Payment {
             case PAID: return "PAID";
             case FAILED: return "FAILED";
             case REFUNDED: return "REFUNDED";
+            case CANCELED: return "CANCELED";
+            case EXPIRED: return "EXPIRED";
+            case CHARGEBACK: return "CHARGEBACK";
             default: return status.getCode().toUpperCase();
         }
     }

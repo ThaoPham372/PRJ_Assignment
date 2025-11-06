@@ -1,11 +1,14 @@
 package com.gym.dao.membership;
 
+import com.gym.dao.GenericDAO;
 import com.gym.model.membership.Membership;
-import com.gym.util.DatabaseUtil;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
-import java.sql.*;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -13,11 +16,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * DAO for Membership entity
+ * DAO for Membership entity - JPA Implementation
  * Handles CRUD operations for memberships table
  */
-public class MembershipDAO {
-    private static final Logger LOGGER = Logger.getLogger(MembershipDAO.class.getName());
+public class MembershipDao extends GenericDAO<Membership> {
+    private static final Logger LOGGER = Logger.getLogger(MembershipDao.class.getName());
+
+    public MembershipDao() {
+        super(Membership.class);
+    }
 
     /**
      * Create a new membership
@@ -27,102 +34,225 @@ public class MembershipDAO {
      * @param endDate End date (calculated: startDate + duration_months)
      * @param notes Optional notes
      * @return Generated membership_id
+     * Note: Creates with status = 'INACTIVE'. Will be activated when payment status = 'PAID'.
      */
     public Long createMembership(Integer userId, Long packageId, LocalDate startDate, 
                                  LocalDate endDate, String notes) {
-        String sql = "INSERT INTO memberships (user_id, package_id, start_date, end_date, " +
-                    "status, notes, created_date, updated_date) " +
-                    "VALUES (?, ?, ?, ?, 'ACTIVE', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
-
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            if (conn == null) {
-                LOGGER.log(Level.SEVERE, "Database connection is null");
-                return null;
-            }
+        try {
+            Membership membership = new Membership();
+            membership.setUserId(userId);
+            membership.setPackageId(packageId);
+            membership.setStartDate(startDate);
+            membership.setEndDate(endDate);
+            membership.setStatus("INACTIVE");  // ✅ Start as INACTIVE, activate when payment = PAID
+            membership.setNotes(notes);
+            membership.setActivatedAt(null);  // Not activated yet
+            membership.setSuspendedAt(null);
             
-            try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                stmt.setInt(1, userId);
-                stmt.setLong(2, packageId);
-                stmt.setDate(3, java.sql.Date.valueOf(startDate));
-                stmt.setDate(4, java.sql.Date.valueOf(endDate));
-                setStringOrNull(stmt, 5, notes);
-                
-                int affectedRows = stmt.executeUpdate();
-                if (affectedRows > 0) {
-                    try (ResultSet rs = stmt.getGeneratedKeys()) {
-                        if (rs.next()) {
-                            return rs.getLong(1);
-                        }
-                    }
-                }
-            }
-        } catch (SQLException e) {
+            beginTransaction();
+            em.persist(membership);
+            commitTransaction();
+            
+            LOGGER.log(Level.INFO, "Created INACTIVE membership {0} for user {1}, waiting for payment", 
+                      new Object[]{membership.getMembershipId(), userId});
+            
+            return membership.getMembershipId();
+        } catch (Exception e) {
+            rollbackTransaction();
             LOGGER.log(Level.SEVERE, "Error creating membership", e);
             throw new RuntimeException("Failed to create membership: " + e.getMessage(), e);
         }
-        
-        return null;
     }
 
     /**
-     * Find active membership for a user
-     * Returns membership with status = 'ACTIVE' and end_date >= CURDATE()
+     * Find active AND PAID membership for a user
+     * Returns membership with:
+     * - status = 'ACTIVE' 
+     * - end_date >= CURDATE()
+     * - payment.status = 'PAID' (payment must exist and be paid)
      * @param userId User ID
      * @return Optional Membership
      */
     public Optional<Membership> findActiveByUser(Integer userId) {
-        String sql = "SELECT m.membership_id, m.user_id, m.package_id, m.start_date, " +
-                    "m.end_date, m.status, m.notes, m.created_date, m.updated_date, " +
-                    "p.name as package_name, p.duration_months as package_duration_months, " +
-                    "p.price as package_price " +
-                    "FROM memberships m " +
-                    "INNER JOIN packages p ON m.package_id = p.package_id " +
-                    "WHERE m.user_id = ? AND m.status = 'ACTIVE' " +
-                    "AND m.end_date >= CURDATE() " +
-                    "ORDER BY m.end_date DESC " +
-                    "LIMIT 1";
-
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            if (conn == null) {
-                LOGGER.log(Level.SEVERE, "Database connection is null");
-                return Optional.empty();
+        try {
+            // Use JPQL with JOIN to payments table to check payment status
+            String jpql = "SELECT DISTINCT m FROM Membership m " +
+                         "LEFT JOIN FETCH m.packageEntity p " +
+                         "INNER JOIN Payment pay ON pay.membershipId = m.membershipId " +
+                         "WHERE m.userId = :userId " +
+                         "AND m.status = 'ACTIVE' " +
+                         "AND m.endDate >= CURRENT_DATE " +
+                         "AND pay.transactionType = 'PACKAGE' " +
+                         "AND pay.status = 'PAID' " +
+                         "ORDER BY m.endDate DESC";
+            
+            TypedQuery<Membership> query = em.createQuery(jpql, Membership.class);
+            query.setParameter("userId", userId);
+            query.setMaxResults(1);
+            
+            List<Membership> results = query.getResultList();
+            if (!results.isEmpty()) {
+                Membership membership = results.get(0);
+                // Populate transient fields from joined packageEntity
+                if (membership.getPackageEntity() != null) {
+                    membership.setPackageName(membership.getPackageEntity().getName());
+                    membership.setPackageDurationMonths(membership.getPackageEntity().getDurationMonths());
+                    membership.setPackagePrice(membership.getPackageEntity().getPrice());
+                }
+                return Optional.of(membership);
             }
             
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, userId);
-                ResultSet rs = stmt.executeQuery();
-                if (rs.next()) {
-                    return Optional.of(mapResultSetToMembership(rs, true));
-                }
-            }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error finding active membership for user: " + userId, e);
+            return Optional.empty();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error finding active and paid membership for user: " + userId, e);
+            return Optional.empty();
         }
-        
-        return Optional.empty();
+    }
+
+    /**
+     * Find membership by ID
+     */
+    public Optional<Membership> findById(Long membershipId) {
+        try {
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Membership> query = cb.createQuery(Membership.class);
+            Root<Membership> root = query.from(Membership.class);
+            
+            // Join with Package to get package info
+            root.fetch("packageEntity", jakarta.persistence.criteria.JoinType.LEFT);
+            
+            query.where(cb.equal(root.get("membershipId"), membershipId));
+            
+            TypedQuery<Membership> typedQuery = em.createQuery(query);
+            typedQuery.setMaxResults(1);
+            
+            List<Membership> results = typedQuery.getResultList();
+            if (!results.isEmpty()) {
+                Membership membership = results.get(0);
+                // Populate transient fields from joined packageEntity
+                if (membership.getPackageEntity() != null) {
+                    membership.setPackageName(membership.getPackageEntity().getName());
+                    membership.setPackageDurationMonths(membership.getPackageEntity().getDurationMonths());
+                    membership.setPackagePrice(membership.getPackageEntity().getPrice());
+                }
+                return Optional.of(membership);
+            }
+            
+            return Optional.empty();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error finding membership by ID: " + membershipId, e);
+            return Optional.empty();
+        }
     }
 
     /**
      * Expire a membership (set status = 'EXPIRED')
      */
     public boolean expireMembership(Long membershipId) {
-        String sql = "UPDATE memberships SET status = 'EXPIRED', updated_date = CURRENT_TIMESTAMP " +
-                    "WHERE membership_id = ?";
-
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            if (conn == null) {
-                LOGGER.log(Level.SEVERE, "Database connection is null");
+        try {
+            beginTransaction();
+            
+            Membership membership = em.find(Membership.class, membershipId);
+            if (membership == null) {
+                rollbackTransaction();
                 return false;
             }
             
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setLong(1, membershipId);
-                int affectedRows = stmt.executeUpdate();
-                return affectedRows > 0;
-            }
-        } catch (SQLException e) {
+            membership.setStatus("EXPIRED");
+            em.merge(membership);
+            
+            commitTransaction();
+            return true;
+        } catch (Exception e) {
+            rollbackTransaction();
             LOGGER.log(Level.SEVERE, "Error expiring membership: " + membershipId, e);
             throw new RuntimeException("Failed to expire membership: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Activate a membership (set status = 'ACTIVE' and activated_at = NOW)
+     * Used when payment is confirmed (status = PAID)
+     */
+    public boolean activateMembership(Long membershipId) {
+        try {
+            beginTransaction();
+            
+            Membership membership = em.find(Membership.class, membershipId);
+            if (membership == null) {
+                rollbackTransaction();
+                LOGGER.log(Level.WARNING, "Cannot activate: Membership {0} not found", membershipId);
+                return false;
+            }
+            
+            // ✅ Only activate if currently INACTIVE
+            if (!"INACTIVE".equals(membership.getStatus())) {
+                rollbackTransaction();
+                LOGGER.log(Level.WARNING, "Cannot activate: Membership {0} is not INACTIVE (current: {1})", 
+                          new Object[]{membershipId, membership.getStatus()});
+                return false;
+            }
+            
+            membership.setStatus("ACTIVE");
+            membership.setActivatedAt(java.time.LocalDateTime.now());  // ✅ Set activation timestamp
+            em.merge(membership);
+            
+            commitTransaction();
+            LOGGER.log(Level.INFO, "Activated membership {0} at {1}", 
+                      new Object[]{membershipId, membership.getActivatedAt()});
+            return true;
+        } catch (Exception e) {
+            rollbackTransaction();
+            LOGGER.log(Level.SEVERE, "Error activating membership: " + membershipId, e);
+            throw new RuntimeException("Failed to activate membership: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Suspend a membership (set status = 'SUSPENDED' and suspended_at = NOW)
+     * Used when payment is refunded or chargeback occurs
+     */
+    public boolean suspendMembership(Long membershipId, String reason) {
+        try {
+            beginTransaction();
+            
+            Membership membership = em.find(Membership.class, membershipId);
+            if (membership == null) {
+                rollbackTransaction();
+                LOGGER.log(Level.WARNING, "Cannot suspend: Membership {0} not found", membershipId);
+                return false;
+            }
+            
+            // ✅ Only suspend if currently ACTIVE
+            if (!"ACTIVE".equals(membership.getStatus())) {
+                rollbackTransaction();
+                LOGGER.log(Level.WARNING, "Cannot suspend: Membership {0} is not ACTIVE (current: {1})", 
+                          new Object[]{membershipId, membership.getStatus()});
+                return false;
+            }
+            
+            membership.setStatus("SUSPENDED");
+            membership.setSuspendedAt(java.time.LocalDateTime.now());  // ✅ Set suspension timestamp
+            
+            // Append reason to notes
+            String existingNotes = membership.getNotes();
+            String suspensionNote = "SUSPENDED at " + membership.getSuspendedAt() + ". Reason: " + reason;
+            if (existingNotes != null && !existingNotes.isEmpty()) {
+                membership.setNotes(existingNotes + "\n" + suspensionNote);
+            } else {
+                membership.setNotes(suspensionNote);
+            }
+            
+            em.merge(membership);
+            
+            commitTransaction();
+            LOGGER.log(Level.WARNING, "Suspended membership {0} at {1}. Reason: {2}", 
+                      new Object[]{membershipId, membership.getSuspendedAt(), reason});
+            return true;
+        } catch (Exception e) {
+            rollbackTransaction();
+            LOGGER.log(Level.SEVERE, "Error suspending membership: " + membershipId, e);
+            throw new RuntimeException("Failed to suspend membership: " + e.getMessage(), e);
         }
     }
 
@@ -130,133 +260,77 @@ public class MembershipDAO {
      * List all memberships for a user (for history)
      */
     public List<Membership> listByUser(Integer userId) {
-        List<Membership> memberships = new ArrayList<>();
-        
-        String sql = "SELECT m.membership_id, m.user_id, m.package_id, m.start_date, " +
-                    "m.end_date, m.status, m.notes, m.created_date, m.updated_date, " +
-                    "p.name as package_name, p.duration_months as package_duration_months, " +
-                    "p.price as package_price " +
-                    "FROM memberships m " +
-                    "INNER JOIN packages p ON m.package_id = p.package_id " +
-                    "WHERE m.user_id = ? " +
-                    "ORDER BY m.created_date DESC";
-
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            if (conn == null) {
-                LOGGER.log(Level.SEVERE, "Database connection is null");
-                return memberships;
-            }
+        try {
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Membership> query = cb.createQuery(Membership.class);
+            Root<Membership> root = query.from(Membership.class);
             
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, userId);
-                ResultSet rs = stmt.executeQuery();
-                while (rs.next()) {
-                    memberships.add(mapResultSetToMembership(rs, true));
+            // Join with Package to get package info
+            root.fetch("packageEntity", jakarta.persistence.criteria.JoinType.INNER);
+            
+            query.where(cb.equal(root.get("userId"), userId));
+            query.orderBy(cb.desc(root.get("createdDate")));
+            
+            TypedQuery<Membership> typedQuery = em.createQuery(query);
+            List<Membership> memberships = typedQuery.getResultList();
+            
+            // Populate transient fields for each membership
+            for (Membership membership : memberships) {
+                if (membership.getPackageEntity() != null) {
+                    membership.setPackageName(membership.getPackageEntity().getName());
+                    membership.setPackageDurationMonths(membership.getPackageEntity().getDurationMonths());
+                    membership.setPackagePrice(membership.getPackageEntity().getPrice());
                 }
             }
-        } catch (SQLException e) {
+            
+            return memberships;
+        } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error listing memberships for user: " + userId, e);
+            return new ArrayList<>();
         }
-        
-        return memberships;
     }
 
     /**
      * Find all expired memberships for a user (for auto-expire logic)
      */
     public List<Membership> findExpiredByUser(Integer userId) {
-        List<Membership> memberships = new ArrayList<>();
-        
-        String sql = "SELECT m.membership_id, m.user_id, m.package_id, m.start_date, " +
-                    "m.end_date, m.status, m.notes, m.created_date, m.updated_date, " +
-                    "p.name as package_name, p.duration_months as package_duration_months, " +
-                    "p.price as package_price " +
-                    "FROM memberships m " +
-                    "INNER JOIN packages p ON m.package_id = p.package_id " +
-                    "WHERE m.user_id = ? AND m.status = 'ACTIVE' " +
-                    "AND m.end_date < CURDATE()";
-
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            if (conn == null) {
-                return memberships;
+        try {
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Membership> query = cb.createQuery(Membership.class);
+            Root<Membership> root = query.from(Membership.class);
+            
+            // Join with Package to get package info
+            root.fetch("packageEntity", jakarta.persistence.criteria.JoinType.INNER);
+            
+            List<Predicate> predicates = new ArrayList<>();
+            
+            // user_id = ?
+            predicates.add(cb.equal(root.get("userId"), userId));
+            
+            // status = 'ACTIVE'
+            predicates.add(cb.equal(root.get("status"), "ACTIVE"));
+            
+            // end_date < CURDATE()
+            predicates.add(cb.lessThan(root.get("endDate"), LocalDate.now()));
+            
+            query.where(predicates.toArray(new Predicate[0]));
+            
+            TypedQuery<Membership> typedQuery = em.createQuery(query);
+            List<Membership> memberships = typedQuery.getResultList();
+            
+            // Populate transient fields for each membership
+            for (Membership membership : memberships) {
+                if (membership.getPackageEntity() != null) {
+                    membership.setPackageName(membership.getPackageEntity().getName());
+                    membership.setPackageDurationMonths(membership.getPackageEntity().getDurationMonths());
+                    membership.setPackagePrice(membership.getPackageEntity().getPrice());
+                }
             }
             
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, userId);
-                ResultSet rs = stmt.executeQuery();
-                while (rs.next()) {
-                    memberships.add(mapResultSetToMembership(rs, true));
-                }
-            }
-        } catch (SQLException e) {
+            return memberships;
+        } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error finding expired memberships for user: " + userId, e);
-        }
-        
-        return memberships;
-    }
-
-    /**
-     * Map ResultSet to Membership object
-     */
-    private Membership mapResultSetToMembership(ResultSet rs, boolean includePackageInfo) throws SQLException {
-        Membership membership = new Membership();
-        
-        membership.setMembershipId(rs.getLong("membership_id"));
-        membership.setUserId(rs.getInt("user_id"));
-        membership.setPackageId(rs.getLong("package_id"));
-        
-        Date startDate = rs.getDate("start_date");
-        if (startDate != null) {
-            membership.setStartDate(startDate.toLocalDate());
-        }
-        
-        Date endDate = rs.getDate("end_date");
-        if (endDate != null) {
-            membership.setEndDate(endDate.toLocalDate());
-        }
-        
-        membership.setStatus(rs.getString("status"));
-        
-        String notes = rs.getString("notes");
-        membership.setNotes(notes);
-        
-        Timestamp createdDate = rs.getTimestamp("created_date");
-        if (createdDate != null) {
-            membership.setCreatedDate(createdDate.toLocalDateTime());
-        }
-        
-        Timestamp updatedDate = rs.getTimestamp("updated_date");
-        if (updatedDate != null) {
-            membership.setUpdatedDate(updatedDate.toLocalDateTime());
-        }
-        
-        // Joined fields from packages (if included)
-        if (includePackageInfo) {
-            try {
-                membership.setPackageName(rs.getString("package_name"));
-                int durationMonths = rs.getInt("package_duration_months");
-                if (!rs.wasNull()) {
-                    membership.setPackageDurationMonths(durationMonths);
-                }
-                java.math.BigDecimal price = rs.getBigDecimal("package_price");
-                membership.setPackagePrice(price);
-            } catch (SQLException e) {
-                // Columns may not exist if join was not performed
-                // This is OK, just skip
-            }
-        }
-        
-        return membership;
-    }
-
-    /**
-     * Helper: Set String or null
-     */
-    private void setStringOrNull(PreparedStatement stmt, int index, String value) throws SQLException {
-        if (value != null && !value.trim().isEmpty()) {
-            stmt.setString(index, value);
-        } else {
-            stmt.setNull(index, Types.VARCHAR);
+            return new ArrayList<>();
         }
     }
 }

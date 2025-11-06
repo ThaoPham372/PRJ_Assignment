@@ -240,13 +240,41 @@ public class UserServlet extends HttpServlet {
         }
         
         // Get profile data from service
-        Map<String, Object> profileData = userService.getProfileData(userId);
-        if (profileData == null) {
-            response.sendRedirect(request.getContextPath() + "/member/dashboard");
-            return;
+        System.out.println("[UserServlet] showProfile - Loading profile data for userId: " + userId);
+        Map<String, Object> profileData = null;
+        try {
+            profileData = userService.getProfileData(userId);
+            if (profileData == null) {
+                System.err.println("[UserServlet] showProfile - profileData is null for userId: " + userId);
+                request.setAttribute("error", "Không thể tải thông tin profile. Vui lòng thử lại sau.");
+                // Still forward to JSP to show error message
+                request.setAttribute("profileData", new java.util.HashMap<String, Object>());
+                request.getRequestDispatcher("/views/member/profile.jsp").forward(request, response);
+                return;
+            }
+            
+            // Debug: Log profileData contents
+            System.out.println("[UserServlet] showProfile - Profile data loaded successfully:");
+            System.out.println("  - username: " + profileData.get("username"));
+            System.out.println("  - name: " + profileData.get("name"));
+            System.out.println("  - email: " + profileData.get("email"));
+            System.out.println("  - status: " + profileData.get("status"));
+            System.out.println("  - createdDate: " + profileData.get("createdDate"));
+            System.out.println("  - height: " + profileData.get("height"));
+            System.out.println("  - weight: " + profileData.get("weight"));
+            System.out.println("  - bmi: " + profileData.get("bmi"));
+            
+            // Ensure profileData is never null when forwarding
+            request.setAttribute("profileData", profileData);
+            
+        } catch (Exception e) {
+            System.err.println("[UserServlet] showProfile - Error loading profile data: " + e.getMessage());
+            e.printStackTrace();
+            request.setAttribute("error", "Lỗi khi tải thông tin profile: " + e.getMessage());
+            // Set empty profileData to prevent JSP errors
+            request.setAttribute("profileData", new java.util.HashMap<String, Object>());
         }
         
-        request.setAttribute("profileData", profileData);
         request.getRequestDispatcher("/views/member/profile.jsp").forward(request, response);
     }
     
@@ -505,16 +533,35 @@ public class UserServlet extends HttpServlet {
             return;
         }
 
-        // Update body metrics
-        boolean metricsUpdated = userService.updateBodyMetricsFromRequest(user, request);
-        
-        // Update goals (this also recalculates calories based on updated metrics)
-        boolean goalsUpdated = userService.updateGoalsFromRequest(user, request);
+        try {
+            // Update body metrics
+            System.out.println("[UserServlet] updateBodyGoals: Updating body metrics for userId: " + userId);
+            System.out.println("[UserServlet] updateBodyGoals: Height param: " + request.getParameter("height"));
+            System.out.println("[UserServlet] updateBodyGoals: Weight param: " + request.getParameter("weight"));
+            boolean metricsUpdated = userService.updateBodyMetricsFromRequest(user, request);
+            System.out.println("[UserServlet] updateBodyGoals: Body metrics updated: " + metricsUpdated);
+            
+            // Update goals (this also recalculates calories based on updated metrics)
+            System.out.println("[UserServlet] updateBodyGoals: Updating goals...");
+            System.out.println("[UserServlet] updateBodyGoals: GoalType param: " + request.getParameter("goalType"));
+            System.out.println("[UserServlet] updateBodyGoals: ActivityFactor param: " + request.getParameter("activityFactor"));
+            boolean goalsUpdated = userService.updateGoalsFromRequest(user, request);
+            System.out.println("[UserServlet] updateBodyGoals: Goals updated: " + goalsUpdated);
 
-        if (metricsUpdated && goalsUpdated) {
-            request.getSession().setAttribute("bodyGoalsUpdateSuccess", "Cập nhật chỉ số và mục tiêu thành công!");
-        } else {
-            request.getSession().setAttribute("bodyGoalsUpdateError", "Không thể cập nhật. Vui lòng thử lại.");
+            if (metricsUpdated && goalsUpdated) {
+                System.out.println("[UserServlet] updateBodyGoals: SUCCESS - Both metrics and goals updated");
+                request.getSession().setAttribute("bodyGoalsUpdateSuccess", "Cập nhật chỉ số và mục tiêu thành công!");
+            } else {
+                System.err.println("[UserServlet] updateBodyGoals: FAILED - metricsUpdated: " + metricsUpdated + ", goalsUpdated: " + goalsUpdated);
+                request.getSession().setAttribute("bodyGoalsUpdateError", 
+                    "Không thể cập nhật. " + 
+                    (metricsUpdated ? "" : "Lỗi cập nhật chỉ số cơ thể. ") +
+                    (goalsUpdated ? "" : "Lỗi cập nhật mục tiêu."));
+            }
+        } catch (Exception e) {
+            System.err.println("[UserServlet] updateBodyGoals: Exception occurred: " + e.getMessage());
+            e.printStackTrace();
+            request.getSession().setAttribute("bodyGoalsUpdateError", "Lỗi hệ thống: " + e.getMessage());
         }
         
         response.sendRedirect(request.getContextPath() + "/member/body-goals");
@@ -625,7 +672,12 @@ public class UserServlet extends HttpServlet {
             String foodIdStr = request.getParameter("foodId");
             String servingsStr = request.getParameter("servings");
             
-            if (foodIdStr == null || servingsStr == null) {
+            System.out.println("[UserServlet] addMeal - userId: " + userId);
+            System.out.println("[UserServlet] addMeal - foodId param: " + foodIdStr);
+            System.out.println("[UserServlet] addMeal - servings param: " + servingsStr);
+            
+            if (foodIdStr == null || servingsStr == null || foodIdStr.trim().isEmpty() || servingsStr.trim().isEmpty()) {
+                System.err.println("[UserServlet] addMeal - Missing parameters");
                 request.getSession().setAttribute("nutritionError", "Vui lòng chọn món ăn và nhập khẩu phần");
                 response.sendRedirect(request.getContextPath() + "/member/nutrition");
                 return;
@@ -634,30 +686,45 @@ public class UserServlet extends HttpServlet {
             long foodId = Long.parseLong(foodIdStr);
             java.math.BigDecimal servings = new java.math.BigDecimal(servingsStr);
             
+            System.out.println("[UserServlet] addMeal - Parsed foodId: " + foodId + ", servings: " + servings);
+            
             // Validate servings
             if (servings.compareTo(java.math.BigDecimal.ZERO) <= 0) {
+                System.err.println("[UserServlet] addMeal - Invalid servings: " + servings);
                 request.getSession().setAttribute("nutritionError", "Khẩu phần phải lớn hơn 0");
                 response.sendRedirect(request.getContextPath() + "/member/nutrition");
                 return;
             }
             
             // Add meal via service
+            System.out.println("[UserServlet] addMeal - Calling nutritionService.addMeal...");
             nutritionService.addMeal(userId, foodId, servings);
+            System.out.println("[UserServlet] addMeal - Service call successful");
             
             // Success - redirect with PRG pattern
             request.getSession().setAttribute("nutritionSuccess", "Thêm món ăn thành công!");
             response.sendRedirect(request.getContextPath() + "/member/nutrition");
             
         } catch (NumberFormatException e) {
-            request.getSession().setAttribute("nutritionError", "Dữ liệu không hợp lệ");
+            System.err.println("[UserServlet] addMeal - NumberFormatException: " + e.getMessage());
+            e.printStackTrace();
+            request.getSession().setAttribute("nutritionError", "Dữ liệu không hợp lệ: " + e.getMessage());
             response.sendRedirect(request.getContextPath() + "/member/nutrition");
         } catch (IllegalArgumentException e) {
+            System.err.println("[UserServlet] addMeal - IllegalArgumentException: " + e.getMessage());
+            e.printStackTrace();
             request.getSession().setAttribute("nutritionError", e.getMessage());
             response.sendRedirect(request.getContextPath() + "/member/nutrition");
-        } catch (Exception e) {
-            System.err.println("Error adding meal: " + e.getMessage());
+        } catch (RuntimeException e) {
+            System.err.println("[UserServlet] addMeal - RuntimeException: " + e.getMessage());
             e.printStackTrace();
-            request.getSession().setAttribute("nutritionError", "Lỗi hệ thống khi thêm món ăn");
+            request.getSession().setAttribute("nutritionError", "Lỗi khi thêm món ăn: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/member/nutrition");
+        } catch (Exception e) {
+            System.err.println("[UserServlet] addMeal - Exception: " + e.getMessage());
+            System.err.println("[UserServlet] addMeal - Exception type: " + e.getClass().getName());
+            e.printStackTrace();
+            request.getSession().setAttribute("nutritionError", "Lỗi hệ thống khi thêm món ăn: " + e.getMessage());
             response.sendRedirect(request.getContextPath() + "/member/nutrition");
         }
     }

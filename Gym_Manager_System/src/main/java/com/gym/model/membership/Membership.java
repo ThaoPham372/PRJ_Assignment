@@ -1,27 +1,84 @@
 package com.gym.model.membership;
 
+import jakarta.persistence.*;
+import com.gym.model.User;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
  * Membership model - Represents a user's membership subscription
- * Maps to memberships table in database
+ * Maps to memberships table in database - JPA Entity
  */
+@Entity
+@Table(name = "memberships")
 public class Membership {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "membership_id")
     private Long membershipId;
+    
+    @Column(name = "user_id")
     private Integer userId;  // INT in DB, FK to user(user_id)
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private User user;
+    
+    @Column(name = "package_id")
     private Long packageId;  // BIGINT in DB, FK to packages(package_id)
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "package_id", insertable = false, updatable = false)
+    private Package packageEntity;
+    
+    @Column(name = "start_date")
     private LocalDate startDate;
+    
+    @Column(name = "end_date")
     private LocalDate endDate;  // Note: DB column is end_date, not expiry_date
-    private String status;  // ENUM: 'ACTIVE', 'EXPIRED', 'CANCELLED'
+    
+    @Column(name = "status", length = 50)
+    private String status;  // ENUM: 'INACTIVE', 'ACTIVE', 'EXPIRED', 'CANCELLED', 'SUSPENDED'
+    
+    @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;  // TEXT, can be NULL
+    
+    @Column(name = "activated_at")
+    private LocalDateTime activatedAt;  // Timestamp when membership was activated (payment = PAID)
+    
+    @Column(name = "suspended_at")
+    private LocalDateTime suspendedAt;  // Timestamp when membership was suspended (payment refunded/chargeback)
+    
+    @Column(name = "created_date")
     private LocalDateTime createdDate;
+    
+    @Column(name = "updated_date")
     private LocalDateTime updatedDate;
     
-    // Joined fields from packages table (for display)
+    // Joined fields from packages table (for display) - @Transient
+    @Transient
     private String packageName;
+    
+    @Transient
     private Integer packageDurationMonths;
+    
+    @Transient
     private java.math.BigDecimal packagePrice;
+    
+    @PrePersist
+    protected void onCreate() {
+        if (createdDate == null) {
+            createdDate = LocalDateTime.now();
+        }
+        if (updatedDate == null) {
+            updatedDate = LocalDateTime.now();
+        }
+    }
+    
+    @PreUpdate
+    protected void onUpdate() {
+        updatedDate = LocalDateTime.now();
+    }
 
     public Membership() {
     }
@@ -36,6 +93,23 @@ public class Membership {
         this.endDate = endDate;
         this.status = status;
         this.notes = notes;
+        this.createdDate = createdDate;
+        this.updatedDate = updatedDate;
+    }
+    
+    public Membership(Long membershipId, Integer userId, Long packageId, LocalDate startDate, 
+                     LocalDate endDate, String status, String notes, 
+                     LocalDateTime activatedAt, LocalDateTime suspendedAt,
+                     LocalDateTime createdDate, LocalDateTime updatedDate) {
+        this.membershipId = membershipId;
+        this.userId = userId;
+        this.packageId = packageId;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.status = status;
+        this.notes = notes;
+        this.activatedAt = activatedAt;
+        this.suspendedAt = suspendedAt;
         this.createdDate = createdDate;
         this.updatedDate = updatedDate;
     }
@@ -55,6 +129,29 @@ public class Membership {
 
     public void setUserId(Integer userId) {
         this.userId = userId;
+    }
+    
+    public User getUser() {
+        return user;
+    }
+    
+    public void setUser(User user) {
+        this.user = user;
+    }
+    
+    public Package getPackageEntity() {
+        return packageEntity;
+    }
+    
+    public void setPackageEntity(Package packageEntity) {
+        this.packageEntity = packageEntity;
+        if (packageEntity != null) {
+            this.packageId = packageEntity.getPackageId();
+            // Load package info for display
+            this.packageName = packageEntity.getName();
+            this.packageDurationMonths = packageEntity.getDurationMonths();
+            this.packagePrice = packageEntity.getPrice();
+        }
     }
 
     public Long getPackageId() {
@@ -136,6 +233,22 @@ public class Membership {
 
     public void setPackagePrice(java.math.BigDecimal packagePrice) {
         this.packagePrice = packagePrice;
+    }
+    
+    public LocalDateTime getActivatedAt() {
+        return activatedAt;
+    }
+    
+    public void setActivatedAt(LocalDateTime activatedAt) {
+        this.activatedAt = activatedAt;
+    }
+    
+    public LocalDateTime getSuspendedAt() {
+        return suspendedAt;
+    }
+    
+    public void setSuspendedAt(LocalDateTime suspendedAt) {
+        this.suspendedAt = suspendedAt;
     }
 
     /**

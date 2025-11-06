@@ -7,7 +7,10 @@ public enum PaymentStatus {
     PENDING("pending", "Chờ thanh toán"),
     PAID("paid", "Đã thanh toán"),
     FAILED("failed", "Thanh toán thất bại"),
-    REFUNDED("refunded", "Đã hoàn tiền");
+    REFUNDED("refunded", "Đã hoàn tiền"),
+    CANCELED("canceled", "Đã hủy"),
+    EXPIRED("expired", "Hết hạn thanh toán"),
+    CHARGEBACK("chargeback", "Tranh chấp/hoàn tiền ngân hàng");
 
     private final String code;
     private final String displayName;

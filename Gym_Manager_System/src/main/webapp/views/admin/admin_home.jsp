@@ -779,7 +779,18 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         href="${pageContext.request.contextPath}/views/admin/admin_home.jsp"
         class="logo"
       >
-        🏋️ GymFit
+        <img
+          src="${pageContext.request.contextPath}/images/logo/logo.png"
+          alt="GymFit Logo"
+          style="
+            height: 2.5em;
+            width: auto;
+            margin-right: 12px;
+            max-height: 50px;
+            object-fit: contain;
+          "
+        />
+        GymFit
       </a>
       <nav>
         <ul>
@@ -918,7 +929,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           <div class="admin-menu-footer">
             <button
               class="btn-logout"
-              onclick="window.location.href='${pageContext.request.contextPath}/login'"
+              onclick="window.location.href='${pageContext.request.contextPath}/views/login.jsp'"
             >
               <i class="fas fa-sign-out-alt"></i>
               Đăng xuất
@@ -1124,7 +1135,21 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
     <footer>
       <div class="footer-container">
         <div class="footer-column">
-          <div class="footer-brand">🏋️ GymFit</div>
+          <div class="footer-brand">
+            <img
+              src="${pageContext.request.contextPath}/images/logo/logo.png"
+              alt="GymFit Logo"
+              style="
+                height: 2em;
+                width: auto;
+                margin-right: 10px;
+                vertical-align: middle;
+                max-height: 40px;
+                object-fit: contain;
+              "
+            />
+            GymFit
+          </div>
           <p>Nơi thay đổi sức khỏe và vóc dáng của bạn.</p>
           <p><i class="fas fa-phone"></i> 0123-456-789</p>
           <p><i class="fas fa-envelope"></i> contact@gymfit.vn</p>
@@ -1208,5 +1233,3 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
     </script>
   </body>
 </html>
-
-

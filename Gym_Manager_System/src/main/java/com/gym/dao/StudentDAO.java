@@ -1,199 +1,240 @@
 package com.gym.dao;
 
 import com.gym.model.Student;
-import com.gym.util.DatabaseUtil;
+import com.gym.model.User;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.sql.*;
+import java.util.List;
 import java.util.Optional;
 
 /**
- * StudentDAO - Data Access Object for students table
+ * StudentDAO - Data Access Object for students table using JPA
+ * Extends GenericDAO for basic CRUD operations
  * Handles student-specific information (health metrics, emergency contacts)
  */
-public class StudentDAO {
-    
+public class StudentDAO extends GenericDAO<Student> {
+
+    public StudentDAO() {
+        super(Student.class);
+    }
+
     /**
      * Find student by user_id
      * NOTE: students table only has: user_id, weight, height, bmi, emergency_contact_*
      * Other info (full_name, email, phone...) should be fetched from user table via JOIN
+     * Uses JPA find() which will load Student entity if it exists (JOINED inheritance)
      */
     public Optional<Student> findByUserId(int userId) {
-        String sql = "SELECT user_id, weight, height, bmi, " +
-                    "emergency_contact_name, emergency_contact_phone, " +
-                    "emergency_contact_relation, emergency_contact_address " +
-                    "FROM students WHERE user_id = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setInt(1, userId);
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                return Optional.of(mapResultSetToStudent(rs));
-            }
-        } catch (SQLException e) {
+        try {
+            // Use EntityManager.find() to load Student entity
+            // Since Student extends User with JOINED inheritance, 
+            // Hibernate will automatically JOIN the students table
+            Student student = em.find(Student.class, userId);
+            return Optional.ofNullable(student);
+        } catch (Exception e) {
             System.err.println("[StudentDAO] ERROR finding student by user_id: " + e.getMessage());
-            System.err.println("[StudentDAO] SQL State: " + e.getSQLState());
-            System.err.println("[StudentDAO] User ID: " + userId);
             e.printStackTrace();
+            return Optional.empty();
         }
-        
-        return Optional.empty();
     }
-    
+
     /**
      * Upsert student record (INSERT if not exists, UPDATE if exists)
-     * Uses ON DUPLICATE KEY UPDATE for MySQL
-     * Note: This requires user_id to be PRIMARY KEY or have UNIQUE constraint in students table
+     * Uses JPA merge which handles both insert and update
+     * IMPORTANT: For JOINED inheritance:
+     * - If userId is null: Creates new Student (JPA will create User record with DTYPE='STUDENT' and Student record)
+     * - If userId exists: Updates existing Student or creates Student for existing User
      */
     public void upsert(Student student) {
-        // First, check if record exists
-        Optional<Student> existing = findByUserId(student.getUserId());
-        
-        if (existing.isPresent()) {
-            // Update existing record
-            update(student);
-        } else {
-            // Insert new record
-            create(student);
-        }
-    }
-    
-    /**
-     * Alternative upsert using ON DUPLICATE KEY UPDATE (requires PRIMARY KEY on user_id)
-     * NOTE: Database only has basic columns: user_id, weight, height, bmi, emergency_contact_*
-     */
-    public void upsertWithDuplicateKey(Student student) {
-        String sql = "INSERT INTO students (user_id, " +
-                    "weight, height, bmi, " +
-                    "emergency_contact_name, emergency_contact_phone, " +
-                    "emergency_contact_relation, emergency_contact_address) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?) " +
-                    "ON DUPLICATE KEY UPDATE " +
-                    "weight = VALUES(weight), " +
-                    "height = VALUES(height), " +
-                    "bmi = VALUES(bmi), " +
-                    "emergency_contact_name = VALUES(emergency_contact_name), " +
-                    "emergency_contact_phone = VALUES(emergency_contact_phone), " +
-                    "emergency_contact_relation = VALUES(emergency_contact_relation), " +
-                    "emergency_contact_address = VALUES(emergency_contact_address)";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            if (student == null) {
+                throw new IllegalArgumentException("Student cannot be null");
+            }
             
-            int paramIndex = 1;
-            stmt.setInt(paramIndex++, student.getUserId());
+            beginTransaction();
             
-            setBigDecimalOrNull(stmt, paramIndex++, student.getWeight());
-            setBigDecimalOrNull(stmt, paramIndex++, student.getHeight());
-            setBigDecimalOrNull(stmt, paramIndex++, student.getBmi());
+            Integer userId = student.getUserId();
             
-            setStringOrNull(stmt, paramIndex++, student.getEmergencyContactName());
-            setStringOrNull(stmt, paramIndex++, student.getEmergencyContactPhone());
-            setStringOrNull(stmt, paramIndex++, student.getEmergencyContactRelation());
-            setStringOrNull(stmt, paramIndex++, student.getEmergencyContactAddress());
+            if (userId != null && userId > 0) {
+                // Check if Student already exists
+                Student existing = em.find(Student.class, userId);
+                
+                if (existing != null) {
+                    // Update existing student - merge changes from incoming student object
+                    System.out.println("[StudentDAO] Found existing Student, updating fields...");
+                    existing.setWeight(student.getWeight());
+                    existing.setHeight(student.getHeight());
+                    
+                    // Calculate BMI if height and weight are provided
+                    if (existing.getHeight() != null && existing.getWeight() != null) {
+                        BigDecimal heightBD = BigDecimal.valueOf(existing.getHeight());
+                        BigDecimal weightBD = BigDecimal.valueOf(existing.getWeight());
+                        BigDecimal bmi = calculateBMI(heightBD, weightBD);
+                        existing.setBmi(bmi != null ? bmi.floatValue() : null);
+                    } else {
+                        existing.setBmi(student.getBmi());
+                    }
+                    
+                    // Gender is now in User table, not Student table - don't copy it here
+                    existing.setEmergencyContactName(student.getEmergencyContactName());
+                    existing.setEmergencyContactPhone(student.getEmergencyContactPhone());
+                    existing.setEmergencyContactRelation(student.getEmergencyContactRelation());
+                    existing.setEmergencyContactAddress(student.getEmergencyContactAddress());
+                    
+                    // Merge to persist changes (existing is already managed by EntityManager)
+                    em.merge(existing);
+                    System.out.println("[StudentDAO] Updated existing Student record with user_id: " + userId);
+                } else {
+                    // User exists but Student doesn't - use native SQL to insert into students table only
+                    // This avoids JPA detached entity issues
+                    System.out.println("[StudentDAO] Student not found, creating Student record for existing User...");
+                    
+                    // Verify User exists
+                    User user = em.find(User.class, userId);
+                    if (user == null) {
+                        throw new RuntimeException("Cannot create Student: User with ID " + userId + " not found");
+                    }
+                    
+                    // Calculate BMI if height and weight are provided
+                    Float bmi = null;
+                    if (student.getHeight() != null && student.getWeight() != null) {
+                        BigDecimal heightBD = BigDecimal.valueOf(student.getHeight());
+                        BigDecimal weightBD = BigDecimal.valueOf(student.getWeight());
+                        BigDecimal bmiCalc = calculateBMI(heightBD, weightBD);
+                        bmi = (bmiCalc != null) ? bmiCalc.floatValue() : null;
+                    }
+                    
+                    // Insert directly into students table using native SQL
+                    String sql = "INSERT INTO students (user_id, weight, height, bmi, " +
+                                "emergency_contact_name, emergency_contact_phone, " +
+                                "emergency_contact_relation, emergency_contact_address) " +
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    
+                    Query query = em.createNativeQuery(sql);
+                    query.setParameter(1, userId);
+                    query.setParameter(2, student.getWeight());
+                    query.setParameter(3, student.getHeight());
+                    query.setParameter(4, bmi);
+                    query.setParameter(5, student.getEmergencyContactName());
+                    query.setParameter(6, student.getEmergencyContactPhone());
+                    query.setParameter(7, student.getEmergencyContactRelation());
+                    query.setParameter(8, student.getEmergencyContactAddress());
+                    
+                    int rowsInserted = query.executeUpdate();
+                    System.out.println("[StudentDAO] Created Student record for existing User with user_id: " + userId + 
+                                     " (rows inserted: " + rowsInserted + ")");
+                }
+            } else {
+                // userId is null - this is a new Student registration
+                // JPA will create User record with DTYPE='STUDENT' and Student record with generated user_id
+                System.out.println("[StudentDAO] ========================================");
+                System.out.println("[StudentDAO] STEP 1: Persisting new Student (userId is NULL)");
+                System.out.println("[StudentDAO]   - Student username: " + student.getUsername());
+                System.out.println("[StudentDAO]   - Student email: " + student.getEmail());
+                System.out.println("[StudentDAO]   - Student userId BEFORE persist: " + student.getUserId());
+                
+                // STEP 1: Persist Student - JPA will schedule INSERT into user and students tables
+                em.persist(student);
+                System.out.println("[StudentDAO] STEP 2: After persist() - userId is still: " + student.getUserId());
+                
+                // STEP 2: Flush to execute INSERT statement immediately
+                // This triggers database INSERT and MySQL AUTO_INCREMENT generates user_id
+                em.flush();
+                System.out.println("[StudentDAO] STEP 3: After flush() - INSERT executed, userId now: " + student.getUserId());
+                
+                // STEP 3: Refresh to reload entity from database (get generated ID)
+                // With GenerationType.IDENTITY, userId should be set after flush()
+                // But refresh() ensures we have the latest state from DB
+                em.refresh(student);
+                userId = student.getUserId();
+                System.out.println("[StudentDAO] STEP 4: After refresh() - userId from DB: " + userId);
+                System.out.println("[StudentDAO] ========================================");
+                
+                if (userId != null) {
+                    System.out.println("[StudentDAO] ✓ SUCCESS: Created new Student (and User) with generated user_id: " + userId);
+                } else {
+                    System.err.println("[StudentDAO] ✗ WARNING: Student persisted but userId is still null!");
+                    System.err.println("[StudentDAO] This should not happen with GenerationType.IDENTITY");
+                }
+            }
             
-            int affectedRows = stmt.executeUpdate();
-            System.out.println("[StudentDAO] UpsertWithDuplicateKey affected rows: " + affectedRows);
-            
-        } catch (SQLException e) {
-            System.err.println("[StudentDAO] ERROR in upsertWithDuplicateKey: " + e.getMessage());
-            System.err.println("[StudentDAO] SQL State: " + e.getSQLState());
-            System.err.println("[StudentDAO] Error Code: " + e.getErrorCode());
-            System.err.println("[StudentDAO] User ID: " + student.getUserId());
+            commitTransaction();
+        } catch (Exception e) {
+            rollbackTransaction();
+            System.err.println("[StudentDAO] ERROR in upsert: " + e.getMessage());
             e.printStackTrace();
             throw new RuntimeException("Failed to save student profile: " + e.getMessage(), e);
         }
     }
-    
+
+    /**
+     * Alternative upsert using ON DUPLICATE KEY UPDATE (requires PRIMARY KEY on user_id)
+     * Uses native SQL for MySQL-specific behavior
+     */
+    public void upsertWithDuplicateKey(Student student) {
+        try {
+            String sql = "INSERT INTO students (user_id, " +
+                        "weight, height, bmi, " +
+                        "emergency_contact_name, emergency_contact_phone, " +
+                        "emergency_contact_relation, emergency_contact_address) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
+                        "ON DUPLICATE KEY UPDATE " +
+                        "weight = VALUES(weight), " +
+                        "height = VALUES(height), " +
+                        "bmi = VALUES(bmi), " +
+                        "emergency_contact_name = VALUES(emergency_contact_name), " +
+                        "emergency_contact_phone = VALUES(emergency_contact_phone), " +
+                        "emergency_contact_relation = VALUES(emergency_contact_relation), " +
+                        "emergency_contact_address = VALUES(emergency_contact_address)";
+
+            beginTransaction();
+            Query query = em.createNativeQuery(sql);
+            query.setParameter(1, student.getUserId());
+            query.setParameter(2, student.getWeight());
+            query.setParameter(3, student.getHeight());
+            query.setParameter(4, student.getBmi());
+            query.setParameter(5, student.getEmergencyContactName());
+            query.setParameter(6, student.getEmergencyContactPhone());
+            query.setParameter(7, student.getEmergencyContactRelation());
+            query.setParameter(8, student.getEmergencyContactAddress());
+            query.executeUpdate();
+            commitTransaction();
+        } catch (Exception e) {
+            rollbackTransaction();
+            System.err.println("[StudentDAO] ERROR in upsertWithDuplicateKey: " + e.getMessage());
+            throw new RuntimeException("Failed to save student profile: " + e.getMessage(), e);
+        }
+    }
+
     /**
      * Create new student record
+     * Uses GenericDAO save() method
      * NOTE: students table only has: user_id, weight, height, bmi, emergency_contact_*
-     * Other info (full_name, email, phone...) is stored in user table
      */
     public void create(Student student) {
-        String sql = "INSERT INTO students (" +
-                    "user_id, weight, height, bmi, " +
-                    "emergency_contact_name, emergency_contact_phone, " +
-                    "emergency_contact_relation, emergency_contact_address) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            int paramIndex = 1;
-            stmt.setInt(paramIndex++, student.getUserId());
-            
-            // Physical info (only columns that exist in students table)
-            setBigDecimalOrNull(stmt, paramIndex++, student.getWeight());
-            setBigDecimalOrNull(stmt, paramIndex++, student.getHeight());
-            setBigDecimalOrNull(stmt, paramIndex++, student.getBmi());
-            
-            // Emergency contact
-            setStringOrNull(stmt, paramIndex++, student.getEmergencyContactName());
-            setStringOrNull(stmt, paramIndex++, student.getEmergencyContactPhone());
-            setStringOrNull(stmt, paramIndex++, student.getEmergencyContactRelation());
-            setStringOrNull(stmt, paramIndex++, student.getEmergencyContactAddress());
-            
-            int affectedRows = stmt.executeUpdate();
-            System.out.println("[StudentDAO] Create affected rows: " + affectedRows);
-            
-        } catch (SQLException e) {
+        try {
+            save(student);
+        } catch (Exception e) {
             System.err.println("[StudentDAO] ERROR creating student: " + e.getMessage());
-            System.err.println("[StudentDAO] SQL State: " + e.getSQLState());
-            System.err.println("[StudentDAO] Error Code: " + e.getErrorCode());
-            e.printStackTrace();
             throw new RuntimeException("Failed to create student profile: " + e.getMessage(), e);
         }
     }
-    
+
     /**
      * Update existing student record
+     * Uses GenericDAO update() method
      * NOTE: students table only has: user_id, weight, height, bmi, emergency_contact_*
-     * Other info (full_name, email, phone...) should be updated in user table
      */
-    public void update(Student student) {
-        String sql = "UPDATE students SET " +
-                    "weight = ?, height = ?, bmi = ?, " +
-                    "emergency_contact_name = ?, emergency_contact_phone = ?, " +
-                    "emergency_contact_relation = ?, emergency_contact_address = ? " +
-                    "WHERE user_id = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            int paramIndex = 1;
-            // Physical info (only columns that exist in students table)
-            setBigDecimalOrNull(stmt, paramIndex++, student.getWeight());
-            setBigDecimalOrNull(stmt, paramIndex++, student.getHeight());
-            setBigDecimalOrNull(stmt, paramIndex++, student.getBmi());
-            
-            // Emergency contact
-            setStringOrNull(stmt, paramIndex++, student.getEmergencyContactName());
-            setStringOrNull(stmt, paramIndex++, student.getEmergencyContactPhone());
-            setStringOrNull(stmt, paramIndex++, student.getEmergencyContactRelation());
-            setStringOrNull(stmt, paramIndex++, student.getEmergencyContactAddress());
-            
-            // WHERE clause
-            stmt.setInt(paramIndex++, student.getUserId());
-            
-            int affectedRows = stmt.executeUpdate();
-            System.out.println("[StudentDAO] Update affected rows: " + affectedRows);
-            if (affectedRows == 0) {
-                System.err.println("[StudentDAO] WARNING: No rows updated for user_id: " + student.getUserId());
-            }
-            
-        } catch (SQLException e) {
+    public boolean updateStudent(Student student) {
+        try {
+            int result = super.update(student);
+            return result != -1;
+        } catch (Exception e) {
             System.err.println("[StudentDAO] ERROR updating student: " + e.getMessage());
-            System.err.println("[StudentDAO] SQL State: " + e.getSQLState());
-            System.err.println("[StudentDAO] Error Code: " + e.getErrorCode());
-            System.err.println("[StudentDAO] User ID: " + student.getUserId());
-            e.printStackTrace();
             throw new RuntimeException("Failed to update student profile: " + e.getMessage(), e);
         }
     }
-    
+
     /**
      * Calculate BMI from height (in cm) and weight (in kg)
      * BMI = weight (kg) / (height (m))^2
@@ -202,101 +243,37 @@ public class StudentDAO {
         if (height == null || weight == null || height.compareTo(BigDecimal.ZERO) <= 0) {
             return null;
         }
-        
+
         // Convert height from cm to meters
         BigDecimal heightInMeters = height.divide(new BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP);
-        
+
         // Calculate BMI: weight / (height^2)
         BigDecimal heightSquared = heightInMeters.multiply(heightInMeters);
         BigDecimal bmi = weight.divide(heightSquared, 2, java.math.RoundingMode.HALF_UP);
-        
+
         return bmi;
     }
-    
+
     /**
-     * Helper method to map ResultSet to Student object
-     * NOTE: students table only has: user_id, weight, height, bmi, emergency_contact_*
-     * Other fields (full_name, email, phone...) should be fetched from user table via JOIN
+     * Find all students
      */
-    private Student mapResultSetToStudent(ResultSet rs) throws SQLException {
-        Student student = new Student();
-        
-        student.setUserId(rs.getInt("user_id"));
-        
-        // Handle null values for BigDecimal/FLOAT
-        try {
-            double weight = rs.getDouble("weight");
-            student.setWeight(rs.wasNull() ? null : BigDecimal.valueOf(weight));
-        } catch (SQLException e) {
-            student.setWeight(null);
-        }
-        
-        try {
-            double height = rs.getDouble("height");
-            student.setHeight(rs.wasNull() ? null : BigDecimal.valueOf(height));
-        } catch (SQLException e) {
-            student.setHeight(null);
-        }
-        
-        try {
-            double bmi = rs.getDouble("bmi");
-            student.setBmi(rs.wasNull() ? null : BigDecimal.valueOf(bmi));
-        } catch (SQLException e) {
-            student.setBmi(null);
-        }
-        
-        // Emergency contact
-        student.setEmergencyContactName(rs.getString("emergency_contact_name"));
-        student.setEmergencyContactPhone(rs.getString("emergency_contact_phone"));
-        student.setEmergencyContactRelation(rs.getString("emergency_contact_relation"));
-        student.setEmergencyContactAddress(rs.getString("emergency_contact_address"));
-        
-        // Other fields (full_name, email, phone...) are NOT in students table
-        // These should be fetched from user table via JOIN in the service layer
-        student.setFullName(null);
-        student.setGender(null);
-        student.setPhone(null);
-        student.setEmail(null);
-        student.setAddress(null);
-        student.setAvatarUrl(null);
-        student.setCurrentWeight(0);
-        student.setTrainingPackage(null);
-        student.setTrainingMonths(0);
-        student.setSessionCount(0);
-        student.setProgress(0);
-        student.setPtNote(null);
-        student.setActive(true); // Default
-        
-        return student;
+    public java.util.List<Student> findAllStudents() {
+        return findAll();
     }
-    
+
     /**
-     * Helper: Set BigDecimal or null (converts to FLOAT for database)
-     * NOTE: Database uses FLOAT type, not DECIMAL
+     * Find students with weight/height data
      */
-    private void setBigDecimalOrNull(PreparedStatement stmt, int index, BigDecimal value) throws SQLException {
-        if (value != null) {
-            stmt.setFloat(index, value.floatValue());
-        } else {
-            stmt.setNull(index, Types.FLOAT);
+    public java.util.List<Student> findStudentsWithHealthData() {
+        try {
+            TypedQuery<Student> query = em.createQuery(
+                "SELECT s FROM Student s WHERE s.weight IS NOT NULL AND s.height IS NOT NULL",
+                Student.class
+            );
+            return query.getResultList();
+        } catch (Exception e) {
+            System.err.println("[StudentDAO] Error finding students with health data: " + e.getMessage());
+            return List.of();
         }
-    }
-    
-    /**
-     * Helper: Set String or null
-     */
-    private void setStringOrNull(PreparedStatement stmt, int index, String value) throws SQLException {
-        if (value != null && !value.trim().isEmpty()) {
-            stmt.setString(index, value);
-        } else {
-            stmt.setNull(index, Types.VARCHAR);
-        }
-    }
-    
-    /**
-     * Helper: Set Boolean with default false if null
-     */
-    private void setBooleanOrDefault(PreparedStatement stmt, int index, boolean value) throws SQLException {
-        stmt.setBoolean(index, value);
     }
 }

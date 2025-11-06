@@ -424,7 +424,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         <ul class="sidebar-menu">
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/dashboard.jsp"
+              href="${pageContext.request.contextPath}/admin/dashboard"
               class="sidebar-menu-link active"
             >
               <i class="fas fa-home"></i>
@@ -442,7 +442,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/account_management.jsp"
+              href="${pageContext.request.contextPath}/admin/account-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-users-cog"></i>
@@ -519,7 +519,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
               <i class="fas fa-home"></i> Về trang chủ
             </a>
             <a
-              href="${pageContext.request.contextPath}/login"
+              href="${pageContext.request.contextPath}/views/login.jsp"
               class="btn"
             >
               <i class="fas fa-sign-out-alt"></i> Đăng xuất

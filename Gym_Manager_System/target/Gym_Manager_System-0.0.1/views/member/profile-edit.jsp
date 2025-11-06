@@ -406,10 +406,10 @@
 
 <div class="profile-container">
     <!-- Back Button -->
-    <div class="mb-3">
-        <a href="${pageContext.request.contextPath}/member/profile" class="btn-back-top">
+    <div class="mb-4">
+        <a href="${pageContext.request.contextPath}/member/profile" class="btn-back">
             <i class="fas fa-arrow-left"></i>
-            Quay lại xem thông tin
+            <span>Quay lại xem thông tin</span>
         </a>
     </div>
 

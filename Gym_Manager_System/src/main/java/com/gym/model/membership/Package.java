@@ -1,23 +1,62 @@
 package com.gym.model.membership;
 
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
  * Package model - Represents a membership package
- * Maps to packages table in database
+ * Maps to packages table in database - JPA Entity
  */
+@Entity
+@Table(name = "packages")
 public class Package {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "package_id")
     private Long packageId;
+    
+    @Column(name = "name", length = 255)
     private String name;
+    
+    @Column(name = "duration_months")
     private Integer durationMonths;
+    
+    @Column(name = "price", precision = 15, scale = 2)
     private BigDecimal price;
+    
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
+    
+    @Column(name = "max_sessions")
     private Integer maxSessions;  // NULL means unlimited
+    
+    @Column(name = "is_active")
     private Boolean isActive;
+    
+    @Column(name = "created_date")
     private LocalDateTime createdDate;
+    
+    @Column(name = "updated_date")
     private LocalDateTime updatedDate;
+    
+    @Column(name = "gym_id")
     private Integer gymId;  // FK to gyms table, can be NULL
+    
+    @PrePersist
+    protected void onCreate() {
+        if (createdDate == null) {
+            createdDate = LocalDateTime.now();
+        }
+        if (updatedDate == null) {
+            updatedDate = LocalDateTime.now();
+        }
+    }
+    
+    @PreUpdate
+    protected void onUpdate() {
+        updatedDate = LocalDateTime.now();
+    }
 
     public Package() {
     }
@@ -125,5 +164,7 @@ public class Package {
         return maxSessions == null;
     }
 }
+
+
 
 

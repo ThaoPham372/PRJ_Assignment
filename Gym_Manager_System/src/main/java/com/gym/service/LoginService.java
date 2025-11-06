@@ -1,23 +1,19 @@
 package com.gym.service;
 
 import com.gym.dao.UserDAO;
-import com.gym.dao.RoleDAO;
 import com.gym.model.User;
+import jakarta.persistence.EntityManager;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class LoginService {
     
     private UserDAO userDAO;
-    private RoleDAO roleDAO;
     private PasswordService passwordService;
     
     public LoginService() {
         this.userDAO = new UserDAO();
-        this.roleDAO = new RoleDAO();
         this.passwordService = new PasswordService();
     }
     
@@ -43,9 +39,9 @@ public class LoginService {
             return new LoginResult(false, null, errors);
         }
         
-        try (Connection conn = com.gym.util.DatabaseUtil.getConnection()) {
-            // Find user by username or email
-            User user = userDAO.findByUsernameOrEmail(conn, username.trim());
+        try {
+            // Find user by username or email (using JPA EntityManager)
+            User user = userDAO.findByUsernameOrEmail(username.trim());
             
             if (user == null) {
                 errors.add("Tên đăng nhập hoặc mật khẩu không đúng");
@@ -59,20 +55,26 @@ public class LoginService {
             }
             
             // Check if account is locked due to failed attempts
-            if (user.getLockedUntil() != null && 
-                user.getLockedUntil().getTime() > System.currentTimeMillis()) {
-                errors.add("Tài khoản đã bị khóa do đăng nhập sai quá nhiều lần. Vui lòng thử lại sau.");
-                return new LoginResult(false, null, errors);
+            if (user.getLockedUntil() != null) {
+                java.time.LocalDateTime lockedUntil = user.getLockedUntil();
+                if (lockedUntil.isAfter(java.time.LocalDateTime.now())) {
+                    errors.add("Tài khoản đã bị khóa do đăng nhập sai quá nhiều lần. Vui lòng thử lại sau.");
+                    return new LoginResult(false, null, errors);
+                }
             }
             
             // Verify password
             if (!passwordService.verifyPassword(password, user.getPasswordHash())) {
-                // Increment failed login attempts
-                userDAO.incrementFailedLoginAttempts(conn, user.getId());
+                // Increment failed login attempts (using JPA)
+                EntityManager em = userDAO.getEntityManager();
+                userDAO.incrementFailedLoginAttempts(em, user.getId());
+                
+                // Refresh user to get updated failed attempts count
+                user = userDAO.getUserById(user.getId());
                 
                 // Lock account if too many failed attempts
-                if (user.getFailedLoginAttempts() + 1 >= 5) {
-                    userDAO.lockAccount(conn, user.getId(), 30); // Lock for 30 minutes
+                if (user.getFailedLoginAttempts() != null && user.getFailedLoginAttempts() >= 5) {
+                    userDAO.lockAccount(em, user.getId(), 30); // Lock for 30 minutes
                     errors.add("Tài khoản đã bị khóa do đăng nhập sai quá nhiều lần. Vui lòng thử lại sau 30 phút.");
                 } else {
                     errors.add("Tên đăng nhập hoặc mật khẩu không đúng");
@@ -82,18 +84,18 @@ public class LoginService {
             }
             
             // Login successful - reset failed attempts and update last login
-            userDAO.resetFailedLoginAttempts(conn, user.getId());
-            userDAO.updateLastLogin(conn, user.getId());
+            EntityManager em = userDAO.getEntityManager();
+            userDAO.resetFailedLoginAttempts(em, user.getId());
+            userDAO.updateLastLogin(em, user.getId());
             
-            // Get user roles
-            List<String> roles = roleDAO.getUserRoles(conn, user.getId());
+            // Get user role from user.role column
+            List<String> roles = new ArrayList<>();
+            if (user.getRole() != null && !user.getRole().isEmpty()) {
+                roles.add(user.getRole());
+            }
             
             return new LoginResult(true, user, roles, null);
             
-        } catch (SQLException e) {
-            System.err.println("Database error during login: " + e.getMessage());
-            errors.add("Lỗi hệ thống. Vui lòng thử lại sau.");
-            return new LoginResult(false, null, errors);
         } catch (Exception e) {
             System.err.println("Unexpected error during login: " + e.getMessage());
             e.printStackTrace();

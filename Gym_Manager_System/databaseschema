@@ -81,69 +81,6 @@ USE gym_management;
 
 -- Roles Table
 
-CREATE TABLE roles (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    role_name VARCHAR(50) UNIQUE NOT NULL,
-    display_name VARCHAR(100) NOT NULL,
-    description TEXT,
-    is_system_role BOOLEAN DEFAULT FALSE,
-    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    INDEX idx_roles_name (role_name),
-    INDEX idx_roles_system (is_system_role)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Permissions Table
-CREATE TABLE permissions (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    permission_name VARCHAR(100) UNIQUE NOT NULL,
-    display_name VARCHAR(100) NOT NULL,
-    description TEXT,
-    resource VARCHAR(50) NOT NULL,
-    action VARCHAR(50) NOT NULL,
-    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    INDEX idx_permissions_name (permission_name),
-    INDEX idx_permissions_resource (resource),
-    INDEX idx_permissions_action (action)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
--- User Roles (Many-to-Many)
-CREATE TABLE user_roles (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    role_id INT NOT NULL,
-    assigned_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    assigned_by BIGINT NULL,
-    
-    FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
-    FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE SET NULL,
-    
-    UNIQUE KEY unique_user_role (user_id, role_id),
-    INDEX idx_user_roles_user_id (user_id),
-    INDEX idx_user_roles_role_id (role_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Role Permissions (Many-to-Many)
-CREATE TABLE role_permissions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    role_id INT NOT NULL,
-    permission_id BIGINT NOT NULL,
-    granted_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    granted_by INT NULL,
-    
-    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
-    FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE,
-    FOREIGN KEY (granted_by) REFERENCES user(user_id) ON DELETE SET NULL,
-    
-    UNIQUE KEY unique_role_permission (role_id, permission_id),
-    INDEX idx_role_permissions_role_id (role_id),
-    INDEX idx_role_permissions_permission_id (permission_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
 
 CREATE TABLE products (
     product_id BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -409,6 +346,189 @@ MODIFY COLUMN product_type
 ENUM('SUPPLEMENT','EQUIPMENT','APPAREL','ACCESSORY','PACKAGE','OTHER') 
 NOT NULL DEFAULT 'OTHER';
 
+-- =============================================
+-- Password Reset Tokens Table
+-- Stores temporary tokens for password reset
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS `password_reset_tokens` (
+  `token_id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT NOT NULL,
+  `token` VARCHAR(100) NOT NULL UNIQUE,
+  `email` VARCHAR(255) NOT NULL,
+  `expires_at` TIMESTAMP NOT NULL,
+  `used` BOOLEAN DEFAULT FALSE,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  
+  INDEX `idx_token` (`token`),
+  INDEX `idx_user_id` (`user_id`),
+  INDEX `idx_expires_at` (`expires_at`),
+  
+  FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Cleanup old expired tokens (older than 24 hours)
+-- Run this periodically via cron or scheduled job
+-- DELETE FROM password_reset_tokens WHERE expires_at < NOW() - INTERVAL 24 HOUR;
+
 -- =====================================================
 -- END OF DATABASE SETUP
 -- =====================================================
+-- Add gender column to user table
+-- Run this SQL script in your MySQL database
+
+ALTER TABLE `user` 
+ADD COLUMN `gender` VARCHAR(20) NULL DEFAULT NULL 
+AFTER `address`;
+
+-- Optional: Update existing records if needed
+-- UPDATE `user` SET `gender` = 'male' WHERE ...;
+
+---------------------------------------
+-- =====================================================
+-- MIGRATION: Membership Inactive/Suspended Status
+-- Purpose: Support payment-triggered membership activation
+-- Date: 2025-11-06
+-- =====================================================
+
+USE gym_management;
+
+-- =====================================================
+-- 1. ALTER MEMBERSHIPS TABLE
+-- =====================================================
+
+-- Thêm status mới: INACTIVE (chờ thanh toán), SUSPENDED (hoàn tiền/chargeback)
+ALTER TABLE memberships 
+MODIFY COLUMN status ENUM('INACTIVE', 'ACTIVE', 'EXPIRED', 'CANCELLED', 'SUSPENDED') 
+DEFAULT 'INACTIVE'
+COMMENT 'INACTIVE=chờ thanh toán, ACTIVE=đã kích hoạt, EXPIRED=hết hạn, CANCELLED=hủy, SUSPENDED=tạm ngưng';
+
+-- Thêm cột activated_at để track khi membership được kích hoạt
+ALTER TABLE memberships 
+ADD COLUMN activated_at TIMESTAMP NULL 
+COMMENT 'Thời điểm membership được activate (khi payment = PAID)';
+
+-- Thêm cột suspended_at để track khi membership bị tạm ngưng
+ALTER TABLE memberships 
+ADD COLUMN suspended_at TIMESTAMP NULL 
+COMMENT 'Thời điểm membership bị suspend (khi payment refunded/chargeback)';
+
+-- Thêm index cho performance
+ALTER TABLE memberships 
+ADD INDEX idx_mem_activated (activated_at);
+
+ALTER TABLE memberships 
+ADD INDEX idx_mem_suspended (suspended_at);
+
+-- =====================================================
+-- 2. ALTER PAYMENTS TABLE
+-- =====================================================
+
+-- Thêm status mới: CANCELED, EXPIRED, CHARGEBACK
+ALTER TABLE payments 
+MODIFY COLUMN status ENUM('PENDING', 'PAID', 'FAILED', 'REFUNDED', 'CANCELED', 'EXPIRED', 'CHARGEBACK') 
+DEFAULT 'PENDING'
+COMMENT 'PENDING=chờ, PAID=đã thanh toán, FAILED=thất bại, REFUNDED=hoàn tiền, CANCELED=hủy, EXPIRED=hết hạn, CHARGEBACK=tranh chấp';
+
+-- Thêm cột paid_at để track khi payment được xác nhận
+ALTER TABLE payments 
+ADD COLUMN paid_at TIMESTAMP NULL 
+COMMENT 'Thời điểm payment được xác nhận (status = PAID)';
+
+-- Thêm cột external_ref để lưu mã tham chiếu từ payment gateway
+ALTER TABLE payments 
+ADD COLUMN external_ref VARCHAR(255) NULL 
+COMMENT 'Mã tham chiếu từ payment provider (VNPay, MoMo, etc.)';
+
+-- Thêm index cho performance
+ALTER TABLE payments 
+ADD INDEX idx_pay_paid_at (paid_at);
+
+-- =====================================================
+-- 3. UPDATE EXISTING DATA (Optional - tùy business logic)
+-- =====================================================
+
+-- Cập nhật các membership đang ACTIVE (đã thanh toán trước đây) 
+-- → set activated_at = created_date (giả định)
+UPDATE memberships 
+SET activated_at = created_date 
+WHERE status = 'ACTIVE' AND activated_at IS NULL;
+
+-- Cập nhật các payment đang PAID (đã thanh toán trước đây)
+-- → set paid_at = payment_date (giả định)
+UPDATE payments 
+SET paid_at = payment_date 
+WHERE status = 'PAID' AND paid_at IS NULL;
+
+-- =========================
+
+
+USE gym_management;
+
+-- =====================================================
+-- 1. ALTER MEMBERSHIPS TABLE
+-- =====================================================
+
+-- Thêm status mới: INACTIVE (chờ thanh toán), SUSPENDED (hoàn tiền/chargeback)
+ALTER TABLE memberships 
+MODIFY COLUMN status ENUM('INACTIVE', 'ACTIVE', 'EXPIRED', 'CANCELLED', 'SUSPENDED') 
+DEFAULT 'INACTIVE'
+COMMENT 'INACTIVE=chờ thanh toán, ACTIVE=đã kích hoạt, EXPIRED=hết hạn, CANCELLED=hủy, SUSPENDED=tạm ngưng';
+
+-- Thêm cột activated_at để track khi membership được kích hoạt
+ALTER TABLE memberships 
+ADD COLUMN activated_at TIMESTAMP NULL 
+COMMENT 'Thời điểm membership được activate (khi payment = PAID)';
+
+-- Thêm cột suspended_at để track khi membership bị tạm ngưng
+ALTER TABLE memberships 
+ADD COLUMN suspended_at TIMESTAMP NULL 
+COMMENT 'Thời điểm membership bị suspend (khi payment refunded/chargeback)';
+
+-- Thêm index cho performance
+ALTER TABLE memberships 
+ADD INDEX idx_mem_activated (activated_at);
+
+ALTER TABLE memberships 
+ADD INDEX idx_mem_suspended (suspended_at);
+
+-- =====================================================
+-- 2. ALTER PAYMENTS TABLE
+-- =====================================================
+
+-- Thêm status mới: CANCELED, EXPIRED, CHARGEBACK
+ALTER TABLE payments 
+MODIFY COLUMN status ENUM('PENDING', 'PAID', 'FAILED', 'REFUNDED', 'CANCELED', 'EXPIRED', 'CHARGEBACK') 
+DEFAULT 'PENDING'
+COMMENT 'PENDING=chờ, PAID=đã thanh toán, FAILED=thất bại, REFUNDED=hoàn tiền, CANCELED=hủy, EXPIRED=hết hạn, CHARGEBACK=tranh chấp';
+
+-- Thêm cột paid_at để track khi payment được xác nhận
+ALTER TABLE payments 
+ADD COLUMN paid_at TIMESTAMP NULL 
+COMMENT 'Thời điểm payment được xác nhận (status = PAID)';
+
+-- Thêm cột external_ref để lưu mã tham chiếu từ payment gateway
+ALTER TABLE payments 
+ADD COLUMN external_ref VARCHAR(255) NULL 
+COMMENT 'Mã tham chiếu từ payment provider (VNPay, MoMo, etc.)';
+
+-- Thêm index cho performance
+ALTER TABLE payments 
+ADD INDEX idx_pay_paid_at (paid_at);
+
+-- =====================================================
+-- 3. UPDATE EXISTING DATA (Optional - tùy business logic)
+-- =====================================================
+
+-- Cập nhật các membership đang ACTIVE (đã thanh toán trước đây) 
+-- → set activated_at = created_date (giả định)
+UPDATE memberships 
+SET activated_at = created_date 
+WHERE status = 'ACTIVE' AND activated_at IS NULL;
+
+-- Cập nhật các payment đang PAID (đã thanh toán trước đây)
+-- → set paid_at = payment_date (giả định)
+UPDATE payments 
+SET paid_at = payment_date 
+WHERE status = 'PAID' AND paid_at IS NULL;
+

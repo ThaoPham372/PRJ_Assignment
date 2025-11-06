@@ -1,33 +1,78 @@
 package com.gym.model;
 
+import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Model class for UserMeal entity
- * Represents a meal entry in user_meals table
+ * UserMeal entity representing a meal entry in user_meals table
+ * Converted to JPA Entity
  */
+@Entity
+@Table(name = "user_meals")
 public class UserMeal {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    @Column(name = "user_id", nullable = false)
     private Long userId;
+    
+    @Column(name = "food_id", nullable = false)
     private Long foodId;
+    
+    @Transient // Not in database, populated from JOIN query
     private String foodName;
+    
+    @Column(name = "meal_type", length = 20)
     private String mealType;
-    private OffsetDateTime eatenAt;
+    
+    @Column(name = "eaten_at", nullable = false)
+    private LocalDateTime eatenAt;
+    
+    @Column(name = "servings", nullable = false, precision = 8, scale = 2)
     private BigDecimal servings;
+    
+    @Column(name = "snap_calories", nullable = false, precision = 8, scale = 2)
     private BigDecimal snapCalories;
+    
+    @Column(name = "snap_protein_g", nullable = false, precision = 8, scale = 2)
     private BigDecimal snapProteinG;
+    
+    @Column(name = "snap_carbs_g", nullable = false, precision = 8, scale = 2)
     private BigDecimal snapCarbsG;
+    
+    @Column(name = "snap_fat_g", nullable = false, precision = 8, scale = 2)
     private BigDecimal snapFatG;
+    
+    // These are GENERATED columns in MySQL (computed automatically)
+    // JPA cannot insert/update these columns - they are read-only
+    @Column(name = "total_calories", precision = 10, scale = 2, insertable = false, updatable = false)
     private BigDecimal totalCalories;
+    
+    @Column(name = "total_protein_g", precision = 10, scale = 2, insertable = false, updatable = false)
     private BigDecimal totalProteinG;
+    
+    @Column(name = "total_carbs_g", precision = 10, scale = 2, insertable = false, updatable = false)
     private BigDecimal totalCarbsG;
+    
+    @Column(name = "total_fat_g", precision = 10, scale = 2, insertable = false, updatable = false)
     private BigDecimal totalFatG;
-
+    
     // Constructors
     public UserMeal() {
+    }
+    
+    @PrePersist
+    protected void onCreate() {
+        if (this.eatenAt == null) {
+            this.eatenAt = LocalDateTime.now();
+        }
     }
 
     // Getters and Setters
@@ -71,11 +116,11 @@ public class UserMeal {
         this.mealType = mealType;
     }
 
-    public OffsetDateTime getEatenAt() {
+    public LocalDateTime getEatenAt() {
         return eatenAt;
     }
 
-    public void setEatenAt(OffsetDateTime eatenAt) {
+    public void setEatenAt(LocalDateTime eatenAt) {
         this.eatenAt = eatenAt;
     }
 
@@ -151,6 +196,15 @@ public class UserMeal {
         this.totalFatG = totalFatG;
     }
     
+    // Backward compatibility methods for OffsetDateTime
+    public OffsetDateTime getEatenAtAsOffsetDateTime() {
+        return eatenAt != null ? eatenAt.atOffset(ZoneOffset.UTC) : null;
+    }
+
+    public void setEatenAtAsOffsetDateTime(OffsetDateTime eatenAt) {
+        this.eatenAt = eatenAt != null ? eatenAt.toLocalDateTime() : null;
+    }
+    
     /**
      * Get formatted eaten time in Vietnam timezone
      * @return formatted time string (HH:mm) or empty string if eatenAt is null
@@ -163,7 +217,8 @@ public class UserMeal {
         try {
             ZoneId vnZone = ZoneId.of("Asia/Ho_Chi_Minh");
             // Convert from stored timezone to VN timezone
-            java.time.ZonedDateTime vnTime = eatenAt.atZoneSameInstant(vnZone);
+            OffsetDateTime eatenAtOffset = eatenAt.atOffset(ZoneOffset.UTC);
+            java.time.ZonedDateTime vnTime = eatenAtOffset.atZoneSameInstant(vnZone);
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
             return vnTime.format(formatter);
         } catch (Exception e) {
@@ -182,7 +237,8 @@ public class UserMeal {
         
         try {
             ZoneId vnZone = ZoneId.of("Asia/Ho_Chi_Minh");
-            return eatenAt.atZoneSameInstant(vnZone).toLocalDate();
+            OffsetDateTime eatenAtOffset = eatenAt.atOffset(ZoneOffset.UTC);
+            return eatenAtOffset.atZoneSameInstant(vnZone).toLocalDate();
         } catch (Exception e) {
             return null;
         }
@@ -200,4 +256,3 @@ public class UserMeal {
         return date.toString();
     }
 }
-

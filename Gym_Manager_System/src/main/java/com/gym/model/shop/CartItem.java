@@ -1,33 +1,83 @@
 package com.gym.model.shop;
 
+import jakarta.persistence.*;
+import com.gym.model.User;
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 /**
- * Cart item model
+ * Cart item model - JPA Entity
  */
+@Entity
+@Table(name = "cart")
 public class CartItem {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "cart_id")
     private Long cartId;
+    
+    @Column(name = "user_id")
     private Long userId;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private User user;
+    
+    @Column(name = "product_id")
     private Long productId;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", insertable = false, updatable = false)
+    private Product product;
+    
+    @Column(name = "quantity")
     private Integer quantity;
-    private OffsetDateTime addedAt;
+    
+    @Column(name = "added_at")
+    private LocalDateTime addedAt;
 
-    // View helpers (from product join)
+    // View helpers (from product join) - @Transient
+    @Transient
     private String productName;
+    
+    @Transient
     private BigDecimal price;
+    
+    @Transient
     private String unit;
+    
+    @Transient
     private String imagePath;
+    
+    @PrePersist
+    protected void onCreate() {
+        if (addedAt == null) {
+            addedAt = LocalDateTime.now();
+        }
+    }
 
     public CartItem() {
     }
 
-    public CartItem(Long cartId, Long userId, Long productId, Integer quantity, OffsetDateTime addedAt) {
+    public CartItem(Long cartId, Long userId, Long productId, Integer quantity, LocalDateTime addedAt) {
         this.cartId = cartId;
         this.userId = userId;
         this.productId = productId;
         this.quantity = quantity;
         this.addedAt = addedAt;
+    }
+    
+    /**
+     * Backward compatibility: Constructor with OffsetDateTime
+     */
+    public CartItem(Long cartId, Long userId, Long productId, Integer quantity, java.time.OffsetDateTime addedAt) {
+        this.cartId = cartId;
+        this.userId = userId;
+        this.productId = productId;
+        this.quantity = quantity;
+        if (addedAt != null) {
+            this.addedAt = addedAt.toLocalDateTime();
+        }
     }
 
     // Getters and Setters
@@ -63,12 +113,56 @@ public class CartItem {
         this.quantity = quantity;
     }
 
-    public OffsetDateTime getAddedAt() {
+    public LocalDateTime getAddedAt() {
         return addedAt;
     }
 
-    public void setAddedAt(OffsetDateTime addedAt) {
+    public void setAddedAt(LocalDateTime addedAt) {
         this.addedAt = addedAt;
+    }
+    
+    /**
+     * Backward compatibility: Get addedAt as OffsetDateTime
+     */
+    public java.time.OffsetDateTime getAddedAtAsOffsetDateTime() {
+        if (addedAt == null) {
+            return null;
+        }
+        return addedAt.atOffset(java.time.ZoneOffset.UTC);
+    }
+    
+    /**
+     * Backward compatibility: Set addedAt from OffsetDateTime
+     */
+    public void setAddedAt(java.time.OffsetDateTime addedAt) {
+        if (addedAt != null) {
+            this.addedAt = addedAt.toLocalDateTime();
+        } else {
+            this.addedAt = null;
+        }
+    }
+    
+    public User getUser() {
+        return user;
+    }
+    
+    public void setUser(User user) {
+        this.user = user;
+    }
+    
+    public Product getProduct() {
+        return product;
+    }
+    
+    public void setProduct(Product product) {
+        this.product = product;
+        if (product != null) {
+            this.productId = product.getProductId();
+            // Load product info for display
+            this.productName = product.getProductName();
+            this.price = product.getPrice();
+            this.unit = product.getUnit();
+        }
     }
 
     // View helpers

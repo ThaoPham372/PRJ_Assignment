@@ -1,33 +1,73 @@
 package com.gym.model.shop;
 
+import jakarta.persistence.*;
+import com.gym.model.User;
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Order model
+ * Order model - JPA Entity
  */
+@Entity
+@Table(name = "orders")
 public class Order {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "order_id")
     private Long orderId;
+    
+    @Column(name = "user_id")
     private Long userId;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private User user;
+    
+    @Column(name = "order_number", length = 50, unique = true)
     private String orderNumber;
-    private OffsetDateTime orderDate;
+    
+    @Column(name = "order_date")
+    private LocalDateTime orderDate;
+    
+    @Column(name = "total_amount", precision = 15, scale = 2)
     private BigDecimal totalAmount;
+    
+    @Column(name = "discount_amount", precision = 15, scale = 2)
     private BigDecimal discountAmount;
-    private BigDecimal finalAmount; // DB computed
-    private PaymentMethod paymentMethod;
-    private PaymentStatus paymentStatus;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_status", length = 50)
     private OrderStatus orderStatus;
-    private OffsetDateTime createdAt;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "delivery_method", length = 50)
+    private DeliveryMethod deliveryMethod;
+    
+    @Column(name = "delivery_address", length = 500)
+    private String deliveryAddress;
+    
+    @Column(name = "delivery_phone", length = 20)
+    private String deliveryPhone;
+    
+    @Column(name = "notes", length = 1000)
+    private String notes;
+    
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+    
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrderItem> items;
     
-    // Delivery information
+    @Transient
+    private PaymentMethod paymentMethod;
+    
+    @Transient
+    private PaymentStatus paymentStatus;
+    
+    @Transient
     private String deliveryName;
-    private String deliveryAddress;
-    private String deliveryPhone;
-    private DeliveryMethod deliveryMethod;
-    private String notes;  // General notes for the order
 
     public Order() {
         this.items = new ArrayList<>();
@@ -61,12 +101,33 @@ public class Order {
         this.orderNumber = orderNumber;
     }
 
-    public OffsetDateTime getOrderDate() {
+    public LocalDateTime getOrderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(OffsetDateTime orderDate) {
+    public void setOrderDate(LocalDateTime orderDate) {
         this.orderDate = orderDate;
+    }
+    
+    /**
+     * Backward compatibility: Get order date as OffsetDateTime
+     */
+    public java.time.OffsetDateTime getOrderDateAsOffsetDateTime() {
+        if (orderDate == null) {
+            return null;
+        }
+        return orderDate.atOffset(java.time.ZoneOffset.UTC);
+    }
+    
+    /**
+     * Backward compatibility: Set order date from OffsetDateTime
+     */
+    public void setOrderDate(java.time.OffsetDateTime orderDate) {
+        if (orderDate != null) {
+            this.orderDate = orderDate.toLocalDateTime();
+        } else {
+            this.orderDate = null;
+        }
     }
 
     /**
@@ -76,7 +137,7 @@ public class Order {
         if (orderDate == null) {
             return null;
         }
-        return java.util.Date.from(orderDate.toInstant());
+        return java.util.Date.from(orderDate.atZone(java.time.ZoneId.systemDefault()).toInstant());
     }
 
     public BigDecimal getTotalAmount() {
@@ -93,14 +154,6 @@ public class Order {
 
     public void setDiscountAmount(BigDecimal discountAmount) {
         this.discountAmount = discountAmount;
-    }
-
-    public BigDecimal getFinalAmount() {
-        return finalAmount;
-    }
-
-    public void setFinalAmount(BigDecimal finalAmount) {
-        this.finalAmount = finalAmount;
     }
 
     public PaymentMethod getPaymentMethod() {
@@ -127,12 +180,43 @@ public class Order {
         this.orderStatus = orderStatus;
     }
 
-    public OffsetDateTime getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(OffsetDateTime createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+    
+    /**
+     * Backward compatibility: Get createdAt as OffsetDateTime
+     */
+    public java.time.OffsetDateTime getCreatedAtAsOffsetDateTime() {
+        if (createdAt == null) {
+            return null;
+        }
+        return createdAt.atOffset(java.time.ZoneOffset.UTC);
+    }
+    
+    /**
+     * Backward compatibility: Set createdAt from OffsetDateTime
+     */
+    public void setCreatedAt(java.time.OffsetDateTime createdAt) {
+        if (createdAt != null) {
+            this.createdAt = createdAt.toLocalDateTime();
+        } else {
+            this.createdAt = null;
+        }
+    }
+    
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (orderDate == null) {
+            orderDate = LocalDateTime.now();
+        }
     }
 
     public List<OrderItem> getItems() {
@@ -144,12 +228,27 @@ public class Order {
     }
 
     // Delivery information getters and setters
+    // deliveryName is @Transient - get from User if needed
     public String getDeliveryName() {
-        return deliveryName;
+        if (deliveryName != null) {
+            return deliveryName;
+        }
+        if (user != null && user.getName() != null) {
+            return user.getName();
+        }
+        return null;
     }
 
     public void setDeliveryName(String deliveryName) {
         this.deliveryName = deliveryName;
+    }
+    
+    public User getUser() {
+        return user;
+    }
+    
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getDeliveryAddress() {
@@ -184,13 +283,5 @@ public class Order {
         this.notes = notes;
     }
 
-    /**
-     * Recompute final amount (fallback if DB computed value is missing)
-     */
-    public void recomputeFinal() {
-        BigDecimal total = getTotalAmount() != null ? getTotalAmount() : BigDecimal.ZERO;
-        BigDecimal discount = getDiscountAmount();
-        this.finalAmount = total.subtract(discount);
-    }
 }
 

@@ -1,6 +1,5 @@
 package com.gym.service;
 
-import com.gym.dao.RoleDAO;
 import com.gym.dao.UserDAO;
 import com.gym.model.User;
 import com.gym.model.Student;
@@ -18,14 +17,12 @@ import java.util.UUID;
 public class GoogleAuthService {
 
     private final UserDAO userDAO;
-    private final RoleDAO roleDAO;
-    private final StudentProfileService studentProfileService;
+    private final StudentService studentService;
     private final String expectedClientId;
 
     public GoogleAuthService(String expectedClientId) {
         this.userDAO = new UserDAO();
-        this.roleDAO = new RoleDAO();
-        this.studentProfileService = new StudentProfileService();
+        this.studentService = new StudentService();
         this.expectedClientId = expectedClientId;
     }
 
@@ -108,7 +105,11 @@ public class GoogleAuthService {
             }
         }
         
-        List<String> roles = roleDAO.getUserRoles(existing.getId());
+        // Get role from user.role column
+        List<String> roles = new ArrayList<>();
+        if (existing.getRole() != null && !existing.getRole().isEmpty()) {
+            roles.add(existing.getRole());
+        }
         return AuthResult.success(existing, roles);
     }
 
@@ -154,25 +155,8 @@ public class GoogleAuthService {
             }
         }
         
-        // Assign USER role
-        Long userRoleId = roleDAO.findRoleIdByName("USER");
-        if (userRoleId == null) {
-            try {
-                roleDAO.createDefaultRoles();
-                userRoleId = roleDAO.findRoleIdByName("USER");
-            } catch (Exception e) {
-                System.err.println("[GoogleAuthService] ERROR creating default roles: " + e.getMessage());
-            }
-        }
-        if (userRoleId == null) {
-            userRoleId = 2L; // Fallback
-        }
-        
-        // Assign role
-        boolean roleAssigned = roleDAO.assignUserRole(userId, userRoleId);
-        if (!roleAssigned && !roleDAO.userHasRole(userId, "USER")) {
-            System.err.println("[GoogleAuthService] WARNING: Role assignment failed, will retry after loading user");
-        }
+        // Set USER role for new Google registrations
+        // Note: role will be set when we load and update the user below
         
         // Create Student profile
         // IMPORTANT: This must succeed for the system to work properly
@@ -184,7 +168,7 @@ public class GoogleAuthService {
             // Only set user_id - other fields will be NULL initially
             // User can update them later via Dashboard
             
-            studentProfileService.saveProfile(student);
+            studentService.saveStudent(student);
         } catch (Exception e) {
             System.err.println("[GoogleAuthService] ERROR creating Student profile: " + e.getMessage());
             e.printStackTrace();
@@ -200,23 +184,22 @@ public class GoogleAuthService {
             }
         }
         
-        // Verify and ensure role assignment
-        List<String> roles = roleDAO.getUserRoles(created.getId());
-        if (roles == null || roles.isEmpty() || !roles.contains("USER")) {
-            // Retry role assignment
-            if (userRoleId == null) {
-                userRoleId = roleDAO.findRoleIdByName("USER");
-                if (userRoleId == null) userRoleId = 2L;
-            }
-            roleDAO.assignUserRole(created.getId(), userRoleId);
-            roles = roleDAO.getUserRoles(created.getId());
-            
-            if (roles == null || roles.isEmpty() || !roles.contains("USER")) {
-                System.err.println("[GoogleAuthService] ERROR: User " + created.getId() + " does not have USER role");
-            }
+        // Set user.role to "USER" for Google registrations
+        created.setRole("USER");
+        try {
+            userDAO.update(created);
+            System.out.println("[GoogleAuthService] Successfully set role='USER' for user_id: " + created.getId());
+        } catch (Exception e) {
+            System.err.println("[GoogleAuthService] ERROR setting role: " + e.getMessage());
         }
         
-        return AuthResult.success(created, roles != null ? roles : new ArrayList<>());
+        // Get role from user.role column
+        List<String> roles = new ArrayList<>();
+        if (created.getRole() != null && !created.getRole().isEmpty()) {
+            roles.add(created.getRole());
+        }
+        
+        return AuthResult.success(created, roles);
     }
 
     private String extractJson(String body, String key) {

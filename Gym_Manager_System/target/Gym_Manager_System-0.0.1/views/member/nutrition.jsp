@@ -599,14 +599,21 @@
     <div class="nutrition-container">
         <!-- Page Header -->
         <div class="nutrition-card text-center" style="background: var(--gradient-primary); color: white; padding: 25px; position: relative;">
+            <div style="position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 10;">
+                <a href="${pageContext.request.contextPath}/member/dashboard" 
+                   class="btn-back">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Quay lại Dashboard</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/member/nutrition/history" 
+                   class="btn-nutrition" 
+                   style="padding: 10px 20px; font-size: 0.9rem;">
+                    <i class="fas fa-history"></i>
+                    <span>Lịch Sử</span>
+                </a>
+            </div>
             <h1 class="mb-2" style="color: white; font-weight: 900; font-size: 2rem;">🍎 Dinh Dưỡng Hôm Nay</h1>
             <p style="font-size: 1rem; opacity: 0.9; margin: 0;">Theo dõi lượng calo và dinh dưỡng hàng ngày một cách thông minh</p>
-            <a href="${pageContext.request.contextPath}/member/nutrition/history" 
-               class="btn-nutrition" 
-               style="position: absolute; top: 20px; right: 20px; padding: 10px 20px; font-size: 0.9rem; z-index: 10;">
-                <i class="fas fa-history"></i>
-                <span>Lịch Sử</span>
-            </a>
         </div>
 
         <!-- Success/Error Messages -->

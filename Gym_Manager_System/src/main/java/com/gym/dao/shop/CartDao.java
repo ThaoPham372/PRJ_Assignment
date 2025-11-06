@@ -1,75 +1,119 @@
 package com.gym.dao.shop;
 
+import com.gym.dao.BaseDAO;
+import com.gym.dto.CartItemDTO;
 import com.gym.model.shop.CartItem;
-import com.gym.util.DatabaseUtil;
-
-import java.sql.*;
-import java.time.ZoneOffset;
+import com.gym.model.shop.Product;
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * DAO for Cart operations
+ * DAO for Cart operations - JPA Implementation
  */
-public class CartDao {
+public class CartDao extends BaseDAO<CartItem> {
     private static final Logger LOGGER = Logger.getLogger(CartDao.class.getName());
 
-    /**
-     * Get all cart items for a user (with product details)
-     */
-    public List<CartItem> findByUserId(Long userId) {
-        List<CartItem> items = new ArrayList<>();
-        // NOTE: Schema does not have image_path column in products table
-        String sql = "SELECT c.cart_id, c.user_id, c.product_id, c.quantity, c.added_at, " +
-                    "p.product_name, p.price, p.unit " +
-                    "FROM cart c " +
-                    "INNER JOIN products p ON c.product_id = p.product_id " +
-                    "WHERE c.user_id = ? AND p.is_active = 1 " +
-                    "ORDER BY c.added_at DESC";
+    public CartDao() {
+        super();
+    }
 
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            if (conn == null) {
-                return items;
+    /**
+     * Get all cart items for a user (with product details) as DTOs for VIEW
+     * ✅ FIX: Use DTO to avoid JPA transient field issues
+     */
+    public List<CartItemDTO> findByUserIdAsDTO(Long userId) {
+        try {
+            System.out.println("[CartDao] ===== Finding cart items (DTO) for user: " + userId + " =====");
+            
+            // Use JPQL constructor expression to directly create DTOs
+            String jpql = "SELECT NEW com.gym.dto.CartItemDTO(" +
+                         "c.cartId, c.userId, c.productId, c.quantity, c.addedAt, " +
+                         "p.productName, p.price, p.unit, p.active) " +
+                         "FROM CartItem c " +
+                         "LEFT JOIN c.product p " +
+                         "WHERE c.userId = :userId " +
+                         "AND (p.active = true OR p.active IS NULL) " +
+                         "ORDER BY c.addedAt DESC";
+            
+            TypedQuery<CartItemDTO> query = em.createQuery(jpql, CartItemDTO.class);
+            query.setParameter("userId", userId);
+            
+            List<CartItemDTO> items = query.getResultList();
+            System.out.println("[CartDao] Found " + items.size() + " cart items (DTO)");
+            
+            // Debug logging
+            for (CartItemDTO item : items) {
+                System.out.println("[CartDao] DTO: " + item.getProductName() + 
+                                 " | Price: " + item.getPrice() + 
+                                 " | Qty: " + item.getQuantity() + 
+                                 " | Subtotal: " + item.getSubtotal());
             }
             
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setLong(1, userId);
-                ResultSet rs = stmt.executeQuery();
-                while (rs.next()) {
-                    items.add(mapResultSetToCartItem(rs));
-                }
-            }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error finding cart items for user: " + userId, e);
+            return items;
+        } catch (Exception e) {
+            System.err.println("[CartDao] ERROR finding cart items: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
         }
-        
-        return items;
+    }
+    
+    /**
+     * Get all cart items for a user (as entities) for CHECKOUT processing
+     */
+    public List<CartItem> findByUserId(Long userId) {
+        try {
+            String jpql = "SELECT c FROM CartItem c " +
+                         "LEFT JOIN FETCH c.product p " +
+                         "WHERE c.userId = :userId " +
+                         "ORDER BY c.addedAt DESC";
+            
+            TypedQuery<CartItem> query = em.createQuery(jpql, CartItem.class);
+            query.setParameter("userId", userId);
+            
+            return query.getResultList();
+        } catch (Exception e) {
+            System.err.println("[CartDao] ERROR finding cart items: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     /**
      * Add or update cart item (INSERT ... ON DUPLICATE KEY UPDATE for MySQL)
      */
     public void addOrUpdate(Long userId, Long productId, Integer quantity) {
-        String sql = "INSERT INTO cart (user_id, product_id, quantity, added_at) " +
-                    "VALUES (?, ?, ?, NOW()) " +
-                    "ON DUPLICATE KEY UPDATE " +
-                    "quantity = quantity + ?, added_at = NOW()";
-
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            if (conn == null) {
-                throw new SQLException("Database connection is null");
+        try {
+            beginTransaction();
+            
+            // Try to find existing cart item
+            String jpql = "SELECT c FROM CartItem c WHERE c.userId = :userId AND c.productId = :productId";
+            TypedQuery<CartItem> query = em.createQuery(jpql, CartItem.class);
+            query.setParameter("userId", userId);
+            query.setParameter("productId", productId);
+            
+            CartItem existingItem;
+            try {
+                existingItem = query.getSingleResult();
+                // Update quantity
+                existingItem.setQuantity(existingItem.getQuantity() + quantity);
+                existingItem.setAddedAt(java.time.LocalDateTime.now());
+                em.merge(existingItem);
+            } catch (NoResultException e) {
+                // Create new item
+                existingItem = new CartItem();
+                existingItem.setUserId(userId);
+                existingItem.setProductId(productId);
+                existingItem.setQuantity(quantity);
+                existingItem.setAddedAt(java.time.LocalDateTime.now());
+                em.persist(existingItem);
             }
             
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setLong(1, userId);
-                stmt.setLong(2, productId);
-                stmt.setInt(3, quantity);
-                stmt.setInt(4, quantity);
-                stmt.executeUpdate();
-            }
-        } catch (SQLException e) {
+            commitTransaction();
+        } catch (Exception e) {
+            rollbackTransaction();
             LOGGER.log(Level.SEVERE, "Error adding/updating cart item", e);
             throw new RuntimeException("Failed to update cart", e);
         }
@@ -79,23 +123,25 @@ public class CartDao {
      * Update quantity for a cart item
      */
     public void updateQuantity(Long userId, Long productId, Integer quantity) {
-        String sql = "UPDATE cart SET quantity = ? WHERE user_id = ? AND product_id = ?";
-
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            if (conn == null) {
-                throw new SQLException("Database connection is null");
-            }
+        try {
+            beginTransaction();
             
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, quantity);
-                stmt.setLong(2, userId);
-                stmt.setLong(3, productId);
-                int rowsAffected = stmt.executeUpdate();
-                if (rowsAffected == 0) {
-                    throw new SQLException("Cart item not found");
-                }
+            String jpql = "SELECT c FROM CartItem c WHERE c.userId = :userId AND c.productId = :productId";
+            TypedQuery<CartItem> query = em.createQuery(jpql, CartItem.class);
+            query.setParameter("userId", userId);
+            query.setParameter("productId", productId);
+            
+            try {
+                CartItem item = query.getSingleResult();
+                item.setQuantity(quantity);
+                em.merge(item);
+                commitTransaction();
+            } catch (NoResultException e) {
+                rollbackTransaction();
+                throw new RuntimeException("Cart item not found", e);
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
+            rollbackTransaction();
             LOGGER.log(Level.SEVERE, "Error updating cart item quantity", e);
             throw new RuntimeException("Failed to update cart quantity", e);
         }
@@ -105,19 +151,24 @@ public class CartDao {
      * Remove item from cart
      */
     public void remove(Long userId, Long productId) {
-        String sql = "DELETE FROM cart WHERE user_id = ? AND product_id = ?";
-
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            if (conn == null) {
-                throw new SQLException("Database connection is null");
-            }
+        try {
+            beginTransaction();
             
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setLong(1, userId);
-                stmt.setLong(2, productId);
-                stmt.executeUpdate();
+            String jpql = "SELECT c FROM CartItem c WHERE c.userId = :userId AND c.productId = :productId";
+            TypedQuery<CartItem> query = em.createQuery(jpql, CartItem.class);
+            query.setParameter("userId", userId);
+            query.setParameter("productId", productId);
+            
+            try {
+                CartItem item = query.getSingleResult();
+                em.remove(item);
+                commitTransaction();
+            } catch (NoResultException e) {
+                rollbackTransaction();
+                // Item not found, that's OK
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
+            rollbackTransaction();
             LOGGER.log(Level.SEVERE, "Error removing cart item", e);
             throw new RuntimeException("Failed to remove cart item", e);
         }
@@ -131,61 +182,31 @@ public class CartDao {
     }
 
     /**
-     * Clear all items for a user using provided connection (for transactions)
+     * Clear all items for a user using provided EntityManager (for transactions)
      */
-    public void clear(Long userId, Connection conn) {
-        String sql = "DELETE FROM cart WHERE user_id = ?";
-
-        boolean shouldCloseConnection = false;
+    public void clear(Long userId, EntityManager sharedEm) {
+        EntityManager emToUse = sharedEm != null ? sharedEm : em;
+        
         try {
-            if (conn == null) {
-                conn = DatabaseUtil.getConnection();
-                shouldCloseConnection = true;
+            if (sharedEm == null) {
+                beginTransaction();
             }
             
-            if (conn == null) {
-                throw new SQLException("Database connection is null");
-            }
+            String jpql = "DELETE FROM CartItem c WHERE c.userId = :userId";
+            Query query = emToUse.createQuery(jpql);
+            query.setParameter("userId", userId);
+            query.executeUpdate();
             
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setLong(1, userId);
-                stmt.executeUpdate();
+            if (sharedEm == null) {
+                commitTransaction();
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
+            if (sharedEm == null) {
+                rollbackTransaction();
+            }
             LOGGER.log(Level.SEVERE, "Error clearing cart", e);
             throw new RuntimeException("Failed to clear cart", e);
-        } finally {
-            // Only close connection if we created it
-            if (shouldCloseConnection && conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    LOGGER.log(Level.WARNING, "Error closing connection", e);
-                }
-            }
         }
     }
-
-    private CartItem mapResultSetToCartItem(ResultSet rs) throws SQLException {
-        CartItem item = new CartItem();
-        item.setCartId(rs.getLong("cart_id"));
-        item.setUserId(rs.getLong("user_id"));
-        item.setProductId(rs.getLong("product_id"));
-        item.setQuantity(rs.getInt("quantity"));
-        
-        Timestamp addedAt = rs.getTimestamp("added_at");
-        if (addedAt != null) {
-            item.setAddedAt(addedAt.toInstant().atOffset(ZoneOffset.UTC));
-        }
-        
-        // Product details from join
-        item.setProductName(rs.getString("product_name"));
-        item.setPrice(rs.getBigDecimal("price"));
-        item.setUnit(rs.getString("unit"));
-        // NOTE: image_path column does not exist in current schema
-        item.setImagePath(null);
-        
-        return item;
-    }
+    
 }
-

@@ -408,11 +408,19 @@
 </style>
 
 <div class="profile-container">
+    <!-- Debug Info (Remove in production) -->
+    <c:if test="${empty profileData}">
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Lỗi:</strong> Không tìm thấy dữ liệu profile. Vui lòng đăng nhập lại.
+        </div>
+    </c:if>
+    
     <!-- Back Button -->
-    <div class="mb-3">
-        <a href="${pageContext.request.contextPath}/member/dashboard" class="btn-back-top">
+    <div class="mb-4">
+        <a href="${pageContext.request.contextPath}/member/dashboard" class="btn-back">
             <i class="fas fa-arrow-left"></i>
-            Quay lại Dashboard
+            <span>Quay lại Dashboard</span>
         </a>
     </div>
     

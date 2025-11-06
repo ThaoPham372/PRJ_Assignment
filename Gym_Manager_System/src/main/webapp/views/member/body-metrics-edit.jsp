@@ -317,8 +317,9 @@
                     <p>Chỉnh sửa thông tin về chiều cao, cân nặng và các chỉ số sức khỏe của bạn</p>
                 </div>
                 <div class="col-md-4 text-end">
-                    <a href="${pageContext.request.contextPath}/member/dashboard" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-arrow-left me-2"></i>Quay lại Dashboard
+                    <a href="${pageContext.request.contextPath}/member/dashboard" class="btn-back" style="border-color: white; color: white;">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Quay lại Dashboard</span>
                     </a>
                 </div>
             </div>

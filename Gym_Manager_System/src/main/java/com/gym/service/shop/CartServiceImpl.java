@@ -1,6 +1,7 @@
 package com.gym.service.shop;
 
 import com.gym.dao.shop.CartDao;
+import com.gym.dto.CartItemDTO;
 import com.gym.model.shop.CartItem;
 
 import java.math.BigDecimal;
@@ -17,8 +18,8 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public List<CartItem> view(Long userId) {
-        return cartDao.findByUserId(userId);
+    public List<CartItemDTO> view(Long userId) {
+        return cartDao.findByUserIdAsDTO(userId);
     }
 
     @Override
@@ -43,13 +44,13 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public BigDecimal calculateTotal(List<CartItem> items) {
+    public BigDecimal calculateTotal(List<CartItemDTO> items) {
         if (items == null || items.isEmpty()) {
             return BigDecimal.ZERO;
         }
         
         BigDecimal total = BigDecimal.ZERO;
-        for (CartItem item : items) {
+        for (CartItemDTO item : items) {
             total = total.add(item.getSubtotal());
         }
         

@@ -170,6 +170,14 @@
 </style>
 
 <div class="container mt-5">
+    <!-- Back Button -->
+    <div class="mb-4">
+        <a href="${pageContext.request.contextPath}/member/dashboard" class="btn-back">
+            <i class="fas fa-arrow-left"></i>
+            <span>Quay lại Dashboard</span>
+        </a>
+    </div>
+
     <!-- Schedule Header -->
     <div class="schedule-card text-center">
         <h2 class="schedule-title">Lịch Tập Của Tôi</h2>

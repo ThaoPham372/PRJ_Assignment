@@ -272,6 +272,14 @@
 </style>
 
 <div class="orders-container">
+    <!-- Back to Dashboard Button -->
+    <div class="mb-4">
+        <a href="${pageContext.request.contextPath}/member/dashboard" class="btn-back">
+            <i class="fas fa-arrow-left"></i>
+            <span>Quay lại Dashboard</span>
+        </a>
+    </div>
+
     <div class="orders-header">
         <h1><i class="fas fa-receipt"></i> Danh sách đơn hàng</h1>
         <a href="${pageContext.request.contextPath}/services" class="btn btn-outline" style="color: white; border-color: white;">
@@ -382,7 +390,7 @@
                             <div class="summary-row total-amount">
                                 <span class="summary-label">Thành tiền:</span>
                                 <span class="summary-value">
-                                    <fmt:formatNumber value="${order.finalAmount != null ? order.finalAmount : order.totalAmount}" type="currency" currencySymbol="đ" maxFractionDigits="0"/>
+                                    <fmt:formatNumber value="${order.totalAmount - (order.discountAmount != null ? order.discountAmount : 0)}" type="currency" currencySymbol="đ" maxFractionDigits="0"/>
                                 </span>
                             </div>
                         </div>

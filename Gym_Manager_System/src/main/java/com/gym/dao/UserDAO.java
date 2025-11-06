@@ -1,648 +1,390 @@
 package com.gym.dao;
 
 import com.gym.model.User;
-import com.gym.util.DatabaseUtil;
-import java.sql.*;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
- * UserDAO - Data Access Object for user table
+ * UserDAO - Data Access Object for user table using JPA
+ * Extends GenericDAO for basic CRUD operations
  * Handles user authentication, registration, duplicate checks, and login history
- * Note: Student-specific information is handled by StudentDAO
  */
-public class UserDAO {
+public class UserDAO extends GenericDAO<User> {
+
+    public UserDAO() {
+        super(User.class);
+    }
 
     /**
      * Check if username already exists
      */
     public boolean existsByUsername(String username) {
-        String sql = "SELECT COUNT(*) FROM `user` WHERE username = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, username);
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) {
-            // Check if error is due to missing username column
-            String errorMsg = e.getMessage();
-            if (errorMsg != null && (errorMsg.contains("Unknown column 'username'") || 
-                errorMsg.contains("Unknown column 'user.username'") ||
-                (e.getSQLState() != null && e.getSQLState().equals("42S22")))) {
-                System.err.println("[UserDAO] ERROR: username column does not exist in database.");
-                System.err.println("[UserDAO] Please run migration_add_username_column.sql to add the username column.");
-                System.err.println("[UserDAO] Falling back to check 'name' column instead.");
-                
-                // Fallback: check name column (old schema)
-                return existsByUsernameFallback(username);
-            }
-            
-            System.err.println("[UserDAO] ERROR: Cannot query 'user' table.");
-            System.err.println("[UserDAO] SQL Error: " + errorMsg);
-            System.err.println("[UserDAO] SQL State: " + e.getSQLState());
-            try {
-                logDatabaseInfo();
-            } catch (Exception ex) {
-                // Ignore
-            }
-            e.printStackTrace();
-            throw new RuntimeException("Database schema error: Failed to check username existence.", e);
-        }
-        
+        try {
+            User user = findByField("username", username);
+            return user != null;
+        } catch (Exception e) {
+            System.err.println("[UserDAO] Error checking username existence: " + e.getMessage());
         return false;
-    }
-    
-    /**
-     * Fallback method to check username using name column (old schema)
-     */
-    private boolean existsByUsernameFallback(String username) {
-        String sql = "SELECT COUNT(*) FROM `user` WHERE name = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, username);
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) {
-            System.err.println("[UserDAO] ERROR: Fallback check also failed: " + e.getMessage());
-            e.printStackTrace();
         }
-        
-        return false;
     }
 
     /**
      * Check if email already exists
      */
     public boolean existsByEmail(String email) {
-        String sql = "SELECT COUNT(*) FROM `user` WHERE email = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, email);
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) {
-            System.err.println("[UserDAO] ERROR: Cannot query 'user' table. Please ensure database uses NEW schema with 'user' table.");
-            System.err.println("[UserDAO] SQL Error: " + e.getMessage());
-            e.printStackTrace();
-            throw new RuntimeException("Database schema error: 'user' table not found. Please migrate database to new schema.", e);
+        try {
+            User user = findByField("email", email);
+            return user != null;
+        } catch (Exception e) {
+            System.err.println("[UserDAO] Error checking email existence: " + e.getMessage());
+            return false;
         }
-        
-        return false;
     }
 
     /**
      * Insert new user and return generated ID
-     * username is used for login, name is left NULL (can be set later in profile edit)
+     * Uses GenericDAO save() method
      */
     public long insertUser(String username, String email, String passwordHash, String salt) {
-        return insertUser(username, null, email, passwordHash, salt); // name is NULL by default
+        return insertUser(username, null, email, passwordHash, salt);
     }
     
     /**
      * Insert new user with explicit name (full name) and return generated ID
      */
     public long insertUser(String username, String name, String email, String passwordHash, String salt) {
-        String sql = "INSERT INTO `user` (username, name, email, password, status, createdDate) " +
-                    "VALUES (?, ?, ?, ?, 'ACTIVE', NOW())";
-        
-        // Trim and prepare name value
-        String nameValue = (name != null && !name.trim().isEmpty()) ? name.trim() : null;
-        System.out.println("[UserDAO] insertUser called:");
-        System.out.println("  - Username: " + username);
-        System.out.println("  - Name (to save): " + nameValue);
-        System.out.println("  - Email: " + email);
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try {
+            User user = new User();
+            user.setUsername(username);
+            user.setName(name);
+            user.setEmail(email);
+            user.setPassword(passwordHash);
+            user.setStatus("ACTIVE");
+            user.setCreatedDate(LocalDateTime.now());
+
+            beginTransaction();
+            em.persist(user);
+            commitTransaction();
+
+            // Refresh to get generated ID
+            em.refresh(user);
             
-            stmt.setString(1, username); // username column for login
-            if (nameValue != null) {
-                stmt.setString(2, nameValue); // name column (full name)
-                System.out.println("[UserDAO] Setting name parameter: '" + nameValue + "'");
-            } else {
-                stmt.setNull(2, Types.VARCHAR); // Set name to NULL if not provided
-                System.out.println("[UserDAO] Setting name parameter: NULL");
+            Integer userId = user.getUserId();
+            if (userId != null) {
+                return userId.longValue();
             }
-            stmt.setString(3, email);
-            stmt.setString(4, passwordHash); // password column
-            // Note: salt column may not exist in current schema, skipping
-            
-            int affectedRows = stmt.executeUpdate();
-            System.out.println("[UserDAO] INSERT executed. Affected rows: " + affectedRows);
-            
-            if (affectedRows > 0) {
-                ResultSet generatedKeys = stmt.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    long userId = generatedKeys.getLong(1);
-                    System.out.println("[UserDAO] User created successfully with ID: " + userId);
-                    
-                    // Verify that name was actually saved to database
-                    try {
-                        String verifySql = "SELECT name FROM `user` WHERE user_id = ?";
-                        try (PreparedStatement verifyStmt = conn.prepareStatement(verifySql)) {
-                            verifyStmt.setLong(1, userId);
-                            ResultSet verifyRs = verifyStmt.executeQuery();
-                            if (verifyRs.next()) {
-                                String savedName = verifyRs.getString("name");
-                                System.out.println("[UserDAO] Verification query - Saved name in DB: '" + savedName + "'");
-                                if (nameValue != null && !nameValue.equals(savedName)) {
-                                    System.err.println("[UserDAO] WARNING: Name mismatch! Expected: '" + nameValue + "', Actual: '" + savedName + "'");
-                                } else if (nameValue == null && savedName != null && !savedName.trim().isEmpty()) {
-                                    System.err.println("[UserDAO] WARNING: Expected NULL name but got: '" + savedName + "'");
-                                } else {
-                                    System.out.println("[UserDAO] ✓ Name verification successful!");
-                                }
-                            }
-                        }
-                    } catch (SQLException verifyEx) {
-                        System.err.println("[UserDAO] WARNING: Could not verify name was saved: " + verifyEx.getMessage());
-                        // Don't fail the insert if verification fails
-                    }
-                    
-                    return userId;
-                }
-            }
-        } catch (SQLException e) {
-            // Check if error is due to missing username column
-            String errorMsg = e.getMessage();
-            System.err.println("[UserDAO] SQLException caught during insertUser:");
-            System.err.println("  - Error message: " + errorMsg);
-            System.err.println("  - SQL State: " + e.getSQLState());
-            System.err.println("  - Error Code: " + e.getErrorCode());
-            System.err.println("  - Attempted SQL: INSERT INTO `user` (username, name, email, password, status, createdDate) VALUES (?, ?, ?, ?, 'ACTIVE', NOW())");
-            System.err.println("  - Parameters: username='" + username + "', name='" + nameValue + "', email='" + email + "'");
-            
-            if (errorMsg != null && (errorMsg.contains("Unknown column 'username'") || 
-                errorMsg.contains("Unknown column 'user.username'") ||
-                (e.getSQLState() != null && e.getSQLState().equals("42S22")))) {
-                System.err.println("[UserDAO] ERROR: username column does not exist in database.");
-                System.err.println("[UserDAO] Please run migration_add_username_column.sql to add the username column.");
-                System.err.println("[UserDAO] Falling back to insert using 'name' column only.");
-                
-                // Fallback: insert using name column (old schema)
-                return insertUserFallback(username, name, email, passwordHash, salt);
-            }
-            
-            // Check if error is due to missing name column
-            if (errorMsg != null && (errorMsg.contains("Unknown column 'name'") || 
-                errorMsg.contains("Unknown column 'user.name'"))) {
-                System.err.println("[UserDAO] ERROR: name column does not exist in database!");
-                System.err.println("[UserDAO] This is critical - name column must exist. Please check database schema.");
-            }
-            
-            System.err.println("[UserDAO] ERROR: Cannot insert into 'user' table.");
-            try {
-                logDatabaseInfo();
-            } catch (Exception ex) {
-                // Ignore if logDatabaseInfo fails
-            }
+            return -1;
+        } catch (Exception e) {
+            rollbackTransaction();
+            System.err.println("[UserDAO] Error inserting user: " + e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException("Database error: Failed to insert user. " + errorMsg, e);
+            throw new RuntimeException("Failed to insert user: " + e.getMessage(), e);
         }
-        
-        return -1; // Error
-    }
-    
-    /**
-     * Fallback method for old schema without username column
-     * Uses name column for both username and name
-     */
-    private long insertUserFallback(String username, String name, String email, String passwordHash, String salt) {
-        String sql = "INSERT INTO `user` (name, email, password, status, createdDate) " +
-                    "VALUES (?, ?, ?, 'ACTIVE', NOW())";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
-            // Use username for name column (old schema compatibility)
-            stmt.setString(1, username);
-            stmt.setString(2, email);
-            stmt.setString(3, passwordHash);
-            
-            int affectedRows = stmt.executeUpdate();
-            
-            if (affectedRows > 0) {
-                ResultSet generatedKeys = stmt.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    long userId = generatedKeys.getLong(1);
-                    System.out.println("[UserDAO] Successfully inserted user (fallback mode - using name column) with user_id: " + userId);
-                    System.out.println("[UserDAO] WARNING: username column not found. Please run migration_add_username_column.sql.");
-                    return userId;
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("[UserDAO] ERROR: Fallback insert also failed: " + e.getMessage());
-            e.printStackTrace();
-            throw new RuntimeException("Failed to insert user even with fallback method. " + e.getMessage(), e);
-        }
-        
-        return -1;
     }
 
     /**
      * Insert login history record for registration
+     * Note: This method may need a separate LoginHistory entity if login_history table exists
      */
     public void insertLoginHistory(long userId, String ipAddress, String userAgent) {
-        String sql = "INSERT INTO login_history (user_id, login_time, ip_address, user_agent, login_successful, failure_reason) " +
-                    "VALUES (?, NOW(), ?, ?, true, 'registration_success')";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setLong(1, userId);
-            stmt.setString(2, ipAddress);
-            stmt.setString(3, userAgent);
-            
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            System.err.println("Error inserting login history: " + e.getMessage());
-        }
+        // TODO: Implement if login_history table exists
+        // For now, this is a placeholder
+        System.out.println("[UserDAO] Login history: userId=" + userId + ", ip=" + ipAddress);
     }
 
     /**
-     * Find user by username for login
+     * Find user by username
      */
     public User findByUsername(String username) {
-        String sql = "SELECT user_id, username, name, email, password, status, " +
-                    "createdDate, lastUpdate, lastLogin, failedLoginAttempts, lockedUntil, avatar_url " +
-                    "FROM `user` WHERE username = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, username);
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                return mapResultSetToUser(rs);
-            }
-        } catch (SQLException e) {
-            // Check if error is due to missing username column
-            String errorMsg = e.getMessage();
-            if (errorMsg != null && (errorMsg.contains("Unknown column 'username'") || 
-                errorMsg.contains("Unknown column 'user.username'") ||
-                (e.getSQLState() != null && e.getSQLState().equals("42S22")))) {
-                System.err.println("[UserDAO] WARNING: username column not found, using fallback with name column.");
-                // Fallback: query using name column
-                return findByUsernameFallback(username);
-            }
-            
-            System.err.println("[UserDAO] ERROR: Cannot query 'user' table.");
-            System.err.println("[UserDAO] SQL Error: " + errorMsg);
-            e.printStackTrace();
-            throw new RuntimeException("Database schema error: Failed to find user by username.", e);
-        }
-        
-        return null;
-    }
-    
-    /**
-     * Fallback method to find user by name column (old schema)
-     */
-    private User findByUsernameFallback(String username) {
-        String sql = "SELECT user_id, name, email, password, status, " +
-                    "createdDate, lastUpdate, lastLogin, failedLoginAttempts, lockedUntil, avatar_url " +
-                    "FROM `user` WHERE name = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, username);
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                return mapResultSetToUser(rs);
-            }
-        } catch (SQLException e) {
-            System.err.println("[UserDAO] ERROR: Fallback query also failed: " + e.getMessage());
-            e.printStackTrace();
-        }
-        
-        return null;
+        return findByField("username", username);
     }
 
     /**
-     * Find user by email
+     * Find user by email (case-insensitive, trimmed)
      */
     public User findByEmail(String email) {
-        String sql = "SELECT user_id, username, name, email, password, status, " +
-                    "createdDate, lastUpdate, lastLogin, failedLoginAttempts, lockedUntil, avatar_url " +
-                    "FROM `user` WHERE email = ?";
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, email);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return mapResultSetToUser(rs);
-            }
-        } catch (SQLException e) {
-            // Check if error is due to missing username column
-            String errorMsg = e.getMessage();
-            if (errorMsg != null && (errorMsg.contains("Unknown column 'username'") || 
-                errorMsg.contains("Unknown column 'user.username'") ||
-                (e.getSQLState() != null && e.getSQLState().equals("42S22")))) {
-                System.err.println("[UserDAO] WARNING: username column not found, using fallback with name column.");
-                // Fallback: query without username column
-                return findByEmailFallback(email);
-            }
+        if (email == null || email.trim().isEmpty()) {
+            return null;
+        }
+        
+        try {
+            // Normalize: trim + lowercase để tránh lỗi case-sensitive
+            String normalizedEmail = email.trim().toLowerCase();
             
-            System.err.println("[UserDAO] ERROR: Cannot query 'user' table.");
-            System.err.println("[UserDAO] SQL Error: " + errorMsg);
+            TypedQuery<User> query = em.createQuery(
+                "SELECT u FROM User u WHERE LOWER(TRIM(u.email)) = :email",
+                User.class
+            );
+            query.setParameter("email", normalizedEmail);
+            
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            System.out.println("[UserDAO] No user found with email: " + email);
+            return null;
+        } catch (Exception e) {
+            System.err.println("[UserDAO] Error finding user by email: " + e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException("Database schema error: Failed to find user by email.", e);
+            return null;
         }
-        return null;
-    }
-    
-    /**
-     * Fallback method to find user by email (old schema without username column)
-     */
-    private User findByEmailFallback(String email) {
-        String sql = "SELECT user_id, name, email, password, status, " +
-                    "createdDate, lastUpdate, lastLogin, failedLoginAttempts, lockedUntil, avatar_url " +
-                    "FROM `user` WHERE email = ?";
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, email);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return mapResultSetToUser(rs);
-            }
-        } catch (SQLException e) {
-            System.err.println("[UserDAO] ERROR: Fallback query also failed: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return null;
     }
 
     /**
-     * Convenience: Find by username or email using a fresh connection
+     * Find user by username or email
      */
     public User findByUsernameOrEmail(String usernameOrEmail) {
-        String sql = "SELECT user_id, username, name, email, password, status, " +
-                    "createdDate, lastUpdate, lastLogin, failedLoginAttempts, lockedUntil, avatar_url " +
-                    "FROM `user` WHERE username = ? OR email = ?";
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, usernameOrEmail);
-            stmt.setString(2, usernameOrEmail);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return mapResultSetToUser(rs);
-            }
-        } catch (SQLException e) {
-            // Check if error is due to missing username column
-            String errorMsg = e.getMessage();
-            if (errorMsg != null && (errorMsg.contains("Unknown column 'username'") || 
-                errorMsg.contains("Unknown column 'user.username'") ||
-                (e.getSQLState() != null && e.getSQLState().equals("42S22")))) {
-                // Fallback: query using name column
-                return findByUsernameOrEmailFallback(usernameOrEmail);
-            }
-            
-            System.err.println("[UserDAO] ERROR: Cannot query 'user' table.");
-            System.err.println("[UserDAO] SQL Error: " + errorMsg);
-            e.printStackTrace();
-            throw new RuntimeException("Database schema error: Failed to find user.", e);
+        try {
+            TypedQuery<User> query = em.createQuery(
+                "SELECT u FROM User u WHERE u.username = :value OR u.email = :value",
+                User.class
+            );
+            query.setParameter("value", usernameOrEmail);
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        } catch (Exception e) {
+            System.err.println("[UserDAO] Error finding user by username or email: " + e.getMessage());
+            return null;
         }
-        return null;
     }
-    
+
     /**
-     * Fallback method to find by name or email (old schema)
+     * Find user by username or email using provided EntityManager (for transactions)
+     * Note: In JPA, we use EntityManager instead of Connection
      */
-    private User findByUsernameOrEmailFallback(String usernameOrEmail) {
-        String sql = "SELECT user_id, name, email, password, status, " +
-                    "createdDate, lastUpdate, lastLogin, failedLoginAttempts, lockedUntil, avatar_url " +
-                    "FROM `user` WHERE name = ? OR email = ?";
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, usernameOrEmail);
-            stmt.setString(2, usernameOrEmail);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return mapResultSetToUser(rs);
-            }
-        } catch (SQLException e) {
-            System.err.println("[UserDAO] ERROR: Fallback query also failed: " + e.getMessage());
-            e.printStackTrace();
+    public User findByUsernameOrEmail(EntityManager sharedEm, String usernameOrEmail) {
+        try {
+            TypedQuery<User> query = sharedEm.createQuery(
+                "SELECT u FROM User u WHERE u.username = :value OR u.email = :value",
+                User.class
+            );
+            query.setParameter("value", usernameOrEmail);
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        } catch (Exception e) {
+            System.err.println("[UserDAO] Error finding user by username or email: " + e.getMessage());
+            return null;
         }
-        return null;
     }
-    
+
     /**
-     * Find user by username or email for login
+     * Find user by username or email using default EntityManager
+     * Backward compatibility method for code that doesn't use transactions
      */
-    public User findByUsernameOrEmail(Connection conn, String usernameOrEmail) throws SQLException {
-        String sql = "SELECT user_id, username, name, email, password, status, " +
-                    "createdDate, lastUpdate, lastLogin, failedLoginAttempts, lockedUntil, avatar_url " +
-                    "FROM `user` WHERE username = ? OR email = ?";
-        
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, usernameOrEmail);
-            stmt.setString(2, usernameOrEmail);
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                return mapResultSetToUser(rs);
+    public User findByUsernameOrEmailWithConnection(java.sql.Connection conn, String usernameOrEmail) {
+        // In JPA, we use EntityManager instead of Connection
+        // This method is for backward compatibility
+        return findByUsernameOrEmail(em, usernameOrEmail);
+    }
+
+    /**
+     * Increment failed login attempts using EntityManager
+     */
+    public void incrementFailedLoginAttempts(EntityManager sharedEm, long userId) {
+        boolean transactionStarted = false;
+        try {
+            if (sharedEm.getTransaction().isActive()) {
+                // Transaction already active, don't start new one
+                transactionStarted = false;
+            } else {
+                sharedEm.getTransaction().begin();
+                transactionStarted = true;
             }
-        } catch (SQLException e) {
-            // Check if error is due to missing username column
-            String errorMsg = e.getMessage();
-            if (errorMsg != null && (errorMsg.contains("Unknown column 'username'") || 
-                errorMsg.contains("Unknown column 'user.username'") ||
-                (e.getSQLState() != null && e.getSQLState().equals("42S22")))) {
-                System.err.println("[UserDAO] WARNING: username column not found, using fallback with name column.");
-                // Fallback: query using name column
-                String sqlFallback = "SELECT user_id, name, email, password, status, " +
-                                   "createdDate, lastUpdate, lastLogin, failedLoginAttempts, lockedUntil, avatar_url " +
-                                   "FROM `user` WHERE name = ? OR email = ?";
-                try (PreparedStatement stmt = conn.prepareStatement(sqlFallback)) {
-                    stmt.setString(1, usernameOrEmail);
-                    stmt.setString(2, usernameOrEmail);
-                    ResultSet rs = stmt.executeQuery();
-                    if (rs.next()) {
-                        return mapResultSetToUser(rs);
-                    }
+            User user = sharedEm.find(User.class, (int) userId);
+            if (user != null) {
+                Integer currentAttempts = user.getFailedLoginAttempts();
+                user.setFailedLoginAttempts(currentAttempts != null ? currentAttempts + 1 : 1);
+                sharedEm.merge(user);
+            }
+            if (transactionStarted) {
+                sharedEm.getTransaction().commit();
+            }
+        } catch (Exception e) {
+            if (transactionStarted && sharedEm.getTransaction().isActive()) {
+                try {
+                    sharedEm.getTransaction().rollback();
+                } catch (Exception rollbackEx) {
+                    System.err.println("[UserDAO] Error rolling back transaction: " + rollbackEx.getMessage());
                 }
-                // If still not found, return null (not an error)
-                return null;
             }
-            
-            System.err.println("[UserDAO] ERROR: Cannot query 'user' table.");
-            System.err.println("[UserDAO] SQL Error: " + errorMsg);
-            throw e; // Re-throw to let caller handle
+            System.err.println("[UserDAO] Error incrementing failed login attempts: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to increment failed login attempts", e);
         }
-        
-        return null;
+    }
+
+    /**
+     * Increment failed login attempts using default EntityManager
+     * Backward compatibility method
+     */
+    public void incrementFailedLoginAttempts(java.sql.Connection conn, long userId) {
+        incrementFailedLoginAttempts(em, userId);
+    }
+
+    /**
+     * Reset failed login attempts using EntityManager
+     */
+    public void resetFailedLoginAttempts(EntityManager sharedEm, long userId) {
+        boolean transactionStarted = false;
+        try {
+            if (sharedEm.getTransaction().isActive()) {
+                transactionStarted = false;
+            } else {
+                sharedEm.getTransaction().begin();
+                transactionStarted = true;
+            }
+            User user = sharedEm.find(User.class, (int) userId);
+            if (user != null) {
+                user.setFailedLoginAttempts(0);
+                user.setLockedUntil(null);
+                sharedEm.merge(user);
+            }
+            if (transactionStarted) {
+                sharedEm.getTransaction().commit();
+            }
+        } catch (Exception e) {
+            if (transactionStarted && sharedEm.getTransaction().isActive()) {
+                try {
+                    sharedEm.getTransaction().rollback();
+                } catch (Exception rollbackEx) {
+                    System.err.println("[UserDAO] Error rolling back transaction: " + rollbackEx.getMessage());
+                }
+            }
+            System.err.println("[UserDAO] Error resetting failed login attempts: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to reset failed login attempts", e);
+        }
     }
     
     /**
-     * Increment failed login attempts
+     * Reset failed login attempts using default EntityManager
+     * Backward compatibility method
      */
-    public void incrementFailedLoginAttempts(Connection conn, long userId) throws SQLException {
-        String sql = "UPDATE `user` SET failedLoginAttempts = failedLoginAttempts + 1 WHERE user_id = ?";
-        
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, userId);
-            stmt.executeUpdate();
+    public void resetFailedLoginAttempts(java.sql.Connection conn, long userId) {
+        resetFailedLoginAttempts(em, userId);
+    }
+
+    /**
+     * Lock account for specified minutes using EntityManager
+     */
+    public void lockAccount(EntityManager sharedEm, long userId, int minutes) {
+        boolean transactionStarted = false;
+        try {
+            if (sharedEm.getTransaction().isActive()) {
+                transactionStarted = false;
+            } else {
+                sharedEm.getTransaction().begin();
+                transactionStarted = true;
+            }
+            User user = sharedEm.find(User.class, (int) userId);
+            if (user != null) {
+                LocalDateTime lockedUntil = LocalDateTime.now().plusMinutes(minutes);
+                user.setLockedUntil(lockedUntil);
+                sharedEm.merge(user);
+            }
+            if (transactionStarted) {
+                sharedEm.getTransaction().commit();
+            }
+        } catch (Exception e) {
+            if (transactionStarted && sharedEm.getTransaction().isActive()) {
+                try {
+                    sharedEm.getTransaction().rollback();
+                } catch (Exception rollbackEx) {
+                    System.err.println("[UserDAO] Error rolling back transaction: " + rollbackEx.getMessage());
+                }
+            }
+            System.err.println("[UserDAO] Error locking account: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to lock account", e);
         }
     }
     
     /**
-     * Reset failed login attempts
+     * Lock account using default EntityManager
+     * Backward compatibility method
      */
-    public void resetFailedLoginAttempts(Connection conn, long userId) throws SQLException {
-        String sql = "UPDATE `user` SET failedLoginAttempts = 0, lockedUntil = NULL WHERE user_id = ?";
-        
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, userId);
-            stmt.executeUpdate();
-        }
+    public void lockAccount(java.sql.Connection conn, long userId, int minutes) {
+        lockAccount(em, userId, minutes);
     }
-    
+
     /**
-     * Lock account for specified minutes
+     * Update last login time using EntityManager
      */
-    public void lockAccount(Connection conn, long userId, int minutes) throws SQLException {
-        String sql = "UPDATE `user` SET lockedUntil = DATE_ADD(NOW(), INTERVAL ? MINUTE) WHERE user_id = ?";
-        
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, minutes);
-            stmt.setLong(2, userId);
-            stmt.executeUpdate();
+    public void updateLastLogin(EntityManager sharedEm, long userId) {
+        boolean transactionStarted = false;
+        try {
+            if (sharedEm.getTransaction().isActive()) {
+                transactionStarted = false;
+            } else {
+                sharedEm.getTransaction().begin();
+                transactionStarted = true;
+            }
+            User user = sharedEm.find(User.class, (int) userId);
+            if (user != null) {
+                user.setLastLogin(LocalDateTime.now());
+                sharedEm.merge(user);
+            }
+            if (transactionStarted) {
+                sharedEm.getTransaction().commit();
+            }
+        } catch (Exception e) {
+            if (transactionStarted && sharedEm.getTransaction().isActive()) {
+                try {
+                    sharedEm.getTransaction().rollback();
+                } catch (Exception rollbackEx) {
+                    System.err.println("[UserDAO] Error rolling back transaction: " + rollbackEx.getMessage());
+                }
+            }
+            System.err.println("[UserDAO] Error updating last login: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to update last login", e);
         }
     }
-    
+
     /**
-     * Update last login time
+     * Update last login using default EntityManager
+     * Backward compatibility method
      */
-    public void updateLastLogin(Connection conn, long userId) throws SQLException {
-        String sql = "UPDATE `user` SET lastLogin = NOW() WHERE user_id = ?";
-        
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, userId);
-            stmt.executeUpdate();
-        }
+    public void updateLastLogin(java.sql.Connection conn, long userId) {
+        updateLastLogin(em, userId);
     }
-    
+
     /**
      * Get user by ID
+     * IMPORTANT: With JOINED inheritance, this will return the correct subclass (Student/Admin)
+     * if DTYPE is set correctly in database
+     * Uses EntityManager.find() which respects inheritance
      */
     public User getUserById(long userId) {
-        String sql = "SELECT user_id, username, name, email, password, status, " +
-                    "createdDate, lastUpdate, lastLogin, failedLoginAttempts, lockedUntil, avatar_url " +
-                    "FROM `user` WHERE user_id = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setLong(1, userId);
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                return mapResultSetToUser(rs);
+        try {
+            // Use EntityManager.find() which automatically handles JOINED inheritance
+            // If user is Student, it will return Student instance
+            // If user is Admin, it will return Admin instance
+            // If user is base User, it will return User instance
+            User user = em.find(User.class, (int) userId);
+            if (user != null) {
+                System.out.println("[UserDAO] getUserById - Loaded user type: " + user.getClass().getSimpleName() + 
+                                 ", userId: " + user.getUserId());
             }
-        } catch (SQLException e) {
-            // Check if error is due to missing username column
-            String errorMsg = e.getMessage();
-            if (errorMsg != null && (errorMsg.contains("Unknown column 'username'") || 
-                errorMsg.contains("Unknown column 'user.username'") ||
-                (e.getSQLState() != null && e.getSQLState().equals("42S22")))) {
-                System.err.println("[UserDAO] WARNING: username column not found, using fallback query.");
-                // Fallback: query without username column
-                return getUserByIdFallback(userId);
-            }
-            
-            System.err.println("[UserDAO] ERROR: Cannot query 'user' table.");
-            System.err.println("[UserDAO] SQL Error: " + errorMsg);
+            return user;
+        } catch (Exception e) {
+            System.err.println("[UserDAO] Error getting user by ID: " + e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException("Database schema error: Failed to get user by ID.", e);
+            return null;
         }
-        
-        return null;
-    }
-    
-    /**
-     * Fallback method to get user by ID (old schema without username column)
-     */
-    private User getUserByIdFallback(long userId) {
-        String sql = "SELECT user_id, name, email, password, status, " +
-                    "createdDate, lastUpdate, lastLogin, failedLoginAttempts, lockedUntil, avatar_url " +
-                    "FROM `user` WHERE user_id = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setLong(1, userId);
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                return mapResultSetToUser(rs);
-            }
-        } catch (SQLException e) {
-            System.err.println("[UserDAO] ERROR: Fallback query also failed: " + e.getMessage());
-            e.printStackTrace();
-        }
-        
-        return null;
     }
     
     /**
      * Update user information
+     * Uses GenericDAO update() method
      */
     public boolean updateUser(User user) {
-        String sql = "UPDATE `user` SET " +
-                    "username = ?, name = ?, email = ?, phone = ?, dob = ?, address = ?, status = ?, " +
-                    "avatar_url = ?, " +
-                    "lastUpdate = NOW() " +
-                    "WHERE user_id = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            int paramIndex = 1;
-            stmt.setString(paramIndex++, user.getUsername());
-            stmt.setString(paramIndex++, user.getName());
-            stmt.setString(paramIndex++, user.getEmail());
-            if (user.getPhone() != null) {
-                stmt.setString(paramIndex++, user.getPhone());
-            } else {
-                stmt.setNull(paramIndex++, Types.VARCHAR);
-            }
-            if (user.getDob() != null) {
-                stmt.setDate(paramIndex++, user.getDob());
-            } else {
-                stmt.setNull(paramIndex++, Types.DATE);
-            }
-            if (user.getAddress() != null) {
-                stmt.setString(paramIndex++, user.getAddress());
-            } else {
-                stmt.setNull(paramIndex++, Types.VARCHAR);
-            }
-            stmt.setString(paramIndex++, user.getStatus());
-            stmt.setString(paramIndex++, user.getAvatarUrl());
-            
-            stmt.setLong(paramIndex++, user.getId());
-            
-            int affectedRows = stmt.executeUpdate();
-            return affectedRows > 0;
-            
-        } catch (SQLException e) {
-            System.err.println("Error updating user: " + e.getMessage());
+        try {
+            int result = update(user);
+            return result != -1;
+        } catch (Exception e) {
+            System.err.println("[UserDAO] Error updating user: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -652,19 +394,16 @@ public class UserDAO {
      * Update avatar URL for a user
      */
     public boolean updateAvatarUrl(long userId, String avatarUrl) {
-        String sql = "UPDATE `user` SET avatar_url = ?, lastUpdate = NOW() WHERE user_id = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, avatarUrl);
-            stmt.setLong(2, userId);
-            
-            int affectedRows = stmt.executeUpdate();
-            return affectedRows > 0;
-            
-        } catch (SQLException e) {
-            System.err.println("Error updating avatar URL: " + e.getMessage());
+        try {
+            User user = getUserById(userId);
+            if (user != null) {
+                user.setAvatarUrl(avatarUrl);
+                user.setLastUpdate(LocalDateTime.now());
+                return updateUser(user);
+            }
+            return false;
+        } catch (Exception e) {
+            System.err.println("[UserDAO] Error updating avatar URL: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -674,17 +413,16 @@ public class UserDAO {
      * Delete user (soft delete by setting status to INACTIVE)
      */
     public boolean deleteUser(long userId) {
-        String sql = "UPDATE `user` SET status = 'INACTIVE', lastUpdate = NOW() WHERE user_id = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setLong(1, userId);
-            int affectedRows = stmt.executeUpdate();
-            return affectedRows > 0;
-            
-        } catch (SQLException e) {
-            System.err.println("Error deleting user: " + e.getMessage());
+        try {
+            User user = getUserById(userId);
+            if (user != null) {
+                user.setStatus("INACTIVE");
+                user.setLastUpdate(LocalDateTime.now());
+                return updateUser(user);
+            }
+            return false;
+        } catch (Exception e) {
+            System.err.println("[UserDAO] Error deleting user: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -694,144 +432,113 @@ public class UserDAO {
      * Hard delete user (permanent removal from database)
      */
     public boolean hardDeleteUser(long userId) {
-        String sql = "DELETE FROM `user` WHERE user_id = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setLong(1, userId);
-            int affectedRows = stmt.executeUpdate();
-            return affectedRows > 0;
-            
-        } catch (SQLException e) {
-            System.err.println("Error hard deleting user: " + e.getMessage());
+        try {
+            User user = getUserById(userId);
+            if (user != null) {
+                int result = delete(user);
+                return result != -1;
+            }
+            return false;
+        } catch (Exception e) {
+            System.err.println("[UserDAO] Error hard deleting user: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
     
     /**
-     * Helper method to map ResultSet to User object
-     * Maps database columns (username, name, password, camelCase) to User model properties
+     * Get all users
      */
-    private User mapResultSetToUser(ResultSet rs) throws SQLException {
-        User user = new User();
-        user.setId(rs.getLong("user_id"));
-        
-        // Try to get username, fallback to name if username column doesn't exist
+    public List<User> getAllUsers() {
+        return findAll();
+    }
+
+    /**
+     * Find users by status
+     */
+    public List<User> findByStatus(String status) {
         try {
-            user.setUsername(rs.getString("username")); // username for login
-        } catch (SQLException e) {
-            // Username column doesn't exist, use name as username (old schema)
-            String name = rs.getString("name");
-            user.setUsername(name);
+            TypedQuery<User> query = em.createQuery(
+                "SELECT u FROM User u WHERE u.status = :status",
+                User.class
+            );
+            query.setParameter("status", status);
+            return query.getResultList();
+        } catch (Exception e) {
+            System.err.println("[UserDAO] Error finding users by status: " + e.getMessage());
+            return List.of();
         }
-        
-        // Get name (full name)
-        user.setName(rs.getString("name")); // name is full name
-        user.setEmail(rs.getString("email"));
-        
-        // Get phone, dob, address
+    }
+    
+    // ==================== ADMIN SEARCH & PAGINATION ====================
+    
+    /**
+     * Search users by keyword (username, name, email, phone) with pagination
+     * ✅ Tái sử dụng GenericDAO EntityManager
+     */
+    public List<User> searchUsers(String keyword, int page, int pageSize) {
         try {
-            user.setPhone(rs.getString("phone"));
-        } catch (SQLException e) {
-            user.setPhone(null); // Column doesn't exist or null
-        }
-        try {
-            user.setDob(rs.getDate("dob"));
-        } catch (SQLException e) {
-            user.setDob(null); // Column doesn't exist or null
-        }
-        try {
-            user.setAddress(rs.getString("address"));
-        } catch (SQLException e) {
-            user.setAddress(null); // Column doesn't exist or null
-        }
-        
-        user.setPasswordHash(rs.getString("password")); // Database has 'password', model uses 'passwordHash'
-        
-        // Salt column may not exist - set to empty string if missing
-        try {
-            user.setSalt(rs.getString("salt"));
-            if (user.getSalt() == null) {
-                user.setSalt(""); // Default empty salt if column doesn't exist
+            StringBuilder jpql = new StringBuilder("SELECT u FROM User u WHERE 1=1");
+            
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                jpql.append(" AND (LOWER(u.username) LIKE LOWER(:keyword) ")
+                    .append("OR LOWER(u.name) LIKE LOWER(:keyword) ")
+                    .append("OR LOWER(u.email) LIKE LOWER(:keyword) ")
+                    .append("OR u.phone LIKE :keyword)");
             }
-        } catch (SQLException e) {
-            user.setSalt(""); // Column doesn't exist, use empty string
-        }
-        
-        user.setStatus(rs.getString("status"));
-        
-        // email_verified column may not exist - default to false
-        try {
-            user.setEmailVerified(rs.getBoolean("email_verified"));
-        } catch (SQLException e) {
-            user.setEmailVerified(false); // Column doesn't exist, default to false
-        }
-        
-        user.setCreatedDate(rs.getTimestamp("createdDate")); // Database uses camelCase
-        
-        // avatar_url
-        try {
-            user.setAvatarUrl(rs.getString("avatar_url"));
-        } catch (SQLException e) {
-            user.setAvatarUrl(null); // Column doesn't exist or null
-        }
-        
-        // lastUpdate (camelCase) instead of last_update
-        try {
-            user.setUpdatedDate(rs.getTimestamp("lastUpdate"));
-        } catch (SQLException e) {
-            // Try alternative column names
-            try {
-                user.setUpdatedDate(rs.getTimestamp("last_update"));
-            } catch (SQLException e2) {
-                // Column doesn't exist, skip
+            
+            jpql.append(" ORDER BY u.createdDate DESC");
+            
+            TypedQuery<User> query = em.createQuery(jpql.toString(), User.class);
+            
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                query.setParameter("keyword", "%" + keyword.trim() + "%");
             }
+            
+            // Pagination
+            query.setFirstResult((page - 1) * pageSize);
+            query.setMaxResults(pageSize);
+            
+            return query.getResultList();
+        } catch (Exception e) {
+            System.err.println("[UserDAO] Error searching users: " + e.getMessage());
+            e.printStackTrace();
+            return List.of();
         }
-        
-        user.setLastLogin(rs.getTimestamp("lastLogin")); // camelCase
-        user.setFailedLoginAttempts(rs.getInt("failedLoginAttempts")); // camelCase
-        
-        Timestamp lockedUntil = rs.getTimestamp("lockedUntil"); // camelCase
-        user.setLockedUntil(lockedUntil);
-        
-        return user;
     }
     
     /**
-     * Helper method to log database connection info for debugging
+     * Count users matching search criteria
      */
-    private void logDatabaseInfo() {
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            if (conn != null) {
-                String catalog = conn.getCatalog();
-                String url = conn.getMetaData().getURL();
-                System.err.println("[UserDAO] Current Database: " + catalog);
-                System.err.println("[UserDAO] Connection URL: " + url);
-                
-                // Try to list all tables to see what exists
-                try (java.sql.Statement stmt = conn.createStatement();
-                     ResultSet rs = stmt.executeQuery("SHOW TABLES")) {
-                    System.err.println("[UserDAO] Available tables in database:");
-                    boolean foundUserTable = false;
-                    while (rs.next()) {
-                        String tableName = rs.getString(1);
-                        System.err.println("[UserDAO]   - " + tableName);
-                        if (tableName.equalsIgnoreCase("user")) {
-                            foundUserTable = true;
-                        }
-                    }
-                    if (!foundUserTable) {
-                        System.err.println("[UserDAO] WARNING: 'user' table not found in database!");
-                    } else {
-                        System.err.println("[UserDAO] INFO: 'user' table exists in database.");
-                    }
-                }
+    public int countUsers(String keyword) {
+        try {
+            StringBuilder jpql = new StringBuilder("SELECT COUNT(u) FROM User u WHERE 1=1");
+            
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                jpql.append(" AND (LOWER(u.username) LIKE LOWER(:keyword) ")
+                    .append("OR LOWER(u.name) LIKE LOWER(:keyword) ")
+                    .append("OR LOWER(u.email) LIKE LOWER(:keyword) ")
+                    .append("OR u.phone LIKE :keyword)");
             }
-        } catch (SQLException e) {
-            System.err.println("[UserDAO] Error getting database info: " + e.getMessage());
+            
+            TypedQuery<Long> query = em.createQuery(jpql.toString(), Long.class);
+            
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                query.setParameter("keyword", "%" + keyword.trim() + "%");
+            }
+            
+            return query.getSingleResult().intValue();
+        } catch (Exception e) {
+            System.err.println("[UserDAO] Error counting users: " + e.getMessage());
+            e.printStackTrace();
+            return 0;
         }
     }
-    
+
+    /**
+     * Get EntityManager for transaction management
+     */
+    public EntityManager getEntityManager() {
+        return em;
+    }
 }

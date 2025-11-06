@@ -1,6 +1,6 @@
 package com.gym.service.membership;
 
-import com.gym.dao.membership.MembershipDAO;
+import com.gym.dao.membership.MembershipDao;
 import com.gym.dao.membership.PackageDAO;
 import com.gym.model.membership.Membership;
 import com.gym.model.membership.Package;
@@ -14,11 +14,11 @@ import java.util.Optional;
  */
 public class MembershipServiceImpl implements MembershipService {
     private final PackageDAO packageDAO;
-    private final MembershipDAO membershipDAO;
+    private final MembershipDao membershipDao;
 
     public MembershipServiceImpl() {
         this.packageDAO = new PackageDAO();
-        this.membershipDAO = new MembershipDAO();
+        this.membershipDao = new MembershipDao();
     }
 
     @Override
@@ -42,17 +42,17 @@ public class MembershipServiceImpl implements MembershipService {
         checkAndExpire(userId);
         
         // Then return current active membership
-        return membershipDAO.findActiveByUser(userId);
+        return membershipDao.findActiveByUser(userId);
     }
 
     @Override
     public void checkAndExpire(Integer userId) {
         // Find all ACTIVE memberships that have passed end_date
-        List<Membership> expiredMemberships = membershipDAO.findExpiredByUser(userId);
+        List<Membership> expiredMemberships = membershipDao.findExpiredByUser(userId);
         
         // Set status = 'EXPIRED' for each expired membership
         for (Membership membership : expiredMemberships) {
-            membershipDAO.expireMembership(membership.getMembershipId());
+            membershipDao.expireMembership(membership.getMembershipId());
             System.out.println("[MembershipService] Auto-expired membership ID: " + membership.getMembershipId() + 
                              " for user ID: " + userId);
         }
@@ -78,17 +78,19 @@ public class MembershipServiceImpl implements MembershipService {
         LocalDate startDate = LocalDate.now();
         LocalDate endDate = startDate.plusMonths(pkg.getDurationMonths());
         
-        // 4. Create membership with status = 'ACTIVE'
-        Long membershipId = membershipDAO.createMembership(userId, packageId, startDate, endDate, notes);
+        // 4. Create membership with status = 'INACTIVE'
+        // ✅ NEW: Membership starts INACTIVE and will be activated when payment.status = 'PAID'
+        Long membershipId = membershipDao.createMembership(userId, packageId, startDate, endDate, notes);
         if (membershipId == null) {
             throw new RuntimeException("Failed to create membership");
         }
         
         System.out.println("[MembershipService] Created membership ID: " + membershipId + 
-                         " for user ID: " + userId + ", package ID: " + packageId);
+                         " with status=INACTIVE (waiting for payment) for user ID: " + userId + ", package ID: " + packageId);
         
         // 5. Return created membership
-        Optional<Membership> created = membershipDAO.findActiveByUser(userId);
+        // Note: User won't be able to use it until payment.status = 'PAID'
+        Optional<Membership> created = membershipDao.findById(membershipId);
         if (created.isEmpty()) {
             throw new RuntimeException("Membership created but could not be retrieved");
         }
@@ -98,6 +100,30 @@ public class MembershipServiceImpl implements MembershipService {
 
     @Override
     public List<Membership> getMembershipHistory(Integer userId) {
-        return membershipDAO.listByUser(userId);
+        return membershipDao.listByUser(userId);
+    }
+    
+    @Override
+    public boolean activateMembership(Long membershipId) {
+        // Activate membership (set status = 'ACTIVE')
+        boolean activated = membershipDao.activateMembership(membershipId);
+        if (activated) {
+            System.out.println("[MembershipService] Activated membership ID: " + membershipId);
+        } else {
+            System.out.println("[MembershipService] Failed to activate membership ID: " + membershipId);
+        }
+        return activated;
+    }
+    
+    @Override
+    public boolean suspendMembership(Long membershipId, String reason) {
+        // Suspend membership (set status = 'SUSPENDED')
+        boolean suspended = membershipDao.suspendMembership(membershipId, reason);
+        if (suspended) {
+            System.out.println("[MembershipService] Suspended membership ID: " + membershipId + ". Reason: " + reason);
+        } else {
+            System.out.println("[MembershipService] Failed to suspend membership ID: " + membershipId);
+        }
+        return suspended;
     }
 }

@@ -186,9 +186,18 @@
         font-weight: 900;
         color: var(--accent);
         }
+
     </style>
 
 <div class="container mt-5">
+    <!-- Back Button -->
+    <div class="mb-4">
+        <a href="${pageContext.request.contextPath}/member/dashboard" class="btn-back">
+            <i class="fas fa-arrow-left"></i>
+            <span>Quay lại Dashboard</span>
+        </a>
+    </div>
+
     <!-- Current Membership -->
     <div class="membership-card">
         <h2 class="membership-title">Gói Thành Viên Hiện Tại</h2>
@@ -262,9 +271,29 @@
                     </div>
                     <div class="col-md-4 text-end">
                         <c:choose>
+                            <c:when test="${currentMembership.status == 'INACTIVE'}">
+                                <span class="badge bg-warning text-dark" style="font-size: 1rem; padding: 10px 20px;">
+                                    <i class="fas fa-clock"></i> Chưa kích hoạt
+                                </span>
+                            </c:when>
                             <c:when test="${currentMembership.status == 'ACTIVE'}">
                                 <span class="badge bg-success" style="font-size: 1rem; padding: 10px 20px;">
                                     <i class="fas fa-check-circle"></i> Đang hoạt động
+                                </span>
+                            </c:when>
+                            <c:when test="${currentMembership.status == 'EXPIRED'}">
+                                <span class="badge bg-danger" style="font-size: 1rem; padding: 10px 20px;">
+                                    <i class="fas fa-times-circle"></i> Đã hết hạn
+                                </span>
+                            </c:when>
+                            <c:when test="${currentMembership.status == 'SUSPENDED'}">
+                                <span class="badge bg-danger" style="font-size: 1rem; padding: 10px 20px;">
+                                    <i class="fas fa-ban"></i> Tạm ngưng
+                                </span>
+                            </c:when>
+                            <c:when test="${currentMembership.status == 'CANCELLED'}">
+                                <span class="badge bg-secondary" style="font-size: 1rem; padding: 10px 20px;">
+                                    <i class="fas fa-minus-circle"></i> Đã hủy
                                 </span>
                             </c:when>
                             <c:otherwise>

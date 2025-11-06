@@ -1,6 +1,6 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-
+<%@ page contentType="text/html;charset=UTF-8" language="java" %> 
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
   <head>
@@ -440,7 +440,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/account_management.jsp"
+              href="${pageContext.request.contextPath}/admin/account-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-users-cog"></i>
@@ -541,15 +541,16 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                 Chỉnh sửa thông tin cá nhân
               </h3>
 
-              <form action="#" method="post">
+              <form action="${pageContext.request.contextPath}/admin/profile?id=${sessionScope.user.userId}" method="post">
+                  <input type="hidden" name="action" value="updateAdmin" />
                 <div class="form-grid">
                   <div class="form-group">
                     <label class="form-label">Họ và tên</label>
                     <input
                       type="text"
                       class="form-input"
-                      name="username"
-                      value="Nguyễn Văn Admin"
+                      name="name"
+                      value="${sessionScope.user.name}"
                       required
                     />
                   </div>
@@ -560,7 +561,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                       type="email"
                       class="form-input"
                       name="email"
-                      value="admin@gymfit.vn"
+                      value="${sessionScope.user.email}"
                       required
                     />
                   </div>
@@ -571,19 +572,15 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                       type="tel"
                       class="form-input"
                       name="phone"
-                      value="0123456789"
+                      value="${sessionScope.user.phone}"
                       required
                     />
                   </div>
 
                   <div class="form-group">
                     <label class="form-label">Ngày sinh</label>
-                    <input
-                      type="date"
-                      class="form-input"
-                      name="birthday"
-                      value="1990-01-15"
-                    />
+                    <fmt:formatDate value="${sessionScope.user.dob}" pattern="yyyy-MM-dd" var="dobFormatted" />
+                    <input class="form-input" type="date" name="birthday" value="${dobFormatted}" />
                   </div>
 
                   <div class="form-group full-width">
@@ -592,7 +589,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                       type="text"
                       class="form-input"
                       name="address"
-                      value="123 Nguyễn Văn Linh, Đà Nẵng"
+                      value="${sessionScope.user.address}"
                     />
                   </div>
 
@@ -602,7 +599,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                       type="text"
                       class="form-input"
                       name="username"
-                      value="admin"
+                      value="${sessionScope.user.username}"
                       disabled
                     />
                   </div>
@@ -612,7 +609,8 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                     <input
                       type="text"
                       class="form-input"
-                      value="Administrator"
+                      name="role"
+                      value="${sessionScope.user.role}"
                       disabled
                     />
                   </div>
@@ -635,7 +633,8 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                   Đổi mật khẩu
                 </h3>
 
-                <form action="#" method="post">
+                <form action="${pageContext.request.contextPath}/admin/profile?id=${sessionScope.user.userId}" method="post">
+                    <input type="hidden" name="action" value="updateAdminPassword" />
                   <div class="form-grid">
                     <div class="form-group full-width">
                       <label class="form-label">Mật khẩu hiện tại</label>

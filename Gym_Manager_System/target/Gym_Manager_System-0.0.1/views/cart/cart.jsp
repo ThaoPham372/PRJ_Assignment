@@ -549,7 +549,14 @@
                 <div class="summary-row total-row">
                     <span class="summary-label">Tổng tiền:</span>
                     <span class="summary-value">
-                        <fmt:formatNumber value="${total}" type="currency" currencySymbol="đ" maxFractionDigits="0"/>
+                        <c:choose>
+                            <c:when test="${not empty total}">
+                                <fmt:formatNumber value="${total}" type="currency" currencySymbol="đ" maxFractionDigits="0"/>
+                            </c:when>
+                            <c:otherwise>
+                                0 đ
+                            </c:otherwise>
+                        </c:choose>
                     </span>
                 </div>
                 <div class="summary-row" style="margin-top: 20px;">

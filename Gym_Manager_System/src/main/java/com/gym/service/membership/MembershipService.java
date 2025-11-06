@@ -54,4 +54,21 @@ public interface MembershipService {
      * Get membership history for a user
      */
     List<Membership> getMembershipHistory(Integer userId);
+    
+    /**
+     * Activate a membership (change status from INACTIVE to ACTIVE)
+     * Used when payment is confirmed (status = PAID)
+     * @param membershipId Membership ID
+     * @return true if successfully activated, false otherwise
+     */
+    boolean activateMembership(Long membershipId);
+    
+    /**
+     * Suspend a membership (change status from ACTIVE to SUSPENDED)
+     * Used when payment is refunded or chargeback occurs
+     * @param membershipId Membership ID
+     * @param reason Reason for suspension (e.g., "Payment refunded", "Chargeback")
+     * @return true if successfully suspended, false otherwise
+     */
+    boolean suspendMembership(Long membershipId, String reason);
 }

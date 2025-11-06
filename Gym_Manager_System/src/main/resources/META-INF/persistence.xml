@@ -1,7 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
-    <!-- Define Persistence Unit -->
-    <persistence-unit name="my_persistence_unit">
-        
-    </persistence-unit>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+                                 https://jakarta.ee/xml/ns/persistence/persistence_3_1.xsd"
+             version="3.1">
+
+  <persistence-unit name="gymPU" transaction-type="RESOURCE_LOCAL">
+    <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+    <class>com.gym.model.User</class>
+    <class>com.gym.model.Student</class>
+    <class>com.gym.model.Admin</class>
+    <class>com.gym.model.Role</class>
+    <class>com.gym.model.UserRole</class>
+    <class>com.gym.model.shop.Product</class>
+    <class>com.gym.model.shop.Order</class>
+    <class>com.gym.model.shop.OrderItem</class>
+    <class>com.gym.model.shop.CartItem</class>
+    <class>com.gym.model.Payment</class>
+    <class>com.gym.model.membership.Package</class>
+    <class>com.gym.model.membership.Membership</class>
+    <class>com.gym.model.Food</class>
+    <class>com.gym.model.UserMeal</class>
+    <class>com.gym.model.NutritionGoal</class>
+
+    <exclude-unlisted-classes>false</exclude-unlisted-classes>
+
+    <properties>
+      <!-- Kết nối MySQL -->
+      <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
+      <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://gym-fitness-project.cbsayms8ae98.ap-southeast-2.rds.amazonaws.com:3306/gym_management?useSSL=false&amp;serverTimezone=UTC&amp;characterEncoding=UTF-8"/>
+      <property name="jakarta.persistence.jdbc.user" value="admin"/>
+      <property name="jakarta.persistence.jdbc.password" value="ToThanhNam123!!!"/>
+
+      <!-- Hibernate -->
+      <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL8Dialect"/>
+      <property name="hibernate.show_sql" value="false"/>
+      <property name="hibernate.format_sql" value="true"/>
+      <property name="hibernate.hbm2ddl.auto" value="none"/>
+      
+      <!-- HikariCP Connection Pool Settings (PREVENT "Too many connections") -->
+      <property name="hibernate.hikari.maximumPoolSize" value="10"/>
+      <property name="hibernate.hikari.minimumIdle" value="2"/>
+      <property name="hibernate.hikari.connectionTimeout" value="30000"/>
+      <property name="hibernate.hikari.idleTimeout" value="600000"/>
+      <property name="hibernate.hikari.maxLifetime" value="1700000"/>
+      <property name="hibernate.hikari.leakDetectionThreshold" value="20000"/>
+      <property name="hibernate.hikari.connectionTestQuery" value="SELECT 1"/>
+    </properties>
+  </persistence-unit>
 </persistence>

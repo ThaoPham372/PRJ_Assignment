@@ -1,12 +1,8 @@
 package com.gym.service;
 
-import com.gym.dao.PaymentDAO;
 import com.gym.model.Payment;
 import com.gym.model.shop.PaymentMethod;
 import com.gym.model.shop.PaymentStatus;
-import com.gym.model.shop.OrderStatus;
-import com.gym.dao.shop.OrderDao;
-import com.gym.dao.membership.MembershipDAO;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -24,11 +20,11 @@ public interface PaymentService {
      * @param amount Payment amount
      * @param method Payment method
      * @param referenceId Optional reference ID (e.g., MoMo transaction ID)
-     * @param conn Optional connection (for transactions)
+     * @param sharedEm Optional EntityManager (for transactions)
      * @return Created Payment ID
      */
     Integer createPaymentForOrder(Integer userId, Long orderId, BigDecimal amount,
-                                 PaymentMethod method, String referenceId, java.sql.Connection conn);
+                                 PaymentMethod method, String referenceId, jakarta.persistence.EntityManager sharedEm);
     
     /**
      * Create payment for membership (transaction_type = 'PACKAGE')
@@ -37,11 +33,11 @@ public interface PaymentService {
      * @param amount Payment amount
      * @param method Payment method
      * @param referenceId Optional reference ID (e.g., MoMo transaction ID)
-     * @param conn Optional connection (for transactions)
+     * @param sharedEm Optional EntityManager (for transactions)
      * @return Created Payment ID
      */
     Integer createPaymentForMembership(Integer userId, Long membershipId, BigDecimal amount,
-                                      PaymentMethod method, String referenceId, java.sql.Connection conn);
+                                      PaymentMethod method, String referenceId, jakarta.persistence.EntityManager sharedEm);
     
     /**
      * Update payment status and handle related entity updates

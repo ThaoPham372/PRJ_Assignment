@@ -699,8 +699,37 @@
                             <i class="fas fa-crown"></i>
                             <span><strong>Trạng thái:</strong> 
                                 <c:choose>
-                                    <c:when test="${not empty currentMembership && not empty currentMembership.packageName}">
-                                        ${fn:escapeXml(currentMembership.packageName)}
+                                    <c:when test="${not empty currentMembership}">
+                                        <c:choose>
+                                            <c:when test="${currentMembership.status == 'INACTIVE'}">
+                                                <span style="color: #ffc107; font-weight: bold;">
+                                                    <i class="fas fa-clock"></i> ${fn:escapeXml(currentMembership.packageName)} - Chưa kích hoạt
+                                                </span>
+                                            </c:when>
+                                            <c:when test="${currentMembership.status == 'ACTIVE'}">
+                                                <span style="color: #28a745; font-weight: bold;">
+                                                    <i class="fas fa-check-circle"></i> ${fn:escapeXml(currentMembership.packageName)}
+                                                </span>
+                                            </c:when>
+                                            <c:when test="${currentMembership.status == 'EXPIRED'}">
+                                                <span style="color: #dc3545; font-weight: bold;">
+                                                    <i class="fas fa-times-circle"></i> ${fn:escapeXml(currentMembership.packageName)} - Đã hết hạn
+                                                </span>
+                                            </c:when>
+                                            <c:when test="${currentMembership.status == 'SUSPENDED'}">
+                                                <span style="color: #dc3545; font-weight: bold;">
+                                                    <i class="fas fa-ban"></i> ${fn:escapeXml(currentMembership.packageName)} - Tạm ngưng
+                                                </span>
+                                            </c:when>
+                                            <c:when test="${currentMembership.status == 'CANCELLED'}">
+                                                <span style="color: #6c757d; font-weight: bold;">
+                                                    <i class="fas fa-minus-circle"></i> ${fn:escapeXml(currentMembership.packageName)} - Đã hủy
+                                                </span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                ${fn:escapeXml(currentMembership.packageName)}
+                                            </c:otherwise>
+                                        </c:choose>
                                     </c:when>
                                     <c:otherwise>
                                         Chưa đăng ký gói tập nào.
@@ -754,16 +783,38 @@
             <div class="stat-label">Thời gian còn lại</div>
             <div class="stat-value">
                 <c:choose>
-                    <c:when test="${not empty currentMembership && currentMembership.endDate != null}">
-                        <c:set var="endDate" value="${currentMembership.endDate}" />
-                        <c:set var="now" value="<%=java.time.LocalDate.now()%>" />
+                    <c:when test="${not empty currentMembership}">
                         <c:choose>
-                            <c:when test="${endDate != null && endDate.isAfter(now)}">
-                                <c:set var="daysRemaining" value="${endDate.toEpochDay() - now.toEpochDay()}" />
-                                <span style="color: var(--accent); font-weight: bold;">${daysRemaining} ngày</span>
+                            <c:when test="${currentMembership.status == 'INACTIVE'}">
+                                <span style="color: #ffc107; font-weight: bold;">
+                                    <i class="fas fa-hourglass-half"></i> Chưa kích hoạt
+                                </span>
+                            </c:when>
+                            <c:when test="${currentMembership.status == 'SUSPENDED'}">
+                                <span style="color: #dc3545; font-weight: bold;">
+                                    <i class="fas fa-ban"></i> Tạm ngưng
+                                </span>
+                            </c:when>
+                            <c:when test="${currentMembership.status == 'CANCELLED'}">
+                                <span style="color: #6c757d; font-weight: bold;">
+                                    <i class="fas fa-minus-circle"></i> Đã hủy
+                                </span>
+                            </c:when>
+                            <c:when test="${currentMembership.endDate != null}">
+                                <c:set var="endDate" value="${currentMembership.endDate}" />
+                                <c:set var="now" value="<%=java.time.LocalDate.now()%>" />
+                                <c:choose>
+                                    <c:when test="${endDate != null && endDate.isAfter(now)}">
+                                        <c:set var="daysRemaining" value="${endDate.toEpochDay() - now.toEpochDay()}" />
+                                        <span style="color: var(--accent); font-weight: bold;">${daysRemaining} ngày</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span style="color: #dc3545; font-weight: bold;">Đã hết hạn</span>
+                                    </c:otherwise>
+                                </c:choose>
                             </c:when>
                             <c:otherwise>
-                                <span style="color: #dc3545; font-weight: bold;">Đã hết hạn</span>
+                                <span style="color: #999;">N/A</span>
                             </c:otherwise>
                         </c:choose>
                     </c:when>

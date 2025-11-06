@@ -390,7 +390,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/account_management.jsp"
+              href="${pageContext.request.contextPath}/admin/account-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-users-cog"></i><span>Quản lý tài khoản</span>

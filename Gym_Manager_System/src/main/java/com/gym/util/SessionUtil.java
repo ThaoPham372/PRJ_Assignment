@@ -43,6 +43,7 @@ public class SessionUtil {
     
     /**
      * Get user roles from session
+     * Note: roles are stored as a list in session, populated from user.role column
      */
     @SuppressWarnings("unchecked")
     public static List<String> getUserRoles(HttpServletRequest request) {
@@ -54,14 +55,28 @@ public class SessionUtil {
     }
     
     /**
+     * Get user role directly from User object (single role from user.role column)
+     * @return role string like "USER", "ADMIN", "PT", etc. or null
+     */
+    public static String getUserRole(HttpServletRequest request) {
+        User user = getCurrentUser(request);
+        return user != null ? user.getRole() : null;
+    }
+    
+    /**
      * Check if user has specific role
+     * Checks both session roles list and user.role column
      */
     public static boolean hasRole(HttpServletRequest request, String roleName) {
+        // Check session roles list first (for backward compatibility)
         List<String> roles = getUserRoles(request);
-        if (roles == null) {
-            return false;
+        if (roles != null && roles.contains(roleName)) {
+            return true;
         }
-        return roles.contains(roleName);
+        
+        // Fallback to user.role column
+        String userRole = getUserRole(request);
+        return userRole != null && userRole.equalsIgnoreCase(roleName);
     }
     
     /**

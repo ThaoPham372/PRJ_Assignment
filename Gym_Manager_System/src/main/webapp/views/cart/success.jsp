@@ -359,6 +359,14 @@
 
 <div class="success-page">
     <div class="success-container">
+        <!-- Back to Dashboard Button -->
+        <div class="mb-4">
+            <a href="${pageContext.request.contextPath}/member/dashboard" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                <span>Quay lại Dashboard</span>
+            </a>
+        </div>
+
         <!-- Success Header -->
         <div class="success-header">
             <div class="success-icon">✅</div>
@@ -518,7 +526,7 @@
                             <div class="total-row">
                                 <span class="total-label">Thành Tiền</span>
                                 <span class="total-value" style="color: var(--accent); font-size: 1.5rem;">
-                                    <fmt:formatNumber value="${order.finalAmount != null ? order.finalAmount : (order.totalAmount - (order.discountAmount != null ? order.discountAmount : 0))}" type="number" maxFractionDigits="0" />đ
+                                    <fmt:formatNumber value="${order.totalAmount - (order.discountAmount != null ? order.discountAmount : 0)}" type="number" maxFractionDigits="0" />đ
                                 </span>
                             </div>
                         </div>

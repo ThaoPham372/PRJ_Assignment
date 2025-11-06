@@ -415,10 +415,10 @@
             <h1 class="mb-2" style="color: white; font-weight: 900; font-size: 2rem;">📊 Chỉ số & Mục tiêu</h1>
             <p style="font-size: 1rem; opacity: 0.9; margin: 0;">Cập nhật chỉ số cơ thể và thiết lập mục tiêu tập luyện của bạn</p>
             <a href="${pageContext.request.contextPath}/member/dashboard" 
-               class="btn-nutrition" 
-               style="position: absolute; top: 20px; right: 20px; padding: 10px 20px; font-size: 0.9rem; z-index: 10;">
+               class="btn-back" 
+               style="position: absolute; top: 20px; right: 20px; z-index: 10;">
                 <i class="fas fa-arrow-left"></i>
-                <span>Quay lại</span>
+                <span>Quay lại Dashboard</span>
             </a>
         </div>
     <!-- Success/Error Messages -->

@@ -1,23 +1,34 @@
 package com.gym.dao.nutrition;
 
+import com.gym.dao.BaseDAO;
 import com.gym.model.DailyIntakeDTO;
+import com.gym.model.Food;
 import com.gym.model.UserMeal;
-import com.gym.util.DatabaseUtil;
-
+import com.gym.util.JPAUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * DAO for UserMeal entity
+ * DAO for UserMeal entity using JPA
  * Handles database operations for user_meals table
  */
-public class UserMealDao {
+public class UserMealDao extends BaseDAO<UserMeal> {
+
+    public UserMealDao() {
+        super();
+    }
 
     /**
      * Insert a meal snapshot for a user
@@ -28,71 +39,88 @@ public class UserMealDao {
      * @param eatenAt time when the meal was eaten (OffsetDateTime with timezone)
      */
     public void insertSnapshot(long userId, long foodId, BigDecimal servings, OffsetDateTime eatenAt) {
-        // First, get food info from foods table
-        String getFoodSql = "SELECT calories, protein_g, carbs_g, fat_g FROM foods WHERE id = ? AND is_active = 1";
+        System.out.println("[UserMealDao] insertSnapshot called - userId: " + userId + ", foodId: " + foodId + ", servings: " + servings);
         
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            if (conn == null) {
-                System.err.println("Error: Database connection is null in insertSnapshot");
-                throw new SQLException("Database connection is null");
+        try {
+            // Ensure EntityManager is open
+            if (em == null || !em.isOpen()) {
+                System.err.println("[UserMealDao] EntityManager is null or closed, creating new one");
+                em = getEntityManagerFactory().createEntityManager();
             }
             
-            // Get food nutrition info
-            BigDecimal snapCalories = null;
-            BigDecimal snapProteinG = null;
-            BigDecimal snapCarbsG = null;
-            BigDecimal snapFatG = null;
-            
-            try (PreparedStatement getFoodStmt = conn.prepareStatement(getFoodSql)) {
-                getFoodStmt.setLong(1, foodId);
-                ResultSet rs = getFoodStmt.executeQuery();
-                
-                if (rs.next()) {
-                    snapCalories = rs.getBigDecimal("calories");
-                    snapProteinG = rs.getBigDecimal("protein_g");
-                    snapCarbsG = rs.getBigDecimal("carbs_g");
-                    snapFatG = rs.getBigDecimal("fat_g");
-                } else {
-                    throw new SQLException("Food not found or inactive: " + foodId);
-                }
+            // Check if transaction is already active
+            if (em.getTransaction().isActive()) {
+                System.err.println("[UserMealDao] WARNING: Transaction already active, rolling back");
+                em.getTransaction().rollback();
             }
             
-            // Insert meal snapshot
-            String insertSql = "INSERT INTO user_meals (user_id, food_id, servings, eaten_at, " +
-                             "snap_calories, snap_protein_g, snap_carbs_g, snap_fat_g) " +
-                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            beginTransaction();
+            System.out.println("[UserMealDao] Transaction started");
             
-            try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
-                insertStmt.setLong(1, userId);
-                insertStmt.setLong(2, foodId);
-                insertStmt.setBigDecimal(3, servings);
-                
-                // Convert OffsetDateTime to MySQL DATETIME
-                // MySQL can handle Timestamp directly
-                insertStmt.setTimestamp(4, Timestamp.from(eatenAt.toInstant()));
-                
-                insertStmt.setBigDecimal(5, snapCalories);
-                insertStmt.setBigDecimal(6, snapProteinG);
-                insertStmt.setBigDecimal(7, snapCarbsG);
-                insertStmt.setBigDecimal(8, snapFatG);
-                
-                // Debug logging
-                ZoneId vnZone = ZoneId.of("Asia/Ho_Chi_Minh");
-                java.time.ZonedDateTime vnTime = eatenAt.atZoneSameInstant(vnZone);
-                System.out.println("[UserMealDao] Inserting meal - VN time: " + vnTime + ", UTC time: " + eatenAt);
-                System.out.println("[UserMealDao] VN date: " + vnTime.toLocalDate());
-                
-                int affectedRows = insertStmt.executeUpdate();
-                if (affectedRows == 0) {
-                    throw new SQLException("Failed to insert meal snapshot");
-                }
-                
-                System.out.println("[UserMealDao] Meal snapshot inserted successfully for user " + userId);
+            // Get food info from foods table
+            Food food = em.find(Food.class, foodId);
+            if (food == null) {
+                rollbackTransaction();
+                System.err.println("[UserMealDao] Food not found: " + foodId);
+                throw new RuntimeException("Food not found: " + foodId);
             }
-        } catch (SQLException e) {
-            System.err.println("Error inserting meal snapshot: " + e.getMessage());
+            
+            if (!food.getIsActive()) {
+                rollbackTransaction();
+                System.err.println("[UserMealDao] Food is inactive: " + foodId);
+                throw new RuntimeException("Food is inactive: " + foodId);
+            }
+            
+            System.out.println("[UserMealDao] Food found: " + food.getName() + ", Active: " + food.getIsActive());
+            
+            // Get food nutrition info - handle null values
+            BigDecimal snapCalories = food.getCalories() != null ? food.getCalories() : BigDecimal.ZERO;
+            BigDecimal snapProteinG = food.getProteinG() != null ? food.getProteinG() : BigDecimal.ZERO;
+            BigDecimal snapCarbsG = food.getCarbsG() != null ? food.getCarbsG() : BigDecimal.ZERO;
+            BigDecimal snapFatG = food.getFatG() != null ? food.getFatG() : BigDecimal.ZERO;
+            
+            System.out.println("[UserMealDao] Food nutrition - Calories: " + snapCalories + ", Protein: " + snapProteinG);
+            
+            // Create UserMeal entity
+            UserMeal meal = new UserMeal();
+            meal.setUserId(userId);
+            meal.setFoodId(foodId);
+            meal.setServings(servings);
+            meal.setEatenAt(eatenAt != null ? eatenAt.toLocalDateTime() : LocalDateTime.now());
+            meal.setSnapCalories(snapCalories);
+            meal.setSnapProteinG(snapProteinG);
+            meal.setSnapCarbsG(snapCarbsG);
+            meal.setSnapFatG(snapFatG);
+            
+            // NOTE: Total values (total_calories, total_protein_g, etc.) are GENERATED columns in MySQL
+            // They are automatically calculated by MySQL from (servings * snap_*_g)
+            // DO NOT set these values - MySQL will calculate them automatically
+            // The @Column(insertable = false, updatable = false) annotation prevents JPA from trying to insert them
+            
+            // Debug logging
+            ZoneId vnZone = ZoneId.of("Asia/Ho_Chi_Minh");
+            ZonedDateTime vnTime = eatenAt != null ? eatenAt.atZoneSameInstant(vnZone) : ZonedDateTime.now(vnZone);
+            System.out.println("[UserMealDao] Inserting meal - VN time: " + vnTime + ", UTC time: " + eatenAt);
+            System.out.println("[UserMealDao] VN date: " + vnTime.toLocalDate());
+            System.out.println("[UserMealDao] Meal snap values - Calories: " + snapCalories + " * " + servings + " = " + servings.multiply(snapCalories));
+            System.out.println("[UserMealDao] Meal snap values - Protein: " + snapProteinG + " * " + servings + " = " + servings.multiply(snapProteinG));
+            
+            em.persist(meal);
+            System.out.println("[UserMealDao] Meal persisted, flushing...");
+            em.flush(); // Force insert to happen immediately
+            
+            // Refresh entity to get generated column values from database
+            em.refresh(meal);
+            commitTransaction();
+            
+            System.out.println("[UserMealDao] Meal snapshot inserted successfully for user " + userId + ", meal ID: " + meal.getId());
+            System.out.println("[UserMealDao] Generated totals (from DB) - Calories: " + meal.getTotalCalories() + ", Protein: " + meal.getTotalProteinG());
+        } catch (Exception e) {
+            rollbackTransaction();
+            System.err.println("[UserMealDao] Error inserting meal snapshot: " + e.getMessage());
+            System.err.println("[UserMealDao] Exception type: " + e.getClass().getName());
             e.printStackTrace();
-            throw new RuntimeException("Failed to insert meal snapshot", e);
+            throw new RuntimeException("Failed to insert meal snapshot: " + e.getMessage(), e);
         }
     }
 
@@ -103,61 +131,71 @@ public class UserMealDao {
      * @return list of meals for that day
      */
     public List<UserMeal> listMealsOfDay(long userId, LocalDate localDateVN) {
-        List<UserMeal> meals = new ArrayList<>();
-        
-        // Convert VN date to UTC date range for query
-        ZoneId vnZone = ZoneId.of("Asia/Ho_Chi_Minh");
-        ZonedDateTime startOfDayVN = localDateVN.atStartOfDay(vnZone);
-        ZonedDateTime endOfDayVN = localDateVN.plusDays(1).atStartOfDay(vnZone);
-        
-        OffsetDateTime startUTC = startOfDayVN.withZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime();
-        OffsetDateTime endUTC = endOfDayVN.withZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime();
-        
-        String sql = "SELECT um.id, um.user_id, um.food_id, um.meal_type, um.eaten_at, " +
-                    "um.servings, um.snap_calories, um.snap_protein_g, um.snap_carbs_g, um.snap_fat_g, " +
-                    "um.total_calories, um.total_protein_g, um.total_carbs_g, um.total_fat_g, " +
-                    "f.name as food_name " +
-                    "FROM user_meals um " +
-                    "JOIN foods f ON um.food_id = f.id " +
-                    "WHERE um.user_id = ? AND um.eaten_at >= ? AND um.eaten_at < ? " +
-                    "ORDER BY um.eaten_at DESC";
-        
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            if (conn == null) {
-                System.err.println("Error: Database connection is null in listMealsOfDay");
-                return meals;
+        EntityManager em = null;
+        try {
+            em = JPAUtil.createEntityManager();
+            
+            // Convert VN date to UTC date range for query
+            ZoneId vnZone = ZoneId.of("Asia/Ho_Chi_Minh");
+            ZonedDateTime startOfDayVN = localDateVN.atStartOfDay(vnZone);
+            ZonedDateTime endOfDayVN = localDateVN.plusDays(1).atStartOfDay(vnZone);
+            
+            LocalDateTime startUTC = startOfDayVN.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+            LocalDateTime endUTC = endOfDayVN.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+            
+            // Debug logging
+            System.out.println("[UserMealDao] Querying meals for date (VN): " + localDateVN);
+            System.out.println("[UserMealDao] UTC range: " + startUTC + " to " + endUTC);
+            System.out.println("[UserMealDao] User ID: " + userId);
+            
+            // Use JPQL query to get UserMeal entities, then fetch food names separately
+            List<UserMeal> meals = queryMealsWithFoodNames(em, userId, startUTC, endUTC);
+            
+            System.out.println("[UserMealDao] Total meals found: " + meals.size());
+            if (!meals.isEmpty() && meals.get(0).getEatenAt() != null) {
+                OffsetDateTime firstEatenAt = meals.get(0).getEatenAt().atOffset(ZoneOffset.UTC);
+                ZonedDateTime mealVN = firstEatenAt.atZoneSameInstant(vnZone);
+                System.out.println("[UserMealDao] First meal found - VN time: " + mealVN + ", VN date: " + mealVN.toLocalDate());
+                System.out.println("[UserMealDao] First meal - Food: " + meals.get(0).getFoodName() + ", Servings: " + meals.get(0).getServings());
             }
             
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setLong(1, userId);
-                // MySQL can handle Timestamp directly
-                stmt.setTimestamp(2, Timestamp.from(startUTC.toInstant()));
-                stmt.setTimestamp(3, Timestamp.from(endUTC.toInstant()));
-                
-                // Debug logging
-                System.out.println("[UserMealDao] Querying meals for date (VN): " + localDateVN);
-                System.out.println("[UserMealDao] UTC range: " + startUTC + " to " + endUTC);
-                System.out.println("[UserMealDao] User ID: " + userId);
-                
-                ResultSet rs = stmt.executeQuery();
-                int count = 0;
-                while (rs.next()) {
-                    count++;
-                    UserMeal meal = mapResultSetToUserMeal(rs);
-                    meals.add(meal);
-                    
-                    // Debug: log first meal
-                    if (count == 1 && meal.getEatenAt() != null) {
-                        java.time.ZonedDateTime mealVN = meal.getEatenAt().atZoneSameInstant(vnZone);
-                        System.out.println("[UserMealDao] First meal found - VN time: " + mealVN + ", VN date: " + mealVN.toLocalDate());
-                        System.out.println("[UserMealDao] First meal - Food: " + meal.getFoodName() + ", Servings: " + meal.getServings());
-                    }
-                }
-                System.out.println("[UserMealDao] Total meals found: " + count);
-            }
-        } catch (SQLException e) {
-            System.err.println("Error listing meals of day: " + e.getMessage());
+            return meals;
+        } catch (Exception e) {
+            System.err.println("[UserMealDao] Error listing meals of day: " + e.getMessage());
             e.printStackTrace();
+            return new ArrayList<>();
+        } finally {
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
+        }
+    }
+    
+    /**
+     * Helper method to query meals with food names
+     */
+    private List<UserMeal> queryMealsWithFoodNames(EntityManager em, long userId, LocalDateTime startUTC, LocalDateTime endUTC) {
+        // Query UserMeal entities
+        TypedQuery<UserMeal> query = em.createQuery(
+            "SELECT um FROM UserMeal um WHERE um.userId = :userId " +
+            "AND um.eatenAt >= :startTime AND um.eatenAt < :endTime " +
+            "ORDER BY um.eatenAt DESC",
+            UserMeal.class
+        );
+        query.setParameter("userId", userId);
+        query.setParameter("startTime", startUTC);
+        query.setParameter("endTime", endUTC);
+        
+        List<UserMeal> meals = query.getResultList();
+        
+        // Fetch food names separately
+        for (UserMeal meal : meals) {
+            if (meal.getFoodId() != null) {
+                Food food = em.find(Food.class, meal.getFoodId());
+                if (food != null) {
+                    meal.setFoodName(food.getName());
+                }
+            }
         }
         
         return meals;
@@ -170,64 +208,64 @@ public class UserMealDao {
      * @return DailyIntakeDTO with totals
      */
     public DailyIntakeDTO sumOfDay(long userId, LocalDate localDateVN) {
-        // Convert VN date to UTC date range for query
-        ZoneId vnZone = ZoneId.of("Asia/Ho_Chi_Minh");
-        ZonedDateTime startOfDayVN = localDateVN.atStartOfDay(vnZone);
-        ZonedDateTime endOfDayVN = localDateVN.plusDays(1).atStartOfDay(vnZone);
-        
-        OffsetDateTime startUTC = startOfDayVN.withZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime();
-        OffsetDateTime endUTC = endOfDayVN.withZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime();
-        
-        // Query using UTC range - MySQL DATETIME comparison
-        String sql = "SELECT " +
-                    "SUM(total_calories) as total_calories, " +
-                    "SUM(total_protein_g) as total_protein_g, " +
-                    "SUM(total_carbs_g) as total_carbs_g, " +
-                    "SUM(total_fat_g) as total_fat_g " +
-                    "FROM user_meals " +
-                    "WHERE user_id = ? " +
-                    "AND eaten_at >= ? " +
-                    "AND eaten_at < ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            if (conn == null) {
-                System.err.println("Error: Database connection is null in sumOfDay");
-                return new DailyIntakeDTO(); // Return zero totals
-            }
+        EntityManager em = null;
+        try {
+            em = JPAUtil.createEntityManager();
             
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setLong(1, userId);
-                // MySQL can handle Timestamp directly
-                stmt.setTimestamp(2, Timestamp.from(startUTC.toInstant()));
-                stmt.setTimestamp(3, Timestamp.from(endUTC.toInstant()));
+            // Convert VN date to UTC date range for query
+            ZoneId vnZone = ZoneId.of("Asia/Ho_Chi_Minh");
+            ZonedDateTime startOfDayVN = localDateVN.atStartOfDay(vnZone);
+            ZonedDateTime endOfDayVN = localDateVN.plusDays(1).atStartOfDay(vnZone);
+            
+            LocalDateTime startUTC = startOfDayVN.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+            LocalDateTime endUTC = endOfDayVN.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+            
+            // Native SQL query using EntityManager
+            String sql = "SELECT " +
+                        "SUM(total_calories) as total_calories, " +
+                        "SUM(total_protein_g) as total_protein_g, " +
+                        "SUM(total_carbs_g) as total_carbs_g, " +
+                        "SUM(total_fat_g) as total_fat_g " +
+                        "FROM user_meals " +
+                        "WHERE user_id = ? " +
+                        "AND eaten_at >= ? " +
+                        "AND eaten_at < ?";
+            
+            // Debug logging
+            System.out.println("[UserMealDao] Querying totals for date (VN): " + localDateVN);
+            System.out.println("[UserMealDao] UTC range: " + startUTC + " to " + endUTC);
+            System.out.println("[UserMealDao] User ID: " + userId);
+            
+            jakarta.persistence.Query query = em.createNativeQuery(sql);
+            query.setParameter(1, userId);
+            query.setParameter(2, Timestamp.valueOf(startUTC));
+            query.setParameter(3, Timestamp.valueOf(endUTC));
+            
+            try {
+                Object[] result = (Object[]) query.getSingleResult();
                 
-                // Debug logging
-                System.out.println("[UserMealDao] Querying totals for date (VN): " + localDateVN);
-                System.out.println("[UserMealDao] UTC range: " + startUTC + " to " + endUTC);
-                System.out.println("[UserMealDao] User ID: " + userId);
-                
-                ResultSet rs = stmt.executeQuery();
-                if (rs.next()) {
-                    BigDecimal totalCalories = rs.getBigDecimal("total_calories");
-                    BigDecimal totalProtein = rs.getBigDecimal("total_protein_g");
-                    BigDecimal totalCarbs = rs.getBigDecimal("total_carbs_g");
-                    BigDecimal totalFat = rs.getBigDecimal("total_fat_g");
+                if (result != null && result.length >= 4) {
+                    BigDecimal totalCalories = result[0] != null ? (BigDecimal) result[0] : BigDecimal.ZERO;
+                    BigDecimal totalProtein = result[1] != null ? (BigDecimal) result[1] : BigDecimal.ZERO;
+                    BigDecimal totalCarbs = result[2] != null ? (BigDecimal) result[2] : BigDecimal.ZERO;
+                    BigDecimal totalFat = result[3] != null ? (BigDecimal) result[3] : BigDecimal.ZERO;
                     
                     System.out.println("[UserMealDao] Totals found - Calories: " + totalCalories + ", Protein: " + totalProtein);
                     
-                    return new DailyIntakeDTO(
-                        totalCalories != null ? totalCalories : BigDecimal.ZERO,
-                        totalProtein != null ? totalProtein : BigDecimal.ZERO,
-                        totalCarbs != null ? totalCarbs : BigDecimal.ZERO,
-                        totalFat != null ? totalFat : BigDecimal.ZERO
-                    );
+                    return new DailyIntakeDTO(totalCalories, totalProtein, totalCarbs, totalFat);
                 } else {
-                    System.out.println("[UserMealDao] No totals found for date");
+                    System.out.println("[UserMealDao] No totals found for date (result array invalid)");
                 }
+            } catch (jakarta.persistence.NoResultException e) {
+                System.out.println("[UserMealDao] No results found for date");
             }
-        } catch (SQLException e) {
-            System.err.println("Error summing day totals: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("[UserMealDao] Error summing day totals: " + e.getMessage());
             e.printStackTrace();
+        } finally {
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
         }
         
         return new DailyIntakeDTO(); // Return zero totals
@@ -241,47 +279,51 @@ public class UserMealDao {
      * @return list of meals in the date range
      */
     public List<UserMeal> getMealHistory(long userId, LocalDate startDate, LocalDate endDate) {
-        List<UserMeal> meals = new ArrayList<>();
-        
-        // Convert VN dates to UTC date range for query
-        ZoneId vnZone = ZoneId.of("Asia/Ho_Chi_Minh");
-        ZonedDateTime startOfDayVN = startDate.atStartOfDay(vnZone);
-        ZonedDateTime endOfDayVN = endDate.atStartOfDay(vnZone);
-        
-        OffsetDateTime startUTC = startOfDayVN.withZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime();
-        OffsetDateTime endUTC = endOfDayVN.withZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime();
-        
-        String sql = "SELECT um.id, um.user_id, um.food_id, um.meal_type, um.eaten_at, " +
-                    "um.servings, um.snap_calories, um.snap_protein_g, um.snap_carbs_g, um.snap_fat_g, " +
-                    "um.total_calories, um.total_protein_g, um.total_carbs_g, um.total_fat_g, " +
-                    "f.name as food_name " +
-                    "FROM user_meals um " +
-                    "JOIN foods f ON um.food_id = f.id " +
-                    "WHERE um.user_id = ? AND um.eaten_at >= ? AND um.eaten_at < ? " +
-                    "ORDER BY um.eaten_at DESC";
-        
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            if (conn == null) {
-                System.err.println("Error: Database connection is null in getMealHistory");
-                return meals;
-            }
+        EntityManager em = null;
+        try {
+            em = JPAUtil.createEntityManager();
             
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setLong(1, userId);
-                stmt.setTimestamp(2, Timestamp.from(startUTC.toInstant()));
-                stmt.setTimestamp(3, Timestamp.from(endUTC.toInstant()));
-                
-                ResultSet rs = stmt.executeQuery();
-                while (rs.next()) {
-                    meals.add(mapResultSetToUserMeal(rs));
+            // Convert VN dates to UTC date range for query
+            ZoneId vnZone = ZoneId.of("Asia/Ho_Chi_Minh");
+            ZonedDateTime startOfDayVN = startDate.atStartOfDay(vnZone);
+            ZonedDateTime endOfDayVN = endDate.atStartOfDay(vnZone);
+            
+            LocalDateTime startUTC = startOfDayVN.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+            LocalDateTime endUTC = endOfDayVN.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+            
+            // Query UserMeal entities
+            TypedQuery<UserMeal> query = em.createQuery(
+                "SELECT um FROM UserMeal um WHERE um.userId = :userId " +
+                "AND um.eatenAt >= :startTime AND um.eatenAt < :endTime " +
+                "ORDER BY um.eatenAt DESC",
+                UserMeal.class
+            );
+            query.setParameter("userId", userId);
+            query.setParameter("startTime", startUTC);
+            query.setParameter("endTime", endUTC);
+            
+            List<UserMeal> meals = query.getResultList();
+            
+            // Fetch food names separately
+            for (UserMeal meal : meals) {
+                if (meal.getFoodId() != null) {
+                    Food food = em.find(Food.class, meal.getFoodId());
+                    if (food != null) {
+                        meal.setFoodName(food.getName());
+                    }
                 }
             }
-        } catch (SQLException e) {
-            System.err.println("Error getting meal history: " + e.getMessage());
+            
+            return meals;
+        } catch (Exception e) {
+            System.err.println("[UserMealDao] Error getting meal history: " + e.getMessage());
             e.printStackTrace();
+            return new ArrayList<>();
+        } finally {
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
         }
-        
-        return meals;
     }
 
     /**
@@ -291,92 +333,83 @@ public class UserMealDao {
      * @param endDate end date (exclusive) in Vietnam timezone
      * @return map of date (LocalDate) to DailyIntakeDTO
      */
-    public java.util.Map<LocalDate, DailyIntakeDTO> getDailyTotalsHistory(long userId, LocalDate startDate, LocalDate endDate) {
-        java.util.Map<LocalDate, DailyIntakeDTO> dailyTotals = new java.util.LinkedHashMap<>();
-        
-        // Convert VN dates to UTC date range for query
-        ZoneId vnZone = ZoneId.of("Asia/Ho_Chi_Minh");
-        ZonedDateTime startOfDayVN = startDate.atStartOfDay(vnZone);
-        ZonedDateTime endOfDayVN = endDate.atStartOfDay(vnZone);
-        
-        OffsetDateTime startUTC = startOfDayVN.withZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime();
-        OffsetDateTime endUTC = endOfDayVN.withZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime();
-        
-        // Convert each meal's eaten_at from UTC to VN timezone and group by date
-        // We'll do the grouping in Java instead of SQL for better compatibility
-        String sql = "SELECT um.eaten_at, " +
-                    "um.total_calories, um.total_protein_g, um.total_carbs_g, um.total_fat_g " +
-                    "FROM user_meals um " +
-                    "WHERE um.user_id = ? AND um.eaten_at >= ? AND um.eaten_at < ? " +
-                    "ORDER BY um.eaten_at DESC";
-        
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            if (conn == null) {
-                System.err.println("Error: Database connection is null in getDailyTotalsHistory");
-                return dailyTotals;
-            }
+    public Map<LocalDate, DailyIntakeDTO> getDailyTotalsHistory(long userId, LocalDate startDate, LocalDate endDate) {
+        EntityManager em = null;
+        try {
+            em = JPAUtil.createEntityManager();
             
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setLong(1, userId);
-                stmt.setTimestamp(2, Timestamp.from(startUTC.toInstant()));
-                stmt.setTimestamp(3, Timestamp.from(endUTC.toInstant()));
-                
-                ResultSet rs = stmt.executeQuery();
-                
-                while (rs.next()) {
-                    // Get eaten_at as OffsetDateTime
-                    Object eatenAtObj = rs.getObject("eaten_at");
-                    OffsetDateTime eatenAt = null;
+            // Convert VN dates to UTC date range for query
+            ZoneId vnZone = ZoneId.of("Asia/Ho_Chi_Minh");
+            ZonedDateTime startOfDayVN = startDate.atStartOfDay(vnZone);
+            ZonedDateTime endOfDayVN = endDate.atStartOfDay(vnZone);
+            
+            LocalDateTime startUTC = startOfDayVN.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+            LocalDateTime endUTC = endOfDayVN.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+            
+            // Query all meals in the date range
+            TypedQuery<UserMeal> query = em.createQuery(
+                "SELECT um FROM UserMeal um WHERE um.userId = :userId " +
+                "AND um.eatenAt >= :startTime AND um.eatenAt < :endTime " +
+                "ORDER BY um.eatenAt DESC",
+                UserMeal.class
+            );
+            query.setParameter("userId", userId);
+            query.setParameter("startTime", startUTC);
+            query.setParameter("endTime", endUTC);
+            
+            List<UserMeal> meals = query.getResultList();
+            
+            // Group by date in VN timezone
+            Map<LocalDate, DailyIntakeDTO> dailyTotals = new LinkedHashMap<>();
+            
+            for (UserMeal meal : meals) {
+                if (meal.getEatenAt() != null) {
+                    // Convert to VN timezone and get date
+                    OffsetDateTime eatenAtOffset = meal.getEatenAt().atOffset(ZoneOffset.UTC);
+                    LocalDate localDate = eatenAtOffset.atZoneSameInstant(vnZone).toLocalDate();
                     
-                    if (eatenAtObj instanceof OffsetDateTime) {
-                        eatenAt = (OffsetDateTime) eatenAtObj;
-                    } else if (eatenAtObj instanceof Timestamp) {
-                        Timestamp ts = (Timestamp) eatenAtObj;
-                        eatenAt = OffsetDateTime.ofInstant(ts.toInstant(), java.time.ZoneId.of("UTC"));
-                    }
+                    BigDecimal totalCalories = meal.getTotalCalories();
+                    BigDecimal totalProtein = meal.getTotalProteinG();
+                    BigDecimal totalCarbs = meal.getTotalCarbsG();
+                    BigDecimal totalFat = meal.getTotalFatG();
                     
-                    if (eatenAt != null) {
-                        // Convert to VN timezone and get date
-                        LocalDate localDate = eatenAt.atZoneSameInstant(vnZone).toLocalDate();
-                        
-                        BigDecimal totalCalories = rs.getBigDecimal("total_calories");
-                        BigDecimal totalProtein = rs.getBigDecimal("total_protein_g");
-                        BigDecimal totalCarbs = rs.getBigDecimal("total_carbs_g");
-                        BigDecimal totalFat = rs.getBigDecimal("total_fat_g");
-                        
-                        // Sum up values for each date
-                        DailyIntakeDTO existingTotals = dailyTotals.get(localDate);
-                        if (existingTotals == null) {
-                            dailyTotals.put(localDate, new DailyIntakeDTO(
-                                totalCalories != null ? totalCalories : BigDecimal.ZERO,
-                                totalProtein != null ? totalProtein : BigDecimal.ZERO,
-                                totalCarbs != null ? totalCarbs : BigDecimal.ZERO,
-                                totalFat != null ? totalFat : BigDecimal.ZERO
-                            ));
-                        } else {
-                            // Add to existing totals
-                            existingTotals.setCaloriesKcal(
-                                existingTotals.getCaloriesKcal().add(totalCalories != null ? totalCalories : BigDecimal.ZERO)
-                            );
-                            existingTotals.setProteinG(
-                                existingTotals.getProteinG().add(totalProtein != null ? totalProtein : BigDecimal.ZERO)
-                            );
-                            existingTotals.setCarbsG(
-                                existingTotals.getCarbsG().add(totalCarbs != null ? totalCarbs : BigDecimal.ZERO)
-                            );
-                            existingTotals.setFatG(
-                                existingTotals.getFatG().add(totalFat != null ? totalFat : BigDecimal.ZERO)
-                            );
-                        }
+                    // Sum up values for each date
+                    DailyIntakeDTO existingTotals = dailyTotals.get(localDate);
+                    if (existingTotals == null) {
+                        dailyTotals.put(localDate, new DailyIntakeDTO(
+                            totalCalories != null ? totalCalories : BigDecimal.ZERO,
+                            totalProtein != null ? totalProtein : BigDecimal.ZERO,
+                            totalCarbs != null ? totalCarbs : BigDecimal.ZERO,
+                            totalFat != null ? totalFat : BigDecimal.ZERO
+                        ));
+                    } else {
+                        // Add to existing totals
+                        existingTotals.setCaloriesKcal(
+                            existingTotals.getCaloriesKcal().add(totalCalories != null ? totalCalories : BigDecimal.ZERO)
+                        );
+                        existingTotals.setProteinG(
+                            existingTotals.getProteinG().add(totalProtein != null ? totalProtein : BigDecimal.ZERO)
+                        );
+                        existingTotals.setCarbsG(
+                            existingTotals.getCarbsG().add(totalCarbs != null ? totalCarbs : BigDecimal.ZERO)
+                        );
+                        existingTotals.setFatG(
+                            existingTotals.getFatG().add(totalFat != null ? totalFat : BigDecimal.ZERO)
+                        );
                     }
                 }
             }
-        } catch (SQLException e) {
-            System.err.println("Error getting daily totals history: " + e.getMessage());
+            
+            return dailyTotals;
+        } catch (Exception e) {
+            System.err.println("[UserMealDao] Error getting daily totals history: " + e.getMessage());
             e.printStackTrace();
+            return new LinkedHashMap<>();
+        } finally {
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
         }
-        
-        return dailyTotals;
     }
 
     /**
@@ -386,69 +419,35 @@ public class UserMealDao {
      * @return true if deleted successfully, false otherwise
      */
     public boolean deleteMeal(long mealId, long userId) {
-        String sql = "DELETE FROM user_meals WHERE id = ? AND user_id = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            if (conn == null) {
-                System.err.println("Error: Database connection is null in deleteMeal");
+        EntityManager em = null;
+        try {
+            em = JPAUtil.createEntityManager();
+            em.getTransaction().begin();
+            
+            // Find meal and verify it belongs to the user
+            UserMeal meal = em.find(UserMeal.class, mealId);
+            if (meal == null || !meal.getUserId().equals(userId)) {
+                if (em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
                 return false;
             }
             
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setLong(1, mealId);
-                stmt.setLong(2, userId);
-                
-                int affectedRows = stmt.executeUpdate();
-                return affectedRows > 0;
+            em.remove(meal);
+            em.getTransaction().commit();
+            
+            return true;
+        } catch (Exception e) {
+            if (em != null && em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
             }
-        } catch (SQLException e) {
-            System.err.println("Error deleting meal: " + e.getMessage());
+            System.err.println("[UserMealDao] Error deleting meal: " + e.getMessage());
             e.printStackTrace();
             return false;
-        }
-    }
-
-    /**
-     * Helper method to map ResultSet to UserMeal object
-     */
-    private UserMeal mapResultSetToUserMeal(ResultSet rs) throws SQLException {
-        UserMeal meal = new UserMeal();
-        meal.setId(rs.getLong("id"));
-        meal.setUserId(rs.getLong("user_id"));
-        meal.setFoodId(rs.getLong("food_id"));
-        meal.setFoodName(rs.getString("food_name"));
-        meal.setMealType(rs.getString("meal_type"));
-        
-        // Handle DATETIME to OffsetDateTime
-        // MySQL JDBC driver supports getTimestamp for DATETIME
-        try {
-            Object eatenAtObj = rs.getObject("eaten_at");
-            if (eatenAtObj instanceof OffsetDateTime) {
-                meal.setEatenAt((OffsetDateTime) eatenAtObj);
-            } else if (eatenAtObj instanceof Timestamp) {
-                Timestamp ts = (Timestamp) eatenAtObj;
-                meal.setEatenAt(OffsetDateTime.ofInstant(ts.toInstant(), java.time.ZoneId.of("UTC")));
-            }
-        } catch (Exception e) {
-            // Fallback: try Timestamp
-            Timestamp eatenAtTimestamp = rs.getTimestamp("eaten_at");
-            if (eatenAtTimestamp != null) {
-                meal.setEatenAt(OffsetDateTime.ofInstant(eatenAtTimestamp.toInstant(), 
-                    java.time.ZoneId.of("UTC")));
+        } finally {
+            if (em != null && em.isOpen()) {
+                em.close();
             }
         }
-        
-        meal.setServings(rs.getBigDecimal("servings"));
-        meal.setSnapCalories(rs.getBigDecimal("snap_calories"));
-        meal.setSnapProteinG(rs.getBigDecimal("snap_protein_g"));
-        meal.setSnapCarbsG(rs.getBigDecimal("snap_carbs_g"));
-        meal.setSnapFatG(rs.getBigDecimal("snap_fat_g"));
-        meal.setTotalCalories(rs.getBigDecimal("total_calories"));
-        meal.setTotalProteinG(rs.getBigDecimal("total_protein_g"));
-        meal.setTotalCarbsG(rs.getBigDecimal("total_carbs_g"));
-        meal.setTotalFatG(rs.getBigDecimal("total_fat_g"));
-        
-        return meal;
     }
 }
-

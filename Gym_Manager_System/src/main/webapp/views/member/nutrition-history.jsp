@@ -458,10 +458,10 @@
             <h1 class="mb-2" style="color: white; font-weight: 900; font-size: 2rem;">📊 Lịch Sử Dinh Dưỡng</h1>
             <p style="font-size: 1rem; opacity: 0.9; margin: 0;">Xem lại các món ăn và lượng calo đã nạp trong những ngày qua</p>
             <a href="${pageContext.request.contextPath}/member/nutrition" 
-               class="btn-secondary" 
+               class="btn-back" 
                style="position: absolute; top: 20px; right: 20px;">
                 <i class="fas fa-arrow-left"></i>
-                <span>Quay Lại</span>
+                <span>Quay lại</span>
             </a>
         </div>
 
