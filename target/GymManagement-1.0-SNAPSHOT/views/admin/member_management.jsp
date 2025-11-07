@@ -889,6 +889,8 @@
 
                 document.querySelectorAll('.filter-select').forEach(select => {
                     select.addEventListener('change', () => {
+                        console.log("cccccccccccc");
+                        
                         let status = document.querySelector('select[name="status"]').value;
                         let packageType = document.querySelector('select[name="packageType"]').value;
                         let keyword = document.querySelector('input[name="keyword"]').value.trim();
@@ -906,6 +908,8 @@
                         if (query.endsWith('&') || query.endsWith('?')) {
                             query = query.slice(0, -1);
                         }
+                        console.log(`${contextPath}/admin/member-management` + query);
+                        
                        window.location.href = `${contextPath}/admin/member-management` + query;
                    });
                });

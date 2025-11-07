@@ -29,16 +29,16 @@ public class MembershipService {
         return membershipDAO.findByUserId(id);
     }
 
-    public int add(Membership user) {
-        return membershipDAO.save(user);
+    public int add(Membership membership) {
+        return membershipDAO.save(membership);
     }
 
-    public int update(Membership user) {
-        return membershipDAO.update(user);
+    public int update(Membership membership) {
+        return membershipDAO.update(membership);
     }
 
-    public int delete(Membership user) {
-        return membershipDAO.delete(user);
+    public int delete(Membership membership) {
+        return membershipDAO.delete(membership);
     }
 
     public int deleteById(int id) {
