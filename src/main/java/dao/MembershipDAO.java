@@ -1,5 +1,6 @@
 package dao;
 
+import java.util.ArrayList;
 import java.util.List;
 import model.Membership;
 
@@ -20,7 +21,7 @@ public class MembershipDAO {
 
     public List<Membership> findAll() {
         List<Membership> memberships = genericDAO.findAll();
-        return memberships != null ? memberships : List.of();
+        return memberships != null ? memberships : new ArrayList<>(List.of());
     }
 
     public Membership findById(int id) {

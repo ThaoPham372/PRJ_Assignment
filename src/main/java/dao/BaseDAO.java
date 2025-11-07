@@ -7,18 +7,19 @@ import jakarta.persistence.Persistence;
 public abstract class BaseDAO {
 
     private static EntityManagerFactory emf = null;
-    
+    protected EntityManager em;
+
     static {
         try {
             emf = Persistence.createEntityManagerFactory("gym-pu");
+            System.out.println("EMF created successfully!");
         } catch (Exception e) {
             System.out.println("======================================================");
-            System.out.println("CANNOT connect to Databse : " + e.getMessage());
+            System.out.println("CANNOT connect to Database:");
+            e.printStackTrace();  // in full stack trace
             System.out.println("======================================================");
         }
     }
-    
-    protected EntityManager em;
 
     public BaseDAO() {
         em = emf.createEntityManager();

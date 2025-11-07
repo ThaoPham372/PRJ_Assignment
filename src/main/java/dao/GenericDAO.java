@@ -1,6 +1,7 @@
 package dao;
 
 import jakarta.persistence.NoResultException;
+import java.util.ArrayList;
 import java.util.List;
 import model.User;
 
@@ -45,7 +46,7 @@ public class GenericDAO<T> extends BaseDAO {
         } catch (Exception e){
             System.out.println("Error: Find ALL ---> ");
         }
-        return List.of();
+        return new ArrayList<>(List.of());
     }
     
     public T findByField(String fieldName, Object value){

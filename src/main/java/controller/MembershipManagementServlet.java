@@ -1,4 +1,3 @@
-
 package controller;
 
 import jakarta.servlet.ServletException;
@@ -27,8 +26,18 @@ public class MembershipManagementServlet extends HttpServlet {
         if ("deleteMembership".equals(req.getParameter("action"))) {
             deleteMembership(req, resp);
         }
-        getMembership(req, resp);
-        req.getRequestDispatcher("/views/admin/member_management.jsp").forward(req, resp);
+        if ("filterMemberships".equals(req.getParameter("action"))) {
+            handleFilterMemberships(req, resp);
+        } else {
+            List<Membership> memberships = getMembership(req, resp);
+            System.out.println("\n\nMMS");
+            for(Membership m : memberships) {
+                System.out.println(m);
+            }
+            System.out.println("\n\n\n");
+            req.setAttribute("memberships", memberships);
+            req.getRequestDispatcher("/views/admin/member_management.jsp").forward(req, resp);
+        }
     }
 
     @Override
@@ -131,17 +140,15 @@ public class MembershipManagementServlet extends HttpServlet {
         }
     }
 
-    private void getMembership(HttpServletRequest req, HttpServletResponse resp)
+    private List<Membership> getMembership(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        System.out.println("\n\nGet Membership CALLED");
         MembershipService membershipService = new MembershipService();
         List<Membership> memberships = membershipService.getAll();
-        getMemberInfo(memberships);
-        System.out.println("> Total memberships: " + memberships.size());
-        req.setAttribute("memberships", memberships);
+        generateMembershipInfo(memberships);
+        return memberships;
     }
 
-    private void getMemberInfo(List<Membership> memberships) {
+    private void generateMembershipInfo(List<Membership> memberships) {
         MemberService memberService = new MemberService();
         for (Membership m : memberships) {
             Member mem = memberService.getMemberById(m.getUserId());
@@ -152,5 +159,64 @@ public class MembershipManagementServlet extends HttpServlet {
                 m.setPackageType("Standard");
             }
         }
+    }
+
+    private void handleFilterMemberships(HttpServletRequest req, HttpServletResponse resp) {
+        String keyword = req.getParameter("keyword").toLowerCase();
+        String status = req.getParameter("status").toLowerCase();
+        String packageType = req.getParameter("packageType").toLowerCase();
+
+        MembershipService membershipService = new MembershipService();
+        List<Membership> memberships = membershipService.getAll();
+
+        // Filter by keyword
+        filterByKeyword(memberships, keyword);
+
+        // Further filtering by status and packageType can be implemented here
+        filterByStatusAndPackageType(memberships, status, packageType);
+
+        generateMembershipInfo(memberships);
+    }
+
+    private void filterByKeyword(List<Membership> memberships, String keyword) {
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            memberships.removeIf(m -> {
+                MemberService memberService = new MemberService();
+                Member mem = memberService.getMemberById(m.getUserId());
+                return mem == null || !(mem.getName().toLowerCase().contains(keyword)
+                        || mem.getEmail().toLowerCase().contains(keyword));
+            });
+        }
+    }
+
+    private void filterByStatusAndPackageType(List<Membership> memberships, String status, String packageType) {
+        memberships.removeIf(m -> {
+            // Filter by status
+            boolean statusMatch = true;
+            Date now = new Date();
+            if (null != status) {
+                switch (status) {
+                    case "active" ->
+                        statusMatch = m.getEndDate().after(now);
+                    case "expiring" -> {
+                        long diff = m.getEndDate().getTime() - now.getTime();
+                        statusMatch = diff > 0 && diff <= 7L * 24 * 60 * 60 * 1000; // within 7 days
+                    }
+                    case "expired" ->
+                        statusMatch = m.getEndDate().before(now);
+                    default -> {
+                    }
+                }
+            }
+
+            // Filter by packageType
+            boolean packageMatch = true;
+            if (!"all".equals(packageType)) {
+                // Assuming packageType is stored in Membership as a String for simplicity
+                packageMatch = packageType.equalsIgnoreCase(m.getPackageType());
+            }
+
+            return !(statusMatch && packageMatch);
+        });
     }
 }

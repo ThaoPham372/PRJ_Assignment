@@ -657,21 +657,22 @@
                                     class="filter-select"
                                     placeholder="Tìm kiếm theo tên, email..."
                                     style="width: 250px"
+                                    name="keyword"
                                     />
 
-                                <select class="filter-select">
-                                    <option value="all">Tất cả trạng thái</option>
-                                    <option value="active">Đang hoạt động</option>
-                                    <option value="expiring">Sắp hết hạn</option>
-                                    <option value="expired">Đã hết hạn</option>
+                                <select class="filter-select" name="status">
+                                    <option value="all" ${status == 'all' ? 'selected' : ''}>Tất cả trạng thái</option>
+                                    <option value="active" ${status == 'active' ? 'selected' : ''}>Đang hoạt động</option>
+                                    <option value="expiring" ${status == 'expiring' ? 'selected' : ''}>Sắp hết hạn</option>
+                                    <option value="expired" ${status == 'expired' ? 'selected' : ''}>Đã hết hạn</option>
                                 </select>
 
-                                <select class="filter-select">
-                                    <option value="all">Tất cả gói tập</option>
-                                    <option value="basic">Gói Basic</option>
-                                    <option value="standard">Gói Standard</option>
-                                    <option value="premium">Gói Premium</option>
-                                    <option value="vip">Gói VIP</option>
+                                <select class="filter-select" name="packageType">
+                                    <option value="all" ${packageType == 'all' ? 'selected' : ''}>Tất cả gói tập</option>
+                                    <option value="basic" ${packageType == 'basic' ? 'selected' : ''}>Gói Basic</option>
+                                    <option value="standard" ${packageType == 'standard' ? 'selected' : ''}>Gói Standard</option>
+                                    <option value="premium" ${packageType == 'premium' ? 'selected' : ''}>Gói Premium</option>
+                                    <option value="vip" ${packageType == 'vip' ? 'selected' : ''}>Gói VIP</option>
                                 </select>
                             </div>
 
@@ -866,6 +867,7 @@
             </div>
 
             <script>
+                const contextPath = '${pageContext.request.contextPath}';
                 function openAddMembershipModal() {
                     document.getElementById('addMemberModal').classList.add('active');
                     const form = document.querySelector('#membershipForm');
@@ -884,6 +886,29 @@
                         window.location.href = `${contextPath}/admin/member-management?action=deleteMembership&membershipId=` + membershipId;
                     }
                 }
+
+                document.querySelectorAll('.filter-select').forEach(select => {
+                    select.addEventListener('change', () => {
+                        let status = document.querySelector('select[name="status"]').value;
+                        let packageType = document.querySelector('select[name="packageType"]').value;
+                        let keyword = document.querySelector('input[name="keyword"]').value.trim();
+                        let query = '?action=filterMemberships&';
+                        if (status && status !== 'all') {
+                            query += `status=${encodeURIComponent(status)}&`;
+                        }
+                        if (packageType && packageType !== 'all') {
+                            query += `packageType=${encodeURIComponent(packageType)}&`;
+                        }
+                       if (keyword) {
+                           query += `keyword=${encodeURIComponent(keyword)}&`;
+                       }
+                          // Remove trailing '&' or '?' if exists
+                        if (query.endsWith('&') || query.endsWith('?')) {
+                            query = query.slice(0, -1);
+                        }
+                       window.location.href = `${contextPath}/admin/member-management` + query;
+                   });
+               });
 
                 // Close modal when clicking outside
                 window.onclick = function (event) {

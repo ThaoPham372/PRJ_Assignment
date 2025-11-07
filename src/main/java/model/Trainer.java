@@ -3,16 +3,10 @@ package model;
 
 import java.io.Serializable;
 import java.util.Date;
-import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
 
 /*
@@ -25,14 +19,13 @@ public class Trainer extends User implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Column(name = "hiredDate")
-    @Temporal(TemporalType.DATE)
+    @Transient
     private Date hiredDate;
-    // @Max(value=?) @Min(value=?)//if you know range of your decimal fields
-    // consider using these annotations to enforce field validation
-    @Column(name = "salary")
+    
+    @Transient
     private Double salary;
-    @Column(name = "star")
+    
+    @Column(name = "average_rating")
     private Double star;
 
     public Trainer() {

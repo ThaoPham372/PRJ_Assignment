@@ -1,5 +1,6 @@
 package dao;
 
+import java.util.ArrayList;
 import java.util.List;
 import model.User;
 
@@ -21,7 +22,7 @@ public class UserDAO {
 
     public List<User> findAll() {
         List<User> users = genericDAO.findAll();
-        return users != null ? users : List.of();
+        return users != null ? users : new ArrayList<>(List.of());
     }
 
     public User findById(int id) {
@@ -77,15 +78,11 @@ public class UserDAO {
     }
 
     public int existsByEmail(String email) {
-        System.out.println(">>User: Exist By Email");
         User user = genericDAO.findByField("email", email);
-        System.out.println("Result: " + user);
-        System.out.println("-------------------------------");
         return user != null ? user.getUserId() : -1;
     }
 
     public User findByUsernameOrEmail(String usernameOrEmail) {
-        System.out.println(">>User: Find By Name Or Email");
         User user = null;
         try {
             user = genericDAO.findByField("username", usernameOrEmail);
@@ -95,74 +92,51 @@ public class UserDAO {
         } catch (Exception e) {
             System.out.println("Khong tim thay");
         }
-        System.out.println("Result: " + user);
-        System.out.println("---------------------------");
         return user;
     }
 
     public int update(User user) {
-        System.out.println(">>User: Update");
         int id = genericDAO.update(user);
-        System.out.println("Result id: " + id);
-        System.out.println("---------------------------");
         return id;
     }
 
     public int incrementFailedLoginAttempts(User user) {
-        System.out.println(">>User: Increment Failed Login Attempts");
         user.setFailedLoginAttempts(user.getFailedLoginAttempts() + 1);
         genericDAO.update(user);
-        System.out.println("New Failed Attempts: " + user.getFailedLoginAttempts());
-        System.out.println("---------------------------");
         return user.getFailedLoginAttempts();
     }
 
     public int resetFailedLoginAttempts(User user) {
-        System.out.println(">>User: Reset Failed Login Attempts");
         user.setFailedLoginAttempts(0);
         genericDAO.update(user);
-        System.out.println("Failed Attempts reset to 0");
-        System.out.println("---------------------------");
         return 0;
     }
 
     public int resetLockedUntil(User user) {
-        System.out.println(">>User: Reset Locked Until");
         user.setLockedUntil(null);
         genericDAO.update(user);
-        System.out.println("LockedUntil reset to null");
-        System.out.println("---------------------------");
         return 0;
     }
 
     public int lockAccount(User user, int minutes) {
-        System.out.println(">>User: Lock Account for " + minutes + " minutes");
         java.util.Calendar cal = java.util.Calendar.getInstance();
         cal.add(java.util.Calendar.MINUTE, minutes);
         user.setLockedUntil(cal.getTime());
         genericDAO.update(user);
-        System.out.println("Account locked until: " + user.getLockedUntil());
-        System.out.println("---------------------------");
         return minutes;
     }
 
     public void updateLastLogin(int userId) {
-        System.out.println(">>User: Update Last Login");
         User user = genericDAO.findById(userId);
         if (user != null) {
             user.setLastLogin(new java.util.Date());
             genericDAO.update(user);
-            System.out.println("Last login updated to: " + user.getLastLogin());
         }
-        System.out.println("---------------------------");
     }
 
     public int delete(User user) {
-        System.out.println(">>User: Delete (update status)");
         user.setStatus("INACTIVE");
         int userId = genericDAO.update(user);
-        System.out.println("update user id: " + userId + ", status: " + user.getStatus());
-        System.out.println("---------------------------");
         return userId;
     }
 
