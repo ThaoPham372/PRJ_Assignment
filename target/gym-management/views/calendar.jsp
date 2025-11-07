@@ -484,12 +484,12 @@ file="/views/common/header.jsp" %>
 
 <!-- Floating Buttons -->
 <div class="floating-buttons">
-  <button
+  <a
+    href="${pageContext.request.contextPath}/advisory"
     class="floating-btn tu-van"
-    onclick="alert('Chức năng tư vấn sẽ được triển khai sớm!')"
   >
     <i class="fas fa-user-tie"></i> TƯ VẤN
-  </button>
+  </a>
   <button
     class="floating-btn chat-bot"
     onclick="alert('Chức năng chat bot đang được phát triển!')"

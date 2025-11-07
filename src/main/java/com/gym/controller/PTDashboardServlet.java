@@ -1,13 +1,18 @@
 package com.gym.controller;
 
 import java.io.IOException;
+import java.util.List;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import com.gym.model.Student;
+import com.gym.service.IStudentService;
+import com.gym.service.StudentService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Servlet for Personal Trainer Dashboard
@@ -16,11 +21,22 @@ import javax.servlet.http.HttpSession;
 @WebServlet(name = "PTDashboardServlet", urlPatterns = {
     "/pt/dashboard",
     "/pt/home",
+    "/pt/homePT.jsp",
+    "/pt/profile",
     "/pt/schedule",
     "/pt/chat",
-    "/pt/reports"
+    "/pt/reports",
+    "/pt/students"
 })
 public class PTDashboardServlet extends HttpServlet {
+
+  private IStudentService studentService;
+
+  @Override
+  public void init() throws ServletException {
+    super.init();
+    this.studentService = new StudentService();
+  }
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -48,15 +64,35 @@ public class PTDashboardServlet extends HttpServlet {
     switch (path) {
       case "/pt/dashboard":
       case "/pt/home":
+      case "/pt/homePT.jsp":
         forwardPath = "/views/PT/homePT.jsp";
         break;
       case "/pt/profile":
         forwardPath = "/views/PT/profile.jsp";
         break;
       case "/pt/schedule":
-        // Đưa sang ScheduleServlet để lấy dữ liệu thật từ DB
-        response.sendRedirect(request.getContextPath() + "/ScheduleServlet?action=list");
-        return;
+        forwardPath = "/views/PT/training_schedule.jsp";
+        break;
+
+      case "/pt/students":
+        // Load student data before forwarding to JSP
+        try {
+          List<Student> students = studentService.getAllActiveStudents();
+          int totalStudents = studentService.getTotalStudentsCount();
+          int activeStudents = studentService.getActiveStudentsCount();
+          int achievedGoalCount = studentService.getAchievedGoalCount();
+
+          request.setAttribute("students", students);
+          request.setAttribute("totalStudents", totalStudents);
+          request.setAttribute("activeStudents", activeStudents);
+          request.setAttribute("achievedGoalCount", achievedGoalCount);
+        } catch (Exception e) {
+          System.err.println("Error loading students in PTDashboardServlet: " + e.getMessage());
+          e.printStackTrace();
+        }
+        forwardPath = "/views/PT/student_management.jsp";
+        break;
+
       case "/pt/chat":
         forwardPath = "/views/PT/chat.jsp";
         break;

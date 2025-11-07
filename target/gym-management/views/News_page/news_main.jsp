@@ -497,9 +497,12 @@
 
 <!-- Floating Buttons -->
 <div class="floating-buttons">
-  <button class="floating-btn tu-van" onclick="alert('Chức năng tư vấn sẽ được triển khai sớm!')">
+  <a
+    href="${pageContext.request.contextPath}/advisory"
+    class="floating-btn tu-van"
+  >
     <i class="fas fa-user-tie"></i> TƯ VẤN
-  </button>
+  </a>
   <button class="floating-btn chat-bot" onclick="alert('Chức năng chat bot đang được phát triển!')">
     <i class="fas fa-comments"></i> CHAT BOT
   </button>

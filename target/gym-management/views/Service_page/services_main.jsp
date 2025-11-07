@@ -480,13 +480,13 @@ file="/views/common/header.jsp" %>
 
 <!-- SUPPORT BUTTONS -->
 <div class="support-buttons">
-  <button
+  <a
+    href="${pageContext.request.contextPath}/advisory"
     class="support-btn"
-    onclick="alert('Chức năng tư vấn sẽ được triển khai sớm!')"
   >
     <i class="fas fa-user-tie"></i>
     TƯ VẤN
-  </button>
+  </a>
   <button class="support-btn" onclick="alert('Chat Bot đang được phát triển!')">
     <i class="fas fa-comments"></i>
     CHAT BOT

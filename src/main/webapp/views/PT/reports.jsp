@@ -1,5 +1,6 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="jakarta.tags.core" prefix="c" %>
+<%@ taglib uri="jakarta.tags.fmt" prefix="fmt" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -271,6 +272,10 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         font-style: italic;
       }
 
+      canvas {
+        max-height: 300px;
+      }
+
       .table-card {
         background: var(--card);
         border-radius: 20px;
@@ -414,32 +419,56 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
             <span>Thống kê & Báo cáo</span>
           </div>
         </div>
-        <button class="btn">
-          <i class="fas fa-download"></i> Xuất báo cáo
-        </button>
+        <div style="display: flex; gap: 10px;">
+          <a href="${pageContext.request.contextPath}/trainer/report?export=excel&fromDate=${fromDate != null ? fromDate : ''}&toDate=${toDate != null ? toDate : ''}" class="btn" style="background: #28a745;">
+            <i class="fas fa-file-excel"></i> Xuất Excel
+          </a>
+          <a href="${pageContext.request.contextPath}/trainer/report?export=pdf&fromDate=${fromDate != null ? fromDate : ''}&toDate=${toDate != null ? toDate : ''}" class="btn" style="background: #dc3545;">
+            <i class="fas fa-file-pdf"></i> Xuất PDF
+          </a>
+        </div>
       </div>
 
       <!-- Filter Bar -->
-      <div class="filter-bar">
+      <form method="GET" action="${pageContext.request.contextPath}/trainer/report" class="filter-bar">
         <div class="form-group">
           <label>Từ ngày</label>
-          <input type="date" value="2025-09-01" />
+          <input type="date" name="fromDate" value="${fromDate != null ? fromDate : ''}" />
         </div>
         <div class="form-group">
           <label>Đến ngày</label>
-          <input type="date" value="2025-10-15" />
+          <input type="date" name="toDate" value="${toDate != null ? toDate : ''}" />
         </div>
         <div class="form-group">
           <label>Loại báo cáo</label>
-          <select>
-            <option>Tất cả</option>
-            <option>Học viên</option>
-            <option>Buổi tập</option>
-            <option>Doanh thu</option>
+          <select name="reportType">
+            <option value="" ${reportType == null || reportType == '' ? 'selected' : ''}>Tất cả</option>
+            <option value="students" ${reportType == 'students' ? 'selected' : ''}>Học viên</option>
+            <option value="sessions" ${reportType == 'sessions' ? 'selected' : ''}>Buổi tập</option>
+            <option value="revenue" ${reportType == 'revenue' ? 'selected' : ''}>Doanh thu</option>
           </select>
         </div>
-        <button class="btn"><i class="fas fa-filter"></i> Lọc</button>
-      </div>
+        <div class="form-group">
+          <label>Gói tập</label>
+          <select name="packageName">
+            <option value="">Tất cả</option>
+            <option value="Weight Loss" ${packageName == 'Weight Loss' ? 'selected' : ''}>Weight Loss</option>
+            <option value="Bodybuilding" ${packageName == 'Bodybuilding' ? 'selected' : ''}>Bodybuilding</option>
+            <option value="Cardio" ${packageName == 'Cardio' ? 'selected' : ''}>Cardio</option>
+            <option value="Yoga" ${packageName == 'Yoga' ? 'selected' : ''}>Yoga</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Loại hình tập</label>
+          <select name="trainingType">
+            <option value="">Tất cả</option>
+            <option value="Personal Training" ${trainingType == 'Personal Training' ? 'selected' : ''}>Personal Training</option>
+            <option value="Group Class" ${trainingType == 'Group Class' ? 'selected' : ''}>Group Class</option>
+            <option value="Online" ${trainingType == 'Online' ? 'selected' : ''}>Online</option>
+          </select>
+        </div>
+        <button type="submit" class="btn"><i class="fas fa-filter"></i> Lọc</button>
+      </form>
 
       <!-- Stats Overview -->
       <div class="stats-overview">
@@ -447,48 +476,79 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           <div class="stat-icon">
             <i class="fas fa-users"></i>
           </div>
-          <div class="stat-number">24</div>
+          <div class="stat-number">${totalStudents != null ? totalStudents : 0}</div>
           <div class="stat-label">Tổng học viên phụ trách</div>
-          <div class="stat-change positive">
-            <i class="fas fa-arrow-up"></i>
-            <span>+12% so với tháng trước</span>
-          </div>
+          <c:if test="${totalStudents != null && totalStudents > 0}">
+            <div class="stat-change positive">
+              <i class="fas fa-arrow-up"></i>
+              <span>Đang hoạt động</span>
+            </div>
+          </c:if>
         </div>
 
         <div class="stat-card">
           <div class="stat-icon success">
             <i class="fas fa-calendar-check"></i>
           </div>
-          <div class="stat-number">156</div>
-          <div class="stat-label">Buổi tập hoàn thành (tháng này)</div>
-          <div class="stat-change positive">
-            <i class="fas fa-arrow-up"></i>
-            <span>+8% so với tháng trước</span>
-          </div>
+          <div class="stat-number">${completedSessions != null ? completedSessions : 0}</div>
+          <div class="stat-label">Buổi tập hoàn thành</div>
+          <c:if test="${completedSessions != null && completedSessions > 0}">
+            <div class="stat-change positive">
+              <i class="fas fa-arrow-up"></i>
+              <span>Tỷ lệ hoàn thành: <fmt:formatNumber value="${completionRate != null ? completionRate * 100 : 0}" maxFractionDigits="1" />%</span>
+            </div>
+          </c:if>
+          <!-- Hiển thị performance trend theo tuần -->
+          <c:if test="${weeklyTrends != null && !empty weeklyTrends}">
+            <c:forEach var="trend" items="${weeklyTrends}" varStatus="status">
+              <c:if test="${status.last}">
+                <c:choose>
+                  <c:when test="${trend.trendDirection.name() == 'UP'}">
+                    <div class="stat-change positive" style="margin-top: 5px;">
+                      <i class="fas fa-arrow-up"></i>
+                      <span>+<fmt:formatNumber value="${trend.changePercent}" maxFractionDigits="1" />% so với tuần trước</span>
+                    </div>
+                  </c:when>
+                  <c:when test="${trend.trendDirection.name() == 'DOWN'}">
+                    <div class="stat-change negative" style="margin-top: 5px;">
+                      <i class="fas fa-arrow-down"></i>
+                      <span><fmt:formatNumber value="${trend.changePercent}" maxFractionDigits="1" />% so với tuần trước</span>
+                    </div>
+                  </c:when>
+                </c:choose>
+              </c:if>
+            </c:forEach>
+          </c:if>
         </div>
 
         <div class="stat-card">
           <div class="stat-icon warning">
             <i class="fas fa-times-circle"></i>
           </div>
-          <div class="stat-number">8</div>
+          <div class="stat-number">${cancelledSessions != null ? cancelledSessions : 0}</div>
           <div class="stat-label">Buổi tập bị hủy</div>
-          <div class="stat-change negative">
-            <i class="fas fa-arrow-down"></i>
-            <span>-5% so với tháng trước</span>
-          </div>
+          <c:if test="${cancelledSessions != null && cancelledSessions > 0}">
+            <div class="stat-change negative">
+              <i class="fas fa-arrow-down"></i>
+              <span>Cần cải thiện</span>
+            </div>
+          </c:if>
         </div>
 
         <div class="stat-card">
           <div class="stat-icon info">
             <i class="fas fa-star"></i>
           </div>
-          <div class="stat-number">4.8</div>
-          <div class="stat-label">Đánh giá trung bình</div>
-          <div class="stat-change positive">
-            <i class="fas fa-arrow-up"></i>
-            <span>+0.3 điểm</span>
+          <div class="stat-number">
+            <fmt:formatNumber value="${averageRating != null ? averageRating : 0.0}" maxFractionDigits="1" />
           </div>
+          <div class="stat-label">Đánh giá trung bình</div>
+          <c:if test="${averageRating != null && averageRating > 0}">
+            <div class="stat-change positive">
+              <i class="fas fa-arrow-up"></i>
+              <span>Trên 5.0 điểm</span>
+            </div>
+          </c:if>
         </div>
       </div>
 
@@ -499,9 +559,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
             <i class="fas fa-chart-bar"></i>
             Số buổi tập theo tháng
           </h3>
-          <div class="chart-placeholder">
-            Biểu đồ cột: Số buổi tập theo từng tháng
-          </div>
+          <canvas id="monthlySessionsChart"></canvas>
         </div>
 
         <div class="chart-card">
@@ -509,9 +567,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
             <i class="fas fa-chart-pie"></i>
             Phân bổ loại hình tập
           </h3>
-          <div class="chart-placeholder">
-            Biểu đồ tròn: Cardio, Strength, Yoga, etc.
-          </div>
+          <canvas id="trainingTypeChart"></canvas>
         </div>
 
         <div class="chart-card">
@@ -519,9 +575,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
             <i class="fas fa-chart-line"></i>
             Xu hướng học viên mới
           </h3>
-          <div class="chart-placeholder">
-            Biểu đồ đường: Số học viên mới theo tháng
-          </div>
+          <canvas id="newStudentsChart"></canvas>
         </div>
 
         <div class="chart-card">
@@ -529,9 +583,15 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
             <i class="fas fa-chart-area"></i>
             Tỷ lệ hoàn thành buổi tập
           </h3>
-          <div class="chart-placeholder">
-            Biểu đồ vùng: % hoàn thành theo tuần
-          </div>
+          <canvas id="completionRateChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <h3>
+            <i class="fas fa-star"></i>
+            Đánh giá trung bình theo tháng
+          </h3>
+          <canvas id="monthlyRatingChart"></canvas>
         </div>
       </div>
 
@@ -550,46 +610,62 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>14/10/2025</td>
-              <td>9:00 - 10:00</td>
-              <td>Nguyễn Văn A</td>
-              <td>Cardio & Strength</td>
-              <td><span class="badge completed">Hoàn thành</span></td>
-              <td><span class="rating-stars">⭐⭐⭐⭐⭐</span></td>
-            </tr>
-            <tr>
-              <td>14/10/2025</td>
-              <td>15:00 - 16:00</td>
-              <td>Trần Thị B</td>
-              <td>Weight Loss</td>
-              <td><span class="badge completed">Hoàn thành</span></td>
-              <td><span class="rating-stars">⭐⭐⭐⭐⭐</span></td>
-            </tr>
-            <tr>
-              <td>13/10/2025</td>
-              <td>10:00 - 11:00</td>
-              <td>Lê Văn C</td>
-              <td>Bodybuilding</td>
-              <td><span class="badge completed">Hoàn thành</span></td>
-              <td><span class="rating-stars">⭐⭐⭐⭐</span></td>
-            </tr>
-            <tr>
-              <td>12/10/2025</td>
-              <td>8:00 - 9:00</td>
-              <td>Phạm Thị D</td>
-              <td>Yoga</td>
-              <td><span class="badge cancelled">Đã hủy</span></td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td>11/10/2025</td>
-              <td>16:00 - 17:00</td>
-              <td>Hoàng Văn E</td>
-              <td>Personal Training</td>
-              <td><span class="badge completed">Hoàn thành</span></td>
-              <td><span class="rating-stars">⭐⭐⭐⭐⭐</span></td>
-            </tr>
+            <c:choose>
+              <c:when test="${recentSessions != null && !empty recentSessions}">
+                <c:forEach var="session" items="${recentSessions}">
+                  <tr>
+                    <td>${session.trainingDate}</td>
+                    <td>${session.startTime} - ${session.endTime}</td>
+                    <td>${session.student != null && session.student.user != null ? session.student.user.name : 'N/A'}</td>
+                    <td>${session.trainingType != null ? session.trainingType : 'Không xác định'}</td>
+                    <td>
+                      <c:choose>
+                        <c:when test="${session.status.name() == 'completed'}">
+                          <span class="badge completed">Hoàn thành</span>
+                        </c:when>
+                        <c:when test="${session.status.name() == 'cancelled'}">
+                          <span class="badge cancelled">Đã hủy</span>
+                        </c:when>
+                        <c:when test="${session.status.name() == 'pending'}">
+                          <span class="badge pending">Chờ xác nhận</span>
+                        </c:when>
+                        <c:when test="${session.status.name() == 'confirmed'}">
+                          <span class="badge completed">Đã xác nhận</span>
+                        </c:when>
+                        <c:otherwise>
+                          <span class="badge pending">${session.status.name()}</span>
+                        </c:otherwise>
+                      </c:choose>
+                    </td>
+                    <td>
+                      <c:choose>
+                        <c:when test="${session.status.name() == 'completed'}">
+                          <c:set var="ratingValue" value="${session.rating != null ? session.rating.intValue() : 0}" />
+                          <c:if test="${ratingValue > 0}">
+                            <c:forEach begin="1" end="${ratingValue}">
+                              <span class="rating-stars">⭐</span>
+                            </c:forEach>
+                          </c:if>
+                          <c:if test="${ratingValue == 0}">
+                            <span>-</span>
+                          </c:if>
+                        </c:when>
+                        <c:otherwise>
+                          <span>-</span>
+                        </c:otherwise>
+                      </c:choose>
+                    </td>
+                  </tr>
+                </c:forEach>
+              </c:when>
+              <c:otherwise>
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-light);">
+                    <i class="fas fa-info-circle"></i> Chưa có dữ liệu buổi tập gần đây
+                  </td>
+                </tr>
+              </c:otherwise>
+            </c:choose>
           </tbody>
         </table>
       </div>
@@ -598,28 +674,47 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
       <div class="table-card">
         <h3><i class="fas fa-trophy"></i> Thành tích</h3>
         <div class="achievements">
-          <div class="achievement-card">
-            <div class="achievement-icon">🏆</div>
-            <div class="achievement-title">Top PT tháng 9</div>
-            <div class="achievement-desc">
-              Huấn luyện viên xuất sắc nhất tháng
-            </div>
-          </div>
-          <div class="achievement-card">
-            <div class="achievement-icon">⭐</div>
-            <div class="achievement-title">100+ Buổi tập</div>
-            <div class="achievement-desc">Hoàn thành hơn 100 buổi tập</div>
-          </div>
-          <div class="achievement-card">
-            <div class="achievement-icon">💪</div>
-            <div class="achievement-title">20+ Học viên</div>
-            <div class="achievement-desc">Đang phụ trách 20+ học viên</div>
-          </div>
-          <div class="achievement-card">
-            <div class="achievement-icon">❤️</div>
-            <div class="achievement-title">Đánh giá 4.8/5</div>
-            <div class="achievement-desc">Được học viên đánh giá cao</div>
-          </div>
+          <c:choose>
+            <c:when test="${awards != null && !empty awards}">
+              <c:forEach var="award" items="${awards}">
+                <div class="achievement-card">
+                  <div class="achievement-icon">
+                    <c:choose>
+                      <c:when test="${award.awardType.name() == 'TOP_SESSIONS_MONTH'}">🏆</c:when>
+                      <c:when test="${award.awardType.name() == 'TOP_RATING'}">⭐</c:when>
+                      <c:when test="${award.awardType.name() == 'TOP_COMPLETION_RATE'}">💪</c:when>
+                      <c:otherwise>🎖️</c:otherwise>
+                    </c:choose>
+                  </div>
+                  <div class="achievement-title">${award.awardName}</div>
+                  <div class="achievement-desc">${award.description != null ? award.description : 'Danh hiệu xuất sắc'}</div>
+                </div>
+              </c:forEach>
+            </c:when>
+            <c:otherwise>
+              <!-- Hiển thị danh hiệu mặc định nếu chưa có -->
+              <div class="achievement-card">
+                <div class="achievement-icon">🏆</div>
+                <div class="achievement-title">Top PT tháng ${month != null ? month : 'hiện tại'}</div>
+                <div class="achievement-desc">Huấn luyện viên xuất sắc nhất tháng</div>
+              </div>
+              <div class="achievement-card">
+                <div class="achievement-icon">⭐</div>
+                <div class="achievement-title">${completedSessions != null && completedSessions > 0 ? completedSessions : 0}+ Buổi tập</div>
+                <div class="achievement-desc">Hoàn thành nhiều buổi tập</div>
+              </div>
+              <div class="achievement-card">
+                <div class="achievement-icon">💪</div>
+                <div class="achievement-title">${totalStudents != null && totalStudents > 0 ? totalStudents : 0}+ Học viên</div>
+                <div class="achievement-desc">Đang phụ trách nhiều học viên</div>
+              </div>
+              <div class="achievement-card">
+                <div class="achievement-icon">❤️</div>
+                <div class="achievement-title">Đánh giá <fmt:formatNumber value="${averageRating != null ? averageRating : 0.0}" maxFractionDigits="1" />/5</div>
+                <div class="achievement-desc">Được học viên đánh giá cao</div>
+              </div>
+            </c:otherwise>
+          </c:choose>
         </div>
       </div>
 
@@ -672,8 +767,251 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         </table>
       </div>
     </div>
-  </body>
-</html>
+
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <script>
+      // 1. Biểu đồ cột: Số buổi tập theo tháng
+      <c:if test="${monthlySessionCount != null && !empty monthlySessionCount}">
+        const monthlyLabels = [];
+        const monthlyCounts = [];
+        <c:forEach var="entry" items="${monthlySessionCount}">
+          monthlyLabels.push('${entry.key}');
+          monthlyCounts.push(${entry.value});
+        </c:forEach>
+
+        const monthlyCtx = document.getElementById('monthlySessionsChart');
+        if (monthlyCtx) {
+          new Chart(monthlyCtx, {
+            type: 'bar',
+            data: {
+              labels: monthlyLabels.reverse(),
+              datasets: [{
+                label: 'Số buổi tập',
+                data: monthlyCounts.reverse(),
+                backgroundColor: 'rgba(236, 139, 90, 0.8)',
+                borderColor: 'rgba(236, 139, 90, 1)',
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: {
+                legend: {
+                  display: false
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true
+                }
+              }
+            }
+          });
+        }
+      </c:if>
+
+      // 2. Biểu đồ tròn: Phân bổ loại hình tập
+      <c:if test="${trainingTypeDistribution != null && !empty trainingTypeDistribution}">
+        const trainingTypeLabels = [];
+        const trainingTypeCounts = [];
+        <c:forEach var="entry" items="${trainingTypeDistribution}">
+          trainingTypeLabels.push('${entry.key}');
+          trainingTypeCounts.push(${entry.value});
+        </c:forEach>
+
+        const pieCtx = document.getElementById('trainingTypeChart');
+        if (pieCtx) {
+          new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+              labels: trainingTypeLabels,
+              datasets: [{
+                data: trainingTypeCounts,
+                backgroundColor: [
+                  'rgba(236, 139, 90, 0.8)',
+                  'rgba(40, 167, 69, 0.8)',
+                  'rgba(23, 162, 184, 0.8)',
+                  'rgba(255, 193, 7, 0.8)',
+                  'rgba(220, 53, 69, 0.8)',
+                  'rgba(108, 117, 125, 0.8)'
+                ]
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: {
+                legend: {
+                  position: 'bottom'
+                }
+              }
+            }
+          });
+        }
+      </c:if>
+
+      // 3. Biểu đồ đường: Xu hướng học viên mới (tạm thời dùng dữ liệu mẫu)
+      // Có thể thay bằng dữ liệu từ newStudentsTrendByMonth sau
+      const newStudentsChart = document.getElementById('newStudentsChart');
+      if (newStudentsChart) {
+        new Chart(newStudentsChart, {
+          type: 'line',
+          data: {
+            labels: ['Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10'],
+            datasets: [{
+              label: 'Học viên mới',
+              data: [2, 3, 5, 4, 6],
+              borderColor: 'rgba(23, 162, 184, 1)',
+              backgroundColor: 'rgba(23, 162, 184, 0.1)',
+              tension: 0.4,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      }
+
+      // 4. Biểu đồ vùng: Tỷ lệ hoàn thành theo tuần
+      <c:if test="${weeklyCompletionRate != null && !empty weeklyCompletionRate}">
+        const weeklyLabels = [];
+        const weeklyRates = [];
+        <c:forEach var="entry" items="${weeklyCompletionRate}">
+          weeklyLabels.push('Tuần ${entry.key}');
+          weeklyRates.push(${entry.value * 100});
+        </c:forEach>
+
+        const areaCtx = document.getElementById('completionRateChart');
+        if (areaCtx) {
+          new Chart(areaCtx, {
+            type: 'line',
+            data: {
+              labels: weeklyLabels,
+              datasets: [{
+                label: 'Tỷ lệ hoàn thành (%)',
+                data: weeklyRates,
+                borderColor: 'rgba(40, 167, 69, 1)',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                tension: 0.4,
+                fill: true
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: {
+                legend: {
+                  display: false
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: 100,
+                  ticks: {
+                    callback: function(value) {
+                      return value + '%';
+                    }
+                  }
+                }
+              }
+            }
+          });
+        }
+      </c:if>
+
+      // 5. Biểu đồ đường: Đánh giá trung bình theo tháng
+      <c:if test="${monthlyAverageRating != null && !empty monthlyAverageRating}">
+        const ratingLabels = [];
+        const ratingValues = [];
+        <c:forEach var="entry" items="${monthlyAverageRating}">
+          ratingLabels.push('${entry.key}');
+          ratingValues.push(${entry.value});
+        </c:forEach>
+
+        const ratingCtx = document.getElementById('monthlyRatingChart');
+        if (ratingCtx) {
+          // Tìm tháng có điểm cao nhất và thấp nhất
+          let maxRating = Math.max(...ratingValues);
+          let minRating = Math.min(...ratingValues);
+          let maxIndex = ratingValues.indexOf(maxRating);
+          let minIndex = ratingValues.indexOf(minRating);
+
+          new Chart(ratingCtx, {
+            type: 'line',
+            data: {
+              labels: ratingLabels.reverse(),
+              datasets: [{
+                label: 'Đánh giá trung bình',
+                data: ratingValues.reverse(),
+                borderColor: 'rgba(255, 193, 7, 1)',
+                backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                pointBackgroundColor: function(context) {
+                  const index = context.dataIndex;
+                  if (index === maxIndex) return 'rgba(40, 167, 69, 1)'; // Xanh cho điểm cao nhất
+                  if (index === minIndex) return 'rgba(220, 53, 69, 1)'; // Đỏ cho điểm thấp nhất
+                  return 'rgba(255, 193, 7, 1)';
+                }
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: {
+                legend: {
+                  display: false
+                },
+                tooltip: {
+                  callbacks: {
+                    afterLabel: function(context) {
+                      const index = context.dataIndex;
+                      if (index === maxIndex) return ' (Cao nhất)';
+                      if (index === minIndex) return ' (Thấp nhất)';
+                      return '';
+                    }
+                  }
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: 5,
+                  ticks: {
+                    callback: function(value) {
+                      return value.toFixed(1);
+                    }
+                  }
+                }
+              }
+            }
+          });
+        }
+      </c:if>
+    </script>
+
+
+
+
+
 
 
 

@@ -1,5 +1,5 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="jakarta.tags.core" prefix="c" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -144,8 +144,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         gap: 20px;
       }
 
-      .calendar-nav button,
-      .calendar-nav a.calendar-nav-btn {
+      .calendar-nav button {
         background: var(--primary);
         color: #fff;
         border: none;
@@ -154,14 +153,9 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         border-radius: 50%;
         cursor: pointer;
         transition: all 0.3s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
       }
 
-      .calendar-nav button:hover,
-      .calendar-nav a.calendar-nav-btn:hover {
+      .calendar-nav button:hover {
         background: var(--accent);
         transform: scale(1.1);
       }
@@ -282,6 +276,11 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         color: #000;
       }
 
+      .session-item.confirmed {
+        background: #ff9800;
+        color: #fff;
+      }
+
       .session-item.completed {
         background: var(--success);
       }
@@ -290,19 +289,16 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         background: var(--danger);
       }
 
-      /* Monthly calendar schedule chips */
-      .schedule-chip { color: #fff; padding: 6px 8px; border-radius: 5px; font-size: 0.75rem; margin-bottom: 4px; display: inline-block; }
-      .schedule-pending { background-color: #fbc02d; color: #000; }
-      .schedule-confirmed { background-color: #ff9800; }
-      .schedule-completed { background-color: #4caf50; }
-      .schedule-cancelled { background-color: #f44336; }
-      
-      /* Highlight user's sessions on calendar */
-      .schedule-chip.highlight-user {
+      .session-item.rejected {
+        background: #f44336;
+        color: #fff;
+      }
+
+      .calendar-day.highlight-user {
         border: 3px solid #141a49;
-        box-shadow: 0 0 8px rgba(20, 26, 73, 0.6);
-        font-weight: 700;
-        transform: scale(1.05);
+        box-shadow: 0 0 12px rgba(20, 26, 73, 0.6);
+        background: linear-gradient(135deg, rgba(236, 139, 90, 0.15), rgba(236, 139, 90, 0.05));
+        transform: scale(1.02);
       }
 
       .session-list {
@@ -388,8 +384,8 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
       }
 
       .status-badge.confirmed {
-        background: #d1ecf1;
-        color: #0c5460;
+        background: #ff9800;
+        color: #fff;
       }
 
       .status-badge.completed {
@@ -402,35 +398,22 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         color: #721c24;
       }
 
-      /* Unified status styles for list view */
-      .status-confirmed {
-        background-color: #ff9800;
-        color: #ffffff;
-        border-radius: 10px;
-        padding: 5px 10px;
-        font-size: 0.8rem;
-        font-weight: 600;
-      }
-      .status-rejected {
-        background-color: #f44336;
-        color: #ffffff;
-        border-radius: 10px;
-        padding: 5px 10px;
-        font-size: 0.8rem;
-        font-weight: 600;
+      .status-badge.rejected {
+        background: #f44336;
+        color: #fff;
       }
 
-      /* Inline error message below submit button */
-      .error-message {
-        margin-top: 8px;
-        color: #dc3545;
-        font-size: 0.9rem;
+      .highlight-info {
+        margin-bottom: 20px;
+        padding: 12px 20px;
+        background: linear-gradient(135deg, #141a49 0%, #1e2a5c 100%);
+        color: #fff;
+        border-radius: 10px;
         font-weight: 600;
-        text-align: left;
-        opacity: 1;
-        transition: opacity 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
-      .error-message.fade-out { opacity: 0; }
 
       /* Modal */
       .modal {
@@ -509,6 +492,44 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         box-shadow: 0 0 0 3px rgba(236, 139, 90, 0.1);
       }
 
+      .error-message {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 12px 16px;
+        border-radius: 8px;
+        border: 1px solid #f5c6cb;
+        margin-top: 15px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+      }
+
+      .error-message::before {
+        content: '⚠️';
+        font-size: 1.2rem;
+      }
+
+      .success-message {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 12px 16px;
+        border-radius: 8px;
+        border: 1px solid #c3e6cb;
+        margin-top: 15px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+      }
+
+      .success-message::before {
+        content: '✅';
+        font-size: 1.2rem;
+      }
+
       @media (max-width: 968px) {
         .calendar-days {
           grid-template-columns: 1fr;
@@ -525,15 +546,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
     </style>
   </head>
   <body>
-    <!-- Optional header include removed to avoid missing file error -->
-
     <div class="container">
-      <c:if test="${not empty error}">
-        <div style="margin-bottom:16px;padding:12px 16px;border-radius:8px;background:#f8d7da;color:#721c24;">
-          <i class="fas fa-exclamation-triangle"></i>
-          ${error}
-        </div>
-      </c:if>
       <a
         href="${pageContext.request.contextPath}/views/PT/homePT.jsp"
         class="btn btn-back"
@@ -560,29 +573,20 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
       <!-- Calendar Controls -->
       <div class="calendar-controls">
         <div class="calendar-nav">
-          <c:set var="navParams" value="&month=${prev_month}&year=${prev_year}"/>
-          <c:if test="${not empty defaultView}">
-            <c:set var="navParams" value="${navParams}&view=${defaultView}"/>
-          </c:if>
-          <c:if test="${not empty highlightUserId}">
-            <c:set var="navParams" value="${navParams}&user=${highlightUserId}"/>
-          </c:if>
-          <a href="ScheduleServlet?action=list${navParams}" class="calendar-nav-btn">
+          <button onclick="previousMonth()">
             <i class="fas fa-chevron-left"></i>
-          </a>
+          </button>
           <div class="current-month" id="currentMonth">
-            Tháng ${calendar_month}, ${calendar_year}
+            <c:choose>
+              <c:when test="${not empty month}">
+                Tháng ${month}, ${year}
+              </c:when>
+              <c:otherwise> Tháng 10, 2025 </c:otherwise>
+            </c:choose>
           </div>
-          <c:set var="navParamsNext" value="&month=${next_month}&year=${next_year}"/>
-          <c:if test="${not empty defaultView}">
-            <c:set var="navParamsNext" value="${navParamsNext}&view=${defaultView}"/>
-          </c:if>
-          <c:if test="${not empty highlightUserId}">
-            <c:set var="navParamsNext" value="${navParamsNext}&user=${highlightUserId}"/>
-          </c:if>
-          <a href="ScheduleServlet?action=list${navParamsNext}" class="calendar-nav-btn">
+          <button onclick="nextMonth()">
             <i class="fas fa-chevron-right"></i>
-          </a>
+          </button>
         </div>
         <div class="view-options">
           <button class="view-btn active" onclick="switchView('calendar')">
@@ -594,199 +598,245 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         </div>
       </div>
 
-     <!-- Calendar View (rendered from DB via JS) -->
-     <div id="calendarView" class="calendar-grid">
-       <c:if test="${not empty highlightUserName}">
-         <div style="margin-bottom: 20px; padding: 12px 20px; background: linear-gradient(135deg, #141a49 0%, #1e2a5c 100%); color: #fff; border-radius: 10px; font-weight: 600; display: flex; align-items: center; gap: 10px;">
-           <i class="fas fa-user-circle"></i>
-           <span>Đang xem lịch của học viên: <strong>${highlightUserName}</strong></span>
-         </div>
-       </c:if>
-       <div class="calendar-header">
-         <div class="calendar-day-name">Thứ 2</div>
-         <div class="calendar-day-name">Thứ 3</div>
-         <div class="calendar-day-name">Thứ 4</div>
-         <div class="calendar-day-name">Thứ 5</div>
-         <div class="calendar-day-name">Thứ 6</div>
-         <div class="calendar-day-name">Thứ 7</div>
-         <div class="calendar-day-name">Chủ nhật</div>
-       </div>
-       <div class="calendar-days" id="calendarDays">
-         <!-- Leading blank cells to align the first day (Mon=1..Sun=7) -->
-         <c:if test="${not empty calendar_firstIso and calendar_firstIso gt 1}">
-           <c:forEach var="i" begin="1" end="${calendar_firstIso - 1}">
-             <div class="calendar-day other-month"></div>
-           </c:forEach>
-         </c:if>
-         <!-- Real days -->
-         <c:forEach var="d" begin="1" end="${calendar_days}">
-           <c:set var="monthStr" value="${calendar_month}"/>
-           <c:if test="${calendar_month lt 10}"><c:set var="monthStr" value="0${calendar_month}"/></c:if>
-           <c:set var="dayStr" value="${d}"/>
-           <c:if test="${d lt 10}"><c:set var="dayStr" value="0${d}"/></c:if>
-           <c:set var="dateKey" value="${calendar_year}-${monthStr}-${dayStr}" />
-           <div class="calendar-day">
-             <div class="day-number">${d}</div>
-             <c:forEach var="item" items="${scheduleMap[dateKey]}">
-               <c:set var="chipClass" value="schedule-chip schedule-${item.status}"/>
-               <c:if test="${not empty highlightUserId and item.userId == highlightUserId}">
-                 <c:set var="chipClass" value="${chipClass} highlight-user"/>
-               </c:if>
-               <div class="${chipClass}">${item.time} - ${item.userName}</div>
-             </c:forEach>
-           </div>
-         </c:forEach>
-       </div>
-     </div>
+      <!-- Calendar View -->
+      <div id="calendarView" class="calendar-grid">
+        <c:if test="${not empty highlightStudentName}">
+          <div class="highlight-info">
+            <i class="fas fa-user-circle"></i>
+            <span>Đang xem lịch của: <strong>${highlightStudentName}</strong></span>
+          </div>
+        </c:if>
+        <div class="calendar-header">
+          <div class="calendar-day-name">Thứ 2</div>
+          <div class="calendar-day-name">Thứ 3</div>
+          <div class="calendar-day-name">Thứ 4</div>
+          <div class="calendar-day-name">Thứ 5</div>
+          <div class="calendar-day-name">Thứ 6</div>
+          <div class="calendar-day-name">Thứ 7</div>
+          <div class="calendar-day-name">Chủ nhật</div>
+        </div>
+        <div class="calendar-days" id="calendarDays">
+          <c:set var="daysInMonth" value="${daysInMonth}" />
+          <c:set var="firstDayOffset" value="${firstDayOffset}" />
+          <c:set var="lastCell" value="${firstDayOffset + daysInMonth}" />
+          <!-- Tính số ô cần render: nếu tháng chỉ cần 5 hàng (<= 35) thì render 35 ô -->
+          <!-- Nếu cần 6 hàng (> 35) nhưng hàng cuối trống (lastCell < 42), chỉ render đến ô cuối có ngày -->
+          <!-- Nếu hàng cuối đầy đủ (lastCell = 42), render 42 ô -->
+          <c:choose>
+            <c:when test="${lastCell <= 35}">
+              <c:set var="maxCellsToRender" value="35" />
+            </c:when>
+            <c:when test="${lastCell < 42}">
+              <!-- Hàng cuối có ô trống, chỉ render đến ô cuối có ngày -->
+              <c:set var="maxCellsToRender" value="${lastCell}" />
+            </c:when>
+            <c:otherwise>
+              <!-- Hàng cuối đầy đủ -->
+              <c:set var="maxCellsToRender" value="42" />
+            </c:otherwise>
+          </c:choose>
+
+          <c:forEach var="cell" begin="1" end="${maxCellsToRender}">
+            <c:choose>
+              <c:when
+                test="${cell <= firstDayOffset || cell > firstDayOffset + daysInMonth}"
+              >
+                <div class="calendar-day other-month"></div>
+              </c:when>
+              <c:otherwise>
+                <c:set var="day" value="${cell - firstDayOffset}" />
+                <c:set
+                  var="dateKey"
+                  value="${year}-${month < 10 ? '0' : ''}${month}-${day < 10 ? '0' : ''}${day}"
+                />
+                <div class="calendar-day">
+                  <div class="day-number" data-date="${dateKey}">${day}</div>
+                  <c:forEach var="item" items="${schedulesByDate[dateKey]}">
+                    <div class="session-item ${item.status}">
+                      ${item.startTime} - ${item.student.user.name}
+                    </div>
+                  </c:forEach>
+                </div>
+              </c:otherwise>
+            </c:choose>
+          </c:forEach>
+        </div>
+      </div>
 
       <!-- List View -->
-       <div id="listView" class="session-list" style="display: none">
-         <h3>Danh sách buổi tập</h3>
-         <c:if test="${empty schedules}"><i>Không có buổi tập nào.</i></c:if>
-         <c:forEach var="s" items="${schedules}">
-           <div class="session-card">
-             <div class="session-header">
-               <div class="session-title">Buổi tập với 
-                 <b>
-                   <c:forEach var="u" items="${users}"><c:if test="${u.id == s.userId}">${u.username}</c:if></c:forEach>
-                 </b>
-               </div>
-               <c:choose>
-                 <c:when test="${s.status == 'confirmed'}">
-                   <span class="status-confirmed">Đã xác nhận</span>
-                 </c:when>
-                 <c:when test="${s.status == 'rejected'}">
-                   <span class="status-rejected">Từ chối</span>
-                 </c:when>
-                 <c:otherwise>
-                   <span class="status-badge ${s.status}">
-                     <c:choose>
-                       <c:when test="${s.status == 'pending'}">Chờ xác nhận</c:when>
-                       <c:when test="${s.status == 'completed'}">Hoàn thành</c:when>
-                       <c:when test="${s.status == 'cancelled'}">Đã hủy</c:when>
-                       <c:otherwise>${s.status}</c:otherwise>
-                     </c:choose>
-                   </span>
-                 </c:otherwise>
-               </c:choose>
-             </div>
-             <div class="session-time">
-               <i class="fas fa-clock"></i> ${s.trainingDate} - ${s.startTime} ~ ${s.endTime}
-             </div>
-             <div class="session-info">
-               <div class="info-item"><i class="fas fa-user"></i>
-                 <c:forEach var="u" items="${users}"><c:if test="${u.id == s.userId}">${u.username}</c:if></c:forEach>
-               </div>
-               <div class="info-item"><i class="fas fa-dumbbell"></i> ${s.trainingType}</div>
-               <div class="info-item"><i class="fas fa-map-marker-alt"></i> ${s.location}</div>
-             </div>
-             <div class="session-actions">
-               <c:set var="monthYearParams2" value=""/>
-               <c:if test="${not empty calendar_month and not empty calendar_year}">
-                 <c:set var="monthYearParams2" value="&month=${calendar_month}&year=${calendar_year}"/>
-               </c:if>
-               <c:if test="${s.status == 'pending'}">
-                 <a href="ScheduleServlet?action=confirm&id=${s.id}${monthYearParams2}" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Xác nhận</a>
-                 <a href="ScheduleServlet?action=reject&id=${s.id}${monthYearParams2}" class="btn btn-danger btn-sm"><i class="fas fa-times"></i> Từ chối</a>
-               </c:if>
-               <c:if test="${s.status == 'confirmed'}">
-                 <a href="ScheduleServlet?action=complete&id=${s.id}${monthYearParams2}" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Hoàn thành</a>
-                 <a href="ScheduleServlet?action=cancel&id=${s.id}${monthYearParams2}" class="btn btn-danger btn-sm"><i class="fas fa-times"></i> Huỷ</a>
-               </c:if>
-               <a href="ScheduleServlet?action=edit&id=${s.id}${monthYearParams2}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Chỉnh sửa</a>
-               <a href="ScheduleServlet?action=delete&id=${s.id}${monthYearParams2}" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Xóa</a>
-             </div>
-           </div>
-         </c:forEach>
-       </div>
+      <div id="listView" class="session-list" style="display: none">
+        <h3>Danh sách buổi tập</h3>
+
+        <c:if test="${not empty successMessage}">
+          <div id="success-msg" class="success-message">${successMessage}</div>
+        </c:if>
+
+        <c:forEach var="s" items="${schedules}">
+          <div class="session-card">
+            <div class="session-header">
+              <div class="session-title">
+                Buổi tập với ${s.student.user.name}
+              </div>
+              <span class="status-badge ${s.status}"> ${s.status} </span>
+            </div>
+            <div class="session-time">
+              <i class="fas fa-clock"></i>
+              ${s.trainingDate} - ${s.startTime} - ${s.endTime}
+            </div>
+            <div class="session-info">
+              <div class="info-item">
+                <i class="fas fa-user"></i>
+                <span class="student-name-link" 
+                      data-date="${s.trainingDate}"
+                      data-student-name="${s.student.user.name}"
+                      style="cursor: pointer; text-decoration: underline; color: var(--accent);">
+                  ${s.student.user.name}
+                </span>
+              </div>
+              <div class="info-item">
+                <i class="fas fa-dumbbell"></i>
+                <span>${s.trainingType}</span>
+              </div>
+              <div class="info-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>${s.location}</span>
+              </div>
+            </div>
+            <div class="session-actions">
+              <c:choose>
+                <c:when test="${s.status == 'pending'}">
+                  <a href="${pageContext.request.contextPath}/ScheduleServlet?action=confirm&id=${s.id}" class="btn btn-success btn-sm">Xác nhận</a>
+                  <a href="${pageContext.request.contextPath}/ScheduleServlet?action=reject&id=${s.id}" class="btn btn-danger btn-sm">Từ chối</a>
+                </c:when>
+                <c:when test="${s.status == 'confirmed'}">
+                  <a href="${pageContext.request.contextPath}/ScheduleServlet?action=complete&id=${s.id}" class="btn btn-success btn-sm">Hoàn thành</a>
+                  <a href="${pageContext.request.contextPath}/ScheduleServlet?action=cancel&id=${s.id}" class="btn btn-danger btn-sm">Hủy</a>
+                </c:when>
+              </c:choose>
+              <a href="${pageContext.request.contextPath}/ScheduleServlet?action=edit&id=${s.id}&sourceView=list" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Chỉnh sửa</a>
+              <a href="${pageContext.request.contextPath}/ScheduleServlet?action=delete&id=${s.id}" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Xóa</a>
+            </div>
+          </div>
+        </c:forEach>
+      </div>
     </div>
 
-    <!-- Modal tạo buổi tập -->
-     <div id="sessionModal" class="modal${(not empty editSchedule or showCreateModal) ? ' active' : ''}">
+    <!-- Modal tạo/chỉnh sửa buổi tập -->
+    <div id="sessionModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h2><i class="fas fa-plus-circle"></i> 
-            <c:choose>
-              <c:when test="${not empty editSchedule}">Chỉnh sửa buổi tập</c:when>
-              <c:otherwise>Tạo buổi tập mới</c:otherwise>
-            </c:choose>
+          <h2>
+            <i class="fas ${not empty editSchedule ? 'fa-edit' : 'fa-plus-circle'}"></i>
+            ${not empty editSchedule ? 'Chỉnh sửa buổi tập' : 'Tạo buổi tập mới'}
           </h2>
           <button class="close-btn" onclick="closeModal()">&times;</button>
         </div>
-        <form method="post" action="${pageContext.request.contextPath}/ScheduleServlet" >
-          <input type="hidden" name="action" value="${not empty editSchedule ? 'update' : 'create'}"/>
+        <form
+          method="post"
+          action="${pageContext.request.contextPath}/ScheduleServlet?action=${not empty editSchedule ? 'update' : 'create'}"
+        >
           <c:if test="${not empty editSchedule}">
-            <input type="hidden" name="id" value="${editSchedule.id}"/>
+            <input type="hidden" name="scheduleId" value="${editSchedule.id}" />
           </c:if>
-      <c:set var="selectedUserName" value=""/>
-      <c:if test="${not empty editSchedule}">
-        <c:forEach var="u" items="${users}">
-          <c:if test="${u.id == editSchedule.userId}">
-            <c:set var="selectedUserName" value="${u.username}"/>
+          <c:if test="${not empty sourceView}">
+            <input type="hidden" name="sourceView" value="${sourceView}" />
           </c:if>
-        </c:forEach>
-      </c:if>
-      <div class="form-group">
-        <label>Học viên</label>
-         <input id="studentNameInput" type="text" name="user_name" list="usersDataList" placeholder="Nhập tên học viên" value="${not empty form_user_name ? form_user_name : selectedUserName}" required />
-        <datalist id="usersDataList">
-          <c:forEach var="u" items="${users}">
-            <option value="${u.username}"></option>
-          </c:forEach>
-        </datalist>
-      </div>
+          <c:if test="${empty sourceView && not empty editSchedule}">
+            <input type="hidden" name="sourceView" value="list" />
+          </c:if>
+          <div class="form-group">
+            <label>Học viên</label>
+            <input
+              type="text"
+              name="studentUsername"
+              id="studentUsername"
+              placeholder="Nhập tên học viên"
+              class="form-control"
+              value="${not empty editSchedule ? editSchedule.student.user.name : ''}"
+              required
+            />
+          </div>
           <div class="form-group">
             <label>Ngày tập</label>
-             <input type="date" name="training_date" value="${not empty form_training_date ? form_training_date : editSchedule.trainingDate}" required/>
+            <input 
+              type="date" 
+              name="trainingDate" 
+              value="${not empty editSchedule ? editSchedule.trainingDate : ''}"
+              required 
+            />
           </div>
           <div class="form-group">
             <label>Giờ bắt đầu</label>
-             <input type="time" name="start_time" value="${not empty form_start_time ? form_start_time : editSchedule.startTime}" required/>
+            <input 
+              type="time" 
+              name="startTime" 
+              value="${not empty editSchedule ? editSchedule.startTime : ''}"
+              required 
+            />
           </div>
           <div class="form-group">
             <label>Giờ kết thúc</label>
-             <input type="time" name="end_time" value="${not empty form_end_time ? form_end_time : editSchedule.endTime}" required/>
+            <input 
+              type="time" 
+              name="endTime" 
+              value="${not empty editSchedule ? editSchedule.endTime : ''}"
+              required 
+            />
           </div>
           <div class="form-group">
             <label>Loại tập</label>
-             <select name="training_type" required>
+            <select name="trainingType" required>
               <option value="">Chọn loại tập</option>
-               <c:set var="typeValue" value="${not empty form_training_type ? form_training_type : editSchedule.trainingType}"/>
-               <option value="Cardio" ${typeValue == 'Cardio' ? 'selected' : ''}>Cardio</option>
-               <option value="Strength Training" ${typeValue == 'Strength Training' ? 'selected' : ''}>Strength Training</option>
-               <option value="Yoga" ${typeValue == 'Yoga' ? 'selected' : ''}>Yoga</option>
-               <option value="Weight Loss" ${typeValue == 'Weight Loss' ? 'selected' : ''}>Weight Loss</option>
-               <option value="Bodybuilding" ${typeValue == 'Bodybuilding' ? 'selected' : ''}>Bodybuilding</option>
+              <option value="Cardio" ${not empty editSchedule && editSchedule.trainingType == 'Cardio' ? 'selected' : ''}>Cardio</option>
+              <option value="Strength Training" ${not empty editSchedule && editSchedule.trainingType == 'Strength Training' ? 'selected' : ''}>Strength Training</option>
+              <option value="Yoga" ${not empty editSchedule && editSchedule.trainingType == 'Yoga' ? 'selected' : ''}>Yoga</option>
+              <option value="Weight Loss" ${not empty editSchedule && editSchedule.trainingType == 'Weight Loss' ? 'selected' : ''}>Weight Loss</option>
+              <option value="Bodybuilding" ${not empty editSchedule && editSchedule.trainingType == 'Bodybuilding' ? 'selected' : ''}>Bodybuilding</option>
             </select>
           </div>
           <div class="form-group">
             <label>Địa điểm</label>
-             <input type="text" name="location" placeholder="Nhập phòng tập" value="${not empty form_location ? form_location : editSchedule.location}" required/>
+            <input
+              type="text"
+              name="location"
+              placeholder="Nhập phòng tập"
+              value="${not empty editSchedule ? editSchedule.location : ''}"
+              required
+            />
           </div>
           <div class="form-group">
             <label>Ghi chú</label>
-             <textarea name="note" rows="3" placeholder="Nhập ghi chú (không bắt buộc)">${not empty form_note ? form_note : editSchedule.note}</textarea>
+            <textarea
+              rows="3"
+              placeholder="Nhập ghi chú (không bắt buộc)"
+              name="note"
+            >${not empty editSchedule ? editSchedule.note : ''}</textarea>
           </div>
-           <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center;">
-            <button type="button" class="btn" style="background: #6c757d" onclick="closeModal()">Hủy</button>
-            <button type="submit" class="btn"><i class="fas fa-save"></i> <c:choose><c:when test="${not empty editSchedule}">Lưu</c:when><c:otherwise>Tạo buổi tập</c:otherwise></c:choose></button>
+          <c:if test="${not empty errorMessage}">
+            <div id="error-msg" class="error-message">${errorMessage}</div>
+          </c:if>
+          <div style="display: flex; gap: 10px; justify-content: flex-end">
+            <button
+              type="button"
+              class="btn"
+              style="background: #6c757d"
+              onclick="closeModal()"
+            >
+              Hủy
+            </button>
+            <button type="submit" class="btn">
+              <i class="fas fa-save"></i> ${not empty editSchedule ? 'Lưu' : 'Tạo buổi tập'}
+            </button>
           </div>
-           <c:if test="${not empty error}">
-             <div id="error-message" class="error-message">${error}</div>
-           </c:if>
-         </form>
+        </form>
       </div>
     </div>
+
     <script>
-      // Tự động chuyển view dựa trên defaultView parameter từ server
-      (function() {
-        const defaultView = '${defaultView}';
-        if (defaultView === 'calendar') {
-          switchView('calendar');
-        } else if (defaultView === 'list') {
-          switchView('list');
-        }
-      })();
+      <c:set var="currentYear" value="${not empty year ? year : 2025}" />
+      <c:set var="currentMonth" value="${not empty month ? month : 10}" />
+      const currentYear = ${currentYear};
+      const currentMonth = ${currentMonth};
 
       function switchView(view) {
         const calendarView = document.getElementById('calendarView');
@@ -806,33 +856,102 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         }
       }
 
+      // Tự động switch sang tab list nếu có success message
+      <c:if test="${not empty defaultView && defaultView == 'list'}">
+      switchView('list');
+      </c:if>
+
+      function previousMonth() {
+        let newYear = currentYear;
+        let newMonth = currentMonth - 1;
+        if (newMonth < 1) {
+          newMonth = 12;
+          newYear--;
+        }
+        window.location.href = '${pageContext.request.contextPath}/ScheduleServlet?action=calendar&year=' + newYear + '&month=' + newMonth;
+      }
+
+      function nextMonth() {
+        let newYear = currentYear;
+        let newMonth = currentMonth + 1;
+        if (newMonth > 12) {
+          newMonth = 1;
+          newYear++;
+        }
+        window.location.href = '${pageContext.request.contextPath}/ScheduleServlet?action=calendar&year=' + newYear + '&month=' + newMonth;
+      }
+
       function openModal() {
         document.getElementById('sessionModal').classList.add('active');
       }
 
       function closeModal() {
         document.getElementById('sessionModal').classList.remove('active');
-        window.location = 'ScheduleServlet?action=list';
       }
 
-      // Auto-hide error and focus back to student input
-      (function (){
-        const err = document.getElementById('error-message');
-        if (err) {
-          // Scroll mượt tới thông báo lỗi
-          try { err.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
-          // Tự ẩn sau 3 giây rồi focus vào ô nhập tên học viên
-          setTimeout(()=>{
-            err.classList.add('fade-out');
-            setTimeout(()=>{
-              if (err) err.style.display = 'none';
-              const input = document.getElementById('studentNameInput');
-              if (input) input.focus();
-            }, 300);
-          }, 3000);
+      window.addEventListener('DOMContentLoaded', () => {
+        const error = document.getElementById('error-msg');
+        const success = document.getElementById('success-msg');
+        const studentInput = document.getElementById('studentUsername');
+
+        // Mở modal nếu có editSchedule hoặc có lỗi
+        <c:if test="${not empty editSchedule || not empty openEditModal}">
+        document.getElementById('sessionModal').classList.add('active');
+        </c:if>
+
+        if (error && error.innerText.trim() !== '') {
+          // Mở modal nếu có lỗi
+          document.getElementById('sessionModal').classList.add('active');
+
+          // Scroll đến error message
+          setTimeout(() => {
+            error.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+
+          // Focus vào ô nhập tên học viên
+          setTimeout(() => {
+            if (studentInput) {
+              studentInput.focus();
+              studentInput.select(); // Select text nếu có để dễ sửa
+            }
+          }, 200);
+
+          // Tự động ẩn error message sau 5 giây
+          setTimeout(() => {
+            error.style.display = 'none';
+          }, 5000);
         }
-      })();
+
+        // Tự động ẩn success message sau 5 giây
+        if (success && success.innerText.trim() !== '') {
+          setTimeout(() => {
+            success.style.display = 'none';
+          }, 5000);
+        }
+        
+        // Highlight date after redirect
+        const params = new URLSearchParams(window.location.search);
+        const highlightDate = params.get('highlightDate');
+        if (highlightDate) {
+          const dayEls = document.querySelectorAll('[data-date]');
+          dayEls.forEach(el => {
+            if (el.getAttribute('data-date') === highlightDate) {
+              el.parentElement.classList.add('highlight-user');
+              el.parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          });
+        }
+
+        // Click vào tên học viên trong danh sách để chuyển đến lịch
+        document.querySelectorAll('.student-name-link').forEach(link => {
+          link.addEventListener('click', function() {
+            const date = this.getAttribute('data-date');
+            const studentName = this.getAttribute('data-student-name');
+            const [year, month, day] = date.split('-');
+            window.location.href = '${pageContext.request.contextPath}/ScheduleServlet?action=calendar&year=' + year + '&month=' + parseInt(month) + '&highlightDate=' + date + '&highlightStudentName=' + encodeURIComponent(studentName);
+          });
+        });
+      });
     </script>
   </body>
 </html>
-

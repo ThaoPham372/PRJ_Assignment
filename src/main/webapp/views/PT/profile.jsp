@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <%@ page pageEncoding="UTF-8" %>
 
 <!DOCTYPE html>
@@ -934,80 +934,7 @@
             </form>
           </div>
 
-          <!-- Đổi mật khẩu -->
-          <div class="card">
-            <div class="card-header">
-              <h3><i class="fas fa-lock"></i> Đổi mật khẩu</h3>
-            </div>
-
-            <!-- Success/Error message for password change -->
-            <div id="passwordMessage" class="card-message" style="display: none;">
-              <div class="message-content">
-                <i class="message-icon"></i>
-                <span class="message-text"></span>
-                <button onclick="hideCardMessage('passwordMessage')" class="message-close">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>
-            </div>
-
-            <form id="passwordForm" action="${pageContext.request.contextPath}/change-password" method="POST">
-              <div class="form-grid">
-                <div class="form-group full-width">
-                  <label>Mật khẩu hiện tại</label>
-                  <input
-                    type="password"
-                    name="currentPassword"
-                    id="currentPassword"
-                    placeholder="Nhập mật khẩu hiện tại"
-                    required
-                  />
-                </div>
-                <div class="form-group">
-                  <label>Mật khẩu mới</label>
-                  <input
-                    type="password"
-                    name="newPassword"
-                    id="newPassword"
-                    placeholder="Nhập mật khẩu mới"
-                    required
-                  />
-                </div>
-                <div class="form-group">
-                  <label>Xác nhận mật khẩu mới</label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    id="confirmPassword"
-                    placeholder="Nhập lại mật khẩu mới"
-                    required
-                  />
-                </div>
-              </div>
-              <div style="margin-top: 20px;">
-                <div style="text-align: right;">
-                <button type="submit" class="btn">
-                  <i class="fas fa-key"></i> Đổi mật khẩu
-                </button>
-                </div>
-                
-                <!-- Thông báo hiển thị ngay dưới nút đổi mật khẩu -->
-                <c:if test="${not empty passwordSuccessMessage}">
-                  <div id="passwordSuccessMessage" class="success-message" style="margin-top: 15px; padding: 12px 16px; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-check-circle"></i>
-                    <span>${passwordSuccessMessage}</span>
-                  </div>
-                </c:if>
-                
-                <c:if test="${not empty passwordErrorMessage}">
-                  <div id="passwordErrorMessage" class="error-message" style="margin-top: 15px; padding: 12px 16px; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span>${passwordErrorMessage}</span>
-                  </div>
-                </c:if>
-              </div>
-            </form>
-          </div>
+          
 
           <!-- Thông tin bổ sung -->
           <div class="card">

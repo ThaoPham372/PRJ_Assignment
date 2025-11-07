@@ -1,49 +1,99 @@
 package com.gym.service;
 
 import java.util.List;
+import java.util.Optional;
 
+import com.gym.dao.IStudentDAO;
+import com.gym.dao.StudentDAO;
 import com.gym.model.Student;
 
-/**
- * StudentService - Interface for Student business logic
- * Defines service methods for student management
- */
-public interface StudentService {
-  /**
-   * Get all students
-   * 
-   * @return List of all students
-   */
-  List<Student> getAllStudents();
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
+import jakarta.persistence.TypedQuery;
 
-  /**
-   * Get student by ID
-   * 
-   * @param studentId Student ID
-   * @return Student object or null if not found
-   */
-  Student getStudentById(Long studentId);
+public class StudentService implements IStudentService {
 
-  /**
-   * Get students by package name
-   * 
-   * @param packageName Package name to filter
-   * @return List of students with the specified package
-   */
-//  List<Student> getStudentsByPackage(String packageName);
+  private final IStudentDAO studentDAO;
 
-  /**
-   * Search students by name, phone, or email
-   * 
-   * @param searchTerm Search term
-   * @return List of matching students
-   */
-  List<Student> searchStudents(String searchTerm);
+  public StudentService() {
+    this.studentDAO = new StudentDAO();
+  }
 
-  /**
-   * Get statistics for student management
-   * 
-   * @return Array with [totalStudents, activeStudents, achievedGoalCount]
-   */
+  public StudentService(IStudentDAO studentDAO) {
+    this.studentDAO = studentDAO;
+  }
+
+  @Override
+  public List<Student> getAllActiveStudents() {
+    return studentDAO.findAllActive();
+  }
+
+  @Override
+  public List<Student> searchStudents(String keyword, String trainingPackage) {
+    return studentDAO.search(keyword, trainingPackage);
+  }
+
+  @Override
+  public List<Student> searchStudents(String keyword) {
+    return studentDAO.search(keyword);
+  }
+
+  @Override
+  public Optional<Student> getStudentById(Integer userId) {
+    if (userId == null) {
+      return Optional.empty();
+    }
+    return studentDAO.findByUserId(userId);
+  }
+
+  @Override
+  public Student updateStudent(Student student) {
+    if (student == null || student.getUserId() == null) {
+      throw new IllegalArgumentException("Student and userId cannot be null");
+    }
+    // Ensure user and student update happen together where possible
+    return studentDAO.update(student);
+  }
+
+  @Override
+  public int getTotalStudentsCount() {
+    EntityManagerFactory emf = Persistence.createEntityManagerFactory("gym-pu");
+    EntityManager em = emf.createEntityManager();
+    try {
+      TypedQuery<Long> query = em.createQuery(
+          "SELECT COUNT(s) FROM Student s JOIN s.user u WHERE u.dtype = 'User' AND u.status = 'ACTIVE'",
+          Long.class);
+      return query.getSingleResult().intValue();
+    } catch (Exception e) {
+      System.err.println("Error getting total students count: " + e.getMessage());
+      return 0;
+    } finally {
+      em.close();
+    }
+  }
+
+  @Override
+  public int getActiveStudentsCount() {
+    // Same as total for now, but can be extended to filter by active training
+    // sessions
+    return getTotalStudentsCount();
+  }
+
+  @Override
+  public int getAchievedGoalCount() {
+    EntityManagerFactory emf = Persistence.createEntityManagerFactory("gym-pu");
+    EntityManager em = emf.createEntityManager();
+    try {
+      TypedQuery<Long> query = em.createQuery(
+          "SELECT COUNT(s) FROM Student s JOIN s.user u WHERE u.dtype = 'User' AND u.status = 'ACTIVE' AND s.trainingProgress >= 100",
+          Long.class);
+      return query.getSingleResult().intValue();
+    } catch (Exception e) {
+      System.err.println("Error getting achieved goal count: " + e.getMessage());
+      return 0;
+    } finally {
+      em.close();
+    }
+  }
 }
-

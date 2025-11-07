@@ -1,31 +1,36 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.gym.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
-import javax.persistence.Table;
+import java.io.Serializable;
 
-/**
- *
- * @author thaopham
- */
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+
 @Entity
 @Table(name = "students")
-@PrimaryKeyJoinColumn(name = "user_id")
-public class Student extends User {
+public class Student implements Serializable {
 
-  // @Max(value=?) @Min(value=?)//if you know range of your decimal fields
-  // consider using these annotations to enforce field validation
+  private static final long serialVersionUID = 1L;
+
+  // Share primary key with User table
+  @Id
+  @Column(name = "user_id")
+  private Integer userId;
+
+  @OneToOne
+  @JoinColumn(name = "user_id")
+  private User user;
+
   @Column(name = "weight")
   private Float weight;
+
   @Column(name = "height")
   private Float height;
+
   @Column(name = "bmi")
   private Float bmi;
 
@@ -40,15 +45,47 @@ public class Student extends User {
 
   @Column(name = "emergency_contact_address")
   private String emergencyContactAddress;
-  @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
-  @OneToOne(optional = false)
-  private User user;
+
+  @Column(name = "training_package")
+  private String trainingPackage;
+
+  @Column(name = "training_duration")
+  private String trainingDuration;
+
+  @Column(name = "goal")
+  private String goal;
+
+  @Column(name = "training_progress")
+  private Integer trainingProgress;
+
+  @Column(name = "training_sessions")
+  private Integer trainingSessions;
+
+  @Column(name = "pt_note", columnDefinition = "TEXT")
+  private String ptNote;
+
+  // Cột phone_number đã bị xóa khỏi database, giữ field ở mức transient để tránh
+  // lỗi schema
+  @Transient
+  private String phoneNumber;
 
   public Student() {
   }
 
-  public Student(Integer userId) {
-    this.setId(userId);
+  public Integer getUserId() {
+    return userId;
+  }
+
+  public void setUserId(Integer userId) {
+    this.userId = userId;
+  }
+
+  public User getUser() {
+    return user;
+  }
+
+  public void setUser(User user) {
+    this.user = user;
   }
 
   public Float getWeight() {
@@ -107,11 +144,59 @@ public class Student extends User {
     this.emergencyContactAddress = emergencyContactAddress;
   }
 
-  public User getUser() {
-    return user;
+  public String getTrainingPackage() {
+    return trainingPackage;
   }
 
-  public void setUser(User user) {
-    this.user = user;
+  public void setTrainingPackage(String trainingPackage) {
+    this.trainingPackage = trainingPackage;
+  }
+
+  public String getTrainingDuration() {
+    return trainingDuration;
+  }
+
+  public void setTrainingDuration(String trainingDuration) {
+    this.trainingDuration = trainingDuration;
+  }
+
+  public String getGoal() {
+    return goal;
+  }
+
+  public void setGoal(String goal) {
+    this.goal = goal;
+  }
+
+  public Integer getTrainingProgress() {
+    return trainingProgress;
+  }
+
+  public void setTrainingProgress(Integer trainingProgress) {
+    this.trainingProgress = trainingProgress;
+  }
+
+  public Integer getTrainingSessions() {
+    return trainingSessions;
+  }
+
+  public void setTrainingSessions(Integer trainingSessions) {
+    this.trainingSessions = trainingSessions;
+  }
+
+  public String getPtNote() {
+    return ptNote;
+  }
+
+  public void setPtNote(String ptNote) {
+    this.ptNote = ptNote;
+  }
+
+  public String getPhoneNumber() {
+    return phoneNumber;
+  }
+
+  public void setPhoneNumber(String phoneNumber) {
+    this.phoneNumber = phoneNumber;
   }
 }
