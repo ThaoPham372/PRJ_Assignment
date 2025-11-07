@@ -1,0 +1,534 @@
+-- =====================================================
+-- GYM MANAGEMENT SYSTEM - AUTHENTICATION DATABASE
+-- MySQL Schema for Login/Logout with RBAC and JWT
+-- =====================================================
+
+-- Create database
+CREATE DATABASE IF NOT EXISTS gym_management 
+CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+USE gym_management;
+
+CREATE TABLE gyms (
+    gym_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    hotline VARCHAR(20) NOT NULL,
+    email VARCHAR(255), 
+    description TEXT,
+    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_gym_name (name)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+
+-- =====================================================
+-- 1. CORE RBAC TABLES
+-- =====================================================
+
+-- Users Table
+/* ======= DROP (nếu đã tồn tại) – lưu ý thứ tự vì có FK ======= */
+
+/* ===================== BẢNG user ===================== */
+/* LƯU Ý: user là từ khóa trong SQL Server → phải đặt trong [] */
+CREATE TABLE user (
+(
+    user_id                 INT IDENTITY(1,1) NOT NULL,
+    DTYPE              VARCHAR(31)       NULL,
+    address            VARCHAR(255)      NULL,
+    createdDate        DATETIME2(0)      NULL,
+    dob                DATE              NULL,
+    email              VARCHAR(255)      NULL,
+    failedLoginAttempts INT              NULL,
+    lastLogin          DATETIME2(0)      NULL,
+    lastUpdate         DATETIME2(0)      NULL,
+    lockedUntil        DATETIME2(0)      NULL,
+    name               VARCHAR(255)      NULL,
+    password           VARCHAR(255)      NULL,
+    phone              VARCHAR(255)      NULL,
+    role               VARCHAR(255)      NULL,
+    status             VARCHAR(255)      NULL,
+    username           VARCHAR(255)      NULL,
+    avatar_url         VARCHAR(255)      NULL,
+    CONSTRAINT PK_user PRIMARY KEY (id)
+);
+GO
+
+/* ===================== BẢNG students ===================== */
+CREATE TABLE students (
+    user_id INT PRIMARY KEY,   -- Khóa chính đồng thời là khóa ngoại
+    weight FLOAT,
+    height FLOAT,
+    bmi FLOAT,
+
+    -- Thông tin liên hệ khẩn cấp
+    emergency_contact_name VARCHAR(100),
+    emergency_contact_phone VARCHAR(20),
+    emergency_contact_relation VARCHAR(50),
+    emergency_contact_address VARCHAR(255),
+
+    FOREIGN KEY (user_id) REFERENCES user(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+-- =====================================================
+-- CREATE STUDENTS TABLE
+-- This script creates the 'students' table if it doesn't exist
+-- =====================================================
+
+USE gym_management;
+
+-- Roles Table
+
+
+CREATE TABLE products (
+    product_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    product_name VARCHAR(255) NOT NULL,
+    product_type ENUM('SUPPLEMENT', 'EQUIPMENT', 'APPAREL', 'ACCESSORY', 'OTHER') NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    cost_price DECIMAL(10,2),
+    description TEXT,
+    stock_quantity INT NOT NULL DEFAULT 0,
+    unit VARCHAR(20) DEFAULT 'cái',
+    is_active TINYINT(1) DEFAULT 1,
+    import_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT ck_price CHECK (price >= 0),
+    CONSTRAINT ck_cost CHECK (cost_price IS NULL OR cost_price >= 0),
+    CONSTRAINT ck_stock CHECK (stock_quantity >= 0),
+    INDEX idx_prod_type (product_type),
+    INDEX idx_prod_name (product_name),
+    INDEX idx_prod_active (is_active)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 9. orders
+CREATE TABLE orders (
+    order_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    order_number VARCHAR(50) UNIQUE NOT NULL,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    total_amount DECIMAL(10,2) NOT NULL,
+    discount_amount DECIMAL(10,2) DEFAULT 0,
+    order_status ENUM('PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED') DEFAULT 'PENDING',
+    delivery_method ENUM('PICKUP', 'DELIVERY') DEFAULT 'PICKUP',
+    delivery_address VARCHAR(500),
+    delivery_phone VARCHAR(20),
+    delivery_notes TEXT,
+    notes TEXT,
+    confirmed_at TIMESTAMP NULL,
+    completed_at TIMESTAMP NULL,
+    cancelled_at TIMESTAMP NULL,
+    cancellation_reason VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE,
+    CONSTRAINT ck_amounts CHECK (total_amount >= 0 AND discount_amount >= 0),
+    INDEX idx_ord_user (user_id),
+    INDEX idx_ord_date (order_date),
+    INDEX idx_ord_status (order_status),
+    INDEX idx_ord_number (order_number)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 10. order_details
+CREATE TABLE order_details (
+    order_detail_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    order_id BIGINT NOT NULL,
+    product_id BIGINT NULL,
+    package_id BIGINT NULL,
+    product_name VARCHAR(255) NOT NULL,
+    quantity INT NOT NULL,
+    unit_price DECIMAL(10,2) NOT NULL,
+    discount_percent DECIMAL(5,2) DEFAULT 0,
+    discount_amount DECIMAL(10,2) DEFAULT 0,
+    subtotal DECIMAL(10,2) GENERATED ALWAYS AS (quantity * unit_price - discount_amount) STORED,
+    notes TEXT,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE RESTRICT,
+    FOREIGN KEY (package_id) REFERENCES packages(package_id) ON DELETE RESTRICT,
+    CONSTRAINT ck_qty CHECK (quantity > 0),
+    CONSTRAINT ck_unit_price CHECK (unit_price >= 0),
+    CONSTRAINT ck_disc_percent CHECK (discount_percent >= 0 AND discount_percent <= 100),
+    CONSTRAINT ck_disc_amount CHECK (discount_amount >= 0),
+    CONSTRAINT ck_product_or_package CHECK (
+        (product_id IS NOT NULL AND package_id IS NULL) OR 
+        (product_id IS NULL AND package_id IS NOT NULL)
+    ),
+    INDEX idx_od_order (order_id),
+    INDEX idx_od_product (product_id),
+    INDEX idx_od_package (package_id)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 11. cart
+CREATE TABLE cart (
+    cart_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    product_id BIGINT NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE,
+    CONSTRAINT ck_cart_qty CHECK (quantity > 0),
+    UNIQUE KEY uq_cart_user_product (user_id, product_id)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+--package
+CREATE TABLE packages (
+    package_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    duration_months INT NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    description TEXT,
+    max_sessions INT DEFAULT NULL,
+    is_active TINYINT(1) DEFAULT 1,
+    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    gym_id INT NULL,
+    FOREIGN KEY (gym_id) REFERENCES gyms(gym_id) ON DELETE SET NULL,
+    CONSTRAINT ck_duration CHECK (duration_months > 0),
+    CONSTRAINT ck_price_packages CHECK (price >= 0),
+    INDEX idx_pkg_name (name),
+    INDEX idx_pkg_active (is_active),
+    INDEX idx_pkg_gym (gym_id)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+
+-- 12. memberships
+CREATE TABLE memberships (
+    membership_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    package_id BIGINT NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    status ENUM('ACTIVE', 'EXPIRED', 'CANCELLED') DEFAULT 'ACTIVE',
+    notes TEXT,
+    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (package_id) REFERENCES packages(package_id) ON DELETE RESTRICT,
+    CONSTRAINT ck_dates CHECK (end_date > start_date),
+    INDEX idx_mem_user (user_id),
+    INDEX idx_mem_pkg (package_id),
+    INDEX idx_mem_status (status)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE payments (
+  payment_id      INT PRIMARY KEY AUTO_INCREMENT,
+  user_id         INT NOT NULL,
+  amount          DECIMAL(10,2) NOT NULL,
+  payment_date    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  method          ENUM('CASH','CREDIT_CARD','BANK_TRANSFER','MOMO','VNPAY') NOT NULL,
+  status          ENUM('PENDING','PAID','FAILED','REFUNDED') DEFAULT 'PENDING',
+  reference_id    VARCHAR(100) UNIQUE,
+  transaction_type ENUM('PACKAGE','PRODUCT') NOT NULL,
+  membership_id   BIGINT NULL,
+  order_id        BIGINT NULL,
+  notes           TEXT,
+
+  CONSTRAINT ck_amount CHECK (amount > 0),
+
+  -- GIỮ CHECK ràng buộc 1-đích
+  CONSTRAINT ck_one_target CHECK (
+    (transaction_type = 'PACKAGE' AND membership_id IS NOT NULL AND order_id IS NULL)
+ OR (transaction_type = 'PRODUCT' AND order_id IS NOT NULL AND membership_id IS NULL)
+  ),
+
+  -- FK KHÔNG dùng SET NULL để khỏi mâu thuẫn với CHECK
+  FOREIGN KEY (user_id)      REFERENCES `user`(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (membership_id) REFERENCES memberships(membership_id) ON DELETE RESTRICT,
+  FOREIGN KEY (order_id)      REFERENCES orders(order_id)          ON DELETE RESTRICT,
+
+  INDEX idx_pay_user (user_id),
+  INDEX idx_pay_status (status),
+  INDEX idx_pay_mem (membership_id),
+  INDEX idx_pay_order (order_id),
+  INDEX idx_pay_type (transaction_type)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+/* ============================
+   1) foods
+   ============================ */
+CREATE TABLE foods (
+  id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+  name          VARCHAR(120) NOT NULL,
+  serving_label VARCHAR(60)  NULL,              -- ví dụ: "100 g", "1 chén"
+  calories      DECIMAL(8,2) NOT NULL,
+  protein_g     DECIMAL(8,2) NOT NULL,
+  carbs_g       DECIMAL(8,2) NOT NULL,
+  fat_g         DECIMAL(8,2) NOT NULL,
+  is_active     TINYINT(1)  NOT NULL DEFAULT 1,
+  created_at    DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at    DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+
+  CONSTRAINT UQ_foods_name UNIQUE (name),
+  CONSTRAINT CK_foods_nonneg CHECK (
+    calories >= 0 AND protein_g >= 0 AND carbs_g >= 0 AND fat_g >= 0
+  )
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE INDEX IX_foods_active_name ON foods (is_active, name);
+
+
+
+/* ============================
+   2) user_nutrition_goals
+   ============================ */
+CREATE TABLE user_nutrition_goals (
+  user_id               INT NOT NULL PRIMARY KEY,
+  goal_type             ENUM('giam can','tang can','giu dang') NOT NULL,
+  activity_factor       DECIMAL(4,2) NOT NULL DEFAULT 1.55,
+  daily_calories_target DECIMAL(8,2) NULL,
+  daily_protein_target  DECIMAL(8,2) NULL,
+  updated_at            DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+
+  CONSTRAINT FK_goals_user
+    FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE,
+
+  CONSTRAINT CK_goals_nonneg CHECK (
+    (daily_calories_target IS NULL OR daily_calories_target >= 0)
+    AND (daily_protein_target IS NULL OR daily_protein_target >= 0)
+  )
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+/* ============================
+   3) user_meals
+   ============================ */
+CREATE TABLE user_meals (
+  id             BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id        INT       NOT NULL,
+  food_id        BIGINT       NOT NULL,
+  meal_type      VARCHAR(20)  NULL,                 -- 'breakfast'/'lunch'/...
+  eaten_at       DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  servings       DECIMAL(8,2) NOT NULL,
+
+  -- snapshot tại thời điểm ăn
+  snap_calories  DECIMAL(8,2) NOT NULL,
+  snap_protein_g DECIMAL(8,2) NOT NULL,
+  snap_carbs_g   DECIMAL(8,2) NOT NULL,
+  snap_fat_g     DECIMAL(8,2) NOT NULL,
+
+  -- generated columns (tương đương PERSISTED)
+  total_calories  DECIMAL(10,2) AS (ROUND(servings * snap_calories, 2)) STORED,
+  total_protein_g DECIMAL(10,2) AS (ROUND(servings * snap_protein_g, 2)) STORED,
+  total_carbs_g   DECIMAL(10,2) AS (ROUND(servings * snap_carbs_g, 2)) STORED,
+  total_fat_g     DECIMAL(10,2) AS (ROUND(servings * snap_fat_g, 2)) STORED,
+
+  CONSTRAINT FK_user_meals_user FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE,
+  CONSTRAINT FK_user_meals_food FOREIGN KEY (food_id) REFERENCES foods(id),
+  CONSTRAINT CK_user_meals_servings CHECK (servings > 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE INDEX IX_user_meals_user_time ON user_meals (user_id, eaten_at);
+
+
+
+/* ============================
+   4) user_daily_targets
+   ============================ */
+CREATE TABLE user_daily_targets (
+  user_id     INT NOT NULL,
+  target_date DATE   NOT NULL,
+  calories_kcal DECIMAL(8,2) NOT NULL,
+  protein_g     DECIMAL(8,2) NOT NULL,
+  created_at    DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+  CONSTRAINT PK_udt PRIMARY KEY (user_id, target_date),
+  CONSTRAINT FK_udt_user FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE,
+  CONSTRAINT CK_udt_nonneg CHECK (calories_kcal >= 0 AND protein_g >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE products 
+MODIFY COLUMN product_type 
+ENUM('SUPPLEMENT','EQUIPMENT','APPAREL','ACCESSORY','PACKAGE','OTHER') 
+NOT NULL DEFAULT 'OTHER';
+
+-- =============================================
+-- Password Reset Tokens Table
+-- Stores temporary tokens for password reset
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS `password_reset_tokens` (
+  `token_id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT NOT NULL,
+  `token` VARCHAR(100) NOT NULL UNIQUE,
+  `email` VARCHAR(255) NOT NULL,
+  `expires_at` TIMESTAMP NOT NULL,
+  `used` BOOLEAN DEFAULT FALSE,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  
+  INDEX `idx_token` (`token`),
+  INDEX `idx_user_id` (`user_id`),
+  INDEX `idx_expires_at` (`expires_at`),
+  
+  FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Cleanup old expired tokens (older than 24 hours)
+-- Run this periodically via cron or scheduled job
+-- DELETE FROM password_reset_tokens WHERE expires_at < NOW() - INTERVAL 24 HOUR;
+
+-- =====================================================
+-- END OF DATABASE SETUP
+-- =====================================================
+-- Add gender column to user table
+-- Run this SQL script in your MySQL database
+
+ALTER TABLE `user` 
+ADD COLUMN `gender` VARCHAR(20) NULL DEFAULT NULL 
+AFTER `address`;
+
+-- Optional: Update existing records if needed
+-- UPDATE `user` SET `gender` = 'male' WHERE ...;
+
+---------------------------------------
+-- =====================================================
+-- MIGRATION: Membership Inactive/Suspended Status
+-- Purpose: Support payment-triggered membership activation
+-- Date: 2025-11-06
+-- =====================================================
+
+USE gym_management;
+
+-- =====================================================
+-- 1. ALTER MEMBERSHIPS TABLE
+-- =====================================================
+
+-- Thêm status mới: INACTIVE (chờ thanh toán), SUSPENDED (hoàn tiền/chargeback)
+ALTER TABLE memberships 
+MODIFY COLUMN status ENUM('INACTIVE', 'ACTIVE', 'EXPIRED', 'CANCELLED', 'SUSPENDED') 
+DEFAULT 'INACTIVE'
+COMMENT 'INACTIVE=chờ thanh toán, ACTIVE=đã kích hoạt, EXPIRED=hết hạn, CANCELLED=hủy, SUSPENDED=tạm ngưng';
+
+-- Thêm cột activated_at để track khi membership được kích hoạt
+ALTER TABLE memberships 
+ADD COLUMN activated_at TIMESTAMP NULL 
+COMMENT 'Thời điểm membership được activate (khi payment = PAID)';
+
+-- Thêm cột suspended_at để track khi membership bị tạm ngưng
+ALTER TABLE memberships 
+ADD COLUMN suspended_at TIMESTAMP NULL 
+COMMENT 'Thời điểm membership bị suspend (khi payment refunded/chargeback)';
+
+-- Thêm index cho performance
+ALTER TABLE memberships 
+ADD INDEX idx_mem_activated (activated_at);
+
+ALTER TABLE memberships 
+ADD INDEX idx_mem_suspended (suspended_at);
+
+-- =====================================================
+-- 2. ALTER PAYMENTS TABLE
+-- =====================================================
+
+-- Thêm status mới: CANCELED, EXPIRED, CHARGEBACK
+ALTER TABLE payments 
+MODIFY COLUMN status ENUM('PENDING', 'PAID', 'FAILED', 'REFUNDED', 'CANCELED', 'EXPIRED', 'CHARGEBACK') 
+DEFAULT 'PENDING'
+COMMENT 'PENDING=chờ, PAID=đã thanh toán, FAILED=thất bại, REFUNDED=hoàn tiền, CANCELED=hủy, EXPIRED=hết hạn, CHARGEBACK=tranh chấp';
+
+-- Thêm cột paid_at để track khi payment được xác nhận
+ALTER TABLE payments 
+ADD COLUMN paid_at TIMESTAMP NULL 
+COMMENT 'Thời điểm payment được xác nhận (status = PAID)';
+
+-- Thêm cột external_ref để lưu mã tham chiếu từ payment gateway
+ALTER TABLE payments 
+ADD COLUMN external_ref VARCHAR(255) NULL 
+COMMENT 'Mã tham chiếu từ payment provider (VNPay, MoMo, etc.)';
+
+-- Thêm index cho performance
+ALTER TABLE payments 
+ADD INDEX idx_pay_paid_at (paid_at);
+
+-- =====================================================
+-- 3. UPDATE EXISTING DATA (Optional - tùy business logic)
+-- =====================================================
+
+-- Cập nhật các membership đang ACTIVE (đã thanh toán trước đây) 
+-- → set activated_at = created_date (giả định)
+UPDATE memberships 
+SET activated_at = created_date 
+WHERE status = 'ACTIVE' AND activated_at IS NULL;
+
+-- Cập nhật các payment đang PAID (đã thanh toán trước đây)
+-- → set paid_at = payment_date (giả định)
+UPDATE payments 
+SET paid_at = payment_date 
+WHERE status = 'PAID' AND paid_at IS NULL;
+
+-- =========================
+
+
+USE gym_management;
+
+-- =====================================================
+-- 1. ALTER MEMBERSHIPS TABLE
+-- =====================================================
+
+-- Thêm status mới: INACTIVE (chờ thanh toán), SUSPENDED (hoàn tiền/chargeback)
+ALTER TABLE memberships 
+MODIFY COLUMN status ENUM('INACTIVE', 'ACTIVE', 'EXPIRED', 'CANCELLED', 'SUSPENDED') 
+DEFAULT 'INACTIVE'
+COMMENT 'INACTIVE=chờ thanh toán, ACTIVE=đã kích hoạt, EXPIRED=hết hạn, CANCELLED=hủy, SUSPENDED=tạm ngưng';
+
+-- Thêm cột activated_at để track khi membership được kích hoạt
+ALTER TABLE memberships 
+ADD COLUMN activated_at TIMESTAMP NULL 
+COMMENT 'Thời điểm membership được activate (khi payment = PAID)';
+
+-- Thêm cột suspended_at để track khi membership bị tạm ngưng
+ALTER TABLE memberships 
+ADD COLUMN suspended_at TIMESTAMP NULL 
+COMMENT 'Thời điểm membership bị suspend (khi payment refunded/chargeback)';
+
+-- Thêm index cho performance
+ALTER TABLE memberships 
+ADD INDEX idx_mem_activated (activated_at);
+
+ALTER TABLE memberships 
+ADD INDEX idx_mem_suspended (suspended_at);
+
+-- =====================================================
+-- 2. ALTER PAYMENTS TABLE
+-- =====================================================
+
+-- Thêm status mới: CANCELED, EXPIRED, CHARGEBACK
+ALTER TABLE payments 
+MODIFY COLUMN status ENUM('PENDING', 'PAID', 'FAILED', 'REFUNDED', 'CANCELED', 'EXPIRED', 'CHARGEBACK') 
+DEFAULT 'PENDING'
+COMMENT 'PENDING=chờ, PAID=đã thanh toán, FAILED=thất bại, REFUNDED=hoàn tiền, CANCELED=hủy, EXPIRED=hết hạn, CHARGEBACK=tranh chấp';
+
+-- Thêm cột paid_at để track khi payment được xác nhận
+ALTER TABLE payments 
+ADD COLUMN paid_at TIMESTAMP NULL 
+COMMENT 'Thời điểm payment được xác nhận (status = PAID)';
+
+-- Thêm cột external_ref để lưu mã tham chiếu từ payment gateway
+ALTER TABLE payments 
+ADD COLUMN external_ref VARCHAR(255) NULL 
+COMMENT 'Mã tham chiếu từ payment provider (VNPay, MoMo, etc.)';
+
+-- Thêm index cho performance
+ALTER TABLE payments 
+ADD INDEX idx_pay_paid_at (paid_at);
+
+-- =====================================================
+-- 3. UPDATE EXISTING DATA (Optional - tùy business logic)
+-- =====================================================
+
+-- Cập nhật các membership đang ACTIVE (đã thanh toán trước đây) 
+-- → set activated_at = created_date (giả định)
+UPDATE memberships 
+SET activated_at = created_date 
+WHERE status = 'ACTIVE' AND activated_at IS NULL;
+
+-- Cập nhật các payment đang PAID (đã thanh toán trước đây)
+-- → set paid_at = payment_date (giả định)
+UPDATE payments 
+SET paid_at = payment_date 
+WHERE status = 'PAID' AND paid_at IS NULL;
+
