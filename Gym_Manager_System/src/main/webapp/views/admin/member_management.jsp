@@ -1,5 +1,6 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -520,11 +521,20 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/admin/account-management"
+              href="${pageContext.request.contextPath}/admin/users"
               class="sidebar-menu-link"
             >
               <i class="fas fa-users-cog"></i>
               <span>Quản lý tài khoản</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a
+              href="${pageContext.request.contextPath}/admin/products"
+              class="sidebar-menu-link"
+            >
+              <i class="fas fa-box"></i>
+              <span>Quản lý sản phẩm</span>
             </a>
           </li>
           <li class="sidebar-menu-item">
@@ -608,7 +618,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                 <i class="fas fa-users"></i>
               </div>
               <div class="stat-info">
-                <h3>1,245</h3>
+                <h3><fmt:formatNumber value="${totalMembers != null ? totalMembers : 0}" groupingUsed="true"/></h3>
                 <p>Tổng hội viên</p>
               </div>
             </div>
@@ -618,18 +628,8 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                 <i class="fas fa-user-check"></i>
               </div>
               <div class="stat-info">
-                <h3>1,102</h3>
+                <h3><fmt:formatNumber value="${totalActiveMembers != null ? totalActiveMembers : 0}" groupingUsed="true"/></h3>
                 <p>Đang hoạt động</p>
-              </div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-icon orange">
-                <i class="fas fa-user-clock"></i>
-              </div>
-              <div class="stat-info">
-                <h3>87</h3>
-                <p>Sắp hết hạn</p>
               </div>
             </div>
 
@@ -637,14 +637,14 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
               <div
                 class="stat-icon"
                 style="
-                  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+                  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
                 "
               >
-                <i class="fas fa-user-times"></i>
+                <i class="fas fa-user-slash"></i>
               </div>
               <div class="stat-info">
-                <h3>56</h3>
-                <p>Đã hết hạn</p>
+                <h3><fmt:formatNumber value="${totalSuspendedMembers != null ? totalSuspendedMembers : 0}" groupingUsed="true"/></h3>
+                <p>Tạm ngưng</p>
               </div>
             </div>
           </div>
@@ -657,27 +657,16 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                 class="filter-select"
                 placeholder="Tìm kiếm theo tên, email..."
                 style="width: 250px"
+                id="searchInput"
               />
 
-              <select class="filter-select">
+              <select class="filter-select" id="statusFilter">
                 <option value="all">Tất cả trạng thái</option>
-                <option value="active">Đang hoạt động</option>
-                <option value="expiring">Sắp hết hạn</option>
-                <option value="expired">Đã hết hạn</option>
-              </select>
-
-              <select class="filter-select">
-                <option value="all">Tất cả gói tập</option>
-                <option value="basic">Gói Basic</option>
-                <option value="standard">Gói Standard</option>
-                <option value="premium">Gói Premium</option>
-                <option value="vip">Gói VIP</option>
+                <option value="ACTIVE">Đang hoạt động</option>
+                <option value="SUSPENDED">Tạm ngưng (SUSPENDED)</option>
+                <option value="EXPIRED">Tạm ngưng (EXPIRED)</option>
               </select>
             </div>
-
-            <button class="btn" onclick="openAddMemberModal()">
-              <i class="fas fa-user-plus"></i> Thêm hội viên mới
-            </button>
           </div>
 
           <!-- Members Table -->
@@ -696,110 +685,76 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>#HV001</td>
-                  <td>Nguyễn Văn A</td>
-                  <td>nguyenvana@gmail.com<br /><small>0123456789</small></td>
-                  <td><span class="badge badge-pt">Premium</span></td>
-                  <td>01/01/2025</td>
-                  <td>01/04/2025</td>
-                  <td><span class="badge badge-active">Hoạt động</span></td>
-                  <td>
-                    <div class="action-buttons">
-                      <button class="btn-icon btn-edit" title="Sửa thông tin">
-                        <i class="fas fa-edit"></i>
-                      </button>
-                      <button
-                        class="btn-icon"
-                        style="background: #9b59b6"
-                        title="Gia hạn"
-                      >
-                        <i class="fas fa-calendar-plus"></i>
-                      </button>
-                      <button class="btn-icon btn-delete" title="Xóa">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td>#HV002</td>
-                  <td>Trần Thị B</td>
-                  <td>tranthib@gmail.com<br /><small>0987654321</small></td>
-                  <td><span class="badge badge-user">Standard</span></td>
-                  <td>15/12/2024</td>
-                  <td>15/03/2025</td>
-                  <td><span class="badge badge-active">Hoạt động</span></td>
-                  <td>
-                    <div class="action-buttons">
-                      <button class="btn-icon btn-edit" title="Sửa thông tin">
-                        <i class="fas fa-edit"></i>
-                      </button>
-                      <button
-                        class="btn-icon"
-                        style="background: #9b59b6"
-                        title="Gia hạn"
-                      >
-                        <i class="fas fa-calendar-plus"></i>
-                      </button>
-                      <button class="btn-icon btn-delete" title="Xóa">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td>#HV003</td>
-                  <td>Lê Văn C</td>
-                  <td>levanc@gmail.com<br /><small>0369852147</small></td>
-                  <td><span class="badge badge-admin">VIP</span></td>
-                  <td>10/10/2024</td>
-                  <td>20/02/2025</td>
-                  <td><span class="badge badge-expiring">Sắp hết hạn</span></td>
-                  <td>
-                    <div class="action-buttons">
-                      <button class="btn-icon btn-edit" title="Sửa thông tin">
-                        <i class="fas fa-edit"></i>
-                      </button>
-                      <button
-                        class="btn-icon"
-                        style="background: #9b59b6"
-                        title="Gia hạn"
-                      >
-                        <i class="fas fa-calendar-plus"></i>
-                      </button>
-                      <button class="btn-icon btn-delete" title="Xóa">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td>#HV004</td>
-                  <td>Phạm Thị D</td>
-                  <td>phamthid@gmail.com<br /><small>0258963147</small></td>
-                  <td><span class="badge badge-user">Basic</span></td>
-                  <td>05/09/2024</td>
-                  <td>05/01/2025</td>
-                  <td><span class="badge badge-expired">Hết hạn</span></td>
-                  <td>
-                    <div class="action-buttons">
-                      <button class="btn-icon btn-edit" title="Sửa thông tin">
-                        <i class="fas fa-edit"></i>
-                      </button>
-                      <button
-                        class="btn-icon"
-                        style="background: #9b59b6"
-                        title="Gia hạn"
-                      >
-                        <i class="fas fa-calendar-plus"></i>
-                      </button>
-                      <button class="btn-icon btn-delete" title="Xóa">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                <c:forEach var="membership" items="${memberships}">
+                  <tr>
+                    <td>#HV${membership.membershipId}</td>
+                    <td>${membership.user != null ? membership.user.name : 'N/A'}</td>
+                    <td>
+                      ${membership.user != null ? membership.user.email : 'N/A'}
+                      <c:if test="${membership.user != null && not empty membership.user.phone}">
+                        <br /><small>${membership.user.phone}</small>
+                      </c:if>
+                    </td>
+                    <td>
+                      <span class="badge badge-pt">${membership.packageName != null ? membership.packageName : 'N/A'}</span>
+                    </td>
+                    <td>
+                      <c:choose>
+                        <c:when test="${membership.startDate != null}">
+                          <%
+                            com.gym.model.membership.Membership mem = (com.gym.model.membership.Membership) pageContext.getAttribute("membership");
+                            if (mem != null && mem.getStartDate() != null) {
+                              java.time.LocalDate startDate = mem.getStartDate();
+                              out.print(String.format("%02d/%02d/%04d", startDate.getDayOfMonth(), startDate.getMonthValue(), startDate.getYear()));
+                            }
+                          %>
+                        </c:when>
+                        <c:otherwise>N/A</c:otherwise>
+                      </c:choose>
+                    </td>
+                    <td>
+                      <c:choose>
+                        <c:when test="${membership.endDate != null}">
+                          <%
+                            com.gym.model.membership.Membership mem2 = (com.gym.model.membership.Membership) pageContext.getAttribute("membership");
+                            if (mem2 != null && mem2.getEndDate() != null) {
+                              java.time.LocalDate endDate = mem2.getEndDate();
+                              out.print(String.format("%02d/%02d/%04d", endDate.getDayOfMonth(), endDate.getMonthValue(), endDate.getYear()));
+                            }
+                          %>
+                        </c:when>
+                        <c:otherwise>N/A</c:otherwise>
+                      </c:choose>
+                    </td>
+                    <td>
+                      <c:choose>
+                        <c:when test="${membership.status == 'ACTIVE'}">
+                          <span class="badge badge-active">Hoạt động</span>
+                        </c:when>
+                        <c:when test="${membership.status == 'SUSPENDED' || membership.status == 'EXPIRED'}">
+                          <span class="badge badge-expired">Tạm ngưng</span>
+                        </c:when>
+                        <c:otherwise>
+                          <span class="badge">${membership.status}</span>
+                        </c:otherwise>
+                      </c:choose>
+                    </td>
+                    <td>
+                      <div class="action-buttons">
+                        <button class="btn-icon btn-edit" title="Xem chi tiết">
+                          <i class="fas fa-eye"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </c:forEach>
+                <c:if test="${empty memberships}">
+                  <tr>
+                    <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
+                      Chưa có hội viên nào
+                    </td>
+                  </tr>
+                </c:if>
               </tbody>
             </table>
           </div>
@@ -807,83 +762,43 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
       </main>
     </div>
 
-    <!-- Add Member Modal -->
-    <div class="modal" id="addMemberModal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 class="modal-title">Thêm hội viên mới</h3>
-          <button class="modal-close" onclick="closeModal('addMemberModal')">
-            &times;
-          </button>
-        </div>
-        <form action="#" method="post">
-          <div class="form-group">
-            <label class="form-label">Họ và tên</label>
-            <input type="text" class="form-input" name="username" required />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input type="email" class="form-input" name="email" required />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Số điện thoại</label>
-            <input type="tel" class="form-input" name="phone" required />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Gói tập</label>
-            <select class="form-input" name="package" required>
-              <option value="">-- Chọn gói tập --</option>
-              <option value="basic">Gói Basic (1 tháng - 500K)</option>
-              <option value="standard">Gói Standard (3 tháng - 1.2M)</option>
-              <option value="premium">Gói Premium (6 tháng - 2M)</option>
-              <option value="vip">Gói VIP (12 tháng - 3.5M)</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Ngày bắt đầu</label>
-            <input type="date" class="form-input" name="startDate" required />
-          </div>
-
-          <div
-            style="
-              display: flex;
-              gap: 10px;
-              justify-content: flex-end;
-              margin-top: 20px;
-            "
-          >
-            <button
-              type="button"
-              class="btn btn-outline"
-              onclick="closeModal('addMemberModal')"
-            >
-              Hủy
-            </button>
-            <button type="submit" class="btn">Thêm hội viên</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
     <script>
-      function openAddMemberModal() {
-        document.getElementById('addMemberModal').classList.add('active');
-      }
-
-      function closeModal(modalId) {
-        document.getElementById(modalId).classList.remove('active');
-      }
-
-      // Close modal when clicking outside
-      window.onclick = function (event) {
-        if (event.target.classList.contains('modal')) {
-          event.target.classList.remove('active');
+      // Simple search and filter functionality
+      document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const tableRows = document.querySelectorAll('.table tbody tr');
+        
+        function filterTable() {
+          const searchTerm = searchInput.value.toLowerCase();
+          const statusValue = statusFilter.value;
+          
+          tableRows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const statusBadge = row.querySelector('.badge');
+            const rowStatus = statusBadge ? statusBadge.textContent.trim() : '';
+            
+            const matchesSearch = text.includes(searchTerm);
+            const matchesStatus = statusValue === 'all' || 
+              (statusValue === 'ACTIVE' && rowStatus === 'Hoạt động') ||
+              (statusValue === 'SUSPENDED' && rowStatus === 'Tạm ngưng') ||
+              (statusValue === 'EXPIRED' && rowStatus === 'Tạm ngưng');
+            
+            if (matchesSearch && matchesStatus) {
+              row.style.display = '';
+            } else {
+              row.style.display = 'none';
+            }
+          });
         }
-      };
+        
+        if (searchInput) {
+          searchInput.addEventListener('input', filterTable);
+        }
+        if (statusFilter) {
+          statusFilter.addEventListener('change', filterTable);
+        }
+      });
     </script>
   </body>
 </html>

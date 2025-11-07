@@ -255,6 +255,16 @@ public class User {
         }
     }
 
+    /**
+     * Get createdDate as java.util.Date for JSP compatibility
+     */
+    public java.util.Date getCreatedDateAsDate() {
+        if (createdDate == null) {
+            return null;
+        }
+        return java.sql.Timestamp.valueOf(createdDate);
+    }
+
     public java.sql.Timestamp getUpdatedDateAsTimestamp() {
         if (lastUpdate == null) {
             return null;

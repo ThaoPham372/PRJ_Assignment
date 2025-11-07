@@ -192,7 +192,7 @@
             </c:if>
         </form>
         <div class="stats-info">
-            Tổng số: <strong>${totalProducts}</strong> sản phẩm
+            Tổng số: <strong>${totalProducts != null ? totalProducts : 0}</strong> sản phẩm
             <c:if test="${not empty keyword}">
                 - Kết quả tìm kiếm cho: "<strong>${fn:escapeXml(keyword)}</strong>"
             </c:if>
@@ -252,8 +252,8 @@
                            class="btn btn-warning btn-sm">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <form method="post" style="display:inline;" 
-                              onsubmit="return confirm('Xóa sản phẩm này?')">
+                        <form method="post" action="${pageContext.request.contextPath}/admin/products" style="display:inline;" 
+                              onsubmit="return confirm('Xóa sản phẩm này? (Soft delete - set active=false)')">
                             <input type="hidden" name="action" value="delete"/>
                             <input type="hidden" name="productId" value="${product.productId}"/>
                             <button type="submit" class="btn btn-danger btn-sm">

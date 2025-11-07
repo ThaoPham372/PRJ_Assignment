@@ -319,18 +319,35 @@ public class UserServlet extends HttpServlet {
         boolean isMultipart = contentType != null && contentType.toLowerCase().startsWith("multipart/form-data");
         
         // Update via service with multipart support
-        boolean updated;
-        if (isMultipart) {
-            // Create a wrapper to handle multipart parameters
-            updated = userService.updateProfileFromMultipartRequest(user, request);
-        } else {
-            updated = userService.updateProfileFromRequest(user, request);
-        }
-        
-        if (updated) {
-            request.getSession().setAttribute("profileUpdateSuccess", "Cập nhật thông tin thành công!");
-        } else {
-            request.getSession().setAttribute("profileUpdateError", "Không thể cập nhật thông tin. Vui lòng thử lại.");
+        boolean updated = false;
+        try {
+            System.out.println("[UserServlet] updateProfile - Starting update for userId: " + userId + ", isMultipart: " + isMultipart);
+            if (isMultipart) {
+                // Create a wrapper to handle multipart parameters
+                updated = userService.updateProfileFromMultipartRequest(user, request);
+            } else {
+                updated = userService.updateProfileFromRequest(user, request);
+            }
+            
+            System.out.println("[UserServlet] updateProfile - Update result: " + updated);
+            
+            if (updated) {
+                // Reload user from database to get updated data
+                User updatedUser = userService.getUserById(userId);
+                if (updatedUser != null) {
+                    // Update session with new user data
+                    jakarta.servlet.http.HttpSession session = request.getSession();
+                    session.setAttribute("user", updatedUser);
+                    System.out.println("[UserServlet] updateProfile - Session updated with new user data");
+                }
+                request.getSession().setAttribute("profileUpdateSuccess", "Cập nhật thông tin thành công!");
+            } else {
+                request.getSession().setAttribute("profileUpdateError", "Không thể cập nhật thông tin. Vui lòng thử lại.");
+            }
+        } catch (Exception e) {
+            System.err.println("[UserServlet] Error updating profile: " + e.getMessage());
+            e.printStackTrace();
+            request.getSession().setAttribute("profileUpdateError", "Lỗi khi cập nhật thông tin: " + e.getMessage());
         }
         
         response.sendRedirect(request.getContextPath() + "/member/profile");

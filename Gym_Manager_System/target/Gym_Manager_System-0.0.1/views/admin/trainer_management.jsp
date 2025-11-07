@@ -390,10 +390,18 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/admin/account-management"
+              href="${pageContext.request.contextPath}/admin/users"
               class="sidebar-menu-link"
             >
               <i class="fas fa-users-cog"></i><span>Quản lý tài khoản</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a
+              href="${pageContext.request.contextPath}/admin/products"
+              class="sidebar-menu-link"
+            >
+              <i class="fas fa-box"></i><span>Quản lý sản phẩm</span>
             </a>
           </li>
           <li class="sidebar-menu-item">

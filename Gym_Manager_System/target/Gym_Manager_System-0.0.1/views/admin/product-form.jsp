@@ -88,9 +88,9 @@
             <label class="form-label">Loại Sản Phẩm *</label>
             <select name="productType" class="form-control" required>
                 <option value="">-- Chọn Loại --</option>
-                <option value="FOOD" ${product.productType == 'FOOD' ? 'selected' : ''}>Thực Phẩm</option>
-                <option value="EQUIPMENT" ${product.productType == 'EQUIPMENT' ? 'selected' : ''}>Thiết Bị</option>
                 <option value="SUPPLEMENT" ${product.productType == 'SUPPLEMENT' ? 'selected' : ''}>Thực Phẩm Bổ Sung</option>
+                <option value="EQUIPMENT" ${product.productType == 'EQUIPMENT' ? 'selected' : ''}>Thiết Bị</option>
+                <option value="APPAREL" ${product.productType == 'APPAREL' ? 'selected' : ''}>Trang Phục</option>
                 <option value="ACCESSORY" ${product.productType == 'ACCESSORY' ? 'selected' : ''}>Phụ Kiện</option>
                 <option value="OTHER" ${product.productType == 'OTHER' ? 'selected' : ''}>Khác</option>
             </select>

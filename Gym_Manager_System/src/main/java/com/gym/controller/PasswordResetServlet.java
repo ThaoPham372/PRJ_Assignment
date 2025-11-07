@@ -68,9 +68,15 @@ public class PasswordResetServlet extends HttpServlet {
     
     /**
      * Show forgot password form
+     * Supports email parameter to pre-fill the form
      */
     private void showForgotPasswordForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Get email from parameter (if coming from admin profile)
+        String emailParam = request.getParameter("email");
+        if (emailParam != null && !emailParam.trim().isEmpty()) {
+            request.setAttribute("email", emailParam.trim());
+        }
         request.getRequestDispatcher("/views/auth/forgot-password.jsp").forward(request, response);
     }
     

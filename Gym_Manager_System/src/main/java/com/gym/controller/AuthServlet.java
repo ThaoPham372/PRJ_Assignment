@@ -160,15 +160,16 @@ public class AuthServlet extends HttpServlet {
             System.out.println("[AuthServlet] User is ADMIN, redirecting to /admin/dashboard");
             return "/admin/dashboard";
         }
-        if (roles.contains("USER") || roles.contains("User")) {
-            System.out.println("[AuthServlet] User is ADMIN, redirecting to /admin/dashboard");
+        if (roles.contains("MEMBER") || roles.contains("Member") || 
+            roles.contains("USER") || roles.contains("User")) {
+            System.out.println("[AuthServlet] User is MEMBER/USER, redirecting to /member/dashboard");
             return "/member/dashboard";
         }
-        if (roles.contains("PT") || roles.contains("User")) {
+        if (roles.contains("PT") || roles.contains("TRAINER") || roles.contains("Trainer")) {
             System.out.println("[AuthServlet] User is PT, redirecting to /pt/dashboard");
             return "/pt/dashboard";
         }
-        // Default to member dashboard for USER, MEMBER, or any other role
+        // Default to member dashboard for MEMBER, USER, or any other role
         System.out.println("[AuthServlet] User roles: " + roles.toString() + ", redirecting to /member/dashboard");
         return "/member/dashboard";
     }

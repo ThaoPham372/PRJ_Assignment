@@ -71,4 +71,36 @@ public interface MembershipService {
      * @return true if successfully suspended, false otherwise
      */
     boolean suspendMembership(Long membershipId, String reason);
+    
+    /**
+     * Count active memberships with paid status
+     * Returns count of memberships where status = 'ACTIVE', end_date >= CURRENT_DATE, and payment.status = 'PAID'
+     * @return Count of active paid memberships
+     */
+    long countActiveMemberships();
+    
+    /**
+     * Get all memberships with status ACTIVE, EXPIRED, or SUSPENDED
+     * Returns all memberships regardless of payment status
+     * @return List of memberships with user and package data
+     */
+    java.util.List<Membership> getAllActiveAndSuspendedMemberships();
+    
+    /**
+     * Count active memberships (status = 'ACTIVE') for management page
+     * @return Count of active memberships
+     */
+    long countActiveMembershipsForManagement();
+    
+    /**
+     * Count expired and suspended memberships (status = 'EXPIRED' OR 'SUSPENDED')
+     * @return Count of expired and suspended memberships
+     */
+    long countSuspendedMemberships();
+    
+    /**
+     * Count all memberships with status ACTIVE, EXPIRED, or SUSPENDED
+     * @return Total count
+     */
+    long countAllMembershipsForManagement();
 }

@@ -249,5 +249,32 @@ public class PaymentDAO extends BaseDAO<Payment> {
             return Optional.empty();
         }
     }
+
+    /**
+     * Get total revenue for current month (payments with status = 'PAID')
+     * @return Total revenue as BigDecimal
+     */
+    public BigDecimal getRevenueThisMonth() {
+        try {
+            // Get first day of current month
+            java.time.LocalDate firstDayOfMonth = java.time.LocalDate.now().withDayOfMonth(1);
+            java.time.LocalDateTime startOfMonth = firstDayOfMonth.atStartOfDay();
+            
+            String jpql = "SELECT SUM(p.amount) FROM Payment p " +
+                         "WHERE p.status = 'PAID' " +
+                         "AND p.paymentDate >= :startOfMonth " +
+                         "AND p.paymentDate < :startOfNextMonth";
+            
+            TypedQuery<BigDecimal> query = em.createQuery(jpql, BigDecimal.class);
+            query.setParameter("startOfMonth", startOfMonth);
+            query.setParameter("startOfNextMonth", startOfMonth.plusMonths(1));
+            
+            BigDecimal result = query.getSingleResult();
+            return result != null ? result : BigDecimal.ZERO;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error getting revenue this month", e);
+            return BigDecimal.ZERO;
+        }
+    }
     
 }

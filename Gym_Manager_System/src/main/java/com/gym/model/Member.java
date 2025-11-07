@@ -4,15 +4,15 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 /**
- * Student entity representing extended student-specific information.
+ * Member entity representing extended member-specific information.
  * Inherits from User using JOINED inheritance strategy.
  * Links to User entity via user_id (shared primary key).
  */
 @Entity
-@Table(name = "students")
-@DiscriminatorValue("STUDENT")
+@Table(name = "members")
+@DiscriminatorValue("MEMBER")
 @PrimaryKeyJoinColumn(name = "user_id")
-public class Student extends User {
+public class Member extends User {
 
     @Column(name = "weight")
     private Float weight;
@@ -35,7 +35,7 @@ public class Student extends User {
     @Column(name = "emergency_contact_address", length = 255)
     private String emergencyContactAddress;
 
-    // Gender is now in User table, not in Student table
+    // Gender is now in User table, not in Member table
     // Use getGender() and setGender() from parent User class
 
     // Getters & Setters
@@ -130,7 +130,7 @@ public class Student extends User {
         this.bmi = bmi != null ? bmi.floatValue() : null;
     }
 
-    // Additional fields that might be in views/queries but not in students table
+    // Additional fields that might be in views/queries but not in members table
     // These are kept for backward compatibility but should not be persisted
     @Transient
     private BigDecimal targetWeight;
@@ -192,7 +192,7 @@ public class Student extends User {
     }
 
     // Gender getter/setter removed - now using parent User.getGender() and User.setGender()
-    // Gender is stored in User table, not Student table
+    // Gender is stored in User table, not Member table
 
     public String getPhone() {
         return phone != null ? phone : super.getPhone();
@@ -294,3 +294,4 @@ public class Student extends User {
         isActive = active;
     }
 }
+

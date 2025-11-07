@@ -228,6 +228,11 @@
             <i class="fas fa-lock"></i>
             <h1>Quên Mật Khẩu?</h1>
             <p>Nhập email đăng ký của bạn, chúng tôi sẽ gửi mã xác nhận để đặt lại mật khẩu</p>
+            <c:if test="${not empty email}">
+                <p style="color: #667eea; font-weight: 600; margin-top: 10px;">
+                    <i class="fas fa-info-circle"></i> Email của tài khoản: ${email}
+                </p>
+            </c:if>
         </div>
 
         <c:if test="${not empty error}">
@@ -257,9 +262,10 @@
                         name="email" 
                         class="form-control" 
                         placeholder="your-email@example.com"
-                        value="${email}"
+                        value="${email != null ? email : ''}"
                         required
-                        autofocus
+                        ${empty email ? 'autofocus' : ''}
+                        ${not empty email ? 'readonly style="background-color: #f5f5f5;"' : ''}
                     />
                 </div>
             </div>
@@ -274,10 +280,18 @@
             <span>hoặc</span>
         </div>
 
-        <a href="${pageContext.request.contextPath}/login" class="back-link">
-            <i class="fas fa-arrow-left"></i>
-            Quay lại Đăng nhập
-        </a>
+        <div style="text-align: center;">
+            <c:if test="${not empty email}">
+                <a href="${pageContext.request.contextPath}/admin/profile" class="back-link" style="margin-bottom: 10px;">
+                    <i class="fas fa-arrow-left"></i>
+                    Quay lại Profile
+                </a>
+            </c:if>
+            <a href="${pageContext.request.contextPath}/auth/login" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+                Quay lại Đăng nhập
+            </a>
+        </div>
     </div>
 </body>
 </html>

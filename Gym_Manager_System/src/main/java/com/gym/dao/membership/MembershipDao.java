@@ -333,4 +333,117 @@ public class MembershipDao extends GenericDAO<Membership> {
             return new ArrayList<>();
         }
     }
+
+    /**
+     * Count active memberships with paid status
+     * Returns count of memberships where:
+     * - status = 'ACTIVE'
+     * - end_date >= CURRENT_DATE
+     * - payment.status = 'PAID' (payment must exist and be paid)
+     * @return Count of active paid memberships
+     */
+    public long countActiveMemberships() {
+        try {
+            String jpql = "SELECT COUNT(DISTINCT m) FROM Membership m " +
+                         "INNER JOIN Payment pay ON pay.membershipId = m.membershipId " +
+                         "WHERE m.status = 'ACTIVE' " +
+                         "AND m.endDate >= CURRENT_DATE " +
+                         "AND pay.transactionType = 'PACKAGE' " +
+                         "AND pay.status = 'PAID'";
+            
+            TypedQuery<Long> query = em.createQuery(jpql, Long.class);
+            Long count = query.getSingleResult();
+            return count != null ? count : 0L;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error counting active memberships", e);
+            return 0L;
+        }
+    }
+
+    /**
+     * Get all memberships with status ACTIVE, EXPIRED, or SUSPENDED
+     * Returns all memberships regardless of payment status
+     * Includes user and package information
+     * @return List of memberships with user and package data
+     */
+    public List<Membership> getAllActiveAndSuspendedMemberships() {
+        try {
+            String jpql = "SELECT DISTINCT m FROM Membership m " +
+                         "LEFT JOIN FETCH m.user u " +
+                         "LEFT JOIN FETCH m.packageEntity p " +
+                         "WHERE m.status IN ('ACTIVE', 'EXPIRED', 'SUSPENDED') " +
+                         "ORDER BY m.status ASC, m.endDate DESC";
+            
+            TypedQuery<Membership> query = em.createQuery(jpql, Membership.class);
+            List<Membership> memberships = query.getResultList();
+            
+            // Populate transient fields for each membership
+            for (Membership membership : memberships) {
+                if (membership.getPackageEntity() != null) {
+                    membership.setPackageName(membership.getPackageEntity().getName());
+                    membership.setPackageDurationMonths(membership.getPackageEntity().getDurationMonths());
+                    membership.setPackagePrice(membership.getPackageEntity().getPrice());
+                }
+            }
+            
+            return memberships;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error getting active and suspended memberships", e);
+            return new ArrayList<>();
+        }
+    }
+    
+    /**
+     * Count active memberships (status = 'ACTIVE')
+     * @return Count of active memberships
+     */
+    public long countActiveMembershipsForManagement() {
+        try {
+            String jpql = "SELECT COUNT(m) FROM Membership m " +
+                         "WHERE m.status = 'ACTIVE'";
+            
+            TypedQuery<Long> query = em.createQuery(jpql, Long.class);
+            Long count = query.getSingleResult();
+            return count != null ? count : 0L;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error counting active memberships", e);
+            return 0L;
+        }
+    }
+    
+    /**
+     * Count expired and suspended memberships (status = 'EXPIRED' OR 'SUSPENDED')
+     * @return Count of expired and suspended memberships
+     */
+    public long countSuspendedMemberships() {
+        try {
+            String jpql = "SELECT COUNT(m) FROM Membership m " +
+                         "WHERE m.status IN ('EXPIRED', 'SUSPENDED')";
+            
+            TypedQuery<Long> query = em.createQuery(jpql, Long.class);
+            Long count = query.getSingleResult();
+            return count != null ? count : 0L;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error counting suspended memberships", e);
+            return 0L;
+        }
+    }
+    
+    /**
+     * Count all memberships with status ACTIVE, EXPIRED, or SUSPENDED
+     * @return Total count
+     */
+    public long countAllMembershipsForManagement() {
+        try {
+            String jpql = "SELECT COUNT(m) FROM Membership m " +
+                         "WHERE m.status IN ('ACTIVE', 'EXPIRED', 'SUSPENDED')";
+            
+            TypedQuery<Long> query = em.createQuery(jpql, Long.class);
+            Long count = query.getSingleResult();
+            return count != null ? count : 0L;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error counting all memberships", e);
+            return 0L;
+        }
+    }
 }

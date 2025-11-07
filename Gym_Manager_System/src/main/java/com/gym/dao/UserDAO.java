@@ -352,15 +352,16 @@ public class UserDAO extends GenericDAO<User> {
 
     /**
      * Get user by ID
-     * IMPORTANT: With JOINED inheritance, this will return the correct subclass (Student/Admin)
+     * IMPORTANT: With JOINED inheritance, this will return the correct subclass (Member/Admin/Trainer)
      * if DTYPE is set correctly in database
      * Uses EntityManager.find() which respects inheritance
      */
     public User getUserById(long userId) {
         try {
             // Use EntityManager.find() which automatically handles JOINED inheritance
-            // If user is Student, it will return Student instance
+            // If user is Member, it will return Member instance
             // If user is Admin, it will return Admin instance
+            // If user is Trainer, it will return Trainer instance
             // If user is base User, it will return User instance
             User user = em.find(User.class, (int) userId);
             if (user != null) {
@@ -473,10 +474,10 @@ public class UserDAO extends GenericDAO<User> {
     // ==================== ADMIN SEARCH & PAGINATION ====================
     
     /**
-     * Search users by keyword (username, name, email, phone) with pagination
+     * Search users by keyword (username, name, email, phone) and role with pagination
      * ✅ Tái sử dụng GenericDAO EntityManager
      */
-    public List<User> searchUsers(String keyword, int page, int pageSize) {
+    public List<User> searchUsers(String keyword, String role, int page, int pageSize) {
         try {
             StringBuilder jpql = new StringBuilder("SELECT u FROM User u WHERE 1=1");
             
@@ -487,12 +488,35 @@ public class UserDAO extends GenericDAO<User> {
                     .append("OR u.phone LIKE :keyword)");
             }
             
+            if (role != null && !role.trim().isEmpty() && !role.equalsIgnoreCase("all")) {
+                String normalizedRole = role.toUpperCase();
+                // Handle role normalization: STUDENT -> USER, PT -> TRAINER
+                if ("STUDENT".equals(normalizedRole)) {
+                    normalizedRole = "USER";
+                } else if ("PT".equals(normalizedRole)) {
+                    normalizedRole = "TRAINER";
+                }
+                jpql.append(" AND u.role = :role");
+            }
+            
             jpql.append(" ORDER BY u.createdDate DESC");
             
             TypedQuery<User> query = em.createQuery(jpql.toString(), User.class);
             
             if (keyword != null && !keyword.trim().isEmpty()) {
                 query.setParameter("keyword", "%" + keyword.trim() + "%");
+            }
+            
+            if (role != null && !role.trim().isEmpty() && !role.equalsIgnoreCase("all")) {
+                String normalizedRole = role.toUpperCase();
+                // Handle role normalization: STUDENT -> USER, PT -> TRAINER
+                if ("STUDENT".equals(normalizedRole)) {
+                    normalizedRole = "USER";
+                } else if ("PT".equals(normalizedRole)) {
+                    normalizedRole = "TRAINER";
+                }
+                query.setParameter("role", normalizedRole);
+                System.out.println("[UserDAO] Filtering by role: " + normalizedRole);
             }
             
             // Pagination
@@ -508,9 +532,9 @@ public class UserDAO extends GenericDAO<User> {
     }
     
     /**
-     * Count users matching search criteria
+     * Count users matching search criteria (keyword and role)
      */
-    public int countUsers(String keyword) {
+    public int countUsers(String keyword, String role) {
         try {
             StringBuilder jpql = new StringBuilder("SELECT COUNT(u) FROM User u WHERE 1=1");
             
@@ -521,10 +545,32 @@ public class UserDAO extends GenericDAO<User> {
                     .append("OR u.phone LIKE :keyword)");
             }
             
+            if (role != null && !role.trim().isEmpty() && !role.equalsIgnoreCase("all")) {
+                String normalizedRole = role.toUpperCase();
+                // Handle role normalization: STUDENT -> USER, PT -> TRAINER
+                if ("STUDENT".equals(normalizedRole)) {
+                    normalizedRole = "USER";
+                } else if ("PT".equals(normalizedRole)) {
+                    normalizedRole = "TRAINER";
+                }
+                jpql.append(" AND u.role = :role");
+            }
+            
             TypedQuery<Long> query = em.createQuery(jpql.toString(), Long.class);
             
             if (keyword != null && !keyword.trim().isEmpty()) {
                 query.setParameter("keyword", "%" + keyword.trim() + "%");
+            }
+            
+            if (role != null && !role.trim().isEmpty() && !role.equalsIgnoreCase("all")) {
+                String normalizedRole = role.toUpperCase();
+                // Handle role normalization: STUDENT -> USER, PT -> TRAINER
+                if ("STUDENT".equals(normalizedRole)) {
+                    normalizedRole = "USER";
+                } else if ("PT".equals(normalizedRole)) {
+                    normalizedRole = "TRAINER";
+                }
+                query.setParameter("role", normalizedRole);
             }
             
             return query.getSingleResult().intValue();

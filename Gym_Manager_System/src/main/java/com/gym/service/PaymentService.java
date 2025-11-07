@@ -64,5 +64,11 @@ public interface PaymentService {
      * Find payment by reference ID (useful for payment gateway callbacks)
      */
     Optional<Payment> findPaymentByReferenceId(String referenceId);
+    
+    /**
+     * Get total revenue for current month (payments with status = 'PAID')
+     * @return Total revenue as BigDecimal
+     */
+    BigDecimal getRevenueThisMonth();
 }
 

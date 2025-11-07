@@ -3,7 +3,7 @@ package com.gym.service;
 import com.gym.dao.UserDAO;
 import com.gym.dao.nutrition.NutritionGoalDao;
 import com.gym.model.User;
-import com.gym.model.Student;
+import com.gym.model.Member;
 import com.gym.model.NutritionGoal;
 import com.gym.service.nutrition.NutritionService;
 import com.gym.service.nutrition.NutritionServiceImpl;
@@ -20,29 +20,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * UserService - Service layer for user business logic
- * Provides operations for user management (CRUD)
- * For student-specific information, delegates to StudentService
- * All business logic should be here, not in Servlet
- */
+    /**
+     * UserService - Service layer for user business logic
+     * Provides operations for user management (CRUD)
+     * For member-specific information, delegates to MemberService
+     * All business logic should be here, not in Servlet
+     */
 public class UserService {
     
     private final UserDAO userDAO;
-    private final StudentService studentService;
+    private final MemberService memberService;
     private final NutritionGoalDao nutritionGoalDao;
     private final NutritionService nutritionService;
     private final com.gym.service.membership.MembershipService membershipService;
-    private final com.gym.dao.StudentDAO studentDAO;
+    private final com.gym.dao.MemberDAO memberDAO;
+    private final com.gym.dao.AdminDAO adminDAO;
+    private final com.gym.dao.TrainerDAO trainerDAO;
     private final PasswordService passwordService;
     
     public UserService() {
         this.userDAO = new UserDAO();
-        this.studentService = new StudentService();
+        this.memberService = new MemberService();
         this.nutritionGoalDao = new NutritionGoalDao();
         this.nutritionService = new NutritionServiceImpl();
         this.membershipService = new com.gym.service.membership.MembershipServiceImpl();
-        this.studentDAO = new com.gym.dao.StudentDAO();
+        this.memberDAO = new com.gym.dao.MemberDAO();
+        this.adminDAO = new com.gym.dao.AdminDAO();
+        this.trainerDAO = new com.gym.dao.TrainerDAO();
         this.passwordService = new PasswordService();
     }
     
@@ -163,9 +167,9 @@ public class UserService {
      * Search users with pagination (for admin management)
      * ✅ Tái sử dụng GenericDAO với custom JPQL
      */
-    public List<User> searchUsers(String keyword, int page, int pageSize) {
+    public List<User> searchUsers(String keyword, String role, int page, int pageSize) {
         try {
-            return userDAO.searchUsers(keyword, page, pageSize);
+            return userDAO.searchUsers(keyword, role, page, pageSize);
         } catch (Exception e) {
             System.err.println("[UserService] Error searching users: " + e.getMessage());
             e.printStackTrace();
@@ -174,11 +178,11 @@ public class UserService {
     }
     
     /**
-     * Count users matching search criteria
+     * Count users matching search criteria (keyword and role)
      */
-    public int countUsers(String keyword) {
+    public int countUsers(String keyword, String role) {
         try {
-            return userDAO.countUsers(keyword);
+            return userDAO.countUsers(keyword, role);
         } catch (Exception e) {
             System.err.println("[UserService] Error counting users: " + e.getMessage());
             e.printStackTrace();
@@ -188,7 +192,7 @@ public class UserService {
     
     /**
      * Create new user (for admin)
-     * ✅ Auto-create Student record when role=USER (JPA inheritance)
+     * ✅ Auto-create Member record when role=MEMBER (JPA inheritance)
      */
     public boolean createUser(String username, String name, String email, String phone,
                               String password, String role, String status) {
@@ -207,22 +211,46 @@ public class UserService {
             // Hash password
             String passwordHash = passwordService.hashPassword(password);
             
-            // Create User (or Student if role is USER)
+            // Create User (or Member/Admin/Trainer based on role)
             User user;
-            if ("USER".equalsIgnoreCase(role)) {
-                // ✅ Create Student directly to leverage JPA JOINED inheritance
-                Student student = new Student();
-                student.setUsername(username);
-                student.setName(name);
-                student.setEmail(email);
-                student.setPhone(phone);
-                student.setPassword(passwordHash);
-                student.setRole(role);
-                student.setStatus(status != null ? status : "ACTIVE");
-                student.setCreatedDate(java.time.LocalDateTime.now());
-                user = student;
+            if ("MEMBER".equalsIgnoreCase(role) || "USER".equalsIgnoreCase(role) || "STUDENT".equalsIgnoreCase(role)) {
+                // ✅ Create Member directly to leverage JPA JOINED inheritance
+                Member member = new Member();
+                member.setUsername(username);
+                member.setName(name);
+                member.setEmail(email);
+                member.setPhone(phone);
+                member.setPassword(passwordHash);
+                member.setRole("MEMBER"); // Normalize to MEMBER
+                member.setStatus(status != null ? status : "ACTIVE");
+                member.setCreatedDate(java.time.LocalDateTime.now());
+                user = member;
+            } else if ("ADMIN".equalsIgnoreCase(role)) {
+                // ✅ Create Admin directly to leverage JPA JOINED inheritance
+                com.gym.model.Admin admin = new com.gym.model.Admin();
+                admin.setUsername(username);
+                admin.setName(name);
+                admin.setEmail(email);
+                admin.setPhone(phone);
+                admin.setPassword(passwordHash);
+                admin.setRole(role);
+                admin.setStatus(status != null ? status : "ACTIVE");
+                admin.setCreatedDate(java.time.LocalDateTime.now());
+                user = admin;
+            } else if ("TRAINER".equalsIgnoreCase(role) || "PT".equalsIgnoreCase(role)) {
+                // ✅ Create Trainer directly to leverage JPA JOINED inheritance
+                com.gym.model.Trainer trainer = new com.gym.model.Trainer();
+                trainer.setUsername(username);
+                trainer.setName(name);
+                trainer.setEmail(email);
+                trainer.setPhone(phone);
+                trainer.setPassword(passwordHash);
+                trainer.setRole("TRAINER"); // Normalize to TRAINER
+                trainer.setStatus(status != null ? status : "ACTIVE");
+                trainer.setCreatedDate(java.time.LocalDateTime.now());
+                user = trainer;
             } else {
-                // For ADMIN, PT, etc. - create regular User
+                // For other roles - create regular User
                 user = new User();
                 user.setUsername(username);
                 user.setName(name);
@@ -240,8 +268,12 @@ public class UserService {
             if (userId > 0) {
                 System.out.println("[UserService] Created user: " + username + 
                                  " (ID: " + userId + ", Role: " + role + ")");
-                if ("USER".equalsIgnoreCase(role)) {
-                    System.out.println("[UserService] Student record auto-created via JPA inheritance");
+                if ("MEMBER".equalsIgnoreCase(role) || "USER".equalsIgnoreCase(role) || "STUDENT".equalsIgnoreCase(role)) {
+                    System.out.println("[UserService] Member record auto-created via JPA inheritance");
+                } else if ("ADMIN".equalsIgnoreCase(role)) {
+                    System.out.println("[UserService] Admin record auto-created via JPA inheritance");
+                } else if ("TRAINER".equalsIgnoreCase(role) || "PT".equalsIgnoreCase(role)) {
+                    System.out.println("[UserService] Trainer record auto-created via JPA inheritance");
                 }
                 return true;
             }
@@ -287,14 +319,54 @@ public class UserService {
             // ✅ Tái sử dụng UserDAO.update() từ GenericDAO
             userDAO.update(user);
             
-            // ✅ Handle role change: USER role requires Student record
-            if ("USER".equalsIgnoreCase(role) && !"USER".equalsIgnoreCase(oldRole)) {
-                java.util.Optional<Student> existingStudentOpt = studentDAO.findByUserId(userId);
-                if (!existingStudentOpt.isPresent()) {
-                    Student student = new Student();
-                    student.setUserId(userId);
-                    studentDAO.upsert(student);
-                    System.out.println("[UserService] Created Student record for user_id: " + userId);
+            // ✅ Handle role change: Create appropriate record based on new role
+            if (!role.equalsIgnoreCase(oldRole)) {
+                // Normalize role names
+                String normalizedRole = role.toUpperCase();
+                if ("STUDENT".equals(normalizedRole)) {
+                    normalizedRole = "USER";
+                }
+                if ("PT".equals(normalizedRole)) {
+                    normalizedRole = "TRAINER";
+                }
+                
+                // Remove old role records if role changed
+                if ("USER".equalsIgnoreCase(oldRole) || "STUDENT".equalsIgnoreCase(oldRole) || "MEMBER".equalsIgnoreCase(oldRole)) {
+                    // Old role was USER/STUDENT/MEMBER - check if we need to remove Member record
+                    if (!"MEMBER".equals(normalizedRole) && !"USER".equals(normalizedRole) && !"STUDENT".equals(normalizedRole)) {
+                        java.util.Optional<Member> existingMemberOpt = memberDAO.findByUserId(userId);
+                        if (existingMemberOpt.isPresent()) {
+                            // Note: We don't delete Member record, just update role
+                            // The Member record can remain for historical data
+                        }
+                    }
+                }
+                
+                // Create new role-specific record if needed
+                if ("MEMBER".equals(normalizedRole) || "USER".equals(normalizedRole) || "STUDENT".equals(normalizedRole)) {
+                java.util.Optional<Member> existingMemberOpt = memberDAO.findByUserId(userId);
+                if (!existingMemberOpt.isPresent()) {
+                    Member member = new Member();
+                    member.setUserId(userId);
+                    memberDAO.upsert(member);
+                    System.out.println("[UserService] Created Member record for user_id: " + userId);
+                    }
+                } else if ("ADMIN".equals(normalizedRole)) {
+                    com.gym.model.Admin existingAdmin = adminDAO.findById(userId);
+                    if (existingAdmin == null) {
+                        com.gym.model.Admin admin = new com.gym.model.Admin();
+                        admin.setUserId(userId);
+                        adminDAO.save(admin);
+                        System.out.println("[UserService] Created Admin record for user_id: " + userId);
+                    }
+                } else if ("TRAINER".equals(normalizedRole)) {
+                    java.util.Optional<com.gym.model.Trainer> existingTrainerOpt = trainerDAO.findByUserId(userId);
+                    if (!existingTrainerOpt.isPresent()) {
+                        com.gym.model.Trainer trainer = new com.gym.model.Trainer();
+                        trainer.setUserId(userId);
+                        trainerDAO.saveTrainer(trainer);
+                        System.out.println("[UserService] Created Trainer record for user_id: " + userId);
+                    }
                 }
             }
             
@@ -308,10 +380,10 @@ public class UserService {
     }
     
     /**
-     * Calculate and get BMI category (delegates to StudentService)
+     * Calculate and get BMI category (delegates to MemberService)
      */
     public String getBMICategory(BigDecimal bmi) {
-        return studentService.getBMICategory(bmi);
+        return memberService.getBMICategory(bmi);
     }
     
     /**
@@ -337,24 +409,24 @@ public class UserService {
         System.out.println("[UserService] getDashboardData - User loaded: " + user.getClass().getSimpleName() + 
                          " (ID: " + user.getUserId() + ")");
         
-        // Get student profile for student-specific data
-        // IMPORTANT: With JOINED inheritance, user might already be a Student instance
-        // If not, try to load Student separately
-        Student student = null;
+        // Get member profile for member-specific data
+        // IMPORTANT: With JOINED inheritance, user might already be a Member instance
+        // If not, try to load Member separately
+        Member member = null;
         try {
-            // Check if user is already a Student instance
-            if (user instanceof Student) {
-                student = (Student) user;
-                System.out.println("[UserService] getDashboardData - User is already a Student instance");
+            // Check if user is already a Member instance
+            if (user instanceof Member) {
+                member = (Member) user;
+                System.out.println("[UserService] getDashboardData - User is already a Member instance");
             } else {
-                // User is not a Student, try to load Student profile
-                student = studentService.getStudentByUserId((int) userId);
-                System.out.println("[UserService] getDashboardData - Student loaded separately: " + (student != null ? "YES" : "NO"));
+                // User is not a Member, try to load Member profile
+                member = memberService.getMemberByUserId((int) userId);
+                System.out.println("[UserService] getDashboardData - Member loaded separately: " + (member != null ? "YES" : "NO"));
             }
         } catch (Exception e) {
-            System.err.println("[UserService] Error loading Student for dashboard: " + e.getMessage());
+            System.err.println("[UserService] Error loading Member for dashboard: " + e.getMessage());
             e.printStackTrace();
-            student = null; // Will handle null case below
+            member = null; // Will handle null case below
         }
         
         Map<String, Object> dashboardData = new HashMap<>();
@@ -470,26 +542,26 @@ public class UserService {
         stats.put("packageRemaining", packageRemaining);
         dashboardData.put("packageName", packageName);
         
-        // Handle BMI from Student (if Student exists)
-        // IMPORTANT: Student may be null, so check before accessing
-        if (student != null && student.getUserId() != null) {
+        // Handle BMI from Member (if Member exists)
+        // IMPORTANT: Member may be null, so check before accessing
+        if (member != null && member.getUserId() != null) {
             try {
                 // Convert Float to BigDecimal for BMI
-                BigDecimal bmi = student.getBmiAsBigDecimal();
+                BigDecimal bmi = member.getBmiAsBigDecimal();
                 stats.put("bmi", bmi);
                 if (bmi != null) {
-                    stats.put("bmiCategory", studentService.getBMICategory(bmi));
+                    stats.put("bmiCategory", memberService.getBMICategory(bmi));
                 } else {
                     stats.put("bmi", null);
                     stats.put("bmiCategory", null);
                 }
             } catch (Exception e) {
-                System.err.println("[UserService] Error getting BMI from Student: " + e.getMessage());
+                System.err.println("[UserService] Error getting BMI from Member: " + e.getMessage());
                 stats.put("bmi", null);
                 stats.put("bmiCategory", null);
             }
         } else {
-            // Student not found or not a Student - set BMI to null
+            // Member not found or not a Member - set BMI to null
             stats.put("bmi", null);
             stats.put("bmiCategory", null);
         }
@@ -511,8 +583,8 @@ public class UserService {
     }
     
     /**
-     * Get profile data for a user (combines User and Student data)
-     * NOTE: Student table only has: weight, height, bmi, emergency_contact_*
+     * Get profile data for a user (combines User and Member data)
+     * NOTE: Member table only has: weight, height, bmi, emergency_contact_*
      * Other fields (fullName, email, phone, address, avatarUrl, gender) come from User table
      * Converts LocalDateTime/LocalDate to Date/Timestamp for JSP compatibility
      */
@@ -529,21 +601,21 @@ public class UserService {
         System.out.println("[UserService] getProfileData - User name: " + user.getName());
         System.out.println("[UserService] getProfileData - User email: " + user.getEmail());
         
-        // Get student profile for student-specific data (weight, height, bmi, emergency_contact)
-        // Use StudentService which handles DAO lifecycle correctly
-        Student student = null;
+        // Get member profile for member-specific data (weight, height, bmi, emergency_contact)
+        // Use MemberService which handles DAO lifecycle correctly
+        Member member = null;
         try {
-            student = studentService.getStudentByUserId((int) userId);
-            System.out.println("[UserService] getProfileData - Student loaded: " + (student != null ? "YES" : "NO"));
-            if (student != null) {
-                System.out.println("[UserService] getProfileData - Student userId: " + student.getUserId());
-                System.out.println("[UserService] getProfileData - Student height: " + student.getHeight());
-                System.out.println("[UserService] getProfileData - Student weight: " + student.getWeight());
+            member = memberService.getMemberByUserId((int) userId);
+            System.out.println("[UserService] getProfileData - Member loaded: " + (member != null ? "YES" : "NO"));
+            if (member != null) {
+                System.out.println("[UserService] getProfileData - Member userId: " + member.getUserId());
+                System.out.println("[UserService] getProfileData - Member height: " + member.getHeight());
+                System.out.println("[UserService] getProfileData - Member weight: " + member.getWeight());
             }
         } catch (Exception e) {
-            System.err.println("[UserService] Error loading Student: " + e.getMessage());
+            System.err.println("[UserService] Error loading Member: " + e.getMessage());
             e.printStackTrace();
-            student = null; // Will be handled below
+            member = null; // Will be handled below
         }
         
         Map<String, Object> profileData = new HashMap<>();
@@ -579,14 +651,14 @@ public class UserService {
         profileData.put("address", user.getAddress()); // Get address from User table
         profileData.put("gender", user.getGender()); // Get gender from User table
         
-        // Physical Info from Student table (convert Float to BigDecimal)
-        // IMPORTANT: Load all data from Student entity BEFORE closing EntityManager
-        if (student != null && student.getUserId() != null) {
+        // Physical Info from Member table (convert Float to BigDecimal)
+        // IMPORTANT: Load all data from Member entity BEFORE closing EntityManager
+        if (member != null && member.getUserId() != null) {
             try {
-                // Get values directly from Student entity (values are already loaded)
-                Float heightFloat = student.getHeight();
-                Float weightFloat = student.getWeight();
-                Float bmiFloat = student.getBmi();
+                // Get values directly from Member entity (values are already loaded)
+                Float heightFloat = member.getHeight();
+                Float weightFloat = member.getWeight();
+                Float bmiFloat = member.getBmi();
                 
                 // Convert to BigDecimal for JSP display
                 profileData.put("height", heightFloat != null ? BigDecimal.valueOf(heightFloat) : null);
@@ -595,7 +667,7 @@ public class UserService {
                 
                 // Calculate BMI category
                 BigDecimal bmi = bmiFloat != null ? BigDecimal.valueOf(bmiFloat) : null;
-                String bmiCategory = bmi != null ? studentService.getBMICategory(bmi) : null;
+                String bmiCategory = bmi != null ? memberService.getBMICategory(bmi) : null;
                 profileData.put("bmiCategory", bmiCategory);
                 if (bmiCategory != null) {
                     profileData.put("bmiCategoryClass", bmiCategory.toLowerCase().replace(" ", ""));
@@ -603,15 +675,15 @@ public class UserService {
                     profileData.put("bmiCategoryClass", null);
                 }
                 
-                // Emergency Contact from Student table
-                profileData.put("emergencyContactName", student.getEmergencyContactName());
-                profileData.put("emergencyContactPhone", student.getEmergencyContactPhone());
-                profileData.put("emergencyContactRelation", student.getEmergencyContactRelation());
-                profileData.put("emergencyContactAddress", student.getEmergencyContactAddress());
+                // Emergency Contact from Member table
+                profileData.put("emergencyContactName", member.getEmergencyContactName());
+                profileData.put("emergencyContactPhone", member.getEmergencyContactPhone());
+                profileData.put("emergencyContactRelation", member.getEmergencyContactRelation());
+                profileData.put("emergencyContactAddress", member.getEmergencyContactAddress());
                 
-                System.out.println("[UserService] getProfileData - Student data loaded: height=" + heightFloat + ", weight=" + weightFloat);
+                System.out.println("[UserService] getProfileData - Member data loaded: height=" + heightFloat + ", weight=" + weightFloat);
             } catch (Exception e) {
-                System.err.println("[UserService] Error extracting Student data: " + e.getMessage());
+                System.err.println("[UserService] Error extracting Member data: " + e.getMessage());
                 e.printStackTrace();
                 // Set to null on error
                 profileData.put("height", null);
@@ -625,8 +697,8 @@ public class UserService {
                 profileData.put("emergencyContactAddress", null);
             }
         } else {
-            // If Student not found, set all Student fields to null
-            System.out.println("[UserService] getProfileData - Student is null, setting all Student fields to null");
+            // If Member not found, set all Member fields to null
+            System.out.println("[UserService] getProfileData - Member is null, setting all Member fields to null");
             profileData.put("height", null);
             profileData.put("weight", null);
             profileData.put("bmi", null);
@@ -647,7 +719,7 @@ public class UserService {
     
     /**
      * Update user profile from request parameters
-     * Updates both User (if username/email changed) and Student profile
+     * Updates both User (if username/email changed) and Member profile
      */
     public boolean updateProfileFromRequest(User user, HttpServletRequest request) {
         if (user == null || request == null) {
@@ -686,6 +758,15 @@ public class UserService {
             user.setGender(null);
         }
         
+        // Update avatar URL if provided
+        String avatarUrl = request.getParameter("avatarUrl");
+        if (avatarUrl != null) {
+            user.setAvatarUrl(avatarUrl.trim().isEmpty() ? null : avatarUrl.trim());
+        }
+        
+        // Update last update timestamp
+        user.setLastUpdate(java.time.LocalDateTime.now());
+        
         // Update User in database
         boolean userUpdated = userDAO.updateUser(user);
         if (!userUpdated) {
@@ -693,52 +774,46 @@ public class UserService {
             return false;
         }
         
-        // Get or create student profile
+        // Only update Member profile if user is a Member (not Admin/Trainer)
+        // Check if user is a Member by checking if they have Member record
         Integer userId = user.getUserId();
         if (userId == null) {
             System.err.println("[UserService] Error: user.getUserId() returned null");
             return false;
         }
         
-        System.out.println("[UserService] updateProfileFromRequest - userId: " + userId);
-        
+        // Check if user is a Member (has Member record)
+        // Only update Member profile if user is a Member (not Admin/Trainer)
         try {
-            // Get student profile - this will return existing Student or create new one with userId set
-            Student student = studentService.getStudentByUserId(userId);
-            if (student == null) {
-                System.err.println("[UserService] Error: getProfile() returned null for userId: " + userId);
-                return false;
+            // Check if this is a real Member record in database
+            java.util.Optional<Member> memberOpt = memberDAO.findByUserId(userId);
+            if (memberOpt.isPresent()) {
+                // User is a Member - update Member profile
+                Member actualMember = memberOpt.get();
+                System.out.println("[UserService] updateProfileFromRequest - Member found (userId: " + userId + "), updating Member profile...");
+                
+                // Update member profile from request parameters (weight, height, BMI, emergency contacts)
+                memberService.updateMemberFromRequest(actualMember, request.getParameterMap());
+                
+                // Save member profile
+                memberService.saveMember(actualMember);
+                System.out.println("[UserService] updateProfileFromRequest - Member profile updated successfully");
+            } else {
+                // User is not a Member (Admin/Trainer) - only update User table
+                System.out.println("[UserService] updateProfileFromRequest - User is not a Member (userId: " + userId + "), only User table updated");
             }
-            
-            System.out.println("[UserService] updateProfileFromRequest - Student loaded: " + (student.getUserId() != null ? "YES (userId: " + student.getUserId() + ")" : "NO"));
-            
-            // Ensure userId is set (in case getProfile returned new Student)
-            if (student.getUserId() == null) {
-                student.setUserIdAsInt(userId);
-            }
-            
-            // Update student profile from request parameters
-            System.out.println("[UserService] updateProfileFromRequest - Updating Student fields from request...");
-            studentService.updateStudentFromRequest(student, request.getParameterMap());
-            
-            System.out.println("[UserService] updateProfileFromRequest - Student fields updated - Height: " + student.getHeight() + ", Weight: " + student.getWeight());
-            
-            // Save student profile
-            System.out.println("[UserService] updateProfileFromRequest - Saving Student profile...");
-            studentService.saveStudent(student);
-            System.out.println("[UserService] updateProfileFromRequest - Student profile saved successfully");
-            
-            return true;
         } catch (Exception e) {
-            System.err.println("[UserService] Error updating student profile: " + e.getMessage());
+            // If error getting Member, assume user is not a Member and continue
+            System.err.println("[UserService] updateProfileFromRequest - Error checking Member: " + e.getMessage());
             e.printStackTrace();
-            return false;
         }
+        
+        return true;
     }
     
     /**
      * Update user profile from multipart request (handles file uploads)
-     * Updates Student profile
+     * Updates Member profile
      */
     public boolean updateProfileFromMultipartRequest(User user, HttpServletRequest request) {
         if (user == null || request == null) {
@@ -779,7 +854,7 @@ public class UserService {
             }
             
             // Handle avatar URL from form parameter or file upload
-            // Avatar is stored in User table, not Student table
+            // Avatar is stored in User table, not Member table
             String avatarUrlParam = getPartParameter(request, "avatarUrl");
             String avatarUrl = null;
             if (avatarUrlParam != null && !avatarUrlParam.trim().isEmpty()) {
@@ -817,7 +892,7 @@ public class UserService {
             
             System.out.println("[UserService] User info updated successfully - Name: " + user.getName() + ", Phone: " + user.getPhone());
             
-            // Get or create student profile
+            // Get or create member profile
             Integer userId = user.getUserId();
             if (userId == null) {
                 System.err.println("[UserService] Error: user.getUserId() returned null in multipart request");
@@ -826,38 +901,33 @@ public class UserService {
             
             System.out.println("[UserService] updateProfileFromMultipartRequest - userId: " + userId);
             
+            // Check if user is a Member (has Member record)
+            // Only update Member profile if user is a Member (not Admin/Trainer)
             try {
-                // Get student profile - this will return existing Student or create new one with userId set
-                Student student = studentService.getStudentByUserId(userId);
-                if (student == null) {
-                    System.err.println("[UserService] Error: getProfile() returned null for userId: " + userId);
-                    return false;
+                // Check if this is a real Member record in database
+                java.util.Optional<Member> memberOpt = memberDAO.findByUserId(userId);
+                if (memberOpt.isPresent()) {
+                    // User is a Member - update Member profile
+                    Member actualMember = memberOpt.get();
+                    System.out.println("[UserService] updateProfileFromMultipartRequest - Member found (userId: " + userId + "), updating Member profile...");
+                    
+                    // Update member profile from request parameters (weight, height, BMI, emergency contacts)
+                    memberService.updateMemberFromRequest(actualMember, request.getParameterMap());
+                    
+                    // Save member profile
+                    memberService.saveMember(actualMember);
+                    System.out.println("[UserService] updateProfileFromMultipartRequest - Member profile updated successfully");
+                } else {
+                    // User is not a Member (Admin/Trainer) - only update User table
+                    System.out.println("[UserService] updateProfileFromMultipartRequest - User is not a Member (userId: " + userId + "), only User table updated");
                 }
-                
-                System.out.println("[UserService] updateProfileFromMultipartRequest - Student loaded: " + (student.getUserId() != null ? "YES (userId: " + student.getUserId() + ")" : "NO"));
-                
-                // Ensure userId is set (in case getProfile returned new Student)
-                if (student.getUserId() == null) {
-                    student.setUserIdAsInt(userId);
-                }
-                
-                // Update student profile from request parameters (weight, height, BMI, emergency contacts, etc.)
-                System.out.println("[UserService] updateProfileFromMultipartRequest - Updating Student fields from request...");
-                studentService.updateStudentFromRequest(student, request.getParameterMap());
-                
-                System.out.println("[UserService] updateProfileFromMultipartRequest - Student fields updated - Height: " + student.getHeight() + ", Weight: " + student.getWeight());
-                
-                // Save student profile
-                System.out.println("[UserService] updateProfileFromMultipartRequest - Saving Student profile...");
-                studentService.saveStudent(student);
-                System.out.println("[UserService] updateProfileFromMultipartRequest - Student profile saved successfully");
-                
-                return true;
             } catch (Exception e) {
-                System.err.println("[UserService] Error updating student profile from multipart: " + e.getMessage());
+                // If error getting Member, assume user is not a Member and continue
+                System.err.println("[UserService] updateProfileFromMultipartRequest - Error checking Member: " + e.getMessage());
                 e.printStackTrace();
-                return false;
             }
+            
+            return true;
         } catch (Exception e) {
             System.err.println("[UserService] Error updating profile from multipart request: " + e.getMessage());
             e.printStackTrace();
@@ -936,7 +1006,7 @@ public class UserService {
             return false;
         }
         
-        // Get or create student profile
+        // Get or create member profile
         Integer userId = user.getUserId();
         if (userId == null) {
             System.err.println("[UserService] updateBodyMetricsFromRequest: userId is null");
@@ -946,17 +1016,17 @@ public class UserService {
         System.out.println("[UserService] updateBodyMetricsFromRequest: Starting for userId: " + userId);
         
         try {
-            Student student = studentService.getStudentByUserId(userId);
-            student.setUserIdAsInt(userId);
+            Member member = memberService.getMemberByUserId(userId);
+            member.setUserIdAsInt(userId);
             
-            System.out.println("[UserService] updateBodyMetricsFromRequest: Current student height: " + student.getHeight() + ", weight: " + student.getWeight());
+            System.out.println("[UserService] updateBodyMetricsFromRequest: Current member height: " + member.getHeight() + ", weight: " + member.getWeight());
             
             // Update height
             String heightStr = request.getParameter("height");
             if (heightStr != null && !heightStr.trim().isEmpty()) {
                 try {
                     BigDecimal height = new BigDecimal(heightStr);
-                    student.setHeightFromBigDecimal(height);
+                    member.setHeightFromBigDecimal(height);
                     System.out.println("[UserService] updateBodyMetricsFromRequest: Set height: " + height);
                 } catch (NumberFormatException e) {
                     System.err.println("[UserService] Invalid height format: " + heightStr);
@@ -970,7 +1040,7 @@ public class UserService {
             if (weightStr != null && !weightStr.trim().isEmpty()) {
                 try {
                     BigDecimal weight = new BigDecimal(weightStr);
-                    student.setWeightFromBigDecimal(weight);
+                    member.setWeightFromBigDecimal(weight);
                     System.out.println("[UserService] updateBodyMetricsFromRequest: Set weight: " + weight);
                 } catch (NumberFormatException e) {
                     System.err.println("[UserService] Invalid weight format: " + weightStr);
@@ -979,12 +1049,12 @@ public class UserService {
                 System.out.println("[UserService] updateBodyMetricsFromRequest: Weight param is empty, keeping current value");
             }
             
-            System.out.println("[UserService] updateBodyMetricsFromRequest: After update - height: " + student.getHeight() + ", weight: " + student.getWeight());
+            System.out.println("[UserService] updateBodyMetricsFromRequest: After update - height: " + member.getHeight() + ", weight: " + member.getWeight());
             
-            // Save student profile
-            System.out.println("[UserService] updateBodyMetricsFromRequest: Saving student profile...");
-            studentService.saveStudent(student);
-            System.out.println("[UserService] updateBodyMetricsFromRequest: Successfully saved student profile");
+            // Save member profile
+            System.out.println("[UserService] updateBodyMetricsFromRequest: Saving member profile...");
+            memberService.saveMember(member);
+            System.out.println("[UserService] updateBodyMetricsFromRequest: Successfully saved member profile");
             return true;
         } catch (Exception e) {
             System.err.println("[UserService] Error saving body metrics: " + e.getMessage());
@@ -1042,10 +1112,10 @@ public class UserService {
             System.out.println("[UserService] updateGoalsFromRequest: Calculated caloriesTarget: " + caloriesTarget);
             
             // Calculate protein target (typically 1.6-2.2g per kg body weight for athletes)
-            // Get student profile for weight (userId already defined above)
-            Student student = studentService.getStudentByUserId(userId);
+            // Get member profile for weight (userId already defined above)
+            Member member = memberService.getMemberByUserId(userId);
             BigDecimal proteinTarget = null;
-            BigDecimal weight = student.getWeightAsBigDecimal();
+            BigDecimal weight = member.getWeightAsBigDecimal();
             if (weight != null) {
                 // Use 1.8g per kg as default
                 proteinTarget = weight.multiply(new BigDecimal("1.8")).setScale(2, RoundingMode.HALF_UP);
@@ -1072,21 +1142,21 @@ public class UserService {
      * Uses Harris-Benedict equation for BMR, then applies activity factor and goal adjustments
      */
     public BigDecimal calculateCaloriesTarget(User user, NutritionGoal goal) {
-        // Get student profile for body metrics
+        // Get member profile for body metrics
         Integer userId = user.getUserId();
         if (userId == null) {
             return null;
         }
-        Student student = studentService.getStudentByUserId(userId);
+        Member member = memberService.getMemberByUserId(userId);
         
-        BigDecimal weight = student.getWeightAsBigDecimal();
-        BigDecimal height = student.getHeightAsBigDecimal(); // in cm
+        BigDecimal weight = member.getWeightAsBigDecimal();
+        BigDecimal height = member.getHeightAsBigDecimal(); // in cm
         
         if (weight == null || height == null) {
             return null;
         }
         
-        String gender = student.getGender();
+        String gender = member.getGender();
         
         // Estimate age if not available (default to 25)
         int age = 25; // You can add age field to User model later if needed

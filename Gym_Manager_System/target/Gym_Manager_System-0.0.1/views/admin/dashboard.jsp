@@ -1,5 +1,6 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -442,11 +443,20 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/admin/account-management"
+              href="${pageContext.request.contextPath}/admin/users"
               class="sidebar-menu-link"
             >
               <i class="fas fa-users-cog"></i>
               <span>Quản lý tài khoản</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a
+              href="${pageContext.request.contextPath}/admin/products"
+              class="sidebar-menu-link"
+            >
+              <i class="fas fa-box"></i>
+              <span>Quản lý sản phẩm</span>
             </a>
           </li>
           <li class="sidebar-menu-item">
@@ -536,7 +546,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                 <i class="fas fa-users"></i>
               </div>
               <div class="stat-info">
-                <h3>1,245</h3>
+                <h3><fmt:formatNumber value="${totalActiveMembers != null ? totalActiveMembers : 0}" groupingUsed="true"/></h3>
                 <p>Tổng số hội viên</p>
               </div>
             </div>
@@ -546,28 +556,8 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                 <i class="fas fa-dollar-sign"></i>
               </div>
               <div class="stat-info">
-                <h3>456M</h3>
+                <h3>${revenueDisplay != null ? revenueDisplay : '0'}</h3>
                 <p>Doanh thu tháng này</p>
-              </div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-icon green">
-                <i class="fas fa-user-check"></i>
-              </div>
-              <div class="stat-info">
-                <h3>892</h3>
-                <p>Check-in hôm nay</p>
-              </div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-icon purple">
-                <i class="fas fa-calendar-check"></i>
-              </div>
-              <div class="stat-info">
-                <h3>34</h3>
-                <p>Lớp training hôm nay</p>
               </div>
             </div>
           </div>
@@ -605,15 +595,48 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                 <h3 class="management-card-title">Quản lý tài khoản</h3>
               </div>
               <p class="management-card-description">
-                Quản lý danh sách tài khoản Admin, User, PT. Thêm, xóa, sửa và
-                set quyền cho tài khoản.
+                Quản lý danh sách tài khoản Admin, Student, Trainer. Thêm, xóa, sửa và
+                set quyền cho tài khoản. Tự động tạo record trong bảng tương ứng khi tạo tài khoản.
               </p>
               <div class="management-card-actions">
                 <a
-                  href="${pageContext.request.contextPath}/views/admin/account_management.jsp"
+                  href="${pageContext.request.contextPath}/admin/users"
                   class="btn btn-small"
                 >
                   <i class="fas fa-list"></i> Xem danh sách
+                </a>
+                <a
+                  href="${pageContext.request.contextPath}/admin/users/add"
+                  class="btn btn-small"
+                >
+                  <i class="fas fa-plus"></i> Thêm tài khoản
+                </a>
+              </div>
+            </div>
+
+            <!-- Product Management -->
+            <div class="management-card">
+              <div class="management-card-header">
+                <div class="management-card-icon">
+                  <i class="fas fa-box"></i>
+                </div>
+                <h3 class="management-card-title">Quản lý sản phẩm</h3>
+              </div>
+              <p class="management-card-description">
+                Quản lý danh sách sản phẩm, thêm/xóa/sửa sản phẩm, quản lý tồn kho và giá cả.
+              </p>
+              <div class="management-card-actions">
+                <a
+                  href="${pageContext.request.contextPath}/admin/products"
+                  class="btn btn-small"
+                >
+                  <i class="fas fa-list"></i> Xem danh sách
+                </a>
+                <a
+                  href="${pageContext.request.contextPath}/admin/products/add"
+                  class="btn btn-small"
+                >
+                  <i class="fas fa-plus"></i> Thêm sản phẩm
                 </a>
               </div>
             </div>

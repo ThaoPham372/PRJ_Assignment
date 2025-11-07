@@ -126,4 +126,29 @@ public class MembershipServiceImpl implements MembershipService {
         }
         return suspended;
     }
+    
+    @Override
+    public long countActiveMemberships() {
+        return membershipDao.countActiveMemberships();
+    }
+    
+    @Override
+    public java.util.List<Membership> getAllActiveAndSuspendedMemberships() {
+        return membershipDao.getAllActiveAndSuspendedMemberships();
+    }
+    
+    @Override
+    public long countActiveMembershipsForManagement() {
+        return membershipDao.countActiveMembershipsForManagement();
+    }
+    
+    @Override
+    public long countSuspendedMemberships() {
+        return membershipDao.countSuspendedMemberships();
+    }
+    
+    @Override
+    public long countAllMembershipsForManagement() {
+        return membershipDao.countAllMembershipsForManagement();
+    }
 }

@@ -143,5 +143,10 @@ public class PaymentServiceImpl implements PaymentService {
     public Optional<Payment> findPaymentByReferenceId(String referenceId) {
         return paymentDAO.findByReferenceId(referenceId);
     }
+    
+    @Override
+    public BigDecimal getRevenueThisMonth() {
+        return paymentDAO.getRevenueThisMonth();
+    }
 }
 

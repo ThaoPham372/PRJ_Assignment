@@ -2,7 +2,7 @@ package com.gym.service;
 
 import com.gym.dao.UserDAO;
 import com.gym.model.User;
-import com.gym.model.Student;
+import com.gym.model.Member;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -17,12 +17,12 @@ import java.util.UUID;
 public class GoogleAuthService {
 
     private final UserDAO userDAO;
-    private final StudentService studentService;
+    private final MemberService memberService;
     private final String expectedClientId;
 
     public GoogleAuthService(String expectedClientId) {
         this.userDAO = new UserDAO();
-        this.studentService = new StudentService();
+        this.memberService = new MemberService();
         this.expectedClientId = expectedClientId;
     }
 
@@ -155,22 +155,22 @@ public class GoogleAuthService {
             }
         }
         
-        // Set USER role for new Google registrations
+        // Set MEMBER role for new Google registrations
         // Note: role will be set when we load and update the user below
         
-        // Create Student profile
+        // Create Member profile
         // IMPORTANT: This must succeed for the system to work properly
-        // NOTE: students table only stores: user_id, weight, height, bmi, emergency_contact_*
+        // NOTE: members table only stores: user_id, weight, height, bmi, emergency_contact_*
         // Avatar and other info (full_name, email, phone...) is stored in user table
         try {
-            Student student = new Student();
-            student.setUserId((int) userId);
+            Member member = new Member();
+            member.setUserId((int) userId);
             // Only set user_id - other fields will be NULL initially
             // User can update them later via Dashboard
             
-            studentService.saveStudent(student);
+            memberService.saveMember(member);
         } catch (Exception e) {
-            System.err.println("[GoogleAuthService] ERROR creating Student profile: " + e.getMessage());
+            System.err.println("[GoogleAuthService] ERROR creating Member profile: " + e.getMessage());
             e.printStackTrace();
         }
         
@@ -184,11 +184,11 @@ public class GoogleAuthService {
             }
         }
         
-        // Set user.role to "USER" for Google registrations
-        created.setRole("USER");
+        // Set user.role to "MEMBER" for Google registrations
+        created.setRole("MEMBER");
         try {
             userDAO.update(created);
-            System.out.println("[GoogleAuthService] Successfully set role='USER' for user_id: " + created.getId());
+            System.out.println("[GoogleAuthService] Successfully set role='MEMBER' for user_id: " + created.getId());
         } catch (Exception e) {
             System.err.println("[GoogleAuthService] ERROR setting role: " + e.getMessage());
         }

@@ -1,5 +1,7 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-    uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
     <!DOCTYPE html>
     <html lang="vi">
@@ -445,6 +447,97 @@
                     box-shadow: 0 0 0 3px rgba(236, 139, 94, 0.1);
                 }
 
+                /* Search Box */
+                .search-box {
+                    background: #fff;
+                    padding: 20px;
+                    border-radius: 12px;
+                    box-shadow: 0 2px 10px var(--shadow);
+                    margin-bottom: 25px;
+                }
+
+                .search-box form {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                }
+
+                .search-box input[type="text"] {
+                    flex: 1;
+                    min-width: 250px;
+                    padding: 12px 15px;
+                    border: 2px solid #e0e0e0;
+                    border-radius: 8px;
+                    font-size: 0.9rem;
+                    transition: all 0.3s ease;
+                }
+
+                .search-box input[type="text"]:focus {
+                    outline: none;
+                    border-color: var(--accent);
+                    box-shadow: 0 0 0 3px rgba(236, 139, 94, 0.1);
+                }
+
+                .stats-info {
+                    text-align: center;
+                    color: #666;
+                    margin-top: 10px;
+                    font-size: 0.9rem;
+                }
+
+                /* Pagination */
+                .pagination {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 10px;
+                    margin-top: 25px;
+                    padding: 20px;
+                    background: #fff;
+                    border-radius: 12px;
+                    box-shadow: 0 2px 10px var(--shadow);
+                }
+
+                .pagination a, .pagination span {
+                    padding: 8px 12px;
+                    border: 1px solid #e0e0e0;
+                    border-radius: 8px;
+                    text-decoration: none;
+                    color: var(--primary);
+                    transition: all 0.3s ease;
+                    font-size: 0.9rem;
+                }
+
+                .pagination a:hover {
+                    background: var(--accent);
+                    color: #fff;
+                    border-color: var(--accent);
+                }
+
+                .pagination .active {
+                    background: var(--gradient-primary);
+                    color: #fff;
+                    border-color: var(--primary);
+                    font-weight: bold;
+                }
+
+                /* Badge styles for roles and status */
+                .badge-trainer {
+                    background: #e7e7ff;
+                    color: #383874;
+                }
+
+                .badge-active {
+                    background: #d4edda;
+                    color: #155724;
+                }
+
+                .badge-inactive {
+                    background: #f8d7da;
+                    color: #721c24;
+                }
+
                 /* Responsive */
                 @media (max-width: 768px) {
                     .sidebar {
@@ -506,7 +599,7 @@
                     <ul class="sidebar-menu">
                         <li class="sidebar-menu-item">
                             <a
-                                href="${pageContext.request.contextPath}/views/admin/dashboard.jsp"
+                                href="${pageContext.request.contextPath}/admin/dashboard"
                                 class="sidebar-menu-link"
                                 >
                                 <i class="fas fa-home"></i>
@@ -524,11 +617,20 @@
                         </li>
                         <li class="sidebar-menu-item">
                             <a
-                                href="${pageContext.request.contextPath}/admin/account-management"
+                                href="${pageContext.request.contextPath}/admin/users"
                                 class="sidebar-menu-link active"
                                 >
                                 <i class="fas fa-users-cog"></i>
                                 <span>Quản lý tài khoản</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a
+                                href="${pageContext.request.contextPath}/admin/products"
+                                class="sidebar-menu-link"
+                                >
+                                <i class="fas fa-box"></i>
+                                <span>Quản lý sản phẩm</span>
                             </a>
                         </li>
                         <li class="sidebar-menu-item">
@@ -607,26 +709,73 @@
 
                     <!-- Content Area -->
                     <div class="content-area">
+                        <!-- Alert Messages -->
+                        <c:if test="${not empty sessionScope.success}">
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle"></i> ${sessionScope.success}
+                            </div>
+                            <c:remove var="success" scope="session"/>
+                        </c:if>
+                        
+                        <c:if test="${not empty sessionScope.error}">
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle"></i> ${sessionScope.error}
+                            </div>
+                            <c:remove var="error" scope="session"/>
+                        </c:if>
+
+                        <!-- Search Box -->
+                        <div class="search-box">
+                            <form method="get" action="${pageContext.request.contextPath}/admin/users">
+                                <i class="fas fa-search" style="color: #999;"></i>
+                                <input type="text" name="keyword" placeholder="Tìm kiếm theo tên, email, số điện thoại..." 
+                                       value="${fn:escapeXml(keyword)}"/>
+                                <c:if test="${not empty role}">
+                                    <input type="hidden" name="role" value="${fn:escapeXml(role)}" />
+                                </c:if>
+                                <button type="submit" class="btn">
+                                    <i class="fas fa-search"></i> Tìm kiếm
+                                </button>
+                                <c:if test="${not empty keyword || (not empty role && role != 'all')}">
+                                    <a href="${pageContext.request.contextPath}/admin/users" class="btn btn-outline">
+                                        <i class="fas fa-times"></i> Xóa lọc
+                                    </a>
+                                </c:if>
+                            </form>
+                            <div class="stats-info">
+                                Tổng số: <strong>${totalUsers != null ? totalUsers : 0}</strong> user(s)
+                                <c:if test="${not empty keyword}">
+                                    - Kết quả tìm kiếm cho: "<strong>${fn:escapeXml(keyword)}</strong>"
+                                </c:if>
+                                <c:if test="${not empty role && role != 'all'}">
+                                    <c:choose>
+                                        <c:when test="${role == 'ADMIN'}"> - Vai trò: <strong>Admin</strong></c:when>
+                                        <c:when test="${role == 'USER'}"> - Vai trò: <strong>User/Student</strong></c:when>
+                                        <c:when test="${role == 'TRAINER'}"> - Vai trò: <strong>Trainer</strong></c:when>
+                                    </c:choose>
+                                </c:if>
+                            </div>
+                        </div>
+
                         <!-- Actions Bar -->
                         <div class="actions-bar">
                             <div class="filter-group">
-                                <select class="filter-select" id="roleFilter">
-                                    <option value="all">Tất cả vai trò</option>
-                                    <option value="admin">Admin</option>
-                                    <option value="user">User</option>
-                                    <option value="pt">PT (Personal Trainer)</option>
-                                </select>
-
-                                <select class="filter-select" id="statusFilter">
-                                    <option value="all">Tất cả trạng thái</option>
-                                    <option value="active">Đang hoạt động</option>
-                                    <option value="inactive">Ngưng hoạt động</option>
-                                </select>
+                                <form method="get" action="${pageContext.request.contextPath}/admin/users" id="roleFilterForm" style="display: flex; gap: 10px; align-items: center;">
+                                    <c:if test="${not empty keyword}">
+                                        <input type="hidden" name="keyword" value="${fn:escapeXml(keyword)}" />
+                                    </c:if>
+                                    <select class="filter-select" name="role" id="roleSelect" onchange="document.getElementById('roleFilterForm').submit();">
+                                        <option value="all" ${empty role || role == 'all' ? 'selected' : ''}>Tất cả vai trò</option>
+                                        <option value="ADMIN" ${role == 'ADMIN' ? 'selected' : ''}>Admin</option>
+                                        <option value="USER" ${role == 'USER' ? 'selected' : ''}>User/Student</option>
+                                        <option value="TRAINER" ${role == 'TRAINER' ? 'selected' : ''}>Trainer</option>
+                                    </select>
+                                </form>
                             </div>
 
-                            <button class="btn" onclick="openAddModal()">
+                            <a href="${pageContext.request.contextPath}/admin/users/add" class="btn">
                                 <i class="fas fa-plus"></i> Thêm tài khoản mới
-                            </button>
+                            </a>
                         </div>
 
                         <!-- Table -->
@@ -635,128 +784,139 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Họ và tên</th>
-                                        <th>Email</th>
                                         <th>Username</th>
-                                        <th>Vai trò</th>
-                                        <th>Trạng thái</th>
-                                        <th>Thao tác</th>
+                                        <th>Tên</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Role</th>
+                                        <th>Trạng Thái</th>
+                                        <th>Ngày Tạo</th>
+                                        <th>Thao Tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-
-                                    <c:forEach var="account" items="${accounts}">
+                                    <c:forEach var="user" items="${users}">
                                         <tr>
-                                            <td>${account.userId}</td>
-                                            <td>${account.name}</td>
-                                            <td>${account.email}</td>
-                                            <td>${account.username}</td>
-                                            <td><span class="badge badge-admin">${account.role}</span></td>
-                                            <td><span class="badge badge-user">${account.status}</span></td>
+                                            <td>${user.userId}</td>
+                                            <td>${fn:escapeXml(user.username)}</td>
+                                            <td>${fn:escapeXml(user.name)}</td>
+                                            <td>${fn:escapeXml(user.email)}</td>
+                                            <td>${fn:escapeXml(user.phone)}</td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${user.role == 'ADMIN'}">
+                                                        <span class="badge badge-admin">ADMIN</span>
+                                                    </c:when>
+                                                    <c:when test="${user.role == 'PT' or user.role == 'TRAINER'}">
+                                                        <span class="badge badge-pt">PT/TRAINER</span>
+                                                    </c:when>
+                                                    <c:when test="${user.role == 'USER'}">
+                                                        <span class="badge badge-user">USER</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="badge">${fn:escapeXml(user.role)}</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${user.status == 'ACTIVE'}">
+                                                        <span class="badge badge-active">Active</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="badge badge-inactive">${fn:escapeXml(user.status)}</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td>
+                                                <c:if test="${user.createdDate != null}">
+                                                    <fmt:formatDate value="${user.createdDateAsDate}" pattern="dd/MM/yyyy"/>
+                                                </c:if>
+                                            </td>
                                             <td>
                                                 <div class="action-buttons">
-                                                    <button
-                                                        class="btn-icon btn-edit"
-                                                        onclick="openEditModal(${account.userId})"
-                                                        title="Sửa"
-                                                        >
+                                                    <a href="${pageContext.request.contextPath}/admin/users/edit?id=${user.userId}" 
+                                                       class="btn-icon btn-edit" title="Sửa">
                                                         <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button
-                                                        class="btn-icon btn-permissions"
-                                                        onclick="openPermissionsModal${account.userId})"
-                                                        title="Phân quyền"
-                                                        >
-                                                        <i class="fas fa-key"></i>
-                                                    </button>
-                                                    <button
-                                                        class="btn-icon btn-delete"
-                                                        onclick="deleteAccount(${account.userId})"
-                                                        title="Xóa"
-                                                        >
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
+                                                    </a>
+                                                    <form method="post" style="display:inline;" 
+                                                          action="${pageContext.request.contextPath}/admin/users"
+                                                          onsubmit="return confirm('Xóa user này? (Soft delete - status=INACTIVE)')">
+                                                        <input type="hidden" name="action" value="delete"/>
+                                                        <input type="hidden" name="userId" value="${user.userId}"/>
+                                                        <button type="submit" class="btn-icon btn-delete" title="Xóa">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
                                                 </div>
                                             </td>
                                         </tr>
                                     </c:forEach>
+                                    <c:if test="${empty users}">
+                                        <tr>
+                                            <td colspan="9" style="text-align: center; padding: 40px; color: #999;">
+                                                Chưa có user nào
+                                            </td>
+                                        </tr>
+                                    </c:if>
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- Pagination -->
+                        <c:if test="${totalPages > 1}">
+                            <div class="pagination">
+                                <!-- Previous -->
+                                <c:if test="${currentPage > 1}">
+                                    <a href="?page=${currentPage - 1}<c:if test='${not empty keyword}'>&keyword=${fn:escapeXml(keyword)}</c:if>">
+                                        <i class="fas fa-chevron-left"></i> Trước
+                                    </a>
+                                </c:if>
+                                
+                                <!-- Page numbers -->
+                                <c:set var="startPage" value="${currentPage - 2 > 0 ? currentPage - 2 : 1}"/>
+                                <c:set var="endPage" value="${startPage + 4 <= totalPages ? startPage + 4 : totalPages}"/>
+                                <c:if test="${endPage - startPage < 4}">
+                                    <c:set var="startPage" value="${endPage - 4 > 0 ? endPage - 4 : 1}"/>
+                                </c:if>
+                                
+                                <c:if test="${startPage > 1}">
+                                    <a href="?page=1<c:if test='${not empty keyword}'>&keyword=${fn:escapeXml(keyword)}</c:if>">1</a>
+                                    <c:if test="${startPage > 2}">
+                                        <span>...</span>
+                                    </c:if>
+                                </c:if>
+                                
+                                <c:forEach var="i" begin="${startPage}" end="${endPage}">
+                                    <c:choose>
+                                        <c:when test="${i == currentPage}">
+                                            <span class="active">${i}</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <a href="?page=${i}<c:if test='${not empty keyword}'>&keyword=${fn:escapeXml(keyword)}</c:if>">${i}</a>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </c:forEach>
+                                
+                                <c:if test="${endPage < totalPages}">
+                                    <c:if test="${endPage < totalPages - 1}">
+                                        <span>...</span>
+                                    </c:if>
+                                    <a href="?page=${totalPages}<c:if test='${not empty keyword}'>&keyword=${fn:escapeXml(keyword)}</c:if>">${totalPages}</a>
+                                </c:if>
+                                
+                                <!-- Next -->
+                                <c:if test="${currentPage < totalPages}">
+                                    <a href="?page=${currentPage + 1}<c:if test='${not empty keyword}'>&keyword=${fn:escapeXml(keyword)}</c:if>">
+                                        Sau <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </c:if>
+                            </div>
+                        </c:if>
                     </div>
                 </main>
             </div>
 
-            <!-- Add/Edit Account Modal -->
-            <div class="modal" id="accountModal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3 class="modal-title" id="modalTitle">Thêm tài khoản mới</h3>
-                        <button class="modal-close" onclick="closeModal('accountModal')">
-                            &times;
-                        </button>
-                    </div>
-                    <form action="${pageContext.request.contextPath}/admin/account-management" method="post" id="accountForm" >
-                        <input type="hidden" name="action" value="addAccount" />
-                        <div class="form-group">
-                            <label class="form-label">Họ và tên</label>
-                            <input type="text" class="form-input" name="name" value="" />
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-input" name="email" value="" required />
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Username</label>
-                            <input type="text" class="form-input" name="username" value="" required />
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Mật khẩu</label>
-                            <input type="password" class="form-input" name="password" value="" /> <!-- luôn để trống khi edit -->
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Trạng Thái</label>
-                            <select class="form-input" name="status" required>
-                                <option value="" selected>-- Chọn trạng thái --</option>
-                                <option value="active">ACTIVE</option>
-                                <option value="inactive">INACTIVE</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Vai trò</label>
-                            <select class="form-input" name="role" required>
-                                <option value="" selected>-- Chọn vai trò --</option>
-                                <option value="admin">Admin</option>
-                                <option value="user">User</option>
-                                <option value="trainer">PT</option>
-                            </select>
-                        </div>
-
-                        <div
-                            style="
-                            display: flex;
-                            gap: 10px;
-                            justify-content: flex-end;
-                            margin-top: 20px;
-                            "
-                            >
-                            <button
-                                type="button"
-                                class="btn btn-outline"
-                                onclick="closeModal('accountModal')"
-                                >
-                                Hủy
-                            </button>
-                            <button type="submit" class="btn">Lưu</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
 
             <!-- Permissions Modal -->
             <div class="modal" id="permissionsModal">
@@ -805,38 +965,8 @@
             </div>
 
             <script>
-                function openAddModal() {
-                    document.getElementById('accountModal').classList.add('active');
-                    document.getElementById('modalTitle').textContent =
-                            'Thêm tài khoản mới';
-                    const form = document.querySelector('#accountForm');
-                    form.action = `${contextPath}/admin/account-management`; 
-                    form.method = 'post';
-                    form.querySelector('input[name="action"]').value = 'addAccount';
-                }
-
-                function openEditModal(id) {
-                    fetch(`${contextPath}/admin/account-management?action=edit&id=` + id)
-                            .then(response => response.json())
-                            .then(user => {
-                                const form = document.querySelector('#accountForm');
-                                form.action = `${contextPath}/admin/account-management?id=` + id; 
-                                form.method = 'post';
-                                form.querySelector('input[name="action"]').value = 'updateAccount';
-                                
-                                document.getElementById('accountModal').classList.add('active');
-                                document.getElementById('modalTitle').textContent = 'Chỉnh sửa tài khoản';
-
-                                // Điền dữ liệu vào form
-                                document.querySelector('input[name="name"]').value = user.name;
-                                document.querySelector('input[name="email"]').value = user.email;
-                                document.querySelector('input[name="username"]').value = user.username;
-                                document.querySelector('select[name="status"]').value = user.status = user.status.toLowerCase();
-                                document.querySelector('select[name="role"]').value = user.role = user.role.toLowerCase();
-                            })
-                            .catch(err => console.error('Lỗi tải dữ liệu:', err));
-                }
-
+                const contextPath = "${pageContext.request.contextPath}";
+                
                 function openPermissionsModal(id) {
                     document.getElementById('permissionsModal').classList.add('active');
                     console.log('Set permissions for account:', id);
@@ -845,26 +975,6 @@
                 function closeModal(modalId) {
                     document.getElementById(modalId).classList.remove('active');
                 }
-
-                function deleteAccount(id) {
-                    if (confirm('Bạn có chắc chắn muốn xóa tài khoản này?')) {
-                        const url = "${pageContext.request.contextPath}/admin/account-management?action=deleteAccount&id=" + id;
-                        fetch(url, {method: 'POST'})
-                                .then(response => {
-                                    if (response.ok) {
-                                        alert('Xóa tài khoản thành công!');
-                                        location.reload(); // 🔄 reload lại trang sau khi xóa
-                                    } else {
-                                        alert('Xóa thất bại!');
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error('Error:', error);
-                                    alert('Đã xảy ra lỗi!');
-                                });
-                    }
-                }
-
 
                 // Close modal when clicking outside
                 window.onclick = function (event) {

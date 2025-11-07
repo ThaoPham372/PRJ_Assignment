@@ -440,11 +440,20 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/admin/account-management"
+              href="${pageContext.request.contextPath}/admin/users"
               class="sidebar-menu-link"
             >
               <i class="fas fa-users-cog"></i>
               <span>Quản lý tài khoản</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a
+              href="${pageContext.request.contextPath}/admin/products"
+              class="sidebar-menu-link"
+            >
+              <i class="fas fa-box"></i>
+              <span>Quản lý sản phẩm</span>
             </a>
           </li>
           <li class="sidebar-menu-item">
@@ -521,15 +530,47 @@
 
         <!-- Content Area -->
         <div class="content-area">
+          <!-- Success/Error Messages -->
+          <c:if test="${not empty profileUpdateSuccess}">
+            <div class="alert alert-success">
+              <i class="fas fa-check-circle"></i>
+              ${profileUpdateSuccess}
+            </div>
+          </c:if>
+          <c:if test="${not empty profileUpdateError}">
+            <div class="alert alert-danger">
+              <i class="fas fa-exclamation-circle"></i>
+              ${profileUpdateError}
+            </div>
+          </c:if>
+          <c:if test="${not empty passwordChangeSuccess}">
+            <div class="alert alert-success">
+              <i class="fas fa-check-circle"></i>
+              ${passwordChangeSuccess}
+            </div>
+          </c:if>
+          <c:if test="${not empty passwordChangeError}">
+            <div class="alert alert-danger">
+              <i class="fas fa-exclamation-circle"></i>
+              ${passwordChangeError}
+            </div>
+          </c:if>
+
           <!-- Profile Card -->
           <div class="profile-card">
             <div class="profile-header">
               <div class="profile-avatar">
-                <i class="fas fa-user-shield"></i>
+                <c:choose>
+                  <c:when test="${not empty profileData.avatarUrl}">
+                    <img src="${profileData.avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+                  </c:when>
+                  <c:otherwise>
+                    <i class="fas fa-user-shield"></i>
+                  </c:otherwise>
+                </c:choose>
               </div>
               <h2 class="profile-name">
-                ${sessionScope.user != null ? sessionScope.user.username :
-                'Admin User'}
+                ${profileData.fullName != null ? profileData.fullName : (sessionScope.user != null ? sessionScope.user.username : 'Admin User')}
               </h2>
               <p class="profile-role">Administrator</p>
             </div>
@@ -541,7 +582,7 @@
                 Chỉnh sửa thông tin cá nhân
               </h3>
 
-              <form action="${pageContext.request.contextPath}/admin/profile?id=${sessionScope.user.userId}" method="post">
+              <form action="${pageContext.request.contextPath}/admin/profile" method="post" enctype="multipart/form-data">
                   <input type="hidden" name="action" value="updateAdmin" />
                 <div class="form-grid">
                   <div class="form-group">
@@ -550,7 +591,7 @@
                       type="text"
                       class="form-input"
                       name="name"
-                      value="${sessionScope.user.name}"
+                      value="${profileData.name != null ? profileData.name : sessionScope.user.name}"
                       required
                     />
                   </div>
@@ -561,7 +602,7 @@
                       type="email"
                       class="form-input"
                       name="email"
-                      value="${sessionScope.user.email}"
+                      value="${profileData.email != null ? profileData.email : sessionScope.user.email}"
                       required
                     />
                   </div>
@@ -572,15 +613,22 @@
                       type="tel"
                       class="form-input"
                       name="phone"
-                      value="${sessionScope.user.phone}"
-                      required
+                      value="${profileData.phone != null ? profileData.phone : sessionScope.user.phone}"
                     />
                   </div>
 
                   <div class="form-group">
                     <label class="form-label">Ngày sinh</label>
-                    <fmt:formatDate value="${sessionScope.user.dob}" pattern="yyyy-MM-dd" var="dobFormatted" />
-                    <input class="form-input" type="date" name="birthday" value="${dobFormatted}" />
+                    <c:choose>
+                      <c:when test="${not empty profileData.dob}">
+                        <fmt:formatDate value="${profileData.dob}" pattern="yyyy-MM-dd" var="dobFormatted" />
+                        <input class="form-input" type="date" name="dob" value="${dobFormatted}" />
+                      </c:when>
+                      <c:otherwise>
+                        <fmt:formatDate value="${sessionScope.user.dob}" pattern="yyyy-MM-dd" var="dobFormatted" />
+                        <input class="form-input" type="date" name="dob" value="${dobFormatted}" />
+                      </c:otherwise>
+                    </c:choose>
                   </div>
 
                   <div class="form-group full-width">
@@ -589,7 +637,28 @@
                       type="text"
                       class="form-input"
                       name="address"
-                      value="${sessionScope.user.address}"
+                      value="${profileData.address != null ? profileData.address : sessionScope.user.address}"
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Giới tính</label>
+                    <select class="form-input" name="gender">
+                      <option value="">-- Chọn giới tính --</option>
+                      <option value="Nam" ${profileData.gender == 'Nam' || sessionScope.user.gender == 'Nam' ? 'selected' : ''}>Nam</option>
+                      <option value="Nữ" ${profileData.gender == 'Nữ' || sessionScope.user.gender == 'Nữ' ? 'selected' : ''}>Nữ</option>
+                      <option value="Khác" ${profileData.gender == 'Khác' || sessionScope.user.gender == 'Khác' ? 'selected' : ''}>Khác</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Avatar URL</label>
+                    <input
+                      type="text"
+                      class="form-input"
+                      name="avatarUrl"
+                      value="${profileData.avatarUrl != null ? profileData.avatarUrl : sessionScope.user.avatarUrl}"
+                      placeholder="Nhập URL ảnh đại diện"
                     />
                   </div>
 
@@ -599,7 +668,7 @@
                       type="text"
                       class="form-input"
                       name="username"
-                      value="${sessionScope.user.username}"
+                      value="${profileData.username != null ? profileData.username : sessionScope.user.username}"
                       disabled
                     />
                   </div>
@@ -633,7 +702,7 @@
                   Đổi mật khẩu
                 </h3>
 
-                <form action="${pageContext.request.contextPath}/admin/profile?id=${sessionScope.user.userId}" method="post">
+                <form action="${pageContext.request.contextPath}/admin/profile" method="post">
                     <input type="hidden" name="action" value="updateAdminPassword" />
                   <div class="form-grid">
                     <div class="form-group full-width">
@@ -653,6 +722,7 @@
                         class="form-input"
                         name="newPassword"
                         required
+                        minlength="8"
                       />
                     </div>
 
@@ -663,11 +733,15 @@
                         class="form-input"
                         name="confirmPassword"
                         required
+                        minlength="8"
                       />
                     </div>
                   </div>
 
                   <div class="form-actions">
+                    <a href="${pageContext.request.contextPath}/admin/send-password-reset?email=${profileData.email != null ? profileData.email : sessionScope.user.email}" class="btn btn-outline">
+                      <i class="fas fa-envelope"></i> Gửi mã về Email
+                    </a>
                     <button type="reset" class="btn btn-outline">
                       <i class="fas fa-times"></i> Hủy
                     </button>

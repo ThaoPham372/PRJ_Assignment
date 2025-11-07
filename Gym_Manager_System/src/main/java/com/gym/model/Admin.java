@@ -13,7 +13,6 @@ import jakarta.persistence.Table;
  */
 @Entity
 @Table(name = "admin")
-@DiscriminatorValue("ADMIN")
 @PrimaryKeyJoinColumn(name = "user_id")
 public class Admin extends User implements Serializable {
     

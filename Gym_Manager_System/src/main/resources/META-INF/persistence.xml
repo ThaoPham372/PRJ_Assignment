@@ -11,6 +11,7 @@
     <class>com.gym.model.User</class>
     <class>com.gym.model.Student</class>
     <class>com.gym.model.Admin</class>
+    <class>com.gym.model.Trainer</class>
     <class>com.gym.model.Role</class>
     <class>com.gym.model.UserRole</class>
     <class>com.gym.model.shop.Product</class>
