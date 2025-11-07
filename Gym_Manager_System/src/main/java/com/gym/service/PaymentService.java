@@ -42,7 +42,7 @@ public interface PaymentService {
     /**
      * Update payment status and handle related entity updates
      * - If status = 'PAID':
-     *   - For PRODUCT: update order.order_status = 'CONFIRMED'
+     *   - For PRODUCT: update order.order_status = 'COMPLETED'
      *   - For PACKAGE: update membership.status = 'ACTIVE'
      * @param paymentId Payment ID
      * @param newStatus New payment status
@@ -70,5 +70,12 @@ public interface PaymentService {
      * @return Total revenue as BigDecimal
      */
     BigDecimal getRevenueThisMonth();
+    
+    /**
+     * Get total amount spent by a user (payments with status = 'PAID')
+     * @param userId User ID
+     * @return Total amount spent as BigDecimal
+     */
+    BigDecimal getTotalSpentByUser(Integer userId);
 }
 

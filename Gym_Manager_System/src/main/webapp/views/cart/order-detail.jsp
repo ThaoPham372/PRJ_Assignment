@@ -329,6 +329,84 @@
         color: white;
     }
 
+    .btn-danger {
+        background: var(--danger);
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+    }
+
+    .cancel-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cancel-modal.show {
+        display: flex;
+    }
+
+    .cancel-modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .cancel-modal-header {
+        margin-bottom: 20px;
+    }
+
+    .cancel-modal-header h3 {
+        color: var(--primary);
+        margin: 0;
+        font-size: 1.5rem;
+    }
+
+    .cancel-modal-body {
+        margin-bottom: 20px;
+    }
+
+    .cancel-modal-body p {
+        color: var(--text);
+        margin-bottom: 15px;
+    }
+
+    .cancel-modal-body textarea {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid var(--muted);
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 0.95rem;
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .cancel-modal-body textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+    }
+
+    .cancel-modal-footer {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
     .empty-state {
         text-align: center;
         padding: 60px 20px;
@@ -414,9 +492,20 @@
                         <div class="info-item">
                             <span class="info-label">Trạng Thái Đơn Hàng</span>
                             <span class="info-value">
-                                <span class="status-badge ${fn:toLowerCase(order.orderStatus.code)}">
-                                    ${order.orderStatus.displayName}
-                                </span>
+                                <c:choose>
+                                    <c:when test="${order.orderStatus != null}">
+                                        <span class="status-badge ${fn:toLowerCase(order.orderStatus.code)}">
+                                            <i class="fas fa-${order.orderStatus.code == 'COMPLETED' ? 'check-circle' : order.orderStatus.code == 'CANCELLED' ? 'times-circle' : 'clock'}"></i>
+                                            ${order.orderStatus.displayName}
+                                        </span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="status-badge pending">
+                                            <i class="fas fa-clock"></i>
+                                            Chờ thanh toán
+                                        </span>
+                                    </c:otherwise>
+                                </c:choose>
                             </span>
                         </div>
                         <div class="info-item">
@@ -610,9 +699,55 @@
                                 <i class="fas fa-shopping-cart"></i>
                                 Tiếp Tục Mua Sắm
                             </a>
+                            <button type="button" class="btn btn-danger" onclick="showCancelModal()">
+                                <i class="fas fa-times-circle"></i>
+                                Hủy Đơn Hàng
+                            </button>
                         </c:if>
                     </div>
                 </div>
+
+                <!-- Cancel Order Modal -->
+                <c:if test="${order.orderStatus.code == 'PENDING' || order.orderStatus.code == 'pending'}">
+                    <div id="cancelModal" class="cancel-modal">
+                        <div class="cancel-modal-content">
+                            <div class="cancel-modal-header">
+                                <h3>
+                                    <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
+                                    Xác Nhận Hủy Đơn Hàng
+                                </h3>
+                            </div>
+                            <div class="cancel-modal-body">
+                                <p>Bạn có chắc chắn muốn hủy đơn hàng <strong>#${fn:escapeXml(order.orderNumber)}</strong>?</p>
+                                <p style="color: var(--text-light); font-size: 0.9rem;">
+                                    <i class="fas fa-info-circle"></i>
+                                    Chỉ có thể hủy đơn hàng đang chờ xác nhận. Sau khi hủy, bạn không thể hoàn tác.
+                                </p>
+                                <label for="cancellationReason" style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">
+                                    Lý do hủy đơn (tùy chọn):
+                                </label>
+                                <textarea 
+                                    id="cancellationReason" 
+                                    name="cancellationReason" 
+                                    placeholder="Nhập lý do hủy đơn hàng (nếu có)..."></textarea>
+                            </div>
+                            <div class="cancel-modal-footer">
+                                <button type="button" class="btn btn-outline" onclick="hideCancelModal()">
+                                    <i class="fas fa-times"></i>
+                                    Hủy
+                                </button>
+                                <form id="cancelOrderForm" method="post" action="${pageContext.request.contextPath}/order/cancel" style="display: inline;">
+                                    <input type="hidden" name="orderId" value="${order.orderId}" />
+                                    <input type="hidden" name="cancellationReason" id="cancellationReasonInput" />
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-check"></i>
+                                        Xác Nhận Hủy
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </c:if>
             </c:when>
             <c:otherwise>
                 <div class="detail-card">
@@ -630,6 +765,43 @@
         </c:choose>
     </div>
 </div>
+
+<script>
+    function showCancelModal() {
+        document.getElementById('cancelModal').classList.add('show');
+    }
+
+    function hideCancelModal() {
+        document.getElementById('cancelModal').classList.remove('show');
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('cancelModal');
+        if (event.target == modal) {
+            hideCancelModal();
+        }
+    }
+
+    // Handle form submission
+    document.getElementById('cancelOrderForm')?.addEventListener('submit', function(e) {
+        const reasonTextarea = document.getElementById('cancellationReason');
+        const reasonInput = document.getElementById('cancellationReasonInput');
+        if (reasonTextarea && reasonInput) {
+            reasonInput.value = reasonTextarea.value.trim();
+        }
+    });
+
+    // Display success/error messages from session
+    <c:if test="${not empty sessionScope.success}">
+        alert('${fn:escapeXml(sessionScope.success)}');
+        <c:remove var="success" scope="session" />
+    </c:if>
+    <c:if test="${not empty sessionScope.error}">
+        alert('${fn:escapeXml(sessionScope.error)}');
+        <c:remove var="error" scope="session" />
+    </c:if>
+</script>
 
 <%@ include file="/views/common/footer.jsp" %>
 

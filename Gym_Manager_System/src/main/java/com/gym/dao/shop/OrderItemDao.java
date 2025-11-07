@@ -87,4 +87,28 @@ public class OrderItemDao extends BaseDAO<OrderItem> {
         }
     }
     
+    /**
+     * Find order ID by packageId and userId
+     * Used to find the order that contains a package purchase
+     */
+    public Long findOrderIdByPackageIdAndUserId(Long packageId, Long userId) {
+        try {
+            String jpql = "SELECT DISTINCT oi.orderId FROM OrderItem oi " +
+                         "JOIN Order o ON o.orderId = oi.orderId " +
+                         "WHERE oi.packageId = :packageId AND o.userId = :userId " +
+                         "ORDER BY oi.orderId DESC";
+            
+            TypedQuery<Long> query = em.createQuery(jpql, Long.class);
+            query.setParameter("packageId", packageId);
+            query.setParameter("userId", userId);
+            query.setMaxResults(1);
+            
+            List<Long> results = query.getResultList();
+            return results.isEmpty() ? null : results.get(0);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error finding order ID by packageId and userId: " + e.getMessage(), e);
+            return null;
+        }
+    }
+    
 }

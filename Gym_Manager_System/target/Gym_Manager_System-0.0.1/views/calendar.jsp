@@ -473,7 +473,7 @@ file="/views/common/header.jsp" %>
         <i class="fas fa-user-plus"></i> ĐĂNG KÝ NGAY
       </a>
       <a
-        href="${pageContext.request.contextPath}/views/Service_page/services_main.jsp"
+        href="${pageContext.request.contextPath}/services"
         class="btn-secondary"
       >
         <i class="fas fa-info-circle"></i> TÌM HIỂU DỊCH VỤ

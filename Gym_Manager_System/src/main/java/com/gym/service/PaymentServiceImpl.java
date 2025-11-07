@@ -76,11 +76,13 @@ public class PaymentServiceImpl implements PaymentService {
         if (newStatus == PaymentStatus.PAID) {
             // Payment confirmed → activate related entity
             if (payment.getTransactionType() == Payment.TransactionType.PRODUCT) {
-                // Update order status to CONFIRMED
+                // Update order status to COMPLETED (payment confirmed)
+                // Note: Order status will be COMPLETED when payment is PAID
+                // Admin can later change it if needed, but by default it's COMPLETED after payment
                 if (payment.getOrderId() != null) {
                     try {
-                        orderDao.updateOrderStatus(payment.getOrderId(), OrderStatus.CONFIRMED);
-                        LOGGER.info("✅ [PAID→CONFIRMED] Updated order status to CONFIRMED: orderId=" + payment.getOrderId());
+                        orderDao.updateOrderStatus(payment.getOrderId(), OrderStatus.COMPLETED);
+                        LOGGER.info("✅ [PAID→COMPLETED] Updated order status to COMPLETED: orderId=" + payment.getOrderId());
                     } catch (Exception e) {
                         LOGGER.severe("Error updating order status: " + e.getMessage());
                         e.printStackTrace();
@@ -100,6 +102,35 @@ public class PaymentServiceImpl implements PaymentService {
                         }
                     } catch (Exception e) {
                         LOGGER.severe("Error activating membership: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                    
+                    // ✅ Also update order status for package orders
+                    // Find order that contains this package purchase
+                    try {
+                        // Get membership to find packageId and userId
+                        com.gym.dao.membership.MembershipDao membershipDao = new com.gym.dao.membership.MembershipDao();
+                        java.util.Optional<com.gym.model.membership.Membership> membershipOpt = 
+                            membershipDao.findById(payment.getMembershipId());
+                        
+                        if (membershipOpt.isPresent()) {
+                            com.gym.model.membership.Membership membership = membershipOpt.get();
+                            Long packageId = membership.getPackageId();
+                            Long userId = membership.getUserId().longValue();
+                            
+                            // Find order ID by packageId and userId
+                            com.gym.dao.shop.OrderItemDao orderItemDao = new com.gym.dao.shop.OrderItemDao();
+                            Long orderId = orderItemDao.findOrderIdByPackageIdAndUserId(packageId, userId);
+                            
+                            if (orderId != null) {
+                                orderDao.updateOrderStatus(orderId, OrderStatus.COMPLETED);
+                                LOGGER.info("✅ [PAID→COMPLETED] Updated order status to COMPLETED for package order: orderId=" + orderId);
+                            } else {
+                                LOGGER.warning("⚠️ Could not find order for package payment: membershipId=" + payment.getMembershipId() + ", packageId=" + packageId);
+                            }
+                        }
+                    } catch (Exception e) {
+                        LOGGER.severe("Error updating order status for package payment: " + e.getMessage());
                         e.printStackTrace();
                     }
                 }
@@ -147,6 +178,11 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public BigDecimal getRevenueThisMonth() {
         return paymentDAO.getRevenueThisMonth();
+    }
+    
+    @Override
+    public BigDecimal getTotalSpentByUser(Integer userId) {
+        return paymentDAO.getTotalSpentByUser(userId);
     }
 }
 

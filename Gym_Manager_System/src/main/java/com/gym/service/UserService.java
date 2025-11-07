@@ -37,6 +37,7 @@ public class UserService {
     private final com.gym.dao.AdminDAO adminDAO;
     private final com.gym.dao.TrainerDAO trainerDAO;
     private final PasswordService passwordService;
+    private final PaymentService paymentService;
     
     public UserService() {
         this.userDAO = new UserDAO();
@@ -48,6 +49,7 @@ public class UserService {
         this.adminDAO = new com.gym.dao.AdminDAO();
         this.trainerDAO = new com.gym.dao.TrainerDAO();
         this.passwordService = new PasswordService();
+        this.paymentService = new PaymentServiceImpl();
     }
     
     /**
@@ -464,7 +466,15 @@ public class UserService {
             System.err.println("[UserService] Error getting today's calories: " + e.getMessage());
         }
         stats.put("caloriesConsumed", caloriesConsumed);
-        stats.put("waterIntake", null); // Not tracked yet
+        
+        // Get total amount spent by user (payments with status = PAID)
+        BigDecimal totalSpent = BigDecimal.ZERO;
+        try {
+            totalSpent = paymentService.getTotalSpentByUser((int) userId);
+        } catch (Exception e) {
+            System.err.println("[UserService] Error getting total spent: " + e.getMessage());
+        }
+        stats.put("totalSpent", totalSpent);
         
         // Get membership info and calculate remaining days
         // Try to get active membership first, if not found, get the most recent one from history
@@ -548,15 +558,30 @@ public class UserService {
             try {
                 // Convert Float to BigDecimal for BMI
                 BigDecimal bmi = member.getBmiAsBigDecimal();
-                stats.put("bmi", bmi);
-                if (bmi != null) {
+                System.out.println("[UserService] getDashboardData - BMI from member: " + bmi);
+                if (bmi != null && bmi.compareTo(BigDecimal.ZERO) > 0) {
+                    stats.put("bmi", bmi);
                     stats.put("bmiCategory", memberService.getBMICategory(bmi));
                 } else {
-                    stats.put("bmi", null);
-                    stats.put("bmiCategory", null);
+                    // If BMI is null or zero, try to calculate from weight and height
+                    Float weight = member.getWeight();
+                    Float height = member.getHeight();
+                    if (weight != null && height != null && weight > 0 && height > 0) {
+                        // Calculate BMI: weight (kg) / (height (m))^2
+                        BigDecimal heightInMeters = BigDecimal.valueOf(height).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+                        BigDecimal weightBD = BigDecimal.valueOf(weight);
+                        BigDecimal calculatedBMI = weightBD.divide(heightInMeters.multiply(heightInMeters), 2, RoundingMode.HALF_UP);
+                        stats.put("bmi", calculatedBMI);
+                        stats.put("bmiCategory", memberService.getBMICategory(calculatedBMI));
+                        System.out.println("[UserService] getDashboardData - Calculated BMI: " + calculatedBMI);
+                    } else {
+                        stats.put("bmi", null);
+                        stats.put("bmiCategory", null);
+                    }
                 }
             } catch (Exception e) {
                 System.err.println("[UserService] Error getting BMI from Member: " + e.getMessage());
+                e.printStackTrace();
                 stats.put("bmi", null);
                 stats.put("bmiCategory", null);
             }

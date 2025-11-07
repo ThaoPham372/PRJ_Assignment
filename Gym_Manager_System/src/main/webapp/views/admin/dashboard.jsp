@@ -595,7 +595,7 @@
                 <h3 class="management-card-title">Quản lý tài khoản</h3>
               </div>
               <p class="management-card-description">
-                Quản lý danh sách tài khoản Admin, Student, Trainer. Thêm, xóa, sửa và
+                Quản lý danh sách tài khoản Admin, Member, Trainer. Thêm, xóa, sửa và
                 set quyền cho tài khoản. Tự động tạo record trong bảng tương ứng khi tạo tài khoản.
               </p>
               <div class="management-card-actions">

@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -282,10 +283,32 @@
 
         <div style="text-align: center;">
             <c:if test="${not empty email}">
-                <a href="${pageContext.request.contextPath}/admin/profile" class="back-link" style="margin-bottom: 10px;">
-                    <i class="fas fa-arrow-left"></i>
-                    Quay lại Profile
-                </a>
+                <c:choose>
+                    <c:when test="${not empty sessionScope.user}">
+                        <c:set var="userRoles" value="${sessionScope.userRoles}" />
+                        <c:choose>
+                            <c:when test="${fn:contains(userRoles, 'ADMIN')}">
+                                <a href="${pageContext.request.contextPath}/admin/profile" class="back-link" style="margin-bottom: 10px;">
+                                    <i class="fas fa-arrow-left"></i>
+                                    Quay lại Profile
+                                </a>
+                            </c:when>
+                            <c:otherwise>
+                                <a href="${pageContext.request.contextPath}/member/profile/edit" class="back-link" style="margin-bottom: 10px;">
+                                    <i class="fas fa-arrow-left"></i>
+                                    Quay lại Chỉnh sửa Profile
+                                </a>
+                            </c:otherwise>
+                        </c:choose>
+                    </c:when>
+                    <c:otherwise>
+                        <!-- Fallback: check if coming from admin or member based on referer or default to member -->
+                        <a href="${pageContext.request.contextPath}/member/profile/edit" class="back-link" style="margin-bottom: 10px;">
+                            <i class="fas fa-arrow-left"></i>
+                            Quay lại Chỉnh sửa Profile
+                        </a>
+                    </c:otherwise>
+                </c:choose>
             </c:if>
             <a href="${pageContext.request.contextPath}/auth/login" class="back-link">
                 <i class="fas fa-arrow-left"></i>

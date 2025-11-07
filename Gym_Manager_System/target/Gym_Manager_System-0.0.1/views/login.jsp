@@ -751,16 +751,24 @@
 
         // Forgot password link - handled by href, no JS needed
 
-        // Keyboard navigation
-        document.addEventListener('keydown', function (e) {
-          if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') {
-            const inputs = [usernameInput, passwordInput];
-            const currentIndex = inputs.indexOf(e.target);
-            if (currentIndex < inputs.length - 1) {
-              inputs[currentIndex + 1].focus();
-            } else {
-              form.dispatchEvent(new Event('submit'));
+        // Handle Enter key in form inputs
+        // Only handle Enter in password field to submit form
+        // Let browser handle Enter in username field naturally
+        passwordInput.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            // Trigger form validation and submission
+            if (validateForm()) {
+              form.submit();
             }
+          }
+        });
+        
+        // Handle Enter in username field - move to password field
+        usernameInput.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            passwordInput.focus();
           }
         });
       });

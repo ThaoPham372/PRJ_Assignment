@@ -132,6 +132,11 @@
         color: #721c24;
     }
 
+    .status-completed {
+        background: #d4edda;
+        color: #155724;
+    }
+
     .order-items {
         margin: 15px 0;
     }
@@ -287,6 +292,36 @@
         </a>
     </div>
 
+    <!-- Success/Error Messages -->
+    <c:if test="${not empty sessionScope.success}">
+        <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin-bottom: 20px; background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; border: 1px solid #c3e6cb;">
+            <i class="fas fa-check-circle"></i> ${fn:escapeXml(sessionScope.success)}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()" style="float: right; background: none; border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
+        </div>
+        <c:remove var="success" scope="session" />
+    </c:if>
+    <c:if test="${not empty sessionScope.error}">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-bottom: 20px; background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; border: 1px solid #f5c6cb;">
+            <i class="fas fa-exclamation-circle"></i> ${fn:escapeXml(sessionScope.error)}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()" style="float: right; background: none; border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
+        </div>
+        <c:remove var="error" scope="session" />
+    </c:if>
+    <c:if test="${not empty error}">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-bottom: 20px; background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; border: 1px solid #f5c6cb;">
+            <i class="fas fa-exclamation-circle"></i> ${fn:escapeXml(error)}
+        </div>
+    </c:if>
+
+    <!-- Debug Info (remove in production) -->
+    <c:if test="${empty orders}">
+        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; color: #856404;">
+            <strong>Debug:</strong> Orders list is empty or null. 
+            <c:if test="${orders == null}">Orders is NULL</c:if>
+            <c:if test="${orders != null}">Orders size: ${fn:length(orders)}</c:if>
+        </div>
+    </c:if>
+
     <c:choose>
         <c:when test="${not empty orders and fn:length(orders) > 0}">
             <div class="orders-list">
@@ -324,18 +359,11 @@
                                 </div>
                             </div>
                             <div class="order-status-badges">
-                                <c:set var="orderPayments" value="${paymentsMap[order.orderId]}" />
                                 <c:choose>
-                                    <c:when test="${not empty orderPayments}">
-                                        <c:set var="hasPaid" value="false" />
-                                        <c:forEach items="${orderPayments}" var="payment">
-                                            <c:if test="${payment.status.code == 'paid'}">
-                                                <c:set var="hasPaid" value="true" />
-                                            </c:if>
-                                        </c:forEach>
-                                        <span class="status-badge status-${hasPaid ? 'paid' : 'pending'}">
-                                            <i class="fas fa-${hasPaid ? 'check-circle' : 'clock'}"></i>
-                                            ${hasPaid ? 'Đã thanh toán' : 'Chờ thanh toán'}
+                                    <c:when test="${order.orderStatus != null}">
+                                        <span class="status-badge status-${fn:toLowerCase(order.orderStatus.code)}">
+                                            <i class="fas fa-${order.orderStatus.code == 'COMPLETED' ? 'check-circle' : order.orderStatus.code == 'CANCELLED' ? 'times-circle' : 'clock'}"></i>
+                                            ${order.orderStatus.displayName}
                                         </span>
                                     </c:when>
                                     <c:otherwise>
@@ -345,10 +373,6 @@
                                         </span>
                                     </c:otherwise>
                                 </c:choose>
-                                <span class="status-badge status-${order.orderStatus.code}">
-                                    <i class="fas fa-${order.orderStatus.code == 'delivered' ? 'check-double' : order.orderStatus.code == 'processing' ? 'spinner' : order.orderStatus.code == 'shipped' ? 'truck' : 'ban'}"></i>
-                                    ${order.orderStatus.displayName}
-                                </span>
                             </div>
                         </div>
 
@@ -376,7 +400,7 @@
                             <div class="summary-row">
                                 <span class="summary-label">Tổng tiền hàng:</span>
                                 <span class="summary-value">
-                                    <fmt:formatNumber value="${order.totalAmount}" type="currency" currencySymbol="đ" maxFractionDigits="0"/>
+                                    <fmt:formatNumber value="${order.totalAmount != null ? order.totalAmount : 0}" type="currency" currencySymbol="đ" maxFractionDigits="0"/>
                                 </span>
                             </div>
                             <c:if test="${order.discountAmount != null and order.discountAmount > 0}">
@@ -390,7 +414,7 @@
                             <div class="summary-row total-amount">
                                 <span class="summary-label">Thành tiền:</span>
                                 <span class="summary-value">
-                                    <fmt:formatNumber value="${order.totalAmount - (order.discountAmount != null ? order.discountAmount : 0)}" type="currency" currencySymbol="đ" maxFractionDigits="0"/>
+                                    <fmt:formatNumber value="${(order.totalAmount != null ? order.totalAmount : 0) - (order.discountAmount != null ? order.discountAmount : 0)}" type="currency" currencySymbol="đ" maxFractionDigits="0"/>
                                 </span>
                             </div>
                         </div>

@@ -320,6 +320,11 @@
                     background: #11998e;
                     color: #fff;
                 }
+                
+                .badge-member {
+                    background: #11998e;
+                    color: #fff;
+                }
 
                 .badge-pt {
                     background: var(--accent);
@@ -750,7 +755,7 @@
                                 <c:if test="${not empty role && role != 'all'}">
                                     <c:choose>
                                         <c:when test="${role == 'ADMIN'}"> - Vai trò: <strong>Admin</strong></c:when>
-                                        <c:when test="${role == 'USER'}"> - Vai trò: <strong>User/Student</strong></c:when>
+                                        <c:when test="${role == 'MEMBER'}"> - Vai trò: <strong>Member</strong></c:when>
                                         <c:when test="${role == 'TRAINER'}"> - Vai trò: <strong>Trainer</strong></c:when>
                                     </c:choose>
                                 </c:if>
@@ -767,7 +772,7 @@
                                     <select class="filter-select" name="role" id="roleSelect" onchange="document.getElementById('roleFilterForm').submit();">
                                         <option value="all" ${empty role || role == 'all' ? 'selected' : ''}>Tất cả vai trò</option>
                                         <option value="ADMIN" ${role == 'ADMIN' ? 'selected' : ''}>Admin</option>
-                                        <option value="USER" ${role == 'USER' ? 'selected' : ''}>User/Student</option>
+                                        <option value="MEMBER" ${role == 'MEMBER' ? 'selected' : ''}>Member</option>
                                         <option value="TRAINER" ${role == 'TRAINER' ? 'selected' : ''}>Trainer</option>
                                     </select>
                                 </form>
@@ -810,8 +815,8 @@
                                                     <c:when test="${user.role == 'PT' or user.role == 'TRAINER'}">
                                                         <span class="badge badge-pt">PT/TRAINER</span>
                                                     </c:when>
-                                                    <c:when test="${user.role == 'USER'}">
-                                                        <span class="badge badge-user">USER</span>
+                                                    <c:when test="${user.role == 'USER' || user.role == 'MEMBER'}">
+                                                        <span class="badge badge-user">MEMBER</span>
                                                     </c:when>
                                                     <c:otherwise>
                                                         <span class="badge">${fn:escapeXml(user.role)}</span>

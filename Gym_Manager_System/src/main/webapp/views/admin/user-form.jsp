@@ -82,7 +82,7 @@
         <div class="info-box">
             <strong><i class="fas fa-info-circle"></i> Lưu ý:</strong><br/>
             Hệ thống sẽ <strong>tự động tạo record</strong> trong bảng tương ứng dựa trên Role:<br/>
-            • <strong>USER/STUDENT</strong> → Tự động tạo record trong bảng <strong>students</strong><br/>
+            • <strong>MEMBER</strong> → Tự động tạo record trong bảng <strong>members</strong><br/>
             • <strong>ADMIN</strong> → Tự động tạo record trong bảng <strong>admin</strong><br/>
             • <strong>TRAINER</strong> → Tự động tạo record trong bảng <strong>trainer</strong>
         </div>
@@ -139,12 +139,12 @@
         <div class="form-group">
             <label class="form-label">Role * 
                 <c:if test="${mode == 'edit' && user.role == 'USER'}">
-                    <span style="color: #2196F3;">(Student record đã tồn tại)</span>
+                    <span style="color: #2196F3;">(Member record đã tồn tại)</span>
                 </c:if>
             </label>
             <select name="role" class="form-control" required>
                 <option value="">-- Chọn Role --</option>
-                <option value="USER" ${user.role == 'USER' ? 'selected' : ''}>USER/STUDENT (Tự động tạo Student record)</option>
+                <option value="USER" ${user.role == 'USER' ? 'selected' : ''}>MEMBER (Tự động tạo Member record)</option>
                 <option value="ADMIN" ${user.role == 'ADMIN' ? 'selected' : ''}>ADMIN (Tự động tạo Admin record)</option>
                 <option value="TRAINER" ${user.role == 'TRAINER' || user.role == 'PT' ? 'selected' : ''}>TRAINER (Tự động tạo Trainer record)</option>
             </select>

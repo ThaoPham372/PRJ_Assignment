@@ -663,6 +663,35 @@
             </div>
         </div>
 
+        <!-- Password Change Card -->
+        <div class="info-card">
+            <div class="info-card-header">
+                <h2 class="info-card-title">
+                    <i class="fas fa-key"></i>
+                    Bảo mật tài khoản
+                </h2>
+            </div>
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label class="form-label">
+                        <i class="fas fa-lock"></i>
+                        Mật khẩu
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                        <input type="password" class="form-control" value="••••••••" readonly style="flex: 1; min-width: 200px;">
+                        <a href="${pageContext.request.contextPath}/auth/forgot-password?email=${fn:escapeXml(profileData.email)}" class="btn-reset" style="text-decoration: none;">
+                            <i class="fas fa-key"></i>
+                            Đổi mật khẩu
+                        </a>
+                    </div>
+                    <div class="help-text">
+                        <i class="fas fa-info-circle"></i>
+                        Click "Đổi mật khẩu" để nhận mã xác nhận qua email và đặt lại mật khẩu mới
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Action Buttons -->
         <div class="action-buttons">
             <div class="btn-group">

@@ -2,15 +2,155 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ include file="/views/common/header.jsp" %>
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý sản phẩm - GymFit</title>
+
+    <!-- Font Awesome Icons -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
 
 <style>
-    .admin-container {
-        max-width: 1400px;
-        margin: 40px auto;
-        padding: 0 20px;
+    :root {
+        --primary: #141a49;
+        --accent: #ec8b5a;
+        --text: #2c3e50;
+        --text-light: #5a6c7d;
+        --shadow: rgba(0, 0, 0, 0.1);
+        --gradient-primary: linear-gradient(135deg, #141a49 0%, #1e2a5c 100%);
+        --gradient-accent: linear-gradient(135deg, #ec8b5a 0%, #d67a4f 100%);
     }
-    
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        color: var(--text);
+        background: #f6f6f8;
+        line-height: 1.6;
+    }
+
+    .admin-container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        width: 280px;
+        background: var(--gradient-primary);
+        color: #fff;
+        position: fixed;
+        height: 100vh;
+        overflow-y: auto;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+        z-index: 100;
+    }
+
+    .sidebar-header {
+        padding: 30px 25px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-brand {
+        font-size: 1.8rem;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .sidebar-user {
+        margin-top: 15px;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .sidebar-user-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .sidebar-user-info h4 {
+        font-size: 0.95rem;
+        margin-bottom: 3px;
+    }
+
+    .sidebar-user-info p {
+        font-size: 0.75rem;
+        opacity: 0.8;
+    }
+
+    .sidebar-menu {
+        padding: 20px 0;
+    }
+
+    .sidebar-menu-item {
+        list-style: none;
+    }
+
+    .sidebar-menu-link {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px 25px;
+        color: #fff;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+    }
+
+    .sidebar-menu-link:hover,
+    .sidebar-menu-link.active {
+        background: rgba(255, 255, 255, 0.1);
+        border-left-color: var(--accent);
+        color: var(--accent);
+    }
+
+    .sidebar-menu-link i {
+        font-size: 1.1rem;
+        width: 20px;
+    }
+
+    .main-content {
+        flex: 1;
+        margin-left: 280px;
+        background: #f6f6f8;
+        padding: 30px 40px;
+    }
+
     .page-header {
         background: linear-gradient(135deg, #141a46 0%, #1e2a5c 100%);
         color: white;
@@ -41,6 +181,7 @@
     .btn-primary:hover {
         background: #d67a4f;
         transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(236, 139, 94, 0.4);
     }
     
     .btn-danger {
@@ -48,9 +189,24 @@
         color: white;
     }
     
+    .btn-danger:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+    }
+    
     .btn-warning {
         background: #ffc107;
         color: #000;
+    }
+    
+    .btn-warning:hover {
+        background: #e0a800;
+        transform: translateY(-2px);
+    }
+    
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.85rem;
     }
     
     table {
@@ -159,16 +315,129 @@
         margin-top: 10px;
     }
 </style>
+</head>
+<body>
 
 <div class="admin-container">
-    <div class="mb-4">
-        <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn-back">
-            <i class="fas fa-arrow-left"></i>
-            <span>Quay lại Dashboard</span>
-        </a>
-    </div>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+          <a
+            href="${pageContext.request.contextPath}/views/admin/admin_home.jsp"
+            class="sidebar-brand"
+          >
+            <i class="fas fa-dumbbell"></i>
+            <span>FITZ GYM</span>
+          </a>
 
-    <div class="page-header">
+          <div class="sidebar-user">
+            <div class="sidebar-user-avatar">
+              <i class="fas fa-user-shield"></i>
+            </div>
+            <div class="sidebar-user-info">
+              <h4>Admin User</h4>
+              <p>Administrator</p>
+            </div>
+          </div>
+        </div>
+
+        <ul class="sidebar-menu">
+          <li class="sidebar-menu-item">
+            <a
+              href="${pageContext.request.contextPath}/views/admin/dashboard.jsp"
+              class="sidebar-menu-link"
+            >
+              <i class="fas fa-home"></i>
+              <span>Trang chủ</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a
+              href="${pageContext.request.contextPath}/views/admin/profile.jsp"
+              class="sidebar-menu-link"
+            >
+              <i class="fas fa-user-circle"></i>
+              <span>Profile của Admin</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a
+              href="${pageContext.request.contextPath}/admin/users"
+              class="sidebar-menu-link"
+            >
+              <i class="fas fa-users-cog"></i>
+              <span>Quản lý tài khoản</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a
+              href="${pageContext.request.contextPath}/admin/products"
+              class="sidebar-menu-link active"
+            >
+              <i class="fas fa-box"></i>
+              <span>Quản lý sản phẩm</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a
+              href="${pageContext.request.contextPath}/views/admin/member_management.jsp"
+              class="sidebar-menu-link"
+            >
+              <i class="fas fa-users"></i>
+              <span>Quản lý hội viên</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a
+              href="${pageContext.request.contextPath}/views/admin/service_schedule.jsp"
+              class="sidebar-menu-link"
+            >
+              <i class="fas fa-calendar-alt"></i>
+              <span>Dịch vụ & Lịch tập</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a
+              href="${pageContext.request.contextPath}/views/admin/trainer_management.jsp"
+              class="sidebar-menu-link"
+            >
+              <i class="fas fa-chalkboard-teacher"></i>
+              <span>Quản lý PT</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a
+              href="${pageContext.request.contextPath}/views/admin/order_management.jsp"
+              class="sidebar-menu-link"
+            >
+              <i class="fas fa-box"></i>
+              <span>Quản lý đơn hàng</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a
+              href="${pageContext.request.contextPath}/views/admin/payment_finance.jsp"
+              class="sidebar-menu-link"
+            >
+              <i class="fas fa-money-bill-wave"></i>
+              <span>Thanh toán & Tài chính</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a
+              href="${pageContext.request.contextPath}/views/admin/reports.jsp"
+              class="sidebar-menu-link"
+            >
+              <i class="fas fa-chart-line"></i>
+              <span>Báo cáo & Thống kê</span>
+            </a>
+          </li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
         <h1><i class="fas fa-box"></i> Quản Lý Sản Phẩm</h1>
         <a href="${pageContext.request.contextPath}/admin/products/add" class="btn btn-primary">
             <i class="fas fa-plus"></i> Thêm Sản Phẩm
@@ -323,7 +592,11 @@
             </c:if>
         </div>
     </c:if>
+    </div>
+    <!-- End Main Content -->
 </div>
+<!-- End Admin Container -->
 
-<%@ include file="/views/common/footer.jsp" %>
+</body>
+</html>
 

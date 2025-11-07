@@ -277,4 +277,27 @@ public class PaymentDAO extends BaseDAO<Payment> {
         }
     }
     
+    /**
+     * Get total amount spent by a user (payments with status = 'PAID')
+     * @param userId User ID
+     * @return Total amount spent as BigDecimal
+     */
+    public BigDecimal getTotalSpentByUser(Integer userId) {
+        try {
+            String jpql = "SELECT SUM(p.amount) FROM Payment p " +
+                         "WHERE p.userId = :userId " +
+                         "AND p.status = :status";
+            
+            TypedQuery<BigDecimal> query = em.createQuery(jpql, BigDecimal.class);
+            query.setParameter("userId", userId);
+            query.setParameter("status", PaymentStatus.PAID);
+            
+            BigDecimal result = query.getSingleResult();
+            return result != null ? result : BigDecimal.ZERO;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error getting total spent by user: " + userId, e);
+            return BigDecimal.ZERO;
+        }
+    }
+    
 }

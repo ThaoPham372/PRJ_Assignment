@@ -2,17 +2,15 @@ package com.gym.model.shop;
 
 /**
  * Order status enumeration
+ * Only 3 statuses:
+ * - PENDING: Chỉ đặt chưa thanh toán (chờ thanh toán)
+ * - COMPLETED: Đã thanh toán
+ * - CANCELLED: Đã bị hủy
  */
 public enum OrderStatus {
-    PENDING("PENDING", "Chờ xử lý"),
-    CONFIRMED("CONFIRMED", "Đã xác nhận"),
-    PREPARING("PREPARING", "Đang chuẩn bị"),
-    READY("READY", "Sẵn sàng"),
-    PROCESSING("processing", "Đang xử lý"),  // Keep for backward compatibility
-    SHIPPED("shipped", "Đã giao hàng"),  // Keep for backward compatibility
-    COMPLETED("COMPLETED", "Hoàn thành"),
-    DELIVERED("delivered", "Đã nhận hàng"),  // Keep for backward compatibility
-    CANCELLED("CANCELLED", "Đã hủy");
+    PENDING("PENDING", "Chờ thanh toán"),
+    COMPLETED("COMPLETED", "Đã thanh toán"),
+    CANCELLED("CANCELLED", "Đã bị hủy");
 
     private final String code;
     private final String displayName;

@@ -490,13 +490,20 @@ public class UserDAO extends GenericDAO<User> {
             
             if (role != null && !role.trim().isEmpty() && !role.equalsIgnoreCase("all")) {
                 String normalizedRole = role.toUpperCase();
-                // Handle role normalization: STUDENT -> USER, PT -> TRAINER
-                if ("STUDENT".equals(normalizedRole)) {
-                    normalizedRole = "USER";
+                // Handle role normalization: STUDENT -> MEMBER (legacy), MEMBER -> MEMBER, PT -> TRAINER
+                if ("STUDENT".equals(normalizedRole) || "USER".equals(normalizedRole)) {
+                    // Legacy roles: map to MEMBER
+                    normalizedRole = "MEMBER";
+                    jpql.append(" AND u.role = :role");
+                } else if ("MEMBER".equals(normalizedRole)) {
+                    // Search for MEMBER role only
+                    jpql.append(" AND u.role = :role");
                 } else if ("PT".equals(normalizedRole)) {
                     normalizedRole = "TRAINER";
+                    jpql.append(" AND u.role = :role");
+                } else {
+                    jpql.append(" AND u.role = :role");
                 }
-                jpql.append(" AND u.role = :role");
             }
             
             jpql.append(" ORDER BY u.createdDate DESC");
@@ -509,9 +516,9 @@ public class UserDAO extends GenericDAO<User> {
             
             if (role != null && !role.trim().isEmpty() && !role.equalsIgnoreCase("all")) {
                 String normalizedRole = role.toUpperCase();
-                // Handle role normalization: STUDENT -> USER, PT -> TRAINER
-                if ("STUDENT".equals(normalizedRole)) {
-                    normalizedRole = "USER";
+                // Normalize legacy roles to MEMBER
+                if ("STUDENT".equals(normalizedRole) || "USER".equals(normalizedRole)) {
+                    normalizedRole = "MEMBER";
                 } else if ("PT".equals(normalizedRole)) {
                     normalizedRole = "TRAINER";
                 }
@@ -547,13 +554,20 @@ public class UserDAO extends GenericDAO<User> {
             
             if (role != null && !role.trim().isEmpty() && !role.equalsIgnoreCase("all")) {
                 String normalizedRole = role.toUpperCase();
-                // Handle role normalization: STUDENT -> USER, PT -> TRAINER
-                if ("STUDENT".equals(normalizedRole)) {
-                    normalizedRole = "USER";
+                // Handle role normalization: STUDENT -> MEMBER (legacy), MEMBER -> MEMBER, PT -> TRAINER
+                if ("STUDENT".equals(normalizedRole) || "USER".equals(normalizedRole)) {
+                    // Legacy roles: map to MEMBER
+                    normalizedRole = "MEMBER";
+                    jpql.append(" AND u.role = :role");
+                } else if ("MEMBER".equals(normalizedRole)) {
+                    // Search for MEMBER role only
+                    jpql.append(" AND u.role = :role");
                 } else if ("PT".equals(normalizedRole)) {
                     normalizedRole = "TRAINER";
+                    jpql.append(" AND u.role = :role");
+                } else {
+                    jpql.append(" AND u.role = :role");
                 }
-                jpql.append(" AND u.role = :role");
             }
             
             TypedQuery<Long> query = em.createQuery(jpql.toString(), Long.class);
@@ -564,9 +578,9 @@ public class UserDAO extends GenericDAO<User> {
             
             if (role != null && !role.trim().isEmpty() && !role.equalsIgnoreCase("all")) {
                 String normalizedRole = role.toUpperCase();
-                // Handle role normalization: STUDENT -> USER, PT -> TRAINER
-                if ("STUDENT".equals(normalizedRole)) {
-                    normalizedRole = "USER";
+                // Normalize legacy roles to MEMBER
+                if ("STUDENT".equals(normalizedRole) || "USER".equals(normalizedRole)) {
+                    normalizedRole = "MEMBER";
                 } else if ("PT".equals(normalizedRole)) {
                     normalizedRole = "TRAINER";
                 }

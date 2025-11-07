@@ -769,13 +769,14 @@
             </div>
         </div>
         <div class="stat-item">
-            <div class="stat-label">Lượng nước đã uống</div>
+            <div class="stat-label">Tổng tiền đã chi tiêu</div>
             <div class="stat-value">
                 <c:choose>
-                    <c:when test="${not empty dashboardData.stats && not empty dashboardData.stats.waterIntake}">
-                        ${dashboardData.stats.waterIntake}
+                    <c:when test="${not empty dashboardData.stats && not empty dashboardData.stats.totalSpent && dashboardData.stats.totalSpent > 0}">
+                        <fmt:formatNumber value="${dashboardData.stats.totalSpent}" pattern="#,##0" type="number"/>
+                        <span style="font-size: 0.7rem; margin-left: 3px;">₫</span>
                     </c:when>
-                    <c:otherwise>0L</c:otherwise>
+                    <c:otherwise>0 ₫</c:otherwise>
                 </c:choose>
             </div>
         </div>
@@ -980,75 +981,6 @@
     </c:if>
 
 
-    <div class="row">
-        <!-- Recent Activities -->
-        <div class="col-md-6">
-            <div class="stat-card">
-                <h5 class="dashboard-title mb-4">
-                    <i class="fas fa-history me-2"></i>Hoạt động gần đây
-                </h5>
-                <c:choose>
-                    <c:when test="${not empty dashboardData.recentActivities}">
-                        <c:forEach var="activity" items="${dashboardData.recentActivities}">
-                            <div class="activity-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h6 class="mb-1">
-                                            <i class="fas fa-circle me-1" style="font-size: 8px; color: var(--accent);"></i>
-                                            <c:out value="${activity.description}"/>
-                                        </h6>
-                                        <small class="text-muted">${activity.type}</small>
-                                    </div>
-                                    <small class="text-muted">${activity.time}</small>
-                                </div>
-                            </div>
-                        </c:forEach>
-                    </c:when>
-                    <c:otherwise>
-                        <div class="text-center py-4 text-muted">
-                            <i class="fas fa-history fa-3x mb-3 opacity-25"></i>
-                            <p class="mb-0">Chưa có hoạt động nào</p>
-                        </div>
-                    </c:otherwise>
-                </c:choose>
-            </div>
-        </div>
-
-        <!-- Upcoming Sessions -->
-        <div class="col-md-6">
-            <div class="stat-card">
-                <h5 class="dashboard-title mb-4">
-                    <i class="fas fa-calendar-alt me-2"></i>Buổi tập sắp tới
-                </h5>
-                <c:choose>
-                    <c:when test="${not empty dashboardData.upcomingSessions}">
-                        <c:forEach var="session" items="${dashboardData.upcomingSessions}">
-                            <div class="session-item">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="mb-1">${session.type}</h6>
-                                        <small class="text-muted">
-                                            <i class="fas fa-user me-1"></i>${session.coach}
-                                        </small>
-                                    </div>
-                                    <div class="text-end">
-                                        <div class="fw-bold">${session.date}</div>
-                                        <small class="text-muted">${session.time}</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </c:forEach>
-                    </c:when>
-                    <c:otherwise>
-                        <div class="text-center py-4 text-muted">
-                            <i class="fas fa-calendar-times fa-3x mb-3 opacity-25"></i>
-                            <p class="mb-0">Chưa có buổi tập sắp tới</p>
-                        </div>
-                    </c:otherwise>
-                </c:choose>
-            </div>
-        </div>
-    </div>
 </div>
 
 <script>

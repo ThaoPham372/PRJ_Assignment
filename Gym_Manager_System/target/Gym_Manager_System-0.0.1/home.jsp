@@ -573,7 +573,7 @@ file="/views/common/header.jsp" %>
     </div>
     <div
       class="service-box"
-      onclick="window.location.href='${pageContext.request.contextPath}/views/Service_page/product.jsp'"
+      onclick="window.location.href='${pageContext.request.contextPath}/products'"
       style="cursor: pointer"
     >
       <img
