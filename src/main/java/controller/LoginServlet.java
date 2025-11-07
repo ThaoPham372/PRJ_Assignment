@@ -2,7 +2,6 @@ package controller;
 
 import java.io.IOException;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -43,7 +42,7 @@ public class LoginServlet extends HttpServlet {
             HttpSession session = request.getSession(true);
 
             session.setAttribute("user", result.getUser());
-            session.setAttribute("userId", result.getUser().getUserId());
+            session.setAttribute("userId", result.getUser().getId());
             session.setAttribute("userRoles", result.getRole());
             session.setAttribute("isLoggedIn", true);
 

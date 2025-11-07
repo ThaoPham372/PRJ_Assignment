@@ -16,7 +16,7 @@ public class TrainerDAO {
 
     public int save(Trainer trainer) {
         genericDAO.save(trainer);
-        return trainer.getUserId();
+        return trainer.getId();
     }
 
     public List<Trainer> findAll() {
@@ -62,7 +62,7 @@ public class TrainerDAO {
         Trainer trainer = genericDAO.findByField("name", name);
         System.out.println("Result: " + trainer);
         System.out.println("-------------------------------");
-        return trainer != null ? trainer.getUserId() : -1;
+        return trainer != null ? trainer.getId() : -1;
     }
 
     public int existsByEmail(String email) {
@@ -70,7 +70,7 @@ public class TrainerDAO {
         Trainer trainer = genericDAO.findByField("email", email);
         System.out.println("Result: " + trainer);
         System.out.println("-------------------------------");
-        return trainer != null ? trainer.getUserId(): -1;
+        return trainer != null ? trainer.getId(): -1;
     }
 
     public Trainer findByNameOrEmail(String nameOrEmail) {
@@ -90,44 +90,6 @@ public class TrainerDAO {
         System.out.println("Result id: " + id);
         System.out.println("---------------------------");
         return id;
-    }
-
-    public int incrementFailedLoginAttempts(Trainer trainer) {
-        System.out.println(">>Trainer: Increment Failed Login Attempts");
-        trainer.setFailedLoginAttempts(trainer.getFailedLoginAttempts() + 1);
-        genericDAO.update(trainer);
-        System.out.println("New Failed Attempts: " + trainer.getFailedLoginAttempts());
-        System.out.println("---------------------------");
-        return trainer.getFailedLoginAttempts();
-    }
-
-    public int resetFailedLoginAttempts(Trainer trainer) {
-        System.out.println(">>Trainer: Reset Failed Login Attempts");
-        trainer.setFailedLoginAttempts(0);
-        genericDAO.update(trainer);
-        System.out.println("Failed Attempts reset to 0");
-        System.out.println("---------------------------");
-        return 0;
-    }
-
-    public int resetLockedUntil(Trainer trainer) {
-        System.out.println(">>Trainer: Reset Locked Until");
-        trainer.setLockedUntil(null);
-        genericDAO.update(trainer);
-        System.out.println("LockedUntil reset to null");
-        System.out.println("---------------------------");
-        return 0;
-    }
-
-    public int lockAccount(Trainer trainer, int minutes) {
-        System.out.println(">>Trainer: Lock Account for " + minutes + " minutes");
-        java.util.Calendar cal = java.util.Calendar.getInstance();
-        cal.add(java.util.Calendar.MINUTE, minutes);
-        trainer.setLockedUntil(cal.getTime());
-        genericDAO.update(trainer);
-        System.out.println("Account locked until: " + trainer.getLockedUntil());
-        System.out.println("---------------------------");
-        return minutes;
     }
 
     public void updateLastLogin(int trainerId) {

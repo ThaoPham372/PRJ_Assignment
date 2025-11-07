@@ -21,7 +21,7 @@ public class MemberService {
         return memberDAO.findAll();
     }
     
-    public Member getMemberById(int id) {
+    public Member getById(int id) {
         return memberDAO.findById(id);
     }
     

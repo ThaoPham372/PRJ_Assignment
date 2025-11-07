@@ -1,6 +1,7 @@
 service\RegistrationService$RegisterResult.class
 service\UserService.class
 dao\AdminDAO.class
+dao\PackageDAO.class
 model\Member.class
 service\LoginService$LoginResult.class
 service\PasswordService.class
@@ -15,6 +16,7 @@ service\MemberService.class
 dao\GenericDAO.class
 model\User.class
 controller\LoginServlet.class
+model\Package.class
 controller\AccountManagementServlet.class
 service\RegistrationService.class
 Utils\DateUtils.class
@@ -30,6 +32,7 @@ model\Trainer.class
 controller\AdminDashboardServlet.class
 service\MembershipService.class
 controller\AdminProfileServlet.class
+service\PackageService.class
 service\TrainerService.class
 controller\RegisterServlet.class
 model\Admin.class

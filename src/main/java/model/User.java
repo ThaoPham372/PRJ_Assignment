@@ -1,8 +1,6 @@
 
 package model;
 
-import java.io.Serializable;
-import java.util.Date;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,9 +9,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import java.io.Serializable;
+import java.util.Date;
 
 /*
     Note: 
@@ -28,71 +30,64 @@ public class User implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
     @Column(name = "user_id")
-    private Integer userId;
-    @Column(name = "DTYPE")
-    private String dtype;
+    private Integer id;
+    
     @Column(name = "address")
     private String address;
+    
+    @Column(name = "gender")
+    private String gender;
+    
     @Column(name = "createdDate")
-    @Temporal(TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.DATE)
     private Date createdDate;
+    
     @Column(name = "dob")
     @Temporal(TemporalType.DATE)
     private Date dob;
+    
     @Column(name = "email")
     private String email;
-    @Column(name = "failedLoginAttempts")
-    private Integer failedLoginAttempts;
+    
     @Column(name = "lastLogin")
-    @Temporal(TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.DATE)
     private Date lastLogin;
+    
     @Column(name = "lastUpdate")
-    @Temporal(TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.DATE)
     private Date lastUpdate;
-    @Column(name = "lockedUntil")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date lockedUntil;
+    
     @Column(name = "name")
     private String name;
+    
     @Column(name = "password")
     private String password;
+    
     @Column(name = "phone")
     private String phone;
+    
     @Column(name = "role")
     private String role;
+    
     @Column(name = "status")
     private String status;
+    
     @Column(name = "username")
     private String username;
-    @Column(name = "avatar_url")
-    private String avatarUrl;
 
     public User() {
-        this.status = "ACTIVE";
-        this.name = "undefined";
-        this.role = "User";
-        this.username = "user" + System.currentTimeMillis();
-        this.password = "password";
     }
 
     public User(Integer userId) {
-        this.userId = userId;
+        this.id = userId;
     }
 
-    public Integer getUserId() {
-        return userId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-
-    public String getDtype() {
-        return dtype;
-    }
-
-    public void setDtype(String dtype) {
-        this.dtype = dtype;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getAddress() {
@@ -101,6 +96,14 @@ public class User implements Serializable {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 
     public Date getCreatedDate() {
@@ -127,14 +130,6 @@ public class User implements Serializable {
         this.email = email;
     }
 
-    public Integer getFailedLoginAttempts() {
-        return failedLoginAttempts;
-    }
-
-    public void setFailedLoginAttempts(Integer failedLoginAttempts) {
-        this.failedLoginAttempts = failedLoginAttempts;
-    }
-
     public Date getLastLogin() {
         return lastLogin;
     }
@@ -149,14 +144,6 @@ public class User implements Serializable {
 
     public void setLastUpdate(Date lastUpdate) {
         this.lastUpdate = lastUpdate;
-    }
-
-    public Date getLockedUntil() {
-        return lockedUntil;
-    }
-
-    public void setLockedUntil(Date lockedUntil) {
-        this.lockedUntil = lockedUntil;
     }
 
     public String getName() {
@@ -207,17 +194,8 @@ public class User implements Serializable {
         this.username = username;
     }
 
-    public String getAvatarUrl() {
-        return avatarUrl;
-    }
-
-    public void setAvatarUrl(String avatarUrl) {
-        this.avatarUrl = avatarUrl;
-    }
-
     @Override
     public String toString() {
-        return "User{" + "userId=" + userId + ", dtype=" + dtype + ", email=" + email + ", name=" + name + ", password="
-                + password + ", status=" + status + ", username=" + username + '}';
+        return "User{" + "userId=" + id + ", address=" + address + ", email=" + email + ", name=" + name + ", role=" + role + ", username=" + username + '}';
     }
 }

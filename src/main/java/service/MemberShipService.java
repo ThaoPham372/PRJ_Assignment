@@ -9,7 +9,6 @@ import java.util.List;
     Note: 
  */
 public class MembershipService {
-
     private final MembershipDAO membershipDAO;
 
     public MembershipService() {

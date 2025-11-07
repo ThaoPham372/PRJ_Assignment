@@ -86,7 +86,7 @@ public class AuthServlet extends HttpServlet {
             String role = result.getRole();
             
             System.out.println("[AuthServlet] Login successful!");
-            System.out.println("[AuthServlet] User ID: " + (user != null ? user.getUserId() : "NULL"));
+            System.out.println("[AuthServlet] User ID: " + (user != null ? user.getId() : "NULL"));
             System.out.println("[AuthServlet] Username: " + (user != null ? user.getUsername() : "NULL"));
             System.out.println("[AuthServlet] Roles: " + (role != null ? role.toString() : "NULL"));
             

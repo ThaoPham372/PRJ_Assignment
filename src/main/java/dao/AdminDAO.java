@@ -16,7 +16,7 @@ public class AdminDAO {
 
     public int save(Admin admin) {
         genericDAO.save(admin);
-        return admin.getUserId();
+        return admin.getId();
     }
 
     public List<Admin> findAll() {
@@ -62,7 +62,7 @@ public class AdminDAO {
         Admin admin = genericDAO.findByField("name", name);
         System.out.println("Result: " + admin);
         System.out.println("-------------------------------");
-        return admin != null ? admin.getUserId() : -1;
+        return admin != null ? admin.getId() : -1;
     }
 
     public int existsByEmail(String email) {
@@ -70,7 +70,7 @@ public class AdminDAO {
         Admin admin = genericDAO.findByField("email", email);
         System.out.println("Result: " + admin);
         System.out.println("-------------------------------");
-        return admin != null ? admin.getUserId() : -1;
+        return admin != null ? admin.getId() : -1;
     }
 
     public Admin findByNameOrEmail(String nameOrEmail) {
@@ -90,44 +90,6 @@ public class AdminDAO {
         System.out.println("Result id: " + id);
         System.out.println("---------------------------");
         return id;
-    }
-
-    public int incrementFailedLoginAttempts(Admin admin) {
-        System.out.println(">>Admin: Increment Failed Login Attempts");
-        admin.setFailedLoginAttempts(admin.getFailedLoginAttempts() + 1);
-        genericDAO.update(admin);
-        System.out.println("New Failed Attempts: " + admin.getFailedLoginAttempts());
-        System.out.println("---------------------------");
-        return admin.getFailedLoginAttempts();
-    }
-
-    public int resetFailedLoginAttempts(Admin admin) {
-        System.out.println(">>Admin: Reset Failed Login Attempts");
-        admin.setFailedLoginAttempts(0);
-        genericDAO.update(admin);
-        System.out.println("Failed Attempts reset to 0");
-        System.out.println("---------------------------");
-        return 0;
-    }
-
-    public int resetLockedUntil(Admin admin) {
-        System.out.println(">>Admin: Reset Locked Until");
-        admin.setLockedUntil(null);
-        genericDAO.update(admin);
-        System.out.println("LockedUntil reset to null");
-        System.out.println("---------------------------");
-        return 0;
-    }
-
-    public int lockAccount(Admin admin, int minutes) {
-        System.out.println(">>Admin: Lock Account for " + minutes + " minutes");
-        java.util.Calendar cal = java.util.Calendar.getInstance();
-        cal.add(java.util.Calendar.MINUTE, minutes);
-        admin.setLockedUntil(cal.getTime());
-        genericDAO.update(admin);
-        System.out.println("Account locked until: " + admin.getLockedUntil());
-        System.out.println("---------------------------");
-        return minutes;
     }
 
     public void updateLastLogin(int adminId) {

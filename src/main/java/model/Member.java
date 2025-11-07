@@ -1,42 +1,54 @@
-
 package model;
 
-import java.io.Serializable;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.io.Serializable;
+import java.util.Collection;
 
-/*
-    Note: 
- */
 @Entity
 @Table(name = "members")
-@PrimaryKeyJoinColumn(name = "user_id")
-public class Member extends User implements Serializable {
+public class Member  extends User implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+     
+    // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "weight")
     private Float weight;
+    
     @Column(name = "height")
     private Float height;
+    
     @Column(name = "bmi")
     private Float bmi;
+    
     @Column(name = "emergency_contact_name")
     private String emergencyContactName;
+    
     @Column(name = "emergency_contact_phone")
     private String emergencyContactPhone;
+    
     @Column(name = "emergency_contact_relation")
     private String emergencyContactRelation;
+    
     @Column(name = "emergency_contact_address")
     private String emergencyContactAddress;
+    
+    @Column(name = "goal")
+    private String goal;
+    
+    @Lob
+    @Column(name = "pt_note")
+    private String ptNote;
+    
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "member")
+    private Collection<Membership> membershipCollection;
+
 
     public Member() {
-    }
-
-    public Member(Integer userId) {
-        super(userId);
     }
 
     public Float getWeight() {
@@ -95,29 +107,32 @@ public class Member extends User implements Serializable {
         this.emergencyContactAddress = emergencyContactAddress;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (getUserId() != null ? getUserId().hashCode() : 0);
-        return hash;
+    public String getGoal() {
+        return goal;
     }
 
-    @Override
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Member)) {
-            return false;
-        }
-        Member other = (Member) object;
-        if ((getUserId() == null && getUserId() != null) || (getUserId() != null && !this.getUserId().equals(getUserId()))) {
-            return false;
-        }
-        return true;
+    public void setGoal(String goal) {
+        this.goal = goal;
+    }
+
+    public String getPtNote() {
+        return ptNote;
+    }
+
+    public void setPtNote(String ptNote) {
+        this.ptNote = ptNote;
+    }
+
+    public Collection<Membership> getMembershipCollection() {
+        return membershipCollection;
+    }
+
+    public void setMembershipCollection(Collection<Membership> membershipCollection) {
+        this.membershipCollection = membershipCollection;
     }
 
     @Override
     public String toString() {
-        return "model.Member[ userid=" + getUserId() + ", height="+ height +"]";
+        return "Member{" + "weight=" + weight + ", height=" + height + ", bmi=" + bmi + ", goal=" + goal + '}';
     }
-
 }

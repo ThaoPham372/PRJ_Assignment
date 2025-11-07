@@ -17,7 +17,7 @@ public class UserDAO {
 
     public int save(User user) {
         genericDAO.save(user);
-        return user.getUserId();
+        return user.getId();
     }
 
     public List<User> findAll() {
@@ -74,12 +74,12 @@ public class UserDAO {
         }
 
         System.out.println("-------------------------------");
-        return user != null ? user.getUserId() : -1;
+        return user != null ? user.getId() : -1;
     }
 
     public int existsByEmail(String email) {
         User user = genericDAO.findByField("email", email);
-        return user != null ? user.getUserId() : -1;
+        return user != null ? user.getId() : -1;
     }
 
     public User findByUsernameOrEmail(String usernameOrEmail) {
@@ -98,32 +98,6 @@ public class UserDAO {
     public int update(User user) {
         int id = genericDAO.update(user);
         return id;
-    }
-
-    public int incrementFailedLoginAttempts(User user) {
-        user.setFailedLoginAttempts(user.getFailedLoginAttempts() + 1);
-        genericDAO.update(user);
-        return user.getFailedLoginAttempts();
-    }
-
-    public int resetFailedLoginAttempts(User user) {
-        user.setFailedLoginAttempts(0);
-        genericDAO.update(user);
-        return 0;
-    }
-
-    public int resetLockedUntil(User user) {
-        user.setLockedUntil(null);
-        genericDAO.update(user);
-        return 0;
-    }
-
-    public int lockAccount(User user, int minutes) {
-        java.util.Calendar cal = java.util.Calendar.getInstance();
-        cal.add(java.util.Calendar.MINUTE, minutes);
-        user.setLockedUntil(cal.getTime());
-        genericDAO.update(user);
-        return minutes;
     }
 
     public void updateLastLogin(int userId) {

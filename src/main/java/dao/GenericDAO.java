@@ -25,7 +25,7 @@ public class GenericDAO<T> extends BaseDAO {
             commitTransaction();
             
             if(entity instanceof User)
-                ((User) entity).getUserId();
+                ((User) entity).getId();
         } catch (Exception e) {
             rollbackTransaction();
             throw e;
@@ -71,7 +71,7 @@ public class GenericDAO<T> extends BaseDAO {
             return -1;
         }
         if(entity instanceof User)
-            return ((User) entity).getUserId();
+            return ((User) entity).getId();
         return -1;
     }   
     
@@ -87,7 +87,7 @@ public class GenericDAO<T> extends BaseDAO {
             return -1;
         }
         if(entity instanceof User) 
-            return ((User)entity).getUserId();
+            return ((User)entity).getId();
         return -1;
     }
 }

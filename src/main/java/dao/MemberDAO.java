@@ -16,7 +16,7 @@ public class MemberDAO {
 
     public int save(Member member) {
         genericDAO.save(member);
-        return member.getUserId();
+        return member.getId();
     }
 
     public List<Member> findAll() {
@@ -38,12 +38,12 @@ public class MemberDAO {
 
     public int existsByName(String name) {
         Member member = genericDAO.findByField("name", name);
-        return member != null ? member.getUserId() : -1;
+        return member != null ? member.getId() : -1;
     }
 
     public int existsByEmail(String email) {
         Member member = genericDAO.findByField("email", email);
-        return member != null ? member.getUserId() : -1;
+        return member != null ? member.getId() : -1;
     }
 
     public Member findByNameOrEmail(String nameOrEmail) {
@@ -56,37 +56,6 @@ public class MemberDAO {
 
     public int update(Member member) {
         return genericDAO.update(member);
-    }
-
-    public int incrementFailedLoginAttempts(Member member) {
-        member.setFailedLoginAttempts(member.getFailedLoginAttempts() + 1);
-        return genericDAO.update(member);
-    }
-
-    public int resetFailedLoginAttempts(Member member) {
-        member.setFailedLoginAttempts(0);
-        return genericDAO.update(member);
-    }
-
-    public int resetLockedUntil(Member member) {
-        member.setLockedUntil(null);
-        return genericDAO.update(member);
-    }
-
-    public int lockAccount(Member member, int minutes) {
-        System.out.println(">>Member: Lock Account for " + minutes + " minutes");
-        java.util.Calendar cal = java.util.Calendar.getInstance();
-        cal.add(java.util.Calendar.MINUTE, minutes);
-        member.setLockedUntil(cal.getTime());
-        return genericDAO.update(member);
-    }
-
-    public void updateLastLogin(int memberId) {
-        Member member = genericDAO.findById(memberId);
-        if (member != null) {
-            member.setLastLogin(new java.util.Date());
-            genericDAO.update(member);
-        }
     }
 
     public int delete(Member member) {

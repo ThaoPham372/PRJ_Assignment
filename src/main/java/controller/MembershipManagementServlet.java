@@ -12,8 +12,10 @@ import java.util.Date;
 import java.util.List;
 import model.Member;
 import model.Membership;
+import model.Package;
 import service.MemberService;
 import service.MembershipService;
+import service.PackageService;
 
 /*
     Note: 
@@ -33,9 +35,8 @@ public class MembershipManagementServlet extends HttpServlet {
             System.out.println("FILTER CALLED\n\n\n");
             String keyword = req.getParameter("keyword");
             String status = req.getParameter("status");
-            String packageType = req.getParameter("packageType");
 
-            memberships = filterMemberships(memberships, keyword, status, packageType);
+            memberships = filterMemberships(memberships, keyword, status);
         }
 
         req.setAttribute("memberships", memberships);
@@ -109,7 +110,6 @@ public class MembershipManagementServlet extends HttpServlet {
                 throw new IllegalArgumentException("Định dạng ngày không hợp lệ. Phải là yyyy-MM-dd.", e);
             }
 
-            createMembership(username, phone, packageId, startDate);
             success = true;
         } catch (IllegalArgumentException e) {
             System.err.println("⚠️ Lỗi dữ liệu đầu vào: " + e.getMessage());
@@ -125,20 +125,18 @@ public class MembershipManagementServlet extends HttpServlet {
 
     }
 
-    private void createMembership(String username, String phone, int packageId, Date startDate) {
+    private void createMembership(int memberId, int packageId) {
         MemberService memberService = new MemberService();
-        Member member = new Member();
-        member.setUsername(username);
-        member.setName(username);
-        member.setEmail(username + "@gmail.com");
-        member.setPhone(phone);
-        int memberId = memberService.add(member);
+        PackageService packageService = new PackageService();
+        
+        Member member = memberService.getById(memberId);
+        Package packageO = packageService.getById(packageId);
 
         if (memberId > -1) {
             Membership membership = new Membership();
-            membership.setPackageId(packageId);
-            membership.setUserId(member.getUserId());
-            membership.setStartDate(startDate);
+            membership.setMember(member);
+            membership.setPackageO(packageO);
+            membership.setStartDate(new Date());
 
             Date now = new Date();
             membership.setEndDate(new Date(now.getTime() + 30L * 24 * 60 * 60 * 1000)); // + 30 ngay
@@ -151,30 +149,13 @@ public class MembershipManagementServlet extends HttpServlet {
     private List<Membership> getMembership() {
         MembershipService membershipService = new MembershipService();
         List<Membership> memberships = membershipService.getAll();
-        generateMembershipInfo(memberships);
         return memberships;
     }
 
-    private void generateMembershipInfo(List<Membership> memberships) {
-        MemberService memberService = new MemberService();
-        for (Membership m : memberships) {
-            Member mem = memberService.getMemberById(m.getUserId());
-            if (mem != null) {
-                m.setName(mem.getName());
-                m.setEmail(mem.getEmail());
-                m.setPhone(mem.getPhone());
-                m.setPackageType("Standard");
-            }
-        }
-    }
-
-    private List<Membership> filterMemberships(List<Membership> memberships, String keyword, String status,
-            String packageType) throws ServletException, IOException {
+    private List<Membership> filterMemberships(List<Membership> memberships, String keyword, String status) throws ServletException, IOException {
 
         memberships = filterByKeyword(memberships, keyword);
-        memberships = filterByStatusAndPackageType(memberships, status, packageType);
-
-        generateMembershipInfo(memberships);
+        memberships = filterByStatus(memberships, status);
 
         return memberships;
     }
@@ -183,7 +164,7 @@ public class MembershipManagementServlet extends HttpServlet {
         if (keyword != null && !keyword.trim().isEmpty()) {
             memberships.removeIf(m -> {
                 MemberService memberService = new MemberService();
-                Member mem = memberService.getMemberById(m.getUserId());
+                Member mem = m.getMember();
                 return mem == null || !(mem.getName().toLowerCase().contains(keyword)
                         || mem.getEmail().toLowerCase().contains(keyword));
             });
@@ -191,8 +172,7 @@ public class MembershipManagementServlet extends HttpServlet {
         return memberships;
     }
 
-    private List<Membership> filterByStatusAndPackageType(List<Membership> memberships, String status,
-            String packageType) {
+    private List<Membership> filterByStatus(List<Membership> memberships, String status) {
         memberships.removeIf(m -> {
             // Filter by status
             boolean statusMatch = true;
@@ -211,15 +191,7 @@ public class MembershipManagementServlet extends HttpServlet {
                     }
                 }
             }
-
-            // Filter by packageType
-            boolean packageMatch = true;
-            if (!"all".equals(packageType)) {
-                // Assuming packageType is stored in Membership as a String for simplicity
-                packageMatch = packageType.equalsIgnoreCase(m.getPackageType());
-            }
-
-            return !(statusMatch && packageMatch);
+            return !statusMatch;
         });
         return memberships;
     }

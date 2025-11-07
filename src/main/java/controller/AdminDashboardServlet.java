@@ -25,8 +25,7 @@ public class AdminDashboardServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        System.out.println("\n\nAdminDashboardServlet DO GET CALLED");
-        System.out.println("> Request URL: " + req.getRequestURL().toString());
+
         String reqURI = req.getRequestURI();
         String contextPath = req.getContextPath();
         String path = reqURI.substring(contextPath.length());

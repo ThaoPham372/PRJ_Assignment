@@ -63,22 +63,11 @@ public class FormUtils {
             // admin.setEmailVerified(request.getParameter("emailVerified").equals("true"));
         }
 
-        if (request.getParameter("failedLoginAttempts") != null) {
-            try {
-                obj.setFailedLoginAttempts(Integer.valueOf(request.getParameter("failedLoginAttempts")));
-            } catch (NumberFormatException e) {
-                obj.setFailedLoginAttempts(0);
-            }
-        }
-
         if (request.getParameter("createdDate") != null) {
             obj.setCreatedDate(DateUtils.parseToDate(request.getParameter("createdDate")));
         }
         if (request.getParameter("lastLogin") != null) {
             obj.setLastLogin(DateUtils.parseToDate(request.getParameter("lastLogin")));
-        }
-        if (request.getParameter("lockedUntil") != null) {
-            obj.setLockedUntil(DateUtils.parseToDate(request.getParameter("lockedUntil")));
         }
     }
 

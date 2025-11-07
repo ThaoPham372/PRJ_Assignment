@@ -11,7 +11,7 @@ public abstract class BaseDAO {
 
     static {
         try {
-            emf = Persistence.createEntityManagerFactory("gym-pu");
+            emf = Persistence.createEntityManagerFactory("gymPU");
             System.out.println("EMF created successfully!");
         } catch (Exception e) {
             System.out.println("======================================================");

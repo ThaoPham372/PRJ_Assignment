@@ -24,7 +24,7 @@ public class UserService {
     }
 
     private void sortById(List<User> users) {
-        users.sort((u1, u2) -> Integer.compare(u1.getUserId(), u2.getUserId()));
+        users.sort((u1, u2) -> Integer.compare(u1.getId(), u2.getId()));
     }
 
     public User getUserById(int id) {

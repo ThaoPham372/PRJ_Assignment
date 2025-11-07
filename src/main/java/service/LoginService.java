@@ -1,7 +1,6 @@
 package service;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import dao.UserDAO;
@@ -26,15 +25,8 @@ public class LoginService {
 
         try {
             User user = userDAO.findByUsernameOrEmail(username.trim());
-            String saltOrUsername = user.getUsername();
-            System.out.println("findByUsernameOrEmail -> USER: " + user);
-            System.out.println("isAvailableAccount(user, errors) = " + isAvailableAccount(user, errors));
             if (!isAvailableAccount(user, errors)) {
                 return new LoginResult(false, null, errors);
-            }
-
-            if (!passwordService.verifyPasswordWithSalt(password, user.getPassword(), saltOrUsername)) {
-                return loginFailed(user, errors);
             }
 
             return loginSuccessful(user);
@@ -69,31 +61,11 @@ public class LoginService {
             return false;
         }
 
-        Date lockedUntil = user.getLockedUntil();
-        if (lockedUntil != null && lockedUntil.getTime() > System.currentTimeMillis()) {
-            errors.add("Tài khoản đã bị khóa do đăng nhập sai quá nhiều lần. Vui lòng thử lại sau.");
-            return false;
-        }
         return true;
     }
 
-    private LoginResult loginFailed(User user, List<String> errors) {
-        userDAO.incrementFailedLoginAttempts(user);
-
-        Integer failedAttempts = user.getFailedLoginAttempts();
-        if (failedAttempts != null && failedAttempts + 1 >= 5) {
-            userDAO.lockAccount(user, 30); // Lock for 30 minutes
-            errors.add("Tài khoản đã bị khóa do đăng nhập sai quá nhiều lần. Vui lòng thử lại sau 30 phút.");
-        } else {
-            errors.add("Tên đăng nhập hoặc mật khẩu không đúng");
-        }
-
-        return new LoginResult(false, null, errors);
-    }
-
     private LoginResult loginSuccessful(User user) {
-        userDAO.resetFailedLoginAttempts(user);
-        userDAO.updateLastLogin(user.getUserId());
+        userDAO.updateLastLogin(user.getId());
 
         String role = user.getRole();
 

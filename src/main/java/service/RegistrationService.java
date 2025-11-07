@@ -120,7 +120,7 @@ public class RegistrationService {
         user.setRole(request.getRole());
         user.setPassword(passwordHash);
         userDAO.save(user);
-        int userId = user.getUserId();
+        int userId = user.getId();
         
         return userId;
     }

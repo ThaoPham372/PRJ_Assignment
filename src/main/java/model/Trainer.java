@@ -1,89 +1,80 @@
 
 package model;
 
-import java.io.Serializable;
-import java.util.Date;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
+import java.io.Serializable;
 
-/*
-    Note: 
- */
 @Entity
 @Table(name = "trainer")
-@PrimaryKeyJoinColumn(name = "user_id")
 public class Trainer extends User implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-    @Transient
-    private Date hiredDate;
     
-    @Transient
-    private Double salary;
     
-    @Column(name = "average_rating")
-    private Double star;
+    @Column(name = "specialization")
+    private String specialization;
+    
+    @Column(name = "years_of_experience")
+    private Integer yearsOfExperience;
+    
+    @Column(name = "certification_level")
+    private String certificationLevel;
+    
+    @Column(name = "salary")
+    private Float salary;
+    
+    @Column(name = "workAt")
+    private String workAt;
+   
 
     public Trainer() {
     }
 
-    public Trainer(Integer userId) {
-        super(userId);
+
+    public String getSpecialization() {
+        return specialization;
     }
 
-    public Date getHiredDate() {
-        return hiredDate;
+    public void setSpecialization(String specialization) {
+        this.specialization = specialization;
     }
 
-    public void setHiredDate(Date hiredDate) {
-        this.hiredDate = hiredDate;
+    public Integer getYearsOfExperience() {
+        return yearsOfExperience;
     }
 
-    public Double getSalary() {
+    public void setYearsOfExperience(Integer yearsOfExperience) {
+        this.yearsOfExperience = yearsOfExperience;
+    }
+
+    public String getCertificationLevel() {
+        return certificationLevel;
+    }
+
+    public void setCertificationLevel(String certificationLevel) {
+        this.certificationLevel = certificationLevel;
+    }
+
+    public Float getSalary() {
         return salary;
     }
 
-    public void setSalary(Double salary) {
+    public void setSalary(Float salary) {
         this.salary = salary;
     }
 
-    public Double getStar() {
-        return star;
+    public String getWorkAt() {
+        return workAt;
     }
 
-    public void setStar(Double star) {
-        this.star = star;
+    public void setWorkAt(String workAt) {
+        this.workAt = workAt;
     }
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (this.getUserId() != null ? this.getUserId().hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Trainer)) {
-            return false;
-        }
-        Trainer other = (Trainer) object;
-        if ((this.getUserId() == null && other.getUserId() != null)
-                || (this.getUserId() != null && !this.getUserId().equals(other.getUserId()))) {
-            return false;
-        }
-        return true;
-    }
-
+    
     @Override
     public String toString() {
-        return "Trainer{id=" + this.getUserId() + ", hiredDate=" + hiredDate + ", salary=" + salary + ", star=" + star
-                + '}';
+        return "Trainer{" + "specialization=" + specialization + ", salary=" + salary + '}';
     }
-
 }
