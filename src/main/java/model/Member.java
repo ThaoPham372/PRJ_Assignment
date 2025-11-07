@@ -11,7 +11,7 @@ import jakarta.persistence.Table;
     Note: 
  */
 @Entity
-@Table(name = "students")
+@Table(name = "members")
 @PrimaryKeyJoinColumn(name = "user_id")
 public class Member extends User implements Serializable {
 

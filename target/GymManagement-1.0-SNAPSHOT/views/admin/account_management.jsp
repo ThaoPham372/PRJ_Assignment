@@ -654,8 +654,8 @@
                                 <select class="filter-select" id="roleFilter" onchange="handleChange(event)">
                                     <option value="all" ${role == null || role == 'all' ? 'selected' : ''}>Tất cả vai trò</option>
                                     <option value="admin" ${role == 'admin' ? 'selected' : ''}>Admin</option>
-                                    <option value="user" ${role == 'user' ? 'selected' : ''}>User</option>
-                                    <option value="trainer" ${role == 'trainer' ? 'selected' : ''}>PT (Personal Trainer)</option>
+                                    <option value="member" ${role == 'user' ? 'selected' : ''}>Member</option>
+                                    <option value="trainer" ${role == 'trainer' ? 'selected' : ''}>Trainer</option>
                                 </select>
 
                                 <select class="filter-select" id="statusFilter" onchange="handleChange(event)">
@@ -905,7 +905,7 @@
                     const role = document.getElementById('roleFilter').value;
                     const status = document.getElementById('statusFilter').value;
 
-                    let query = '?';
+                    let query = '?action=filterAccounts&';
                     if (role !== 'all') {
                         query += `role=` + role + `&`;
                     }
@@ -917,7 +917,6 @@
                     if (query.endsWith('&') || query.endsWith('?')) {
                         query = query.slice(0, -1);
                     }
-                    query += '&action=filterAccounts';
                     
                     window.location.href = `${contextPath}/admin/account-management` + query;
                 }

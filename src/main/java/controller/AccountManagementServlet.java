@@ -226,6 +226,7 @@ public class AccountManagementServlet extends HttpServlet {
     }
 
     private List<User> filterAccountsByStatus(List<User> users, String status) throws ServletException, IOException {
+        System.out.println("\n\nFilter account Status: " + status);
         if (status != null && !status.equals("all")) {
             users.removeIf(user -> !status.equalsIgnoreCase(user.getStatus()));
         }
