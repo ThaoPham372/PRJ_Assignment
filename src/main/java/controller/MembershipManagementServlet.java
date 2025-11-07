@@ -23,21 +23,23 @@ public class MembershipManagementServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if ("deleteMembership".equals(req.getParameter("action"))) {
-            deleteMembership(req, resp);
+        String action = req.getParameter("action");
+        List<Membership> memberships = getMembership();
+
+        if ("deleteMembership".equals(action)) {
+            int id = Integer.parseInt(req.getParameter("membershipId"));
+            deleteMembership(memberships, id);
+        } else if ("filterMemberships".equals(action)) {
+            System.out.println("FILTER CALLED\n\n\n");
+            String keyword = req.getParameter("keyword");
+            String status = req.getParameter("status");
+            String packageType = req.getParameter("packageType");
+
+            memberships = filterMemberships(memberships, keyword, status, packageType);
         }
-        if ("filterMemberships".equals(req.getParameter("action"))) {
-            handleFilterMemberships(req, resp);
-        } else {
-            List<Membership> memberships = getMembership(req, resp);
-            System.out.println("\n\nMMS");
-            for(Membership m : memberships) {
-                System.out.println(m);
-            }
-            System.out.println("\n\n\n");
-            req.setAttribute("memberships", memberships);
-            req.getRequestDispatcher("/views/admin/member_management.jsp").forward(req, resp);
-        }
+
+        req.setAttribute("memberships", memberships);
+        req.getRequestDispatcher("/views/admin/member_management.jsp").forward(req, resp);
     }
 
     @Override
@@ -53,13 +55,19 @@ public class MembershipManagementServlet extends HttpServlet {
         }
     }
 
-    public void deleteMembership(HttpServletRequest req, HttpServletResponse resp) {
-        System.out.println("\n\n## DELETE MEMBERSHIP");
-        int membershipId = Integer.parseInt(req.getParameter("membershipId"));
+    public List<Membership> deleteMembership(List<Membership> memberships, int id) {
+        Membership membership = null;
+        for (Membership m : memberships) {
+            if (m.getMembershipId() == id) {
+                membership = m;
+                break;
+            }
+        }
+
         MembershipService membershipService = new MembershipService();
-        System.out.println("> Membership: " + membershipService.getMembershipById(membershipId));
-        membershipService.deleteById(membershipId);
-        return;
+        membershipService.delete(membership);
+
+        return memberships;
     }
 
     private void addMembership(HttpServletRequest req, HttpServletResponse resp)
@@ -140,8 +148,7 @@ public class MembershipManagementServlet extends HttpServlet {
         }
     }
 
-    private List<Membership> getMembership(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    private List<Membership> getMembership() {
         MembershipService membershipService = new MembershipService();
         List<Membership> memberships = membershipService.getAll();
         generateMembershipInfo(memberships);
@@ -161,24 +168,18 @@ public class MembershipManagementServlet extends HttpServlet {
         }
     }
 
-    private void handleFilterMemberships(HttpServletRequest req, HttpServletResponse resp) {
-        String keyword = req.getParameter("keyword").toLowerCase();
-        String status = req.getParameter("status").toLowerCase();
-        String packageType = req.getParameter("packageType").toLowerCase();
+    private List<Membership> filterMemberships(List<Membership> memberships, String keyword, String status,
+            String packageType) throws ServletException, IOException {
 
-        MembershipService membershipService = new MembershipService();
-        List<Membership> memberships = membershipService.getAll();
-
-        // Filter by keyword
-        filterByKeyword(memberships, keyword);
-
-        // Further filtering by status and packageType can be implemented here
-        filterByStatusAndPackageType(memberships, status, packageType);
+        memberships = filterByKeyword(memberships, keyword);
+        memberships = filterByStatusAndPackageType(memberships, status, packageType);
 
         generateMembershipInfo(memberships);
+
+        return memberships;
     }
 
-    private void filterByKeyword(List<Membership> memberships, String keyword) {
+    private List<Membership> filterByKeyword(List<Membership> memberships, String keyword) {
         if (keyword != null && !keyword.trim().isEmpty()) {
             memberships.removeIf(m -> {
                 MemberService memberService = new MemberService();
@@ -187,9 +188,11 @@ public class MembershipManagementServlet extends HttpServlet {
                         || mem.getEmail().toLowerCase().contains(keyword));
             });
         }
+        return memberships;
     }
 
-    private void filterByStatusAndPackageType(List<Membership> memberships, String status, String packageType) {
+    private List<Membership> filterByStatusAndPackageType(List<Membership> memberships, String status,
+            String packageType) {
         memberships.removeIf(m -> {
             // Filter by status
             boolean statusMatch = true;
@@ -218,5 +221,6 @@ public class MembershipManagementServlet extends HttpServlet {
 
             return !(statusMatch && packageMatch);
         });
+        return memberships;
     }
 }
