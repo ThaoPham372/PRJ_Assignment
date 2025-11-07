@@ -32,7 +32,7 @@ public class UserService {
     private final MemberService memberService;
     private final NutritionGoalDao nutritionGoalDao;
     private final NutritionService nutritionService;
-    private final com.gym.service.membership.MembershipService membershipService;
+    private final com.gym.service.membership.IMembershipService membershipService;
     private final com.gym.dao.MemberDAO memberDAO;
     private final com.gym.dao.AdminDAO adminDAO;
     private final com.gym.dao.TrainerDAO trainerDAO;
@@ -44,7 +44,7 @@ public class UserService {
         this.memberService = new MemberService();
         this.nutritionGoalDao = new NutritionGoalDao();
         this.nutritionService = new NutritionServiceImpl();
-        this.membershipService = new com.gym.service.membership.MembershipServiceImpl();
+        this.membershipService = new com.gym.service.membership.MembershipService();
         this.memberDAO = new com.gym.dao.MemberDAO();
         this.adminDAO = new com.gym.dao.AdminDAO();
         this.trainerDAO = new com.gym.dao.TrainerDAO();
@@ -1237,6 +1237,10 @@ public class UserService {
         map.put("type", type);
         map.put("time", time);
         return map;
+    }
+
+    public void add(User user) {
+        userDAO.save(user);
     }
     
    

@@ -10,7 +10,7 @@ import java.math.BigDecimal;
  */
 @Entity
 @Table(name = "members")
-@DiscriminatorValue("MEMBER")
+@DiscriminatorValue("Member")
 @PrimaryKeyJoinColumn(name = "user_id")
 public class Member extends User {
 

@@ -16,7 +16,7 @@ import com.gym.model.User;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "AuthServlet", urlPatterns = {"/auth"})
+@WebServlet(name = "AuthServlet", urlPatterns = {"/auth", "/login", "/register"})
 public class AuthServlet extends HttpServlet {
 
     private LoginService loginService;
@@ -111,6 +111,7 @@ public class AuthServlet extends HttpServlet {
             String redirectUrl = determineRedirectUrl(roles);
             System.out.println("[AuthServlet] Redirecting to: " + redirectUrl);
             response.sendRedirect(request.getContextPath() + redirectUrl);
+            return;
         } else {
             System.out.println("[AuthServlet] Login failed!");
             System.out.println("[AuthServlet] Errors: " + (result.getErrors() != null ? result.getErrors().toString() : "NULL"));
@@ -118,6 +119,7 @@ public class AuthServlet extends HttpServlet {
             request.setAttribute("errors", result.getErrors());
             request.setAttribute("username", username);
             request.getRequestDispatcher("/views/login.jsp").forward(request, response);
+            return;
         }
     }
 

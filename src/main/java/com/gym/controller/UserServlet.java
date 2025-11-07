@@ -25,14 +25,14 @@ public class UserServlet extends HttpServlet {
 
     private transient UserService userService;
     private transient NutritionService nutritionService;
-    private transient com.gym.service.membership.MembershipService membershipService;
+    private transient com.gym.service.membership.IMembershipService membershipService;
 
     @Override
     public void init() throws ServletException {
         super.init();
         this.userService = new UserService();
         this.nutritionService = new NutritionServiceImpl();
-        this.membershipService = new com.gym.service.membership.MembershipServiceImpl();
+        this.membershipService = new com.gym.service.membership.MembershipService();
     }
 
     @Override

@@ -863,20 +863,11 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
             </li>
             <li class="admin-menu-item">
               <a
-                href="${pageContext.request.contextPath}/admin/users"
+                href="${pageContext.request.contextPath}/views/admin/account_management.jsp"
                 class="admin-menu-link"
               >
                 <i class="fas fa-users-cog"></i>
                 <span>Quản lý tài khoản</span>
-              </a>
-            </li>
-            <li class="admin-menu-item">
-              <a
-                href="${pageContext.request.contextPath}/admin/products"
-                class="admin-menu-link"
-              >
-                <i class="fas fa-box"></i>
-                <span>Quản lý sản phẩm</span>
               </a>
             </li>
             <li class="admin-menu-item">

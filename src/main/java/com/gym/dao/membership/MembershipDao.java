@@ -446,4 +446,9 @@ public class MembershipDao extends GenericDAO<Membership> {
             return 0L;
         }
     }
+
+    public List<Membership> findAll() {
+        List<Membership> memberships = findAll();
+        return memberships != null ? memberships : new ArrayList<>(List.of());
+    }
 }

@@ -1,6 +1,5 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
+uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -434,7 +433,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/profile.jsp"
+              href="${pageContext.request.contextPath}/admin/profile"
               class="sidebar-menu-link"
             >
               <i class="fas fa-user-circle"></i>
@@ -443,7 +442,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/admin/users"
+              href="${pageContext.request.contextPath}/admin/account-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-users-cog"></i>
@@ -452,16 +451,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/admin/products"
-              class="sidebar-menu-link"
-            >
-              <i class="fas fa-box"></i>
-              <span>Quản lý sản phẩm</span>
-            </a>
-          </li>
-          <li class="sidebar-menu-item">
-            <a
-              href="${pageContext.request.contextPath}/views/admin/member_management.jsp"
+              href="${pageContext.request.contextPath}/admin/member-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-users"></i>
@@ -470,7 +460,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/service_schedule.jsp"
+              href="${pageContext.request.contextPath}/admin/service-schedule"
               class="sidebar-menu-link"
             >
               <i class="fas fa-calendar-alt"></i>
@@ -479,7 +469,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/trainer_management.jsp"
+              href="${pageContext.request.contextPath}/admin/trainer-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-chalkboard-teacher"></i>
@@ -488,7 +478,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/order_management.jsp"
+              href="${pageContext.request.contextPath}/admin/order-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-box"></i>
@@ -497,7 +487,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/payment_finance.jsp"
+              href="${pageContext.request.contextPath}/admin/payment-finance"
               class="sidebar-menu-link"
             >
               <i class="fas fa-money-bill-wave"></i>
@@ -506,7 +496,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/reports.jsp"
+              href="${pageContext.request.contextPath}/admin/reports"
               class="sidebar-menu-link"
             >
               <i class="fas fa-chart-line"></i>
@@ -546,7 +536,7 @@
                 <i class="fas fa-users"></i>
               </div>
               <div class="stat-info">
-                <h3><fmt:formatNumber value="${totalActiveMembers != null ? totalActiveMembers : 0}" groupingUsed="true"/></h3>
+                <h3>1,245</h3>
                 <p>Tổng số hội viên</p>
               </div>
             </div>
@@ -556,8 +546,28 @@
                 <i class="fas fa-dollar-sign"></i>
               </div>
               <div class="stat-info">
-                <h3>${revenueDisplay != null ? revenueDisplay : '0'}</h3>
+                <h3>456M</h3>
                 <p>Doanh thu tháng này</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon green">
+                <i class="fas fa-user-check"></i>
+              </div>
+              <div class="stat-info">
+                <h3>892</h3>
+                <p>Check-in hôm nay</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon purple">
+                <i class="fas fa-calendar-check"></i>
+              </div>
+              <div class="stat-info">
+                <h3>34</h3>
+                <p>Lớp training hôm nay</p>
               </div>
             </div>
           </div>
@@ -595,48 +605,15 @@
                 <h3 class="management-card-title">Quản lý tài khoản</h3>
               </div>
               <p class="management-card-description">
-                Quản lý danh sách tài khoản Admin, Member, Trainer. Thêm, xóa, sửa và
-                set quyền cho tài khoản. Tự động tạo record trong bảng tương ứng khi tạo tài khoản.
+                Quản lý danh sách tài khoản Admin, User, PT. Thêm, xóa, sửa và
+                set quyền cho tài khoản.
               </p>
               <div class="management-card-actions">
                 <a
-                  href="${pageContext.request.contextPath}/admin/users"
+                  href="${pageContext.request.contextPath}/views/admin/account_management.jsp"
                   class="btn btn-small"
                 >
                   <i class="fas fa-list"></i> Xem danh sách
-                </a>
-                <a
-                  href="${pageContext.request.contextPath}/admin/users/add"
-                  class="btn btn-small"
-                >
-                  <i class="fas fa-plus"></i> Thêm tài khoản
-                </a>
-              </div>
-            </div>
-
-            <!-- Product Management -->
-            <div class="management-card">
-              <div class="management-card-header">
-                <div class="management-card-icon">
-                  <i class="fas fa-box"></i>
-                </div>
-                <h3 class="management-card-title">Quản lý sản phẩm</h3>
-              </div>
-              <p class="management-card-description">
-                Quản lý danh sách sản phẩm, thêm/xóa/sửa sản phẩm, quản lý tồn kho và giá cả.
-              </p>
-              <div class="management-card-actions">
-                <a
-                  href="${pageContext.request.contextPath}/admin/products"
-                  class="btn btn-small"
-                >
-                  <i class="fas fa-list"></i> Xem danh sách
-                </a>
-                <a
-                  href="${pageContext.request.contextPath}/admin/products/add"
-                  class="btn btn-small"
-                >
-                  <i class="fas fa-plus"></i> Thêm sản phẩm
                 </a>
               </div>
             </div>

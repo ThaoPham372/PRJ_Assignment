@@ -1,0 +1,92 @@
+
+package com.gym.controller;
+
+import com.gym.model.Admin;
+import com.gym.service.AdminService;
+import com.gym.service.PasswordService;
+import com.gym.util.FormUtils;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+
+
+/*
+    Note: 
+ */
+@WebServlet(urlPatterns = "/admin/profile")
+public class AdminProfileServlet extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        System.out.println("\n\n\n\n\nADMIN PROFILE SERVLET CALLED\n\n\n\n");
+        req.getRequestDispatcher("/views/admin/profile.jsp").forward(req, resp);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String action = req.getParameter("action");
+        switch (action) {
+            case "updateAdmin":
+                updateAdmin(req, resp);
+                break;
+            case "updateAdminPassword":
+                updateAdminPassword(req, resp);
+                break;
+            default: {
+                System.out.println("Action is null");
+                req.getRequestDispatcher("/views/admin/profile.jsp").forward(req, resp);
+            }
+        }
+    }
+
+    private void updateAdmin(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        AdminService adminService = new AdminService();
+        int id = Integer.parseInt(request.getParameter("id"));
+        Admin admin = adminService.getAdminById(id);
+
+        System.out.println("\nID: " + id + " - Admin found: " + admin);
+
+        FormUtils.getFormValue(request, admin);
+        adminService.update(admin);
+        request.getSession().setAttribute("user", admin);
+        request.setAttribute("message", "> Update successful!");
+    }
+
+    private void updateAdminPassword(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        PasswordService passwordService = new PasswordService();
+        int id = Integer.parseInt(request.getParameter("id"));
+        AdminService adminService = new AdminService();
+        Admin admin = adminService.getAdminById(id);
+
+        String currentPassword = request.getParameter("currentPassword");
+        String newPassword = request.getParameter("newPassword");
+        String confirmPassword = request.getParameter("confirmPassword");
+
+        System.out.println("currentPassword: " + currentPassword);
+        System.out.println("newPassword: " + newPassword);
+        System.out.println("confirmPassword: " + confirmPassword);
+
+        String userPassword = admin.getPassword();
+        String hashNewP = passwordService.hashPassword(newPassword);
+
+        boolean isCurrentPasswordCorrect = passwordService.verifyPassword(currentPassword, userPassword);
+
+        if (!newPassword.equals(confirmPassword) || !isCurrentPasswordCorrect) {
+            request.setAttribute("message",
+                    "new password not equal confirm password or current password is not correctly!");
+            request.getRequestDispatcher("/views/admin/profile.jsp").forward(request, response);
+        } else {
+            admin.setPassword(hashNewP);
+            adminService.update(admin);
+            System.out.println("Update password successfully!");
+        }
+
+        request.getRequestDispatcher("/views/admin/profile.jsp").forward(request, response);
+    }
+}

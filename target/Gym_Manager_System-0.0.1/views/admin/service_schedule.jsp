@@ -362,7 +362,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
       <aside class="sidebar">
         <div class="sidebar-header">
           <a
-            href="${pageContext.request.contextPath}/views/admin/admin_home.jsp"
+            href="${pageContext.request.contextPath}/admin/admin-home"
             class="sidebar-brand"
           >
             <i class="fas fa-dumbbell"></i>
@@ -383,7 +383,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         <ul class="sidebar-menu">
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/dashboard.jsp"
+              href="${pageContext.request.contextPath}/admin/dashboard"
               class="sidebar-menu-link"
             >
               <i class="fas fa-home"></i><span>Trang chủ</span>
@@ -391,7 +391,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/profile.jsp"
+              href="${pageContext.request.contextPath}/admin/profile"
               class="sidebar-menu-link"
             >
               <i class="fas fa-user-circle"></i><span>Profile của Admin</span>
@@ -399,7 +399,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/admin/users"
+              href="${pageContext.request.contextPath}/admin/account-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-users-cog"></i><span>Quản lý tài khoản</span>
@@ -407,15 +407,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/admin/products"
-              class="sidebar-menu-link"
-            >
-              <i class="fas fa-box"></i><span>Quản lý sản phẩm</span>
-            </a>
-          </li>
-          <li class="sidebar-menu-item">
-            <a
-              href="${pageContext.request.contextPath}/views/admin/member_management.jsp"
+              href="${pageContext.request.contextPath}/admin/member-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-users"></i><span>Quản lý hội viên</span>
@@ -423,7 +415,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/service_schedule.jsp"
+              href="${pageContext.request.contextPath}/admin/service-schedule"
               class="sidebar-menu-link active"
             >
               <i class="fas fa-calendar-alt"></i><span>Dịch vụ & Lịch tập</span>
@@ -431,7 +423,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/trainer_management.jsp"
+              href="${pageContext.request.contextPath}/admin/trainer-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-chalkboard-teacher"></i><span>Quản lý PT</span>
@@ -439,7 +431,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/order_management.jsp"
+              href="${pageContext.request.contextPath}/admin/order-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-box"></i><span>Quản lý đơn hàng</span>
@@ -447,7 +439,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/payment_finance.jsp"
+              href="${pageContext.request.contextPath}/admin/payment-finance"
               class="sidebar-menu-link"
             >
               <i class="fas fa-money-bill-wave"></i
@@ -456,7 +448,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/reports.jsp"
+              href="${pageContext.request.contextPath}/admin/reports"
               class="sidebar-menu-link"
             >
               <i class="fas fa-chart-line"></i><span>Báo cáo & Thống kê</span>
@@ -473,7 +465,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </h1>
           <div class="top-bar-actions">
             <a
-              href="${pageContext.request.contextPath}/views/admin/dashboard.jsp"
+              href="${pageContext.request.contextPath}/admin/dashboard"
               class="btn btn-outline"
             >
               <i class="fas fa-arrow-left"></i> Quay lại

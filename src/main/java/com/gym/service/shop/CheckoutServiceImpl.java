@@ -224,8 +224,8 @@ public class CheckoutServiceImpl implements CheckoutService {
     public Order checkoutPackage(Long userId, Long packageId, PaymentMethod paymentMethod,
                                  String deliveryName, String deliveryPhone) {
         // Get package from packages table
-        com.gym.service.membership.MembershipService membershipService = 
-            new com.gym.service.membership.MembershipServiceImpl();
+        com.gym.service.membership.IMembershipService membershipService = 
+            new com.gym.service.membership.MembershipService();
         java.util.Optional<com.gym.model.membership.Package> packageOpt = 
             membershipService.getPackageById(packageId);
         
@@ -281,7 +281,7 @@ public class CheckoutServiceImpl implements CheckoutService {
                 // Insert order items (package as order item) (pass EntityManager for transaction)
                 orderItemDao.insertBatch(orderId, orderItems, em);
                 
-                // Create membership using MembershipService
+                // Create membership using IMembershipService
                 // This will:
                 // 1. Calculate startDate = CURRENT_DATE
                 // 2. Calculate endDate = startDate + duration_months
@@ -341,8 +341,8 @@ public class CheckoutServiceImpl implements CheckoutService {
         Long packageId = membershipId;
         
         // Get package from packages table
-        com.gym.service.membership.MembershipService membershipService = 
-            new com.gym.service.membership.MembershipServiceImpl();
+        com.gym.service.membership.IMembershipService membershipService = 
+            new com.gym.service.membership.MembershipService();
         java.util.Optional<com.gym.model.membership.Package> packageOpt = 
             membershipService.getPackageById(packageId);
         
@@ -441,7 +441,7 @@ public class CheckoutServiceImpl implements CheckoutService {
                     productDao.decreaseStockBatchWithEntityManager(productQuantities, em);
                 }
                 
-                // Create membership using MembershipService
+                // Create membership using IMembershipService
                 // NOTE: Membership is created with status=NULL (waiting for payment confirmation)
                 Integer userIdInt = userId.intValue();
                 com.gym.model.membership.Membership membership = 

@@ -1,106 +1,166 @@
 package com.gym.service.membership;
 
+import com.gym.dao.membership.MembershipDao;
+import com.gym.dao.membership.PackageDAO;
 import com.gym.model.membership.Membership;
 import com.gym.model.membership.Package;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Service interface for Membership functionality
+ * Implementation of IMembershipService
  */
-public interface MembershipService {
+public class MembershipService implements IMembershipService {
+    private final PackageDAO packageDAO;
+    private final MembershipDao membershipDao;
+
+    public MembershipService() {
+        this.packageDAO = new PackageDAO();
+        this.membershipDao = new MembershipDao();
+    }
+
+    @Override
+    public List<Package> getAllActivePackages(Integer gymId) {
+        return packageDAO.findAllActive(gymId);
+    }
+
+    @Override
+    public List<Package> getAllActivePackages() {
+        return packageDAO.findAllActive(null);
+    }
+
+    @Override
+    public Optional<Package> getPackageById(Long packageId) {
+        return packageDAO.findById(packageId);
+    }
+
+    @Override
+    public Optional<Membership> getCurrentMembership(Integer userId) {
+        // First check and expire any expired memberships
+        checkAndExpire(userId);
+        
+        // Then return current active membership
+        return membershipDao.findActiveByUser(userId);
+    }
+
+    @Override
+    public void checkAndExpire(Integer userId) {
+        // Find all ACTIVE memberships that have passed end_date
+        List<Membership> expiredMemberships = membershipDao.findExpiredByUser(userId);
+        
+        // Set status = 'EXPIRED' for each expired membership
+        for (Membership membership : expiredMemberships) {
+            membershipDao.expireMembership(membership.getMembershipId());
+            System.out.println("[MembershipService] Auto-expired membership ID: " + membership.getMembershipId() + 
+                             " for user ID: " + userId);
+        }
+    }
+
+    @Override
+    public Membership purchasePackage(Integer userId, Long packageId, String notes) {
+        // 1. Get package from packages table
+        Optional<Package> packageOpt = packageDAO.findById(packageId);
+        if (packageOpt.isEmpty()) {
+            throw new IllegalArgumentException("Package not found: " + packageId);
+        }
+        
+        Package pkg = packageOpt.get();
+        if (!pkg.getIsActive()) {
+            throw new IllegalStateException("Package is not active: " + packageId);
+        }
+        
+        // 2. Check and expire any expired memberships for this user first
+        checkAndExpire(userId);
+        
+        // 3. Calculate dates
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = startDate.plusMonths(pkg.getDurationMonths());
+        
+        // 4. Create membership with status = 'INACTIVE'
+        // ✅ NEW: Membership starts INACTIVE and will be activated when payment.status = 'PAID'
+        Long membershipId = membershipDao.createMembership(userId, packageId, startDate, endDate, notes);
+        if (membershipId == null) {
+            throw new RuntimeException("Failed to create membership");
+        }
+        
+        System.out.println("[MembershipService] Created membership ID: " + membershipId + 
+                         " with status=INACTIVE (waiting for payment) for user ID: " + userId + ", package ID: " + packageId);
+        
+        // 5. Return created membership
+        // Note: User won't be able to use it until payment.status = 'PAID'
+        Optional<Membership> created = membershipDao.findById(membershipId);
+        if (created.isEmpty()) {
+            throw new RuntimeException("Membership created but could not be retrieved");
+        }
+        
+        return created.get();
+    }
+
+    @Override
+    public List<Membership> getMembershipHistory(Integer userId) {
+        return membershipDao.listByUser(userId);
+    }
     
-    /**
-     * Get all active packages (optionally filtered by gym_id)
-     */
-    List<Package> getAllActivePackages(Integer gymId);
+    @Override
+    public boolean activateMembership(Long membershipId) {
+        // Activate membership (set status = 'ACTIVE')
+        boolean activated = membershipDao.activateMembership(membershipId);
+        if (activated) {
+            System.out.println("[MembershipService] Activated membership ID: " + membershipId);
+        } else {
+            System.out.println("[MembershipService] Failed to activate membership ID: " + membershipId);
+        }
+        return activated;
+    }
     
-    /**
-     * Get all active packages
-     */
-    List<Package> getAllActivePackages();
+    @Override
+    public boolean suspendMembership(Long membershipId, String reason) {
+        // Suspend membership (set status = 'SUSPENDED')
+        boolean suspended = membershipDao.suspendMembership(membershipId, reason);
+        if (suspended) {
+            System.out.println("[MembershipService] Suspended membership ID: " + membershipId + ". Reason: " + reason);
+        } else {
+            System.out.println("[MembershipService] Failed to suspend membership ID: " + membershipId);
+        }
+        return suspended;
+    }
     
-    /**
-     * Get package by ID
-     */
-    Optional<Package> getPackageById(Long packageId);
+    @Override
+    public long countActiveMemberships() {
+        return membershipDao.countActiveMemberships();
+    }
     
-    /**
-     * Get current active membership for a user
-     * Returns membership with status = ACTIVE and end_date >= today
-     */
-    Optional<Membership> getCurrentMembership(Integer userId);
+    @Override
+    public java.util.List<Membership> getAllActiveAndSuspendedMemberships() {
+        return membershipDao.getAllActiveAndSuspendedMemberships();
+    }
     
-    /**
-     * Check and expire memberships that have passed end_date
-     * Automatically sets status = 'EXPIRED' for expired memberships
-     */
-    void checkAndExpire(Integer userId);
+    @Override
+    public long countActiveMembershipsForManagement() {
+        return membershipDao.countActiveMembershipsForManagement();
+    }
     
-    /**
-     * Purchase a package (create new membership)
-     * Flow:
-     * 1. Get package from packages table
-     * 2. startDate = CURRENT_DATE
-     * 3. endDate = startDate + duration_months (from package)
-     * 4. Create membership with status = 'ACTIVE'
-     * 5. If user has expired ACTIVE memberships, auto-expire them
-     * @return Created Membership
-     */
-    Membership purchasePackage(Integer userId, Long packageId, String notes);
+    @Override
+    public long countSuspendedMemberships() {
+        return membershipDao.countSuspendedMemberships();
+    }
     
-    /**
-     * Get membership history for a user
-     */
-    List<Membership> getMembershipHistory(Integer userId);
-    
-    /**
-     * Activate a membership (change status from INACTIVE to ACTIVE)
-     * Used when payment is confirmed (status = PAID)
-     * @param membershipId Membership ID
-     * @return true if successfully activated, false otherwise
-     */
-    boolean activateMembership(Long membershipId);
-    
-    /**
-     * Suspend a membership (change status from ACTIVE to SUSPENDED)
-     * Used when payment is refunded or chargeback occurs
-     * @param membershipId Membership ID
-     * @param reason Reason for suspension (e.g., "Payment refunded", "Chargeback")
-     * @return true if successfully suspended, false otherwise
-     */
-    boolean suspendMembership(Long membershipId, String reason);
-    
-    /**
-     * Count active memberships with paid status
-     * Returns count of memberships where status = 'ACTIVE', end_date >= CURRENT_DATE, and payment.status = 'PAID'
-     * @return Count of active paid memberships
-     */
-    long countActiveMemberships();
-    
-    /**
-     * Get all memberships with status ACTIVE, EXPIRED, or SUSPENDED
-     * Returns all memberships regardless of payment status
-     * @return List of memberships with user and package data
-     */
-    java.util.List<Membership> getAllActiveAndSuspendedMemberships();
-    
-    /**
-     * Count active memberships (status = 'ACTIVE') for management page
-     * @return Count of active memberships
-     */
-    long countActiveMembershipsForManagement();
-    
-    /**
-     * Count expired and suspended memberships (status = 'EXPIRED' OR 'SUSPENDED')
-     * @return Count of expired and suspended memberships
-     */
-    long countSuspendedMemberships();
-    
-    /**
-     * Count all memberships with status ACTIVE, EXPIRED, or SUSPENDED
-     * @return Total count
-     */
-    long countAllMembershipsForManagement();
+    @Override
+    public long countAllMembershipsForManagement() {
+        return membershipDao.countAllMembershipsForManagement();
+    }
+
+    public void delete(Membership membership) {
+        membershipDao.delete(membership);
+    }
+
+    public List<Membership> getAll() {
+        return membershipDao.findAll();
+    }
+
+    public void add(Membership membership) {
+        membershipDao.save(membership);
+    }
 }

@@ -92,8 +92,8 @@ public class PaymentServiceImpl implements PaymentService {
                 // ✅ Activate the membership (change status from INACTIVE to ACTIVE)
                 if (payment.getMembershipId() != null) {
                     try {
-                        com.gym.service.membership.MembershipService membershipService = 
-                            new com.gym.service.membership.MembershipServiceImpl();
+                        com.gym.service.membership.IMembershipService membershipService = 
+                            new com.gym.service.membership.MembershipService();
                         boolean activated = membershipService.activateMembership(payment.getMembershipId());
                         if (activated) {
                             LOGGER.info("✅ [PAID→ACTIVE] Activated membership: membershipId=" + payment.getMembershipId());
@@ -140,8 +140,8 @@ public class PaymentServiceImpl implements PaymentService {
             if (payment.getTransactionType() == Payment.TransactionType.PACKAGE) {
                 if (payment.getMembershipId() != null) {
                     try {
-                        com.gym.service.membership.MembershipService membershipService = 
-                            new com.gym.service.membership.MembershipServiceImpl();
+                        com.gym.service.membership.IMembershipService membershipService = 
+                            new com.gym.service.membership.MembershipService();
                         String reason = newStatus == PaymentStatus.REFUNDED ? "Payment refunded" : "Payment chargeback";
                         boolean suspended = membershipService.suspendMembership(payment.getMembershipId(), reason);
                         if (suspended) {

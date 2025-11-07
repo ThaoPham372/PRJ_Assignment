@@ -398,7 +398,7 @@
       <aside class="sidebar">
         <div class="sidebar-header">
           <a
-            href="${pageContext.request.contextPath}/views/admin/admin_home.jsp"
+            href="${pageContext.request.contextPath}/admin/admin-home"
             class="sidebar-brand"
           >
             <i class="fas fa-dumbbell"></i>
@@ -422,7 +422,7 @@
         <ul class="sidebar-menu">
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/dashboard.jsp"
+              href="${pageContext.request.contextPath}/admin/dashboard"
               class="sidebar-menu-link"
             >
               <i class="fas fa-home"></i>
@@ -431,7 +431,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/profile.jsp"
+              href="${pageContext.request.contextPath}/admin/profile"
               class="sidebar-menu-link active"
             >
               <i class="fas fa-user-circle"></i>
@@ -440,7 +440,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/admin/users"
+              href="${pageContext.request.contextPath}/admin/account-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-users-cog"></i>
@@ -449,16 +449,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/admin/products"
-              class="sidebar-menu-link"
-            >
-              <i class="fas fa-box"></i>
-              <span>Quản lý sản phẩm</span>
-            </a>
-          </li>
-          <li class="sidebar-menu-item">
-            <a
-              href="${pageContext.request.contextPath}/views/admin/member_management.jsp"
+              href="${pageContext.request.contextPath}/admin/member-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-users"></i>
@@ -467,7 +458,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/service_schedule.jsp"
+              href="${pageContext.request.contextPath}/admin/service-schedule"
               class="sidebar-menu-link"
             >
               <i class="fas fa-calendar-alt"></i>
@@ -476,7 +467,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/trainer_management.jsp"
+              href="${pageContext.request.contextPath}/admin/trainer-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-chalkboard-teacher"></i>
@@ -485,7 +476,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/order_management.jsp"
+              href="${pageContext.request.contextPath}/admin/order-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-box"></i>
@@ -494,7 +485,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/payment_finance.jsp"
+              href="${pageContext.request.contextPath}/admin/payment-finance"
               class="sidebar-menu-link"
             >
               <i class="fas fa-money-bill-wave"></i>
@@ -503,7 +494,7 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/views/admin/reports.jsp"
+              href="${pageContext.request.contextPath}/admin/reports"
               class="sidebar-menu-link"
             >
               <i class="fas fa-chart-line"></i>
@@ -520,7 +511,7 @@
           <h1><i class="fas fa-user-circle"></i> Profile của Admin</h1>
           <div class="top-bar-actions">
             <a
-              href="${pageContext.request.contextPath}/views/admin/dashboard.jsp"
+              href="${pageContext.request.contextPath}/admin/dashboard"
               class="btn btn-outline"
             >
               <i class="fas fa-arrow-left"></i> Quay lại
@@ -530,47 +521,15 @@
 
         <!-- Content Area -->
         <div class="content-area">
-          <!-- Success/Error Messages -->
-          <c:if test="${not empty profileUpdateSuccess}">
-            <div class="alert alert-success">
-              <i class="fas fa-check-circle"></i>
-              ${profileUpdateSuccess}
-            </div>
-          </c:if>
-          <c:if test="${not empty profileUpdateError}">
-            <div class="alert alert-danger">
-              <i class="fas fa-exclamation-circle"></i>
-              ${profileUpdateError}
-            </div>
-          </c:if>
-          <c:if test="${not empty passwordChangeSuccess}">
-            <div class="alert alert-success">
-              <i class="fas fa-check-circle"></i>
-              ${passwordChangeSuccess}
-            </div>
-          </c:if>
-          <c:if test="${not empty passwordChangeError}">
-            <div class="alert alert-danger">
-              <i class="fas fa-exclamation-circle"></i>
-              ${passwordChangeError}
-            </div>
-          </c:if>
-
           <!-- Profile Card -->
           <div class="profile-card">
             <div class="profile-header">
               <div class="profile-avatar">
-                <c:choose>
-                  <c:when test="${not empty profileData.avatarUrl}">
-                    <img src="${profileData.avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
-                  </c:when>
-                  <c:otherwise>
-                    <i class="fas fa-user-shield"></i>
-                  </c:otherwise>
-                </c:choose>
+                <i class="fas fa-user-shield"></i>
               </div>
               <h2 class="profile-name">
-                ${profileData.fullName != null ? profileData.fullName : (sessionScope.user != null ? sessionScope.user.username : 'Admin User')}
+                ${sessionScope.user != null ? sessionScope.user.username :
+                'Admin User'}
               </h2>
               <p class="profile-role">Administrator</p>
             </div>
@@ -582,7 +541,7 @@
                 Chỉnh sửa thông tin cá nhân
               </h3>
 
-              <form action="${pageContext.request.contextPath}/admin/profile" method="post" enctype="multipart/form-data">
+              <form action="${pageContext.request.contextPath}/admin/profile?id=${sessionScope.user.userId}" method="post">
                   <input type="hidden" name="action" value="updateAdmin" />
                 <div class="form-grid">
                   <div class="form-group">
@@ -591,7 +550,7 @@
                       type="text"
                       class="form-input"
                       name="name"
-                      value="${profileData.name != null ? profileData.name : sessionScope.user.name}"
+                      value="${sessionScope.user.name}"
                       required
                     />
                   </div>
@@ -602,7 +561,7 @@
                       type="email"
                       class="form-input"
                       name="email"
-                      value="${profileData.email != null ? profileData.email : sessionScope.user.email}"
+                      value="${sessionScope.user.email}"
                       required
                     />
                   </div>
@@ -613,22 +572,15 @@
                       type="tel"
                       class="form-input"
                       name="phone"
-                      value="${profileData.phone != null ? profileData.phone : sessionScope.user.phone}"
+                      value="${sessionScope.user.phone}"
+                      required
                     />
                   </div>
 
                   <div class="form-group">
                     <label class="form-label">Ngày sinh</label>
-                    <c:choose>
-                      <c:when test="${not empty profileData.dob}">
-                        <fmt:formatDate value="${profileData.dob}" pattern="yyyy-MM-dd" var="dobFormatted" />
-                        <input class="form-input" type="date" name="dob" value="${dobFormatted}" />
-                      </c:when>
-                      <c:otherwise>
-                        <fmt:formatDate value="${sessionScope.user.dob}" pattern="yyyy-MM-dd" var="dobFormatted" />
-                        <input class="form-input" type="date" name="dob" value="${dobFormatted}" />
-                      </c:otherwise>
-                    </c:choose>
+                    <fmt:formatDate value="${sessionScope.user.dob}" pattern="yyyy-MM-dd" var="dobFormatted" />
+                    <input class="form-input" type="date" name="birthday" value="${dobFormatted}" />
                   </div>
 
                   <div class="form-group full-width">
@@ -637,28 +589,7 @@
                       type="text"
                       class="form-input"
                       name="address"
-                      value="${profileData.address != null ? profileData.address : sessionScope.user.address}"
-                    />
-                  </div>
-
-                  <div class="form-group">
-                    <label class="form-label">Giới tính</label>
-                    <select class="form-input" name="gender">
-                      <option value="">-- Chọn giới tính --</option>
-                      <option value="Nam" ${profileData.gender == 'Nam' || sessionScope.user.gender == 'Nam' ? 'selected' : ''}>Nam</option>
-                      <option value="Nữ" ${profileData.gender == 'Nữ' || sessionScope.user.gender == 'Nữ' ? 'selected' : ''}>Nữ</option>
-                      <option value="Khác" ${profileData.gender == 'Khác' || sessionScope.user.gender == 'Khác' ? 'selected' : ''}>Khác</option>
-                    </select>
-                  </div>
-
-                  <div class="form-group">
-                    <label class="form-label">Avatar URL</label>
-                    <input
-                      type="text"
-                      class="form-input"
-                      name="avatarUrl"
-                      value="${profileData.avatarUrl != null ? profileData.avatarUrl : sessionScope.user.avatarUrl}"
-                      placeholder="Nhập URL ảnh đại diện"
+                      value="${sessionScope.user.address}"
                     />
                   </div>
 
@@ -668,7 +599,7 @@
                       type="text"
                       class="form-input"
                       name="username"
-                      value="${profileData.username != null ? profileData.username : sessionScope.user.username}"
+                      value="${sessionScope.user.username}"
                       disabled
                     />
                   </div>
@@ -702,7 +633,7 @@
                   Đổi mật khẩu
                 </h3>
 
-                <form action="${pageContext.request.contextPath}/admin/profile" method="post">
+                <form action="${pageContext.request.contextPath}/admin/profile?id=${sessionScope.user.userId}" method="post">
                     <input type="hidden" name="action" value="updateAdminPassword" />
                   <div class="form-grid">
                     <div class="form-group full-width">
@@ -722,7 +653,6 @@
                         class="form-input"
                         name="newPassword"
                         required
-                        minlength="8"
                       />
                     </div>
 
@@ -733,15 +663,11 @@
                         class="form-input"
                         name="confirmPassword"
                         required
-                        minlength="8"
                       />
                     </div>
                   </div>
 
                   <div class="form-actions">
-                    <a href="${pageContext.request.contextPath}/admin/send-password-reset?email=${profileData.email != null ? profileData.email : sessionScope.user.email}" class="btn btn-outline">
-                      <i class="fas fa-envelope"></i> Gửi mã về Email
-                    </a>
                     <button type="reset" class="btn btn-outline">
                       <i class="fas fa-times"></i> Hủy
                     </button>

@@ -3,6 +3,7 @@ package com.gym.service;
 import com.gym.dao.MemberDAO;
 import com.gym.model.Member;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -170,6 +171,10 @@ public class MemberService {
         } else {
             return "Obese";
         }
+    }
+
+    public List<Member> getAll() {
+        return memberDAO.findAllMembers();
     }
 }
 

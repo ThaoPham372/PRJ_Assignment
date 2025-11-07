@@ -310,8 +310,8 @@ public class CheckoutServlet extends HttpServlet {
                 }
                 
                 if (packageId != null) {
-                    com.gym.service.membership.MembershipService membershipService = 
-                        new com.gym.service.membership.MembershipServiceImpl();
+                    com.gym.service.membership.IMembershipService membershipService = 
+                        new com.gym.service.membership.MembershipService();
                     java.util.Optional<com.gym.model.membership.Package> packageOpt = 
                         membershipService.getPackageById(packageId);
                     if (packageOpt.isPresent()) {
