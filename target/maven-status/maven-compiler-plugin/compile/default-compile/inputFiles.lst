@@ -1,3 +1,4 @@
+F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\model\ai\AIResponse.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\dao\membership\PackageDAO.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\dao\PasswordResetTokenDAO.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\model\shop\DeliveryMethod.java
@@ -5,6 +6,7 @@ F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\controller\Pa
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\controller\ProductServlet.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\service\shop\CheckoutServiceImpl.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\service\shop\MoMoPaymentService.java
+F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\util\ConfigUtil.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\controller\OrderServlet.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\dao\membership\MembershipDao.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\service\PaymentService.java
@@ -27,8 +29,10 @@ F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\controller\Au
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\model\shop\Order.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\controller\MoMoCallbackServlet.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\dao\GenericDAO.java
+F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\model\GymInfo.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\dao\shop\ProductDao.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\service\shop\ProductServiceImpl.java
+F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\model\ai\GeminiResponse.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\service\membership\MembershipServiceImpl.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\model\UserMeal.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\service\shop\InsufficientStockException.java
@@ -42,16 +46,22 @@ F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\dao\AdvisoryD
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\controller\CartServlet.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\dao\PaymentDAO.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\service\MemberService.java
+F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\dao\GymInfoDAO.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\model\shop\CartItem.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\service\GoogleAuthService.java
+F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\model\ai\GeminiRequest.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\util\DatabaseUtil.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\service\shop\CartServiceImpl.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\controller\UserServlet.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\model\shop\Product.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\service\nutrition\NutritionService.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\dao\shop\CartDao.java
+F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\model\ai\RequestPayload.java
+F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\controller\ChatAIServlet.java
+F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\service\ITrainerDAO.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\dao\nutrition\UserMealDao.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\listener\JPAContextListener.java
+F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\service\ChatAIService.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\dao\nutrition\FoodDao.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\service\EmailService.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\controller\GoogleAuthServlet.java

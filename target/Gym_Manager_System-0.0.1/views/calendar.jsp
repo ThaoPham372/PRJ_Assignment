@@ -487,14 +487,12 @@ file="/views/common/header.jsp" %>
   >
     <i class="fas fa-user-tie"></i> TƯ VẤN
   </button>
-  <button
-    class="floating-btn chat-bot"
-    onclick="alert('Chức năng chat bot đang được phát triển!')"
-  >
-    <i class="fas fa-comments"></i> CHAT BOT
-  </button>
+  <%@ include file="/views/common/chatbot.jsp" %>
 </div>
-
+  <link
+    rel="stylesheet"
+    href="${pageContext.request.contextPath}/css/floating-buttons.css"
+  />
 <script>
   // Add floating buttons CSS
   const link = document.createElement('link');

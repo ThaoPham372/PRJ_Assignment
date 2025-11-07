@@ -1,6 +1,10 @@
 package com.gym.controller;
 
 import java.io.IOException;
+import java.util.List;
+
+import com.gym.model.Member;
+import com.gym.service.MemberService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -16,13 +20,22 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "PTDashboardServlet", urlPatterns = {
     "/pt/dashboard",
     "/pt/home",
+    "/pt/homePT.jsp",
     "/pt/profile",
     "/pt/schedule",
-    "/pt/students",
     "/pt/chat",
-    "/pt/reports"
+    "/pt/reports",
+    "/pt/students"
 })
 public class PTDashboardServlet extends HttpServlet {
+
+  private MemberService memberService;
+
+  @Override
+  public void init() throws ServletException {
+    super.init();
+    this.memberService = new MemberService();
+  }
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -30,9 +43,19 @@ public class PTDashboardServlet extends HttpServlet {
 
     HttpSession session = request.getSession(false);
 
-    // Check if user is logged in and is a PT
-    // TODO: Implement authentication logic
-    // For now, we'll just forward to the appropriate page
+    // Check if user is logged in and has PT role
+    if (session == null || session.getAttribute("isLoggedIn") == null) {
+      response.sendRedirect(request.getContextPath() + "/views/login.jsp");
+      return;
+    }
+
+    // Check if user has PT role
+    @SuppressWarnings("unchecked")
+    java.util.List<String> userRoles = (java.util.List<String>) session.getAttribute("userRoles");
+    if (userRoles == null || !userRoles.contains("PT")) {
+      response.sendRedirect(request.getContextPath() + "/home");
+      return;
+    }
 
     String path = request.getServletPath();
     String forwardPath = "";
@@ -40,6 +63,7 @@ public class PTDashboardServlet extends HttpServlet {
     switch (path) {
       case "/pt/dashboard":
       case "/pt/home":
+      case "/pt/homePT.jsp":
         forwardPath = "/views/PT/homePT.jsp";
         break;
       case "/pt/profile":
@@ -48,9 +72,31 @@ public class PTDashboardServlet extends HttpServlet {
       case "/pt/schedule":
         forwardPath = "/views/PT/training_schedule.jsp";
         break;
+
       case "/pt/students":
+        // Load member data before forwarding to JSP
+        try {
+          // Note: MemberService doesn't have getAllActiveMembers method
+          // Using empty list for now - can be extended later
+          List<Member> members = new java.util.ArrayList<>();
+          int totalMembers = 0;
+          int activeMembers = 0;
+          int achievedGoalCount = 0;
+
+          request.setAttribute("members", members);
+          request.setAttribute("students", members); // Keep for backward compatibility
+          request.setAttribute("totalMembers", totalMembers);
+          request.setAttribute("totalStudents", totalMembers); // Keep for backward compatibility
+          request.setAttribute("activeMembers", activeMembers);
+          request.setAttribute("activeStudents", activeMembers); // Keep for backward compatibility
+          request.setAttribute("achievedGoalCount", achievedGoalCount);
+        } catch (Exception e) {
+          System.err.println("Error loading members in PTDashboardServlet: " + e.getMessage());
+          e.printStackTrace();
+        }
         forwardPath = "/views/PT/student_management.jsp";
         break;
+
       case "/pt/chat":
         forwardPath = "/views/PT/chat.jsp";
         break;

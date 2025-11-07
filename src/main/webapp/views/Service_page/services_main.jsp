@@ -536,20 +536,23 @@
   </div>
 </section>
 
-<!-- SUPPORT BUTTONS -->
-<div class="support-buttons">
+ <!-- Floating Buttons -->
+<div class="floating-buttons">
   <button
-    class="support-btn"
+    class="floating-btn tu-van"
     onclick="window.location.href='${pageContext.request.contextPath}/advisory'"
   >
-    <i class="fas fa-user-tie"></i>
-    TƯ VẤN
+    <i class="fas fa-user-tie"></i> TƯ VẤN
   </button>
-  <button class="support-btn" onclick="alert('Chat Bot đang được phát triển!')">
-    <i class="fas fa-comments"></i>
-    CHAT BOT
-  </button>
-</div>
+     <%@ include file="/views/common/chatbot.jsp" %>
+  </div>
+
+  <!-- Add floating buttons CSS -->
+  <link
+    rel="stylesheet"
+    href="${pageContext.request.contextPath}/css/floating-buttons.css"
+  />
+
 
 <%@ include file="/views/common/footer.jsp" %>
 

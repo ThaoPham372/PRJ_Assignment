@@ -781,21 +781,23 @@ file="/views/common/header.jsp" %>
   </iframe>
 </section>
 
-<!-- Floating Buttons -->
+ <!-- Floating Buttons -->
 <div class="floating-buttons">
-  <a
-    href="${pageContext.request.contextPath}/advisory"
+  <button
     class="floating-btn tu-van"
+    onclick="window.location.href='${pageContext.request.contextPath}/advisory'"
   >
     <i class="fas fa-user-tie"></i> TƯ VẤN
-  </a>
-  <button
-    class="floating-btn chat-bot"
-    onclick="alert('Chức năng chat bot đang được phát triển!')"
-  >
-    <i class="fas fa-comments"></i> CHAT BOT
   </button>
-</div>
+     <%@ include file="/views/common/chatbot.jsp" %>
+  </div>
+
+  <!-- Add floating buttons CSS -->
+  <link
+    rel="stylesheet"
+    href="${pageContext.request.contextPath}/css/floating-buttons.css"
+  />
+
 
 <script>
   // Add floating buttons CSS
