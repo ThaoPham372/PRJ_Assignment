@@ -220,7 +220,7 @@ public class AccountManagementServlet extends HttpServlet {
 
     private List<User> filterAccountsByRole(List<User> users, String role) throws ServletException, IOException {
         if (role != null && !role.equals("all")) {
-            users.removeIf(user -> !role.equalsIgnoreCase(user.getDtype()));
+            users.removeIf(user -> !role.toLowerCase().equalsIgnoreCase(user.getRole()));
         }
         return users;
     }
@@ -228,7 +228,7 @@ public class AccountManagementServlet extends HttpServlet {
     private List<User> filterAccountsByStatus(List<User> users, String status) throws ServletException, IOException {
         System.out.println("\n\nFilter account Status: " + status);
         if (status != null && !status.equals("all")) {
-            users.removeIf(user -> !status.equalsIgnoreCase(user.getStatus()));
+            users.removeIf(user -> !status.toLowerCase().equalsIgnoreCase(user.getStatus()));
         }
         return users;
     }
