@@ -38,6 +38,7 @@ F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\model\Member.
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\model\shop\PaymentMethod.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\model\shop\OrderStatus.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\service\RegistrationService.java
+F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\dao\AdvisoryDAO.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\controller\CartServlet.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\dao\PaymentDAO.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\service\MemberService.java
@@ -61,6 +62,7 @@ F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\service\Login
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\model\Admin.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\controller\PTDashboardServlet.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\dao\BaseDAO.java
+F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\controller\AdvisoryServlet.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\model\shop\PaymentStatus.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\dao\MemberDAO.java
 F:\project\PRJ_Assignment\Gym_Manager_System\src\main\java\com\gym\service\shop\ProductService.java

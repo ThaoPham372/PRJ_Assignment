@@ -707,14 +707,14 @@ file="/views/common/header.jsp" %>
     </div>
   </div>
 
-  <!-- Floating Buttons -->
-  <div class="floating-buttons">
-    <button
-      class="floating-btn tu-van"
-      onclick="alert('Chức năng tư vấn sẽ được triển khai sớm!')"
-    >
-      <i class="fas fa-user-tie"></i> TƯ VẤN
-    </button>
+ <!-- Floating Buttons -->
+<div class="floating-buttons">
+  <button
+    class="floating-btn tu-van"
+    onclick="window.location.href='${pageContext.request.contextPath}/advisory'"
+  >
+    <i class="fas fa-user-tie"></i> TƯ VẤN
+  </button>
     <button
       class="floating-btn chat-bot"
       onclick="alert('Chức năng chat bot đang được phát triển!')"

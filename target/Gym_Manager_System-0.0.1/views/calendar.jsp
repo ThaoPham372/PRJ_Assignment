@@ -466,10 +466,7 @@ file="/views/common/header.jsp" %>
       Tham gia các lớp học đa dạng và đạt được mục tiêu fitness của bạn
     </p>
     <div class="cta-buttons">
-      <a
-        href="${pageContext.request.contextPath}/register"
-        class="btn-primary"
-      >
+      <a href="${pageContext.request.contextPath}/register" class="btn-primary">
         <i class="fas fa-user-plus"></i> ĐĂNG KÝ NGAY
       </a>
       <a
@@ -486,7 +483,7 @@ file="/views/common/header.jsp" %>
 <div class="floating-buttons">
   <button
     class="floating-btn tu-van"
-    onclick="alert('Chức năng tư vấn sẽ được triển khai sớm!')"
+    onclick="window.location.href='${pageContext.request.contextPath}/advisory'"
   >
     <i class="fas fa-user-tie"></i> TƯ VẤN
   </button>

@@ -501,7 +501,7 @@
         <!-- Logo -->
         <div class="logo">
           <img
-            src="${pageContext.request.contextPath}/images/common/logo.png"
+            src="${pageContext.request.contextPath}/images/logo/logo.png"
             alt="GymFit Logo"
             class="logo-image"
           />

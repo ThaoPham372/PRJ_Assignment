@@ -6,7 +6,10 @@
     <footer>
         <div class="footer-container">
             <div class="footer-column">
-                <div class="footer-brand">🏋️ GymFit</div>
+                <div class="footer-brand">
+                    <img src="${pageContext.request.contextPath}/images/logo/logo.png" alt="GymFit Logo" class="footer-logo" />
+                    GymFit
+                </div>
                 <p>Nơi thay đổi sức khỏe và vóc dáng của bạn.</p>
                 <p><i class="fas fa-phone"></i> 0123-456-789</p>
                 <p><i class="fas fa-envelope"></i> contact@gymfit.vn</p>
@@ -84,10 +87,10 @@
             gap: 8px;
         }
 
-        .footer-brand::before {
-            content: '🏋️';
-            font-size: 1.3rem;
-            filter: hue-rotate(45deg) saturate(1.5);
+        .footer-logo {
+            height: 40px;
+            width: auto;
+            object-fit: contain;
         }
 
         .footer-column h3 {
