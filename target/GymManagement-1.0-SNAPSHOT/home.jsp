@@ -1,5 +1,6 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ include
-file="/views/common/header.jsp" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %> 
+<%@ include file="/views/common/header.jsp" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 <main>
   <style>
