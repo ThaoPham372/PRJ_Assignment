@@ -27,6 +27,12 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%@ taglib uri="http://jav
       href="${pageContext.request.contextPath}/css/styles.css"
       rel="stylesheet"
     />
+    
+    <!-- Floating Buttons CSS -->
+    <link
+      href="${pageContext.request.contextPath}/css/floating-buttons.css"
+      rel="stylesheet"
+    />
 
     <style>
       :root {

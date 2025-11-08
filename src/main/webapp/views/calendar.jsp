@@ -466,14 +466,11 @@ file="/views/common/header.jsp" %>
       Tham gia các lớp học đa dạng và đạt được mục tiêu fitness của bạn
     </p>
     <div class="cta-buttons">
-      <a
-        href="${pageContext.request.contextPath}/views/register.jsp"
-        class="btn-primary"
-      >
+      <a href="${pageContext.request.contextPath}/register" class="btn-primary">
         <i class="fas fa-user-plus"></i> ĐĂNG KÝ NGAY
       </a>
       <a
-        href="${pageContext.request.contextPath}/views/Service_page/services_main.jsp"
+        href="${pageContext.request.contextPath}/services"
         class="btn-secondary"
       >
         <i class="fas fa-info-circle"></i> TÌM HIỂU DỊCH VỤ
@@ -482,28 +479,38 @@ file="/views/common/header.jsp" %>
   </div>
 </div>
 
+<%@ include file="/views/common/footer.jsp" %>
+
 <!-- Floating Buttons -->
+<style>
+  .floating-buttons {
+    position: fixed !important;
+    bottom: 30px !important;
+    right: 30px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 18px !important;
+    z-index: 10000 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  .floating-btn, #chatToggleButton {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+</style>
 <div class="floating-buttons">
   <button
     class="floating-btn tu-van"
-    onclick="alert('Chức năng tư vấn sẽ được triển khai sớm!')"
+    onclick="window.location.href='${pageContext.request.contextPath}/advisory'"
   >
     <i class="fas fa-user-tie"></i> TƯ VẤN
   </button>
-  <button
-    class="floating-btn chat-bot"
-    onclick="alert('Chức năng chat bot đang được phát triển!')"
-  >
-    <i class="fas fa-comments"></i> CHAT BOT
-  </button>
+  <%@ include file="/views/common/chatbot.jsp" %>
 </div>
 
 <script>
-  // Add floating buttons CSS
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = '${pageContext.request.contextPath}/css/floating-buttons.css';
-  document.head.appendChild(link);
 
   // Add click animation to buttons
   const buttons = document.querySelectorAll('.btn-primary, .btn-secondary');
@@ -548,5 +555,3 @@ file="/views/common/header.jsp" %>
   `;
   document.head.appendChild(style);
 </script>
-
-<%@ include file="/views/common/footer.jsp" %>

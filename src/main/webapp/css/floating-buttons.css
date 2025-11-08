@@ -1,0 +1,137 @@
+/* FLOATING BUTTONS - Global Styles */
+.floating-buttons {
+  position: fixed !important;
+  bottom: 30px !important;
+  right: 30px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 18px !important;
+  z-index: 10000 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+.floating-btn,
+.floating-btn.tu-van,
+.floating-btn.chat-bot,
+#chatToggleButton {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  padding: 18px 32px !important;
+  border-radius: 50px !important;
+  font-weight: 700 !important;
+  font-size: 1.1rem !important;
+  letter-spacing: 0.5px !important;
+  cursor: pointer !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: none !important;
+  text-decoration: none !important;
+  min-width: 180px !important;
+  margin: 0 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  overflow: hidden !important;
+  
+  /* Giao diện màu cam đẹp và nổi bật */
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ff8c42 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 30px rgba(255, 107, 53, 0.5),
+              0 4px 15px rgba(255, 107, 53, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Hiệu ứng ánh sáng khi hover */
+.floating-btn::before,
+#chatToggleButton::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent) !important;
+  transition: left 0.5s ease !important;
+}
+
+.floating-btn:hover::before,
+#chatToggleButton:hover::before {
+  left: 100% !important;
+}
+
+/* Icon style - to và rõ ràng */
+.floating-btn i,
+#chatToggleButton i {
+  color: #fff !important;
+  font-size: 1.4rem !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) !important;
+  transition: transform 0.3s ease !important;
+}
+
+/* Hover effect - nâng cao và sáng hơn */
+.floating-btn:hover,
+#chatToggleButton:hover {
+  transform: translateY(-5px) scale(1.08) !important;
+  box-shadow: 0 15px 40px rgba(255, 107, 53, 0.7),
+              0 8px 20px rgba(255, 107, 53, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+  background: linear-gradient(135deg, #ff7d4a 0%, #ffa726 50%, #ff9a5c 100%) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.floating-btn:hover i,
+#chatToggleButton:hover i {
+  transform: scale(1.15) rotate(5deg) !important;
+}
+
+/* Active effect - nhấn xuống */
+.floating-btn:active,
+#chatToggleButton:active {
+  transform: translateY(-2px) scale(1.05) !important;
+  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.6),
+              0 4px 12px rgba(255, 107, 53, 0.4) !important;
+}
+
+/* Responsive - Mobile */
+@media (max-width: 768px) {
+  .floating-buttons {
+    bottom: 20px !important;
+    right: 20px !important;
+    gap: 15px !important;
+  }
+
+  .floating-btn,
+  #chatToggleButton {
+    padding: 16px 28px !important;
+    font-size: 1rem !important;
+    min-width: 160px !important;
+    gap: 10px !important;
+  }
+
+  .floating-btn i,
+  #chatToggleButton i {
+    font-size: 1.3rem !important;
+  }
+}
+
+/* Responsive - Small mobile */
+@media (max-width: 480px) {
+  .floating-buttons {
+    bottom: 15px !important;
+    right: 15px !important;
+    gap: 12px !important;
+  }
+
+  .floating-btn,
+  #chatToggleButton {
+    padding: 14px 24px !important;
+    font-size: 0.95rem !important;
+    min-width: 140px !important;
+  }
+}
