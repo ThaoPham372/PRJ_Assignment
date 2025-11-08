@@ -26,6 +26,11 @@ import service.UserService;
 
 /*
     Note: 
+    Lỗi:
+     - Sau khi ấn edit -> ấn create account thì form tự điền
+     - dữ liệu trả về của edit account
+    cần thêm:
+     - update account role => (xóa User hiện tại, new User mới) 
  */
 @WebServlet(urlPatterns = "/admin/account-management")
 public class AccountManagementServlet extends HttpServlet {
