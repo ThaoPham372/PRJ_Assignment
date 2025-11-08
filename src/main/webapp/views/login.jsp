@@ -1,5 +1,18 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%
+  // If googleClientId is not set by servlet, load it from ConfigManager
+  if (request.getAttribute("googleClientId") == null) {
+    try {
+      Utils.ConfigManager configManager = Utils.ConfigManager.getInstance();
+      String clientId = configManager.getGoogleClientId();
+      request.setAttribute("googleClientId", clientId);
+    } catch (Exception e) {
+      System.err.println("[login.jsp] Error loading Google Client ID: " + e.getMessage());
+      request.setAttribute("googleClientId", null);
+    }
+  }
+%>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -755,37 +768,89 @@
 
         // Initialize Google Sign-In
         function initializeGoogleSignIn() {
-          if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) return;
-          google.accounts.id.initialize({
-            client_id: '${initParam['google.client.id']}',
-            callback: function (response) {
-              fetch('${pageContext.request.contextPath}/auth/google-login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ credential: response.credential })
-              })
-                .then(function (r) { return r.json(); })
-                .then(function (data) {
-                  if (data && data.success) {
-                    window.location.href = data.redirectUrl;
-                  } else {
-                    alert('Đăng nhập Google thất bại' + (data && data.message ? ': ' + data.message : ''));
-                  }
+          var clientId = '${googleClientId}';
+          console.log('[Google Sign-In] Client ID:', clientId ? 'SET' : 'NOT SET');
+          
+          if (!clientId || clientId.trim() === '' || clientId === 'YOUR_GOOGLE_CLIENT_ID_HERE' || clientId === 'null') {
+            console.warn('[Google Sign-In] Google Client ID is not configured');
+            var el = document.getElementById('g_id_signin_login');
+            if (el) {
+              el.innerHTML = '<p style="color: #ff6b6b; font-size: 0.85rem; text-align: center;">Google Sign-In chưa được cấu hình</p>';
+            }
+            return;
+          }
+          
+          // Check if Google API is loaded
+          if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
+            console.log('[Google Sign-In] Google API not loaded yet, retrying...');
+            setTimeout(initializeGoogleSignIn, 500);
+            return;
+          }
+          
+          try {
+            google.accounts.id.initialize({
+              client_id: clientId,
+              callback: function (response) {
+                console.log('[Google Sign-In] Callback received');
+                fetch('${pageContext.request.contextPath}/auth/google-login', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ credential: response.credential })
                 })
-                .catch(function (err) { console.error(err); alert('Có lỗi xảy ra khi đăng nhập Google'); });
-            },
-            auto_select: false,
-            cancel_on_tap_outside: true
-          });
-          var el = document.getElementById('g_id_signin_login');
-          if (el) {
-            google.accounts.id.renderButton(el, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with' });
+                  .then(function (r) { return r.json(); })
+                  .then(function (data) {
+                    if (data && data.success) {
+                      window.location.href = data.redirectUrl;
+                    } else {
+                      alert('Đăng nhập Google thất bại' + (data && data.message ? ': ' + data.message : ''));
+                    }
+                  })
+                  .catch(function (err) { 
+                    console.error('[Google Sign-In] Error:', err); 
+                    alert('Có lỗi xảy ra khi đăng nhập Google'); 
+                  });
+              },
+              auto_select: false,
+              cancel_on_tap_outside: true
+            });
+            
+            var el = document.getElementById('g_id_signin_login');
+            if (el) {
+              google.accounts.id.renderButton(el, { 
+                theme: 'outline', 
+                size: 'large', 
+                shape: 'pill', 
+                text: 'continue_with' 
+              });
+              console.log('[Google Sign-In] Button rendered successfully');
+            } else {
+              console.error('[Google Sign-In] Element g_id_signin_login not found');
+            }
+          } catch (error) {
+            console.error('[Google Sign-In] Initialization error:', error);
+            var el = document.getElementById('g_id_signin_login');
+            if (el) {
+              el.innerHTML = '<p style="color: #ff6b6b; font-size: 0.85rem; text-align: center;">Lỗi khởi tạo Google Sign-In</p>';
+            }
           }
         }
-        if (typeof google !== 'undefined') {
-          initializeGoogleSignIn();
+        
+        // Wait for Google script to load
+        function waitForGoogleAPI() {
+          if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+            initializeGoogleSignIn();
+          } else {
+            setTimeout(waitForGoogleAPI, 100);
+          }
+        }
+        
+        // Start initialization when DOM is ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(waitForGoogleAPI, 500);
+          });
         } else {
-          window.addEventListener('load', initializeGoogleSignIn);
+          setTimeout(waitForGoogleAPI, 500);
         }
 
         // Register button handled by anchor link (no JS redirect to avoid delay)
