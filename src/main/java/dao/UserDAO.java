@@ -64,17 +64,14 @@ public class UserDAO {
         return user;
     }
 
-    public int existsByUsername(String name) {
-        System.out.println(">>User: Exist By Username");
-        User user = null;
+      public boolean existsByUsername(String username) {
         try {
-            user = genericDAO.findByField("name", name);
+            User user = genericDAO.findByField("username", username);
+            return user != null;
         } catch (Exception e) {
-            System.out.println("Result: " + user);
+            System.err.println("[UserDAO] Error checking username existence: " + e.getMessage());
+        return false;
         }
-
-        System.out.println("-------------------------------");
-        return user != null ? user.getId() : -1;
     }
 
     public int existsByEmail(String email) {

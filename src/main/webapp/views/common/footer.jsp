@@ -7,8 +7,8 @@
         <div class="footer-container">
             <div class="footer-column">
                 <div class="footer-brand">
-                  <img src="${pageContext.request.contextPath}/images/logo/logo.png" alt="GymFit Logo" style="height: 2em; width: auto; margin-right: 10px; vertical-align: middle; max-height: 40px; object-fit: contain" />
-                  GymFit
+                    <img src="${pageContext.request.contextPath}/images/logo/logo.png" alt="GymFit Logo" class="footer-logo" />
+                    GymFit
                 </div>
                 <p>Nơi thay đổi sức khỏe và vóc dáng của bạn.</p>
                 <p><i class="fas fa-phone"></i> 0123-456-789</p>
@@ -87,7 +87,11 @@
             gap: 8px;
         }
 
-        /* Logo đã được thay bằng hình ảnh, không cần ::before emoji nữa */
+        .footer-logo {
+            height: 40px;
+            width: auto;
+            object-fit: contain;
+        }
 
         .footer-column h3 {
             color: var(--support);

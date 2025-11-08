@@ -14,9 +14,24 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.User;
 import java.io.IOException;
-import java.util.List;
 
-@WebServlet(name = "AuthServlet", urlPatterns = {"/auth"})
+/**
+ * AuthServlet - Unified authentication controller
+ * Handles login, registration, and logout
+ * 
+ * URL Patterns:
+ * - /auth, /login, /auth/login -> Login
+ * - /register, /auth/register -> Register
+ * - /logout -> Logout
+ */
+@WebServlet(name = "AuthServlet", urlPatterns = {
+    "/auth",
+    "/login",
+    "/auth/login",
+    "/register",
+    "/auth/register",
+    "/logout"
+})
 public class AuthServlet extends HttpServlet {
 
     private LoginService loginService;
@@ -36,14 +51,24 @@ public class AuthServlet extends HttpServlet {
         
         if (action == null || action.isEmpty()) {
             String path = request.getServletPath();
-            if ("/register".equals(path)) action = "register"; 
-            else action = "login";
+            if ("/register".equals(path)) {
+                action = "register";
+            } else if ("/logout".equals(path)) {
+                action = "logout";
+            } else {
+                action = "login";
+            }
         }
 
         switch (action) {
             case "register":
                 request.getRequestDispatcher("/views/register.jsp").forward(request, response);
                 break;
+            
+            case "logout":
+                handleLogout(request, response);
+                break;
+            
             case "login":
             default:
                 request.getRequestDispatcher("/views/login.jsp").forward(request, response);
@@ -57,14 +82,24 @@ public class AuthServlet extends HttpServlet {
         String action = request.getParameter("action");
         if (action == null || action.isEmpty()) {
             String path = request.getServletPath();
-            if ("/register".equals(path)) action = "register"; 
-            else action = "login";
+            if ("/register".equals(path)) {
+                action = "register";
+            } else if ("/logout".equals(path)) {
+                action = "logout";
+            } else {
+                action = "login";
+            }
         }
 
         switch (action) {
             case "register":
                 handleRegister(request, response);
                 break;
+            
+            case "logout":
+                handleLogout(request, response);
+                break;
+            
             case "login":
             default:
                 handleLogin(request, response);
@@ -97,6 +132,7 @@ public class AuthServlet extends HttpServlet {
             session.setAttribute("user", user);
             session.setAttribute("userRoles", role);
             session.setAttribute("isLoggedIn", true);
+            session.setAttribute("userId", user.getId());
             
             System.out.println("[AuthServlet] Session attributes set:");
             System.out.println("[AuthServlet]   - user: " + (session.getAttribute("user") != null ? "SET" : "NULL"));
@@ -111,9 +147,10 @@ public class AuthServlet extends HttpServlet {
                 System.out.println("[AuthServlet] Session timeout: 30 minutes");
             }
 
-            String redirectUrl = determineRedirectUrl(role);
-            System.out.println("[AuthServlet] Redirecting to: " + redirectUrl);
-            response.sendRedirect(request.getContextPath() + redirectUrl);
+            // Redirect to /home - RoleBasedRedirectFilter will handle role-based redirect
+            System.out.println("[AuthServlet] Login successful, redirecting to /home");
+            response.sendRedirect(request.getContextPath() + "/home");
+
         } else {
             System.out.println("[AuthServlet] Login failed!");
             System.out.println("[AuthServlet] Errors: " + (result.getErrors() != null ? result.getErrors().toString() : "NULL"));
@@ -154,24 +191,37 @@ public class AuthServlet extends HttpServlet {
         request.getRequestDispatcher("/views/register.jsp").forward(request, response);
     }
 
-    private String determineRedirectUrl(String role) {
-        if (role == null || role.isEmpty()) {
-            System.out.println("[AuthServlet] No roles found, redirecting to /member/dashboard");
-            return "/member/dashboard";
+    /**
+     * Handle logout - Invalidate session and redirect to home
+     */
+    private void handleLogout(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        System.out.println("[AuthServlet] Logout request received");
+        
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            String username = "Unknown";
+            User user = (User) session.getAttribute("user");
+            if (user != null) {
+                username = user.getUsername();
+            }
+            
+            System.out.println("[AuthServlet] Logging out user: " + username);
+            System.out.println("[AuthServlet] Session ID: " + session.getId());
+            
+            // Invalidate session - xóa tất cả attributes và dừng session
+            session.invalidate();
+            System.out.println("[AuthServlet] Session invalidated successfully");
+        } else {
+            System.out.println("[AuthServlet] No active session found");
         }
-        if (role.equalsIgnoreCase("ADMIN")) {
-            System.out.println("[AuthServlet] User is ADMIN, redirecting to /admin/dashboard");
-            return "/admin/dashboard";
-        }
-        if (role.equalsIgnoreCase("PT")) {
-            System.out.println("[AuthServlet] User is PT, redirecting to /pt/dashboard");
-            return "/pt/dashboard";
-        }
-        // Default to member dashboard for USER, MEMBER, or any other role
-        System.out.println("[AuthServlet] User roles: " + role + ", redirecting to /member/dashboard");
-        return "/member/dashboard";
+        
+        // Redirect về trang home
+        System.out.println("[AuthServlet] Redirecting to home page");
+        response.sendRedirect(request.getContextPath() + "/home");
     }
-
+  
     private String getClientIpAddress(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.isEmpty()) {

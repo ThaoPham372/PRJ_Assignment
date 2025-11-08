@@ -24,8 +24,9 @@ public class GenericDAO<T> extends BaseDAO {
             em.persist(entity);
             commitTransaction();
             
-            if(entity instanceof User)
-                ((User) entity).getId();
+            if(entity instanceof User) {
+                return ((User) entity).getId();
+            }
         } catch (Exception e) {
             rollbackTransaction();
             throw e;
@@ -35,6 +36,7 @@ public class GenericDAO<T> extends BaseDAO {
     
     
     // Read
+    
     public T findById(int id) {
         return em.find(entityClass, id);
     }
@@ -49,7 +51,7 @@ public class GenericDAO<T> extends BaseDAO {
         return new ArrayList<>(List.of());
     }
     
-    public T findByField(String fieldName, Object value){
+     public T findByField(String fieldName, Object value){
         try{
             T entity = em.createQuery("SELECT e FROM " + entityClass.getSimpleName() + " e WHERE e." + fieldName + " = :val", entityClass)
                      .setParameter("val", value)
