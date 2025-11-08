@@ -2,12 +2,6 @@
 <web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
     <display-name>Gym Management System</display-name>
     <description>Comprehensive Gym Management Application</description>
-    
-    <!-- Google OAuth Client ID -->
-    <context-param>
-        <param-name>google.client.id</param-name>
-        <param-value>328581863407-bg0nctpm7slrtog8rdlura9osb310du5.apps.googleusercontent.com</param-value>
-    </context-param>
 
     <!-- Servlet definitions -->
     <servlet>
