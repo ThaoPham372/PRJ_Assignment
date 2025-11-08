@@ -1,4 +1,3 @@
-
 package model;
 
 import jakarta.persistence.Basic;
@@ -9,8 +8,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -31,49 +30,61 @@ public class User implements Serializable {
     @Basic(optional = false)
     @Column(name = "user_id")
     private Integer id;
-    
+
     @Column(name = "address")
     private String address;
-    
+
     @Column(name = "gender")
     private String gender;
-    
+
     @Column(name = "createdDate")
     @Temporal(TemporalType.DATE)
     private Date createdDate;
-    
+
     @Column(name = "dob")
     @Temporal(TemporalType.DATE)
     private Date dob;
-    
+
     @Column(name = "email")
     private String email;
-    
+
     @Column(name = "lastLogin")
     @Temporal(TemporalType.DATE)
     private Date lastLogin;
-    
+
     @Column(name = "lastUpdate")
     @Temporal(TemporalType.DATE)
     private Date lastUpdate;
-    
+
     @Column(name = "name")
     private String name;
-    
+
     @Column(name = "password")
     private String password;
-    
+
     @Column(name = "phone")
     private String phone;
-    
+
     @Column(name = "role")
     private String role;
-    
+
     @Column(name = "status")
     private String status;
-    
+
     @Column(name = "username")
     private String username;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdDate = new Date();
+        if(status == null || status.isEmpty() || status.isBlank()) // có thể dùng Validator thay vì code trực tiếp
+            status = "active";
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.lastUpdate = new Date();
+    }
 
     public User() {
     }

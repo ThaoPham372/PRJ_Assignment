@@ -22,6 +22,8 @@ public abstract class BaseDAO {
     }
 
     public BaseDAO() {
+        if(emf == null)
+            emf = Persistence.createEntityManagerFactory("gymPU");
         em = emf.createEntityManager();
     }
 

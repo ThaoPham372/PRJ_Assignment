@@ -25,13 +25,12 @@ public class InputValidator {
 
     private static boolean isExistUsername(String username) {
         UserService userService = new UserService();
-        User user = userService.getUserByUserame(username);
+        User user = userService.getUserByUsername(username);
         return user != null;
     }
 
     public static boolean isValidPassword(String password) {
-        return password != null &&
-                password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
+        return password != null; // && password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
     }
 
     public static boolean isValidEmail(String email) {
@@ -39,7 +38,7 @@ public class InputValidator {
         User user = userService.getUserByEmail(email);
         if (user != null)
             return false;
-        return email != null && Pattern
+        return Pattern
                 .compile("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")
                 .matcher(email)
                 .matches();

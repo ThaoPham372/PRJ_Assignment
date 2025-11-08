@@ -65,7 +65,7 @@ public class Membership implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date suspendedAt;
 
-    @JoinColumn(name = "member_id", referencedColumnName = "user_id")
+    @JoinColumn(name = "member_id", referencedColumnName = "user_id") // user_id or id ?
     @ManyToOne(optional = false)
     private Member member;
 
@@ -204,7 +204,7 @@ public class Membership implements Serializable {
 
     @Override
     public String toString() {
-        return "model.Memberships[ membershipId=" + membershipId + " ]";
+        return "Membership{" + "membershipId=" + membershipId + ", status=" + status + ", memberId=" + member.getId() + ", packageOId=" + packageO.getId() + '}';
     }
 
 }

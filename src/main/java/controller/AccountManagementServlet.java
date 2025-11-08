@@ -26,83 +26,90 @@ import service.UserService;
 
 /*
     Note: 
+    Lỗi:
+     - Sau khi ấn edit -> ấn create account thì form tự điền
+     - dữ liệu trả về của edit account
+    cần thêm:
+     - update account role => (xóa User hiện tại, new User mới) 
  */
 @WebServlet(urlPatterns = "/admin/account-management")
 public class AccountManagementServlet extends HttpServlet {
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
+    protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        System.out.println("\n\n\nACCOUNT MANAGEMENT SERVLET");
+        System.out.println("URL: " + req.getRequestURL() + "");
+        System.out.println("Query: " + req.getQueryString());
+        System.out.println("\n");
+        
+        List<User> users = getAccounts();
+        
         //Need: fix edit account (JSON -> API)
         if ("editAccount".equals(req.getParameter("action"))) {
             int id = Integer.parseInt(req.getParameter("id"));
             UserService userService = new UserService();
             User user = userService.getUserById(id);
-            resp.setContentType("application/json");
-            resp.getWriter().write(new Gson().toJson(user));
+            res.setContentType("application/json");
+            res.getWriter().write(new Gson().toJson(user));
             return;
-        }
+        } else
         if ("filterAccounts".equals(req.getParameter("action"))) {
-            List<User> users = filterAccounts(req, resp);
-            req.setAttribute("accounts", users);
-            req.getRequestDispatcher("/views/admin/account_management.jsp").forward(req, resp);
-            return;
-        } else {
-            List<User> users = getAccounts();
-            req.setAttribute("accounts", users);
-            req.getRequestDispatcher("/views/admin/account_management.jsp").forward(req, resp);
-            return;
-        }
-
+            String roleFilter = req.getParameter("roleFilter");
+            String statusFilter = req.getParameter("statusFilter");
+            
+            users = filterAccounts(users, roleFilter, statusFilter);
+            
+            req.setAttribute("roleFilter", roleFilter);
+            req.setAttribute("statusFilter", statusFilter);
+        } 
+        
+        req.setAttribute("accounts", users);
+        req.getRequestDispatcher("/views/admin/account_management.jsp").forward(req, res);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         String action = req.getParameter("action");
         switch (action) {
             case "addAccount":
-                addAccount(req, resp);
+                addAccount(req, res);
                 break;
             case "updateAccount":
-                updateAccount(req, resp);
+                updateAccount(req, res);
                 break;
             case "deleteAccount":
-                deleteAccount(req, resp);
+                deleteAccount(req, res);
                 break;
             default:
                 break;
         }
-    }
-
-    private void addAccount(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-
-        if (!InputValidator.isValidUsername(req.getParameter("username"))
-                || !InputValidator.isValidEmail(req.getParameter("email"))) {
-            req.setAttribute("error", "Invalid username format or username already exists.");
-            req.getRequestDispatcher("/views/admin/account_management.jsp").forward(req, resp);
-            return;
-        }
-
-        String role = req.getParameter("role");
-
-        if (role.equalsIgnoreCase("admin")) {
-            this.addAdmin(req, resp);
-        } else if (role.equalsIgnoreCase("trainer")) {
-            this.addTrainer(req, resp);
-        } else {
-            this.addUser(req, resp);
-        }
-
+        
         List<User> users = getAccounts();
         req.setAttribute("accounts", users);
-        req.setAttribute("message", "Add account successful!");
-        req.getRequestDispatcher("/views/admin/account_management.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/admin/account_management.jsp").forward(req, res);
     }
 
-    private void updateAccount(HttpServletRequest req, HttpServletResponse resp)
+    private void addAccount(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
-        checkInfoExist(req, resp);
+        String username = req.getParameter("username");
+        String email = req.getParameter("email");
+        
+        boolean isValidInput = isValidUsernameAndEmail(username, email); // Có thể đưa vào class InputValidator
+        if(!isValidInput) return;
+
+        String role = req.getParameter("role").toLowerCase();
+        if(role == null) role = "member";
+        
+        createAccountByRole(role, req);
+
+        
+        req.setAttribute("message", "Add account successful!");
+    }
+
+    private void updateAccount(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        boolean isValidChangeUsernameAndEmail = checkInfoExist(req, res);
+        if(!isValidChangeUsernameAndEmail) 
+            return;
 
         int id = Integer.parseInt(req.getParameter("id"));
         UserService userService = new UserService();
@@ -112,19 +119,16 @@ public class AccountManagementServlet extends HttpServlet {
 
         userService.update(user);
 
-        resp.setStatus(HttpServletResponse.SC_OK);
-        List<User> users = getAccounts();
-        req.setAttribute("accounts", users);
-        req.getRequestDispatcher("/views/admin/account_management.jsp").forward(req, resp);
+        res.setStatus(HttpServletResponse.SC_OK);
     }
 
-    private void deleteAccount(HttpServletRequest req, HttpServletResponse resp)
+    private void deleteAccount(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
         int id = Integer.parseInt(req.getParameter("id"));
         UserService userService = new UserService();
         User user = userService.getUserById(id);
         userService.delete(user);
-        resp.setStatus(HttpServletResponse.SC_OK);
+        res.setStatus(HttpServletResponse.SC_OK);
     }
 
     private List<User> getAccounts() {
@@ -136,7 +140,7 @@ public class AccountManagementServlet extends HttpServlet {
         List<Trainer> trainers = trainerService.getAll();
         List<Admin> admins = adminService.getAll();
 
-        List<User> users = new ArrayList<>(members);
+        List<User> users = new ArrayList<>();
         users.addAll(trainers);
         users.addAll(members);
         users.addAll(admins);
@@ -144,7 +148,7 @@ public class AccountManagementServlet extends HttpServlet {
         return users;
     }
 
-    private void checkInfoExist(HttpServletRequest req, HttpServletResponse resp) {
+    private boolean checkInfoExist(HttpServletRequest req, HttpServletResponse res) {
         int id = Integer.parseInt(req.getParameter("id"));
         String username = req.getParameter("username");
         String email = req.getParameter("email");
@@ -152,36 +156,22 @@ public class AccountManagementServlet extends HttpServlet {
         UserService userService = new UserService();
         User user = userService.getUserById(id);
 
-        if (!username.trim().equalsIgnoreCase(user.getUsername())) {
+        if (!username.trim().equalsIgnoreCase(user.getUsername()))
             if (!InputValidator.isValidUsername(username)) {
-                try {
-                    List<User> users = getAccounts();
-                    req.setAttribute("accounts", users);
-                    req.setAttribute("errorMessage", "Invalid username format or username already exists.");
-                    req.getRequestDispatcher("/views/admin/account_management.jsp").forward(req, resp);
-                } catch (ServletException | IOException ex) {
-                    Logger.getLogger(AdminDashboardServlet.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                return;
+                req.setAttribute("errorMessage", "Invalid username format or username already exists.");
+                return false;
             }
-        }
 
-        if (!email.trim().equalsIgnoreCase(user.getEmail())) {
+        if (!email.trim().equalsIgnoreCase(user.getEmail())) 
             if (!InputValidator.isValidEmail(email)) {
-                try {
-                    List<User> users = getAccounts();
-                    req.setAttribute("accounts", users);
-                    req.setAttribute("errorMessage", "Invalid email format or email already exists.");
-                    req.getRequestDispatcher("/views/admin/account_management.jsp").forward(req, resp);
-                } catch (ServletException | IOException ex) {
-                    Logger.getLogger(AdminDashboardServlet.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                return;
+                req.setAttribute("errorMessage", "Invalid email format or email already exists.");
+                return false;
             }
-        }
+        
+        return true;
     }
 
-    private void addAdmin(HttpServletRequest req, HttpServletResponse resp)
+    private void addAdmin(HttpServletRequest req)
             throws ServletException, IOException {
         AdminService adminService = new AdminService();
         Admin admin = new Admin();
@@ -189,31 +179,26 @@ public class AccountManagementServlet extends HttpServlet {
         adminService.add(admin);
     }
 
-    private void addUser(HttpServletRequest req, HttpServletResponse resp)
+    private void addMember(HttpServletRequest req)
             throws ServletException, IOException {
-        User user = new User();
-        FormUtils.getFormValue(req, user);
-        UserService userService = new UserService();
-        userService.add(user);
+        Member member = new Member();
+        FormUtils.getFormValue(req, member);
+        MemberService memberService = new MemberService();
+        memberService.add(member);
     }
 
-    private void addTrainer(HttpServletRequest req, HttpServletResponse resp) {
+    private void addTrainer(HttpServletRequest req) {
         Trainer trainer = new Trainer();
         FormUtils.getFormValue(req, trainer);
         TrainerService trainerService = new TrainerService();
         trainerService.add(trainer);
     }
 
-    private List<User> filterAccounts(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String role = req.getParameter("role");
-        String status = req.getParameter("status");
-
-        List<User> users = getAccounts();
-        users = filterAccountsByRole(users, role);
-        users = filterAccountsByStatus(users, status);
-
-        req.setAttribute("role", role);
-        req.setAttribute("status", status);
+    private List<User> filterAccounts(List<User> users, String roleFilter, String statusFilter) throws ServletException, IOException {
+        if(roleFilter != null)
+            users = filterAccountsByRole(users, roleFilter);
+        if(statusFilter != null)
+            users = filterAccountsByStatus(users, statusFilter);
 
         return users;
     }
@@ -226,10 +211,23 @@ public class AccountManagementServlet extends HttpServlet {
     }
 
     private List<User> filterAccountsByStatus(List<User> users, String status) throws ServletException, IOException {
-        System.out.println("\n\nFilter account Status: " + status);
         if (status != null && !status.equals("all")) {
             users.removeIf(user -> !status.toLowerCase().equalsIgnoreCase(user.getStatus()));
         }
         return users;
+    }
+
+    private boolean isValidUsernameAndEmail(String username, String email) {
+        return InputValidator.isValidUsername(username) && InputValidator.isValidEmail(email);
+    }
+
+    private void createAccountByRole(String role, HttpServletRequest req) throws ServletException, IOException {
+        if (role.equalsIgnoreCase("admin")) {
+            addAdmin(req);
+        } else if (role.equalsIgnoreCase("trainer")) {
+            addTrainer(req);
+        } else {
+            addMember(req);
+        }
     }
 }
