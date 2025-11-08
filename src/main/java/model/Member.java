@@ -5,6 +5,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.util.Collection;
@@ -47,6 +49,19 @@ public class Member  extends User implements Serializable {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "member")
     private Collection<Membership> membershipCollection;
 
+    @PrePersist
+    @Override
+    protected void onCreate() {
+        super.onCreate();
+        setRole("Member");
+    }
+
+    @PreUpdate
+    @Override
+    protected void onUpdate() {
+        super.onUpdate();
+        setRole("Member");
+    }
 
     public Member() {
     }
