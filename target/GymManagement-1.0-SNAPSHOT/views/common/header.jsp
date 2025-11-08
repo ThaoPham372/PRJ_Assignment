@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -57,6 +57,38 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         background: #f6f6f8;
         line-height: 1.6;
         font-weight: 400;
+      }
+
+      /* Global Back Button Style */
+      .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        color: var(--text);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .btn-back:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        transform: translateX(-5px);
+        box-shadow: 0 4px 12px rgba(236, 139, 94, 0.2);
+      }
+
+      .btn-back i {
+        font-size: 1rem;
+        transition: transform 0.3s ease;
+      }
+
+      .btn-back:hover i {
+        transform: translateX(-3px);
       }
 
       /* HEADER */
@@ -152,6 +184,105 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         filter: brightness(1.05);
       }
 
+      /* Auth actions layout */
+      .auth-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      /* Cart Icon */
+      .cart-icon-wrapper {
+        position: relative;
+        margin-right: 10px;
+      }
+
+      .cart-icon-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 50%;
+        color: #fff;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .cart-icon-link:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: scale(1.1);
+      }
+
+      .cart-icon-link i {
+        font-size: 1.3rem;
+      }
+
+      .cart-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #dc3545;
+        color: #fff;
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border: 2px solid var(--primary);
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
+      }
+
+      .cart-badge.empty {
+        display: none;
+      }
+
+      /* Username Display Button */
+      .btn-username {
+        background: rgba(255, 255, 255, 0.95);
+        color: var(--primary);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+      
+      .btn-username:before {
+        content: '👤';
+        font-size: 1.1rem;
+      }
+      
+      .btn-username:hover {
+        background: white;
+        color: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(236, 139, 94, 0.3);
+        border-color: var(--accent);
+      }
+
+      /* Outline button for other cases */
+      .btn-outline {
+        background: transparent;
+        color: #fff;
+        border: 2px solid rgba(255, 255, 255, 0.6);
+        box-shadow: none;
+      }
+      .btn-outline:hover {
+        background: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+      }
+
       @media (max-width: 900px) {
         header {
           flex-direction: column;
@@ -170,20 +301,9 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
   <body>
     <!-- HEADER -->
     <header>
-      <a href="${pageContext.request.contextPath}/home.jsp" class="logo">
-        <img
-          src="${pageContext.request.contextPath}/images/logo/logo.png"
-          alt="GymFit Logo"
-          style="
-            height: 2.5em;
-            width: auto;
-            margin-right: 12px;
-            max-height: 50px;
-            object-fit: contain;
-          "
-        />
-        GymFit
-      </a>
+      <a href="${pageContext.request.contextPath}/home.jsp" class="logo"
+        >️ GymFit</a
+      >
       <nav>
         <ul>
           <li>
@@ -191,7 +311,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li>
             <a
-              href="${pageContext.request.contextPath}/views/Service_page/services_main.jsp"
+              href="${pageContext.request.contextPath}/services"
               >SERVICES</a
             >
           </li>
@@ -216,17 +336,34 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
       </nav>
       <c:choose>
         <c:when test="${sessionScope.user != null}">
-          <div class="btn">
-            ${sessionScope.user.username != null ? sessionScope.user.username :
-            'User'}
+          <c:set var="dashboardHref" value="${pageContext.request.contextPath}/home" />
+          <c:if test="${not empty sessionScope.userRoles}">
+            <c:choose>
+              <c:when test="${fn:contains(sessionScope.userRoles, 'ADMIN')}">
+                <c:set var="dashboardHref" value="${pageContext.request.contextPath}/admin/dashboard" />
+              </c:when>
+              <c:when test="${fn:contains(sessionScope.userRoles, 'PT')}">
+                <c:set var="dashboardHref" value="${pageContext.request.contextPath}/pt/dashboard" />
+              </c:when>
+              <c:when test="${fn:contains(sessionScope.userRoles, 'USER')}">
+                <c:set var="dashboardHref" value="${pageContext.request.contextPath}/member/dashboard" />
+              </c:when>
+              <c:when test="${fn:contains(sessionScope.userRoles, 'MEMBER')}">
+                <c:set var="dashboardHref" value="${pageContext.request.contextPath}/member/dashboard" />
+              </c:when>
+            </c:choose>
+          </c:if>
+          
+        
+            
+            <a href="${dashboardHref}" class="btn-username" title="Xem Dashboard">
+              ${sessionScope.user.username != null ? sessionScope.user.username : 'User'}
+            </a>
+            <a href="${pageContext.request.contextPath}/logout" class="btn">ĐĂNG XUẤT</a>
           </div>
         </c:when>
         <c:otherwise>
-          <a
-            href="${pageContext.request.contextPath}/views/login.jsp"
-            class="btn"
-            >ĐĂNG NHẬP</a
-          >
+          <a href="${pageContext.request.contextPath}/login" class="btn">ĐĂNG NHẬP</a>
         </c:otherwise>
       </c:choose>
     </header>

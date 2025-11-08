@@ -1,35 +1,43 @@
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\service\RegistrationService.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\filter\CharacterEncodingFilter.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\model\Membership.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\dao\MemberDAO.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\model\Member.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\dao\GenericDAO.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\model\User.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\controller\AdminDashboardServlet.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\controller\AdminProfileServlet.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\model\Package.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\service\PasswordService.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\controller\AccountManagementServlet.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\Utils\FormUtils.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\controller\TestServlet.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\Validator\InputValidator.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\service\PackageService.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\model\Admin.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\service\LoginService.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\service\UserService.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\controller\LoginServlet.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\dao\MembershipDAO.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\dao\PackageDAO.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\service\MembershipService.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\service\TrainerService.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\dao\BaseDAO.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\Utils\DateUtils.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\dao\UserDAO.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\service\MemberService.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\controller\MembershipManagementServlet.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\model\Trainer.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\controller\AuthServlet.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\dao\TrainerDAO.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\controller\RegisterServlet.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\dao\AdminDAO.java
-C:\Users\LE ANH TUAN\OneDrive\Máy tính\Term_4\PRJ301\GymAdmin\PRJ_Assignment\src\main\java\service\AdminService.java
+F:\project\PRJ_Assignment\worktree\src\main\java\model\Member.java
+F:\project\PRJ_Assignment\worktree\src\main\java\service\LoginService.java
+F:\project\PRJ_Assignment\worktree\src\main\java\controller\AdminDashboardServlet.java
+F:\project\PRJ_Assignment\worktree\src\main\java\controller\AdminProfileServlet.java
+F:\project\PRJ_Assignment\worktree\src\main\java\controller\GoogleAuthServlet.java
+F:\project\PRJ_Assignment\worktree\src\main\java\dao\MemberDAO.java
+F:\project\PRJ_Assignment\worktree\src\main\java\dao\TrainerDAO.java
+F:\project\PRJ_Assignment\worktree\src\main\java\model\Admin.java
+F:\project\PRJ_Assignment\worktree\src\main\java\controller\AccountManagementServlet.java
+F:\project\PRJ_Assignment\worktree\src\main\java\dao\MembershipDAO.java
+F:\project\PRJ_Assignment\worktree\src\main\java\dao\BaseDAO.java
+F:\project\PRJ_Assignment\worktree\src\main\java\service\GoogleAuthService.java
+F:\project\PRJ_Assignment\worktree\src\main\java\controller\TestServlet.java
+F:\project\PRJ_Assignment\worktree\src\main\java\service\AdminService.java
+F:\project\PRJ_Assignment\worktree\src\main\java\Utils\SessionUtil.java
+F:\project\PRJ_Assignment\worktree\src\main\java\dao\PasswordResetTokenDAO.java
+F:\project\PRJ_Assignment\worktree\src\main\java\service\EmailService.java
+F:\project\PRJ_Assignment\worktree\src\main\java\Utils\FormUtils.java
+F:\project\PRJ_Assignment\worktree\src\main\java\Utils\DateUtils.java
+F:\project\PRJ_Assignment\worktree\src\main\java\controller\AuthServlet.java
+F:\project\PRJ_Assignment\worktree\src\main\java\service\RegistrationService.java
+F:\project\PRJ_Assignment\worktree\src\main\java\model\Membership.java
+F:\project\PRJ_Assignment\worktree\src\main\java\model\Package.java
+F:\project\PRJ_Assignment\worktree\src\main\java\service\MembershipService.java
+F:\project\PRJ_Assignment\worktree\src\main\java\Validator\InputValidator.java
+F:\project\PRJ_Assignment\worktree\src\main\java\model\Trainer.java
+F:\project\PRJ_Assignment\worktree\src\main\java\dao\PackageDAO.java
+F:\project\PRJ_Assignment\worktree\src\main\java\filter\CharacterEncodingFilter.java
+F:\project\PRJ_Assignment\worktree\src\main\java\filter\RoleBasedRedirectFilter.java
+F:\project\PRJ_Assignment\worktree\src\main\java\service\PackageService.java
+F:\project\PRJ_Assignment\worktree\src\main\java\service\TrainerService.java
+F:\project\PRJ_Assignment\worktree\src\main\java\controller\HomeServlet.java
+F:\project\PRJ_Assignment\worktree\src\main\java\model\PasswordResetToken.java
+F:\project\PRJ_Assignment\worktree\src\main\java\dao\AdminDAO.java
+F:\project\PRJ_Assignment\worktree\src\main\java\service\UserService.java
+F:\project\PRJ_Assignment\worktree\src\main\java\service\PasswordService.java
+F:\project\PRJ_Assignment\worktree\src\main\java\controller\PasswordResetServlet.java
+F:\project\PRJ_Assignment\worktree\src\main\java\model\User.java
+F:\project\PRJ_Assignment\worktree\src\main\java\service\MemberService.java
+F:\project\PRJ_Assignment\worktree\src\main\java\controller\MembershipManagementServlet.java
+F:\project\PRJ_Assignment\worktree\src\main\java\dao\UserDAO.java
+F:\project\PRJ_Assignment\worktree\src\main\java\controller\MemberServlet.java
+F:\project\PRJ_Assignment\worktree\src\main\java\dao\GenericDAO.java

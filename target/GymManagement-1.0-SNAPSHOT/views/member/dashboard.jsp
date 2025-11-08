@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ include file="/views/common/header.jsp" %>
 
 <style>
@@ -693,27 +694,21 @@
                     </c:choose>
                 </div>
                 <div class="welcome-text">
-                    <h2>Xin chào, <c:out value="${dashboardData != null ? dashboardData.memberName : 'Thành viên'}"/>!</h2>
+                    <h2>Xin chào, <c:out value="${not empty memberName ? memberName : (not empty member.name ? member.name : member.username)}"/>!</h2>
                     <div class="welcome-meta">
                         <div class="welcome-meta-item">
                             <i class="fas fa-crown"></i>
-                            <span><strong>Trạng thái:</strong> 
-                                <c:choose>
-                                    <c:when test="${not empty currentMembership && not empty currentMembership.packageName}">
-                                        ${fn:escapeXml(currentMembership.packageName)}
-                                    </c:when>
-                                    <c:otherwise>
-                                        Chưa đăng ký gói tập nào.
-                                    </c:otherwise>
-                                </c:choose>
-                            </span>
+                            <span><strong>Trạng thái:</strong> Thành viên</span>
                         </div>
                         <div class="welcome-meta-item">
                             <i class="fas fa-calendar"></i>
                             <span><strong>Tham gia:</strong> 
                                 <c:choose>
-                                    <c:when test="${not empty dashboardData && not empty dashboardData.joinDate}">
-                                        <fmt:formatDate value="${dashboardData.joinDate}" pattern="dd/MM/yyyy"/>
+                                    <c:when test="${not empty joinDate}">
+                                        <fmt:formatDate value="${joinDate}" pattern="dd/MM/yyyy"/>
+                                    </c:when>
+                                    <c:when test="${not empty member.createdDate}">
+                                        <fmt:formatDate value="${member.createdDate}" pattern="dd/MM/yyyy"/>
                                     </c:when>
                                     <c:otherwise>N/A</c:otherwise>
                                 </c:choose>
@@ -726,50 +721,32 @@
     </div>
 
     <!-- Statistics Cards -->
-    <c:if test="${not empty dashboardData}">
     <div class="stats-row">
         <div class="stat-item">
-            <div class="stat-label">Calories đã nạp</div>
+            <div class="stat-label">Cân nặng</div>
             <div class="stat-value">
                 <c:choose>
-                    <c:when test="${not empty dashboardData.stats && not empty dashboardData.stats.caloriesConsumed && dashboardData.stats.caloriesConsumed > 0}">
-                        <fmt:formatNumber value="${dashboardData.stats.caloriesConsumed}" pattern="#,##0"/>
+                    <c:when test="${not empty weight}">
+                        <fmt:formatNumber value="${weight}" pattern="#,##0.0"/> kg
                     </c:when>
-                    <c:otherwise>0</c:otherwise>
+                    <c:when test="${not empty member.weight}">
+                        <fmt:formatNumber value="${member.weight}" pattern="#,##0.0"/> kg
+                    </c:when>
+                    <c:otherwise>--</c:otherwise>
                 </c:choose>
             </div>
         </div>
         <div class="stat-item">
-            <div class="stat-label">Lượng nước đã uống</div>
+            <div class="stat-label">Chiều cao</div>
             <div class="stat-value">
                 <c:choose>
-                    <c:when test="${not empty dashboardData.stats && not empty dashboardData.stats.waterIntake}">
-                        ${dashboardData.stats.waterIntake}
+                    <c:when test="${not empty height}">
+                        <fmt:formatNumber value="${height}" pattern="#,##0"/> cm
                     </c:when>
-                    <c:otherwise>0L</c:otherwise>
-                </c:choose>
-            </div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-label">Thời gian còn lại</div>
-            <div class="stat-value">
-                <c:choose>
-                    <c:when test="${not empty currentMembership && currentMembership.endDate != null}">
-                        <c:set var="endDate" value="${currentMembership.endDate}" />
-                        <c:set var="now" value="<%=java.time.LocalDate.now()%>" />
-                        <c:choose>
-                            <c:when test="${endDate != null && endDate.isAfter(now)}">
-                                <c:set var="daysRemaining" value="${endDate.toEpochDay() - now.toEpochDay()}" />
-                                <span style="color: var(--accent); font-weight: bold;">${daysRemaining} ngày</span>
-                            </c:when>
-                            <c:otherwise>
-                                <span style="color: #dc3545; font-weight: bold;">Đã hết hạn</span>
-                            </c:otherwise>
-                        </c:choose>
+                    <c:when test="${not empty member.height}">
+                        <fmt:formatNumber value="${member.height}" pattern="#,##0"/> cm
                     </c:when>
-                    <c:otherwise>
-                        <span style="color: #999;">Chưa đăng ký gói</span>
-                    </c:otherwise>
+                    <c:otherwise>--</c:otherwise>
                 </c:choose>
             </div>
         </div>
@@ -777,23 +754,38 @@
             <div class="stat-label">Chỉ số BMI</div>
             <div class="stat-value">
                 <c:choose>
-                    <c:when test="${not empty dashboardData.stats && not empty dashboardData.stats.bmi}">
-                        <fmt:formatNumber value="${dashboardData.stats.bmi}" pattern="#,##0.0"/>
-                        <c:if test="${not empty dashboardData.stats.bmiCategory}">
+                    <c:when test="${not empty bmi}">
+                        <fmt:formatNumber value="${bmi}" pattern="#,##0.0"/>
+                        <c:if test="${not empty bmiCategory}">
                             <div style="font-size: 0.7rem; margin-top: 5px; font-weight: 600; color: var(--text-light);">
-                                (<c:out value="${dashboardData.stats.bmiCategory}"/>)
+                                (<c:out value="${bmiCategory}"/>)
                             </div>
                         </c:if>
+                    </c:when>
+                    <c:when test="${not empty member.bmi}">
+                        <fmt:formatNumber value="${member.bmi}" pattern="#,##0.0"/>
                     </c:when>
                     <c:otherwise>--</c:otherwise>
                 </c:choose>
             </div>
         </div>
+        <div class="stat-item">
+            <div class="stat-label">Mục tiêu</div>
+            <div class="stat-value" style="font-size: 1.2rem;">
+                <c:choose>
+                    <c:when test="${not empty goal}">
+                        <c:out value="${goal}"/>
+                    </c:when>
+                    <c:when test="${not empty member.goal}">
+                        <c:out value="${member.goal}"/>
+                    </c:when>
+                    <c:otherwise>Chưa đặt</c:otherwise>
+                </c:choose>
+            </div>
+        </div>
     </div>
-    </c:if>
 
     <!-- Quick Actions -->
-    <c:if test="${not empty dashboardData}">
     <div class="stat-card mb-4">
         <h5 class="dashboard-title mb-4">
             <i class="fas fa-bolt me-2"></i>Hành động nhanh
@@ -926,7 +918,6 @@
             </div>
         </div>
     </div>
-    </c:if>
 
 
     <div class="row">
@@ -936,30 +927,11 @@
                 <h5 class="dashboard-title mb-4">
                     <i class="fas fa-history me-2"></i>Hoạt động gần đây
                 </h5>
-                <c:choose>
-                    <c:when test="${not empty dashboardData.recentActivities}">
-                        <c:forEach var="activity" items="${dashboardData.recentActivities}">
-                            <div class="activity-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h6 class="mb-1">
-                                            <i class="fas fa-circle me-1" style="font-size: 8px; color: var(--accent);"></i>
-                                            <c:out value="${activity.description}"/>
-                                        </h6>
-                                        <small class="text-muted">${activity.type}</small>
-                                    </div>
-                                    <small class="text-muted">${activity.time}</small>
-                                </div>
-                            </div>
-                        </c:forEach>
-                    </c:when>
-                    <c:otherwise>
-                        <div class="text-center py-4 text-muted">
-                            <i class="fas fa-history fa-3x mb-3 opacity-25"></i>
-                            <p class="mb-0">Chưa có hoạt động nào</p>
-                        </div>
-                    </c:otherwise>
-                </c:choose>
+                <div class="text-center py-4 text-muted">
+                    <i class="fas fa-history fa-3x mb-3 opacity-25"></i>
+                    <p class="mb-0">Chưa có hoạt động nào</p>
+                    <small>Tính năng đang được phát triển</small>
+                </div>
             </div>
         </div>
 
@@ -969,32 +941,11 @@
                 <h5 class="dashboard-title mb-4">
                     <i class="fas fa-calendar-alt me-2"></i>Buổi tập sắp tới
                 </h5>
-                <c:choose>
-                    <c:when test="${not empty dashboardData.upcomingSessions}">
-                        <c:forEach var="session" items="${dashboardData.upcomingSessions}">
-                            <div class="session-item">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="mb-1">${session.type}</h6>
-                                        <small class="text-muted">
-                                            <i class="fas fa-user me-1"></i>${session.coach}
-                                        </small>
-                                    </div>
-                                    <div class="text-end">
-                                        <div class="fw-bold">${session.date}</div>
-                                        <small class="text-muted">${session.time}</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </c:forEach>
-                    </c:when>
-                    <c:otherwise>
-                        <div class="text-center py-4 text-muted">
-                            <i class="fas fa-calendar-times fa-3x mb-3 opacity-25"></i>
-                            <p class="mb-0">Chưa có buổi tập sắp tới</p>
-                        </div>
-                    </c:otherwise>
-                </c:choose>
+                <div class="text-center py-4 text-muted">
+                    <i class="fas fa-calendar-times fa-3x mb-3 opacity-25"></i>
+                    <p class="mb-0">Chưa có buổi tập sắp tới</p>
+                    <small>Tính năng đang được phát triển</small>
+                </div>
             </div>
         </div>
     </div>

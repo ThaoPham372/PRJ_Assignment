@@ -29,6 +29,11 @@ public class LoginService {
                 return new LoginResult(false, null, errors);
             }
 
+            if (!passwordService.verifyPassword(password, user.getPassword())) {
+                errors.add("Tên đăng nhập hoặc mật khẩu không đúng");
+                return new LoginResult(false, null, errors);
+            }
+
             return loginSuccessful(user);
         } catch (Exception e) {
             System.err.println("Unexpected error during login: " + e.getMessage());
@@ -54,6 +59,7 @@ public class LoginService {
 
         if (user == null) {
             errors.add("Tên đăng nhập hoặc mật khẩu không đúng");
+            return false;
         }
 
         if (!"ACTIVE".equals(user.getStatus())) {

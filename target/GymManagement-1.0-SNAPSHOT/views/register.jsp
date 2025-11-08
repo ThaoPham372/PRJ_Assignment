@@ -1,5 +1,5 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -504,7 +504,6 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
             src="${pageContext.request.contextPath}/images/logo/logo.png"
             alt="GymFit Logo"
             class="logo-image"
-            style="height: 300px; width: auto"
           />
         </div>
 
@@ -513,33 +512,15 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
         <!-- Success/Error Messages -->
         <c:if test="${registerSuccess == true}">
-          <div
-            style="
-              background: #d4edda;
-              color: #155724;
-              padding: 15px;
-              border-radius: 4px;
-              margin-bottom: 20px;
-              border: 1px solid #c3e6cb;
-            "
-          >
+          <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
             <strong>Thành công!</strong> ${successMessage}
           </div>
         </c:if>
 
         <c:if test="${registerSuccess == false && errors != null}">
-          <div
-            style="
-              background: #f8d7da;
-              color: #721c24;
-              padding: 15px;
-              border-radius: 4px;
-              margin-bottom: 20px;
-              border: 1px solid #f5c6cb;
-            "
-          >
+          <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
             <strong>Lỗi đăng ký:</strong>
-            <ul style="margin: 5px 0 0 20px">
+            <ul style="margin: 5px 0 0 20px;">
               <c:forEach var="error" items="${errors}">
                 <li>${error}</li>
               </c:forEach>
@@ -551,7 +532,7 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
         <form
           id="registerForm"
           method="post"
-          action="${pageContext.request.contextPath}/register"
+          action="${pageContext.request.contextPath}/auth?action=register"
         >
           <div class="form-group">
             <input
@@ -563,6 +544,20 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
               value="${username != null ? username : ''}"
               required
             />
+            <div class="error-message" id="username-error"></div>
+          </div>
+
+          <div class="form-group">
+            <input
+              type="text"
+              id="name"
+              name="name"
+              class="form-input"
+              placeholder="Tên đầy đủ"
+              value="${name != null ? name : ''}"
+              required
+            />
+            <div class="error-message" id="name-error"></div>
           </div>
 
           <div class="form-group">
@@ -586,6 +581,7 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
               placeholder="Mật khẩu"
               required
             />
+            <div class="error-message" id="password-error"></div>
           </div>
 
           <div class="form-group">
@@ -599,15 +595,6 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
             />
           </div>
 
-          <!-- Role Selection -->
-          <div class="form-group">
-            <select id="roleType" name="role" class="form-input" required>
-              <option value="">Chọn loại tài khoản</option>
-              <option value="USER">Thành viên (Member)</option>
-              <option value="TRAINER">Huấn luyện viên (Personal Trainer)</option>
-            </select>
-          </div>
-
           <!-- Register Button -->
           <button type="submit" class="register-btn" id="registerBtn">
             <span id="registerText">ĐĂNG KÝ</span>
@@ -616,21 +603,14 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
         </form>
 
         <!-- Google Register -->
-        <button type="button" class="google-btn" id="googleBtn">
-          <img
-            src="${pageContext.request.contextPath}/images/common/Gg.png"
-            alt="Google Logo"
-            class="google-icon"
-          />
-          ĐĂNG KÝ VỚI GOOGLE
-        </button>
+        <div id="g_id_signin_register" style="margin-top: 10px;"></div>
 
         <!-- Login Section -->
         <div class="login-section">
           <div class="login-text">BẠN ĐÃ CÓ TÀI KHOẢN?</div>
-          <button type="button" class="login-btn" id="loginBtn">
+          <a href="${pageContext.request.contextPath}/login" class="login-btn" style="display:inline-block; text-align:center;">
             ĐĂNG NHẬP
-          </button>
+          </a>
         </div>
       </div>
     </main>
@@ -642,17 +622,18 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
       </div>
     </footer>
 
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
       document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('registerForm');
         const usernameInput = document.getElementById('username');
+        const nameInput = document.getElementById('name');
         const passwordInput = document.getElementById('password');
-        const confirmPasswordInput = document.getElementById('confirmPassword');
-        const roleTypeSelect = document.getElementById('roleType');
         const registerBtn = document.getElementById('registerBtn');
         const registerText = document.getElementById('registerText');
         const loadingSpinner = document.getElementById('loadingSpinner');
         const usernameError = document.getElementById('username-error');
+        const nameError = document.getElementById('name-error');
         const passwordError = document.getElementById('password-error');
 
         // Form validation
@@ -661,6 +642,7 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
           // Clear previous errors
           usernameError.classList.remove('show');
+          nameError.classList.remove('show');
           passwordError.classList.remove('show');
 
           // Validate username
@@ -670,24 +652,21 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
             isValid = false;
           }
 
+          // Validate name
+          if (!nameInput.value.trim()) {
+            nameError.textContent = 'Vui lòng nhập tên đầy đủ';
+            nameError.classList.add('show');
+            isValid = false;
+          } else if (nameInput.value.trim().length < 2) {
+            nameError.textContent = 'Tên đầy đủ phải có ít nhất 2 ký tự';
+            nameError.classList.add('show');
+            isValid = false;
+          }
+
           // Validate password
           if (!passwordInput.value.trim()) {
             passwordError.textContent = 'Vui lòng nhập mật khẩu';
             passwordError.classList.add('show');
-            isValid = false;
-          }
-
-          // Validate password confirmation
-          if (passwordInput.value !== confirmPasswordInput.value) {
-            passwordError.textContent =
-              'Mật khẩu và xác nhận mật khẩu không khớp';
-            passwordError.classList.add('show');
-            isValid = false;
-          }
-
-          // Validate role selection
-          if (!roleTypeSelect.value) {
-            alert('Vui lòng chọn loại tài khoản');
             isValid = false;
           }
 
@@ -719,6 +698,18 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
           }
         });
 
+        nameInput.addEventListener('blur', function () {
+          if (!this.value.trim()) {
+            nameError.textContent = 'Vui lòng nhập tên đầy đủ';
+            nameError.classList.add('show');
+          } else if (this.value.trim().length < 2) {
+            nameError.textContent = 'Tên đầy đủ phải có ít nhất 2 ký tự';
+            nameError.classList.add('show');
+          } else {
+            nameError.classList.remove('show');
+          }
+        });
+
         passwordInput.addEventListener('blur', function () {
           if (!this.value.trim()) {
             passwordError.textContent = 'Vui lòng nhập mật khẩu';
@@ -733,29 +724,55 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
           usernameError.classList.remove('show');
         });
 
+        nameInput.addEventListener('input', function () {
+          nameError.classList.remove('show');
+        });
+
         passwordInput.addEventListener('input', function () {
           passwordError.classList.remove('show');
         });
 
-        // Google register button
-        document
-          .getElementById('googleBtn')
-          .addEventListener('click', function () {
-            alert('Chức năng đăng ký Google sẽ được triển khai');
+        // Initialize Google Sign-In (Register)
+        function initializeGoogleRegister() {
+          if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) return;
+          google.accounts.id.initialize({
+            client_id: '${initParam['google.client.id']}',
+            callback: function (response) {
+              fetch('${pageContext.request.contextPath}/auth/google-register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ credential: response.credential })
+              })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                  if (data && data.success) {
+                    window.location.href = data.redirectUrl;
+                  } else {
+                    alert('Đăng ký Google thất bại' + (data && data.message ? ': ' + data.message : ''));
+                  }
+                })
+                .catch(function (err) { console.error(err); alert('Có lỗi xảy ra khi đăng ký Google'); });
+            },
+            auto_select: false,
+            cancel_on_tap_outside: true
           });
+          var el = document.getElementById('g_id_signin_register');
+          if (el) {
+            google.accounts.id.renderButton(el, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with' });
+          }
+        }
+        if (typeof google !== 'undefined') {
+          initializeGoogleRegister();
+        } else {
+          window.addEventListener('load', initializeGoogleRegister);
+        }
 
-        // Login button
-        document
-          .getElementById('loginBtn')
-          .addEventListener('click', function () {
-            window.location.href =
-              '${pageContext.request.contextPath}/views/login.jsp';
-          });
+        // Login button handled by anchor link (no JS redirect to avoid delay)
 
         // Keyboard navigation
         document.addEventListener('keydown', function (e) {
           if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') {
-            const inputs = [usernameInput, passwordInput];
+            const inputs = [usernameInput, nameInput, passwordInput];
             const currentIndex = inputs.indexOf(e.target);
             if (currentIndex < inputs.length - 1) {
               inputs[currentIndex + 1].focus();

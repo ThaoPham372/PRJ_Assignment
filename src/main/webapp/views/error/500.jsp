@@ -30,21 +30,24 @@
                 <div class="alert alert-danger text-start mt-4" style="max-width: 600px; margin: 0 auto;">
                     <h6><i class="fas fa-bug me-2"></i>Chi Tiết Lỗi (Development Mode):</h6>
                     <c:if test="${not empty pageContext.exception}">
-                        <strong>Exception:</strong> ${pageContext.exception.class.simpleName}<br>
-                        <strong>Message:</strong> ${pageContext.exception.message}<br>
+                        <strong>Exception:</strong> <%= pageContext.getException().getClass().getSimpleName() %><br>
+                        <strong>Message:</strong> <c:out value="${pageContext.exception.message}"/><br>
                         <c:if test="${not empty pageContext.exception.cause}">
-                            <strong>Cause:</strong> ${pageContext.exception.cause.message}<br>
+                            <strong>Cause:</strong> <c:out value="${pageContext.exception.cause.message}"/><br>
                         </c:if>
                     </c:if>
                     <c:if test="${not empty requestScope['javax.servlet.error.exception']}">
-                        <strong>Servlet Exception:</strong> ${requestScope['javax.servlet.error.exception'].class.simpleName}<br>
-                        <strong>Message:</strong> ${requestScope['javax.servlet.error.exception'].message}<br>
+                        <strong>Servlet Exception:</strong> <%= request.getAttribute("javax.servlet.error.exception") != null ? request.getAttribute("javax.servlet.error.exception").getClass().getSimpleName() : "N/A" %><br>
+                        <strong>Message:</strong> <c:out value="${requestScope['javax.servlet.error.exception'].message}"/><br>
                     </c:if>
                     <c:if test="${not empty requestScope['javax.servlet.error.message']}">
-                        <strong>Error Message:</strong> ${requestScope['javax.servlet.error.message']}<br>
+                        <strong>Error Message:</strong> <c:out value="${requestScope['javax.servlet.error.message']}"/><br>
                     </c:if>
                     <c:if test="${not empty requestScope['javax.servlet.error.request_uri']}">
-                        <strong>Request URI:</strong> ${requestScope['javax.servlet.error.request_uri']}<br>
+                        <strong>Request URI:</strong> <c:out value="${requestScope['javax.servlet.error.request_uri']}"/><br>
+                    </c:if>
+                    <c:if test="${not empty requestScope.error}">
+                        <strong>Error:</strong> <c:out value="${requestScope.error}"/><br>
                     </c:if>
                 </div>
             </c:if>

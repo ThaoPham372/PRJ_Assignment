@@ -7,6 +7,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Đăng Nhập - GymFit</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <style>
       :root {
@@ -441,6 +444,35 @@
         display: block;
       }
 
+      .success-message {
+        background: #d4edda;
+        color: #155724;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #c3e6cb;
+        border-left: 4px solid #28a745;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        animation: slideDown 0.5s ease-out;
+      }
+
+      .success-message i {
+        font-size: 1.2rem;
+      }
+
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
       @keyframes fadeIn {
         from {
           opacity: 0;
@@ -546,11 +578,20 @@
         <!-- Logo -->
         <div class="logo">
           <img
-            src="${pageContext.request.contextPath}/images/common/logo.png"
+            src="${pageContext.request.contextPath}/images/logo/logo.png"
             alt="GymFit Logo"
             class="logo-image"
           />
         </div>
+
+        <!-- Success Message -->
+        <c:if test="${not empty sessionScope.loginSuccessMessage}">
+          <div class="success-message">
+            <i class="fas fa-check-circle"></i>
+            <span>${sessionScope.loginSuccessMessage}</span>
+          </div>
+          <c:remove var="loginSuccessMessage" scope="session" />
+        </c:if>
 
         <!-- Error Messages -->
         <c:if test="${loginError == true && errors != null}">
@@ -618,7 +659,7 @@
 
         <!-- Forgot Password -->
         <div class="forgot-link">
-          <a href="#" id="forgotPassword">Quên mật khẩu?</a>
+          <a href="${pageContext.request.contextPath}/auth/forgot-password">Quên mật khẩu?</a>
         </div>
 
         <!-- Google Login -->
@@ -749,13 +790,7 @@
 
         // Register button handled by anchor link (no JS redirect to avoid delay)
 
-        // Forgot password link
-        document
-          .getElementById('forgotPassword')
-          .addEventListener('click', function (e) {
-            e.preventDefault();
-            alert('Chức năng quên mật khẩu sẽ được triển khai');
-          });
+        // Forgot password link - handled by href, no JS needed
 
         // Keyboard navigation
         document.addEventListener('keydown', function (e) {

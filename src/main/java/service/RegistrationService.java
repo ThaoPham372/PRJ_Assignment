@@ -2,20 +2,25 @@ package service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
+import dao.MemberDAO;
 import dao.UserDAO;
-import model.User;
+import model.Member;
+
 
 /**
  * RegistrationService - Handles user registration business logic
  */
 public class RegistrationService {
 
+    private MemberDAO memberDAO;
     private UserDAO userDAO;
     private PasswordService passwordService;
-
+    
     public RegistrationService() {
+        this.memberDAO = new MemberDAO();
         this.userDAO = new UserDAO();
         this.passwordService = new PasswordService();
     }
@@ -99,7 +104,7 @@ public class RegistrationService {
 
     private boolean isDuplicateAccount(RegisterRequest request, List<String> errors) {
 
-        if (userDAO.existsByUsername(request.getUsername()) > -1) {
+        if (userDAO.existsByUsername(request.getUsername())) {
             errors.add("Tên đăng nhập đã tồn tại");
         }
 
@@ -112,17 +117,18 @@ public class RegistrationService {
 
     private int createAccount(RegisterRequest request) {
         String passwordHash = passwordService.hashPassword(request.getPassword());
-        String salt = passwordService.generateSalt();
 
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        user.setRole(request.getRole());
-        user.setPassword(passwordHash);
-        userDAO.save(user);
-        int userId = user.getId();
+        Member member = new Member();
+        member.setUsername(request.getUsername());
+        member.setEmail(request.getEmail());
+        member.setRole("MEMBER");
+        member.setPassword(passwordHash);
+        member.setStatus("ACTIVE");
+        member.setCreatedDate(new Date());
         
-        return userId;
+        int memberId = memberDAO.save(member);
+        
+        return memberId;
     }
 
     /**
