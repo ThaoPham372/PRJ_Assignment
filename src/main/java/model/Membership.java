@@ -30,7 +30,7 @@ public class Membership implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
     @Column(name = "membership_id")
-    private Integer membershipId;
+    private Integer id;
 
     @Basic(optional = false)
     @Column(name = "start_date")
@@ -65,13 +65,17 @@ public class Membership implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date suspendedAt;
 
-    @JoinColumn(name = "member_id", referencedColumnName = "user_id") // user_id or id ?
+    @JoinColumn(name = "member_id", referencedColumnName = "member_id") // user_id or id ?
     @ManyToOne(optional = false)
     private Member member;
 
-    @JoinColumn(name = "package_id", referencedColumnName = "id")
+    @JoinColumn(name = "package_id", referencedColumnName = "package_id")
     @ManyToOne(optional = false)
     private Package packageO;
+    
+    // 
+        
+    //
 
     @PrePersist
     public void prePersist() {
@@ -100,11 +104,11 @@ public class Membership implements Serializable {
     }
 
     public Membership(Integer membershipId) {
-        this.membershipId = membershipId;
+        this.id = membershipId;
     }
 
     public Membership(Integer membershipId, Date startDate, Date endDate) {
-        this.membershipId = membershipId;
+        this.id = membershipId;
         this.startDate = startDate;
         this.endDate = endDate;
     }
@@ -114,12 +118,12 @@ public class Membership implements Serializable {
         this.packageO = packageO;
     }
 
-    public Integer getMembershipId() {
-        return membershipId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setMembershipId(Integer membershipId) {
-        this.membershipId = membershipId;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public Date getStartDate() {
@@ -204,7 +208,7 @@ public class Membership implements Serializable {
 
     @Override
     public String toString() {
-        return "Membership{" + "membershipId=" + membershipId + ", status=" + status + ", memberId=" + member.getId() + ", packageOId=" + packageO.getId() + '}';
+        return "Membership{" + "id=" + id + ", status=" + status + ", memberId=" + member.getId() + ", packageOId=" + packageO.getId() + '}';
     }
 
 }
