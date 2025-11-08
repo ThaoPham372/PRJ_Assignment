@@ -27,6 +27,6 @@ public class Admin extends User implements Serializable {
 
     @Override
     public String toString() {
-        return "Admin{" + "note=" + note + '}';
+        return "Admin{id=" + getId() + ", note=" + note + '}';
     }
 }

@@ -133,6 +133,6 @@ public class Member  extends User implements Serializable {
 
     @Override
     public String toString() {
-        return "Member{" + "weight=" + weight + ", height=" + height + ", bmi=" + bmi + ", goal=" + goal + '}';
+        return "Member{id=" + getId() + ", username=" + getUsername() + ", weight=" + weight + ", height=" + height + ", bmi=" + bmi + ", goal=" + goal + '}';
     }
 }

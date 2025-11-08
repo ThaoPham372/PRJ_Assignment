@@ -651,19 +651,18 @@
                         <!-- Actions Bar -->
                         <div class="actions-bar">
                             <div class="filter-group">
-                                <select class="filter-select" id="roleFilter" onchange="handleChange(event)">
-                                    <option value="all" ${role == null || role == 'all' ? 'selected' : ''}>Tất cả vai trò</option>
-                                    <option value="admin" ${role == 'admin' ? 'selected' : ''}>Admin</option>
-                                    <option value="member" ${role == 'user' ? 'selected' : ''}>Member</option>
-                                    <option value="trainer" ${role == 'trainer' ? 'selected' : ''}>Trainer</option>
+                                <select class="filter-select" id="roleFilter" name="roleFilter">
+                                    <option value="all" ${roleFilter == null || roleFilter == 'all' ? 'selected' : ''}>Tất cả vai trò</option>
+                                    <option value="admin" ${roleFilter == 'admin' ? 'selected' : ''}>Admin</option>
+                                    <option value="member" ${roleFilter == 'user' ? 'selected' : ''}>Member</option>
+                                    <option value="trainer" ${roleFilter == 'trainer' ? 'selected' : ''}>Trainer</option>
                                 </select>
 
-                                <select class="filter-select" id="statusFilter" onchange="handleChange(event)">
-                                    <option value="all" ${status == null || status == 'all' ? 'selected' : ''}>Tất cả trạng thái</option>
-                                    <option value="active" ${status == 'active' ? 'selected' : ''}>Đang hoạt động</option>
-                                    <option value="inactive" ${status == 'inactive' ? 'selected' : ''}>Ngưng hoạt động</option>
+                                <select class="filter-select" id="statusFilter" name="statusFilter">
+                                    <option value="all" ${statusFilter == null || statusFilter == 'all' ? 'selected' : ''}>Tất cả trạng thái</option>
+                                    <option value="active" ${statusFilter == 'active' ? 'selected' : ''}>Đang hoạt động</option>
+                                    <option value="inactive" ${statusFilter == 'inactive' ? 'selected' : ''}>Ngưng hoạt động</option>
                                 </select>
-
                             </div>
 
                             <button class="btn" onclick="openAddModal()">
@@ -689,7 +688,7 @@
 
                                     <c:forEach var="account" items="${accounts}">
                                         <tr>
-                                            <td>${account.userId}</td>
+                                            <td>${account.id}</td>
                                             <td>${account.name}</td>
                                             <td>${account.email}</td>
                                             <td>${account.username}</td>
@@ -699,14 +698,14 @@
                                                 <div class="action-buttons">
                                                     <button
                                                         class="btn-icon btn-edit"
-                                                        onclick="openEditModal(${account.userId})"
+                                                        onclick="openEditModal(${account.id})"
                                                         title="Sửa"
                                                         >
                                                         <i class="fas fa-edit"></i>
                                                     </button>
                                                     <button
                                                         class="btn-icon btn-delete"
-                                                        onclick="deleteAccount(${account.userId})"
+                                                        onclick="deleteAccount(${account.id})"
                                                         title="Xóa"
                                                         >
                                                         <i class="fas fa-trash"></i>
@@ -846,6 +845,7 @@
             </c:if>
 
             <script>
+                contextPath = "${pageContext.request.contextPath}";
                 function openAddModal() {
                     document.getElementById('accountModal').classList.add('active');
                     document.getElementById('modalTitle').textContent =
@@ -901,23 +901,24 @@
                     }
                 }
 
-                function handleChange(event) {
+                document.getElementById('roleFilter').addEventListener('change', handleFilterChange);
+                document.getElementById('statusFilter').addEventListener('change', handleFilterChange);
+                function handleFilterChange() {
                     const role = document.getElementById('roleFilter').value;
                     const status = document.getElementById('statusFilter').value;
 
                     let query = '?action=filterAccounts&';
                     if (role !== 'all') {
-                        query += `role=` + role + `&`;
+                        query += `roleFilter=` + role + `&`;
                     }
                     if (status !== 'all') {
-                        query += `status=` + status + `&`;
+                        query += `statusFilter=` + status + `&`;
                     }
 
-                    // Remove trailing '&' or '?' if exists
                     if (query.endsWith('&') || query.endsWith('?')) {
                         query = query.slice(0, -1);
                     }
-                    
+                    console.log(query);
                     window.location.href = `${contextPath}/admin/account-management` + query;
                 }
 

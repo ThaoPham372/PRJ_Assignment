@@ -32,7 +32,13 @@ public class AccountManagementServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
+        System.out.println("\n\n\nACCOUNT MANAGEMENT SERVLET");
+        System.out.println("URL: " + req.getRequestURL() + "");
+        System.out.println("Query: " + req.getQueryString());
+        System.out.println("\n");
+        
+        List<User> users = getAccounts();
+        
         //Need: fix edit account (JSON -> API)
         if ("editAccount".equals(req.getParameter("action"))) {
             int id = Integer.parseInt(req.getParameter("id"));
@@ -41,19 +47,24 @@ public class AccountManagementServlet extends HttpServlet {
             resp.setContentType("application/json");
             resp.getWriter().write(new Gson().toJson(user));
             return;
-        }
+        } else
         if ("filterAccounts".equals(req.getParameter("action"))) {
-            List<User> users = filterAccounts(req, resp);
-            req.setAttribute("accounts", users);
-            req.getRequestDispatcher("/views/admin/account_management.jsp").forward(req, resp);
-            return;
-        } else {
-            List<User> users = getAccounts();
-            req.setAttribute("accounts", users);
-            req.getRequestDispatcher("/views/admin/account_management.jsp").forward(req, resp);
-            return;
-        }
-
+            System.out.println("FILTER ACCOUNTS\n\n");
+            String roleFilter = req.getParameter("roleFilter");
+            String statusFilter = req.getParameter("statusFilter");
+            
+            System.out.println("roleFilter: " + roleFilter);
+            System.out.println("statusFilter: " + statusFilter);
+            
+            users = filterAccounts(users, roleFilter, statusFilter);
+            System.out.println("END FILTER\n\n");
+            
+            req.setAttribute("roleFilter", roleFilter);
+            req.setAttribute("statusFilter", statusFilter);
+        } 
+        
+        req.setAttribute("accounts", users);
+        req.getRequestDispatcher("/views/admin/account_management.jsp").forward(req, resp);
     }
 
     @Override
@@ -136,7 +147,7 @@ public class AccountManagementServlet extends HttpServlet {
         List<Trainer> trainers = trainerService.getAll();
         List<Admin> admins = adminService.getAll();
 
-        List<User> users = new ArrayList<>(members);
+        List<User> users = new ArrayList<>();
         users.addAll(trainers);
         users.addAll(members);
         users.addAll(admins);
@@ -204,16 +215,11 @@ public class AccountManagementServlet extends HttpServlet {
         trainerService.add(trainer);
     }
 
-    private List<User> filterAccounts(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String role = req.getParameter("role");
-        String status = req.getParameter("status");
-
-        List<User> users = getAccounts();
-        users = filterAccountsByRole(users, role);
-        users = filterAccountsByStatus(users, status);
-
-        req.setAttribute("role", role);
-        req.setAttribute("status", status);
+    private List<User> filterAccounts(List<User> users, String roleFilter, String statusFilter) throws ServletException, IOException {
+        if(roleFilter != null)
+            users = filterAccountsByRole(users, roleFilter);
+        if(statusFilter != null)
+            users = filterAccountsByStatus(users, statusFilter);
 
         return users;
     }
@@ -226,7 +232,6 @@ public class AccountManagementServlet extends HttpServlet {
     }
 
     private List<User> filterAccountsByStatus(List<User> users, String status) throws ServletException, IOException {
-        System.out.println("\n\nFilter account Status: " + status);
         if (status != null && !status.equals("all")) {
             users.removeIf(user -> !status.toLowerCase().equalsIgnoreCase(user.getStatus()));
         }
