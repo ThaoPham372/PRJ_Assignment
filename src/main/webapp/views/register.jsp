@@ -1,5 +1,18 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%
+  // If googleClientId is not set by servlet, load it from ConfigManager
+  if (request.getAttribute("googleClientId") == null) {
+    try {
+      Utils.ConfigManager configManager = Utils.ConfigManager.getInstance();
+      String clientId = configManager.getGoogleClientId();
+      request.setAttribute("googleClientId", clientId);
+    } catch (Exception e) {
+      System.err.println("[register.jsp] Error loading Google Client ID: " + e.getMessage());
+      request.setAttribute("googleClientId", null);
+    }
+  }
+%>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -734,10 +747,29 @@
 
         // Initialize Google Sign-In (Register)
         function initializeGoogleRegister() {
-          if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) return;
-          google.accounts.id.initialize({
-            client_id: '${initParam['google.client.id']}',
-            callback: function (response) {
+          var clientId = '${googleClientId}';
+          console.log('[Google Register] Client ID:', clientId ? 'SET' : 'NOT SET');
+          
+          if (!clientId || clientId.trim() === '' || clientId === 'YOUR_GOOGLE_CLIENT_ID_HERE' || clientId === 'null') {
+            console.warn('[Google Register] Google Client ID is not configured');
+            var el = document.getElementById('g_id_signin_register');
+            if (el) {
+              el.innerHTML = '<p style="color: #ff6b6b; font-size: 0.85rem; text-align: center;">Google Sign-In chưa được cấu hình</p>';
+            }
+            return;
+          }
+          
+          // Check if Google API is loaded
+          if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
+            console.log('[Google Register] Google API not loaded yet, retrying...');
+            setTimeout(initializeGoogleRegister, 500);
+            return;
+          }
+          
+          try {
+            google.accounts.id.initialize({
+              client_id: clientId,
+              callback: function (response) {
               fetch('${pageContext.request.contextPath}/auth/google-register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -756,16 +788,44 @@
             auto_select: false,
             cancel_on_tap_outside: true
           });
-          var el = document.getElementById('g_id_signin_register');
-          if (el) {
-            google.accounts.id.renderButton(el, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with' });
+              var el = document.getElementById('g_id_signin_register');
+              if (el) {
+                google.accounts.id.renderButton(el, { 
+                  theme: 'outline', 
+                  size: 'large', 
+                  shape: 'pill', 
+                  text: 'continue_with' 
+                });
+                console.log('[Google Register] Button rendered successfully');
+              } else {
+                console.error('[Google Register] Element g_id_signin_register not found');
+              }
+            } catch (error) {
+              console.error('[Google Register] Initialization error:', error);
+              var el = document.getElementById('g_id_signin_register');
+              if (el) {
+                el.innerHTML = '<p style="color: #ff6b6b; font-size: 0.85rem; text-align: center;">Lỗi khởi tạo Google Sign-In</p>';
+              }
+            }
           }
-        }
-        if (typeof google !== 'undefined') {
-          initializeGoogleRegister();
-        } else {
-          window.addEventListener('load', initializeGoogleRegister);
-        }
+          
+          // Wait for Google script to load
+          function waitForGoogleAPI() {
+            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+              initializeGoogleRegister();
+            } else {
+              setTimeout(waitForGoogleAPI, 100);
+            }
+          }
+          
+          // Start initialization when DOM is ready
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+              setTimeout(waitForGoogleAPI, 500);
+            });
+          } else {
+            setTimeout(waitForGoogleAPI, 500);
+          }
 
         // Login button handled by anchor link (no JS redirect to avoid delay)
 

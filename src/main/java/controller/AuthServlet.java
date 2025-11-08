@@ -61,6 +61,10 @@ public class AuthServlet extends HttpServlet {
             }
         }
 
+        // Load Google Client ID from ConfigManager (used by both login and register)
+        String googleClientId = ConfigManager.getInstance().getGoogleClientId();
+        request.setAttribute("googleClientId", googleClientId);
+        
         switch (action) {
             case "register":
                 request.getRequestDispatcher("/views/register.jsp").forward(request, response);
@@ -72,9 +76,6 @@ public class AuthServlet extends HttpServlet {
             
             case "login":
             default:
-                // Load Google Client ID from ConfigManager and pass to JSP
-                String googleClientId = ConfigManager.getInstance().getGoogleClientId();
-                request.setAttribute("googleClientId", googleClientId);
                 request.getRequestDispatcher("/views/login.jsp").forward(request, response);
                 break;
         }
