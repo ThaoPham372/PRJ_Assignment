@@ -670,10 +670,13 @@
 
                             <select class="filter-select" name="packageType">
                                 <option value="all" ${packageType == 'all' ? 'selected' : ''}>Tất cả gói tập</option>
-                                <option value="basic" ${packageType == 'basic' ? 'selected' : ''}>Gói Basic</option>
-                                <option value="standard" ${packageType == 'standard' ? 'selected' : ''}>Gói Standard</option>
-                                <option value="premium" ${packageType == 'premium' ? 'selected' : ''}>Gói Premium</option>
-                                <option value="vip" ${packageType == 'vip' ? 'selected' : ''}>Gói VIP</option>
+                                <c:if test="${not empty packages}">
+                                    <c:forEach var="packageO" items="${packages}">
+                                        <c:if test="${packageO != null}">
+                                            <option value="${packageO.name}" ${packageType == packageO.name ? 'selected' : ''}>${packageO.name}</option>
+                                        </c:if>
+                                    </c:forEach>
+                                </c:if>
                             </select>
                         </div>
 
@@ -681,7 +684,6 @@
                             <i class="fas fa-user-plus"></i> Thêm hội viên mới
                         </button>
                     </div>
-                    <script>console.log(1)</script>
                     <!-- Members Table -->
                     <div class="table-container">
                         <table class="table">
@@ -746,7 +748,6 @@
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </div>
-                                                <script>console.log(3)</script>
                                             </td>
                                             </tr>
                                 </c:forEach>
@@ -847,20 +848,18 @@
 
             document.querySelectorAll('.filter-select').forEach(select => {
                 select.addEventListener('change', () => {
-                    console.log("cccccccccccc");
-
                     let status = document.querySelector('select[name="status"]').value;
                     let packageType = document.querySelector('select[name="packageType"]').value;
                     let keyword = document.querySelector('input[name="keyword"]').value.trim();
                     let query = '?action=filterMemberships&';
                     if (status && status !== 'all') {
-                        query += `status=${status}&`;
+                        query += `status=` + status;
                     }
                     if (packageType && packageType !== 'all') {
-                        query += `packageType=${packageType}&`;
+                        query += `packageType=` + packageType;
                     }
                     if (keyword) {
-                        query += `keyword=${keyword}&`;
+                        query += `keyword=` + keyword;
                     }
                     // Remove trailing '&' or '?' if exists
                     if (query.endsWith('&') || query.endsWith('?')) {

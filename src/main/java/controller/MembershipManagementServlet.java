@@ -33,8 +33,10 @@ public class MembershipManagementServlet extends HttpServlet {
             String action = req.getParameter("action");
             if (action == null)
                 action = "";
-            System.out.println("AAction: " + action);
+            System.out.println("Action: " + action);
+            System.out.println("Query: " + req.getQueryString());
             System.out.println("------------------------");
+
             List<Membership> memberships = getMembership();
             List<Package> packages = packageService.getAll();
 
@@ -44,7 +46,12 @@ public class MembershipManagementServlet extends HttpServlet {
             } else if ("filterMemberships".equals(action)) {
                 String keyword = req.getParameter("keyword");
                 String status = req.getParameter("status");
-                memberships = filterMemberships(memberships, keyword, status);
+                String packageType = req.getParameter("packageType");
+                memberships = filterMemberships(memberships, keyword, status, packageType);
+                
+                req.setAttribute("keyword", keyword);
+                req.setAttribute("status", status);
+                req.setAttribute("packageType", packageType);
             }
 
             System.out.println("Finish GET");
@@ -91,7 +98,7 @@ public class MembershipManagementServlet extends HttpServlet {
     private void addMembership(String username, int packageId, String startDateStr) {
         Member member = memberService.getByUsername(username);
         Package packageO = packageService.getById(packageId);
-        
+
         if (member != null && packageO != null) {
             Membership membership = new Membership(member, packageO);
             int months = packageO.getDurationMonths();
@@ -109,11 +116,13 @@ public class MembershipManagementServlet extends HttpServlet {
         return membershipService.getAll();
     }
 
-    private List<Membership> filterMemberships(List<Membership> memberships, String keyword, String status)
+    private List<Membership> filterMemberships(List<Membership> memberships, String keyword, String status,
+            String packageType)
             throws ServletException, IOException {
 
         memberships = filterByKeyword(memberships, keyword);
         memberships = filterByStatus(memberships, status);
+        memberships = filterByPackageType(memberships, packageType);
 
         return memberships;
     }
@@ -121,7 +130,6 @@ public class MembershipManagementServlet extends HttpServlet {
     private List<Membership> filterByKeyword(List<Membership> memberships, String keyword) {
         if (keyword != null && !keyword.trim().isEmpty()) {
             memberships.removeIf(m -> {
-                MemberService memberService = new MemberService();
                 Member mem = m.getMember();
                 return mem == null || !(mem.getName().toLowerCase().contains(keyword)
                         || mem.getEmail().toLowerCase().contains(keyword));
@@ -151,6 +159,21 @@ public class MembershipManagementServlet extends HttpServlet {
             }
             return !statusMatch;
         });
+        return memberships;
+    }
+
+    private List<Membership> filterByPackageType(List<Membership> memberships, String packageType) {
+        System.out.println("BEFORE FP");
+
+        if (packageType != null && !packageType.trim().isEmpty()) {
+            memberships.removeIf(m -> {
+                Package packageO = m.getPackageO();
+                return packageO == null || !packageO.getName().equalsIgnoreCase(packageType);
+            });
+        }
+        System.out.println("After FP");
+        for(Membership m : memberships)
+            System.out.println(m);
         return memberships;
     }
 }
