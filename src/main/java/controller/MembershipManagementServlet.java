@@ -213,7 +213,6 @@ public class MembershipManagementServlet extends HttpServlet {
         return (int) memberships.stream().filter(m -> DateUtils.compareDates(m.getEndDate(), new Date()) < 0).count();
     }
 
-    //Cần kiểm tra lại
     private int countNumberMembershipsExpiringSoon(List<Membership> memberships) {
         return (int) memberships.stream()
                 .filter(m -> 

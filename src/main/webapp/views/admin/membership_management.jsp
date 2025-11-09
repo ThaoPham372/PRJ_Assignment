@@ -734,7 +734,7 @@
                                     <td><c:choose><c:when test="${membership.status != null}"><span class="badge badge-active">${membership.status}</span></c:when><c:otherwise></c:otherwise></c:choose></td>
                                             <td>
                                                 <div class="action-buttons">
-                                                    <button id="btn-edit" class="btn-icon btn-edit" title="Sửa thông tin">
+                                                    <button id="btn-edit" class="btn-icon btn-edit" title="Sửa thông tin" onclick="openEditMembershipModal()">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
                                                     <button
@@ -814,6 +814,61 @@
                 </form>
             </div>
         </div>
+        
+        <div class="modal" id="editMembership">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Chỉnh sửa hội viên</h3>
+                    <button class="modal-close" onclick="closeModal('editMembership')">
+                        &times;
+                    </button>
+                </div>
+                <form action="#" method="post" id="editMembership">
+                    <input type="hidden" name="action" value="editMembership" />
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input type="text" class="form-input" name="username" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Gói tập</label>
+
+                        <select class="form-input" name="package_id" required>
+                            <option value="">-- Chọn gói tập --</option>
+                            <c:if test="${not empty packages}">
+                                <c:forEach var="packageO" items="${packages}">
+                                    <c:if test="${packageO != null}">
+                                        <option value="${packageO.id}">${packageO.name} - ${packageO.durationMonths} tháng</option>
+                                    </c:if>
+                                </c:forEach>
+                            </c:if>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Ngày bắt đầu</label>
+                        <input type="date" class="form-input" name="startDate" required />
+                    </div>
+
+                    <div
+                        style="
+                        display: flex;
+                        gap: 10px;
+                        justify-content: flex-end;
+                        margin-top: 20px;
+                        "
+                        >
+                        <button
+                            type="button"
+                            class="btn btn-outline"
+                            onclick="closeModal('editMembership')"
+                            >
+                            Hủy
+                        </button>
+                        <button type="submit" class="btn">edit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <script>
             console.log("JS Loaded ✅");
@@ -833,6 +888,14 @@
                 form.action = `${contextPath}/admin/membership-management`;
                 form.method = 'post';
                 form.querySelector('input[name="action"]').value = 'addMembership';
+            }
+            
+            function openEditMembershipModal() {
+                document.getElementById('editMembership').classList.add('active');
+                const form = document.querySelector('#editMembership');
+                form.action = `${contextPath}/admin/membership-management`;
+                form.method = 'post';
+                form.querySelector('input[name="action"]').value = 'editMembership';
             }
 
             function closeModal(modalId) {
