@@ -43,4 +43,15 @@ public class MembershipService {
     public int deleteById(int id) {
         return membershipDAO.deleteById(id);
     }
+
+    //Chưa tối ưu
+    public Membership getByMemberIdAndPackageId(int memberId, int packageId) { 
+        List<Membership> memberships = membershipDAO.findAll();
+        for(Membership m : memberships) {
+            if (m.getMember().getId() == memberId &&
+                m.getPackageO().getId() == packageId)
+                return m;
+        }
+        return null;
+    }
 }

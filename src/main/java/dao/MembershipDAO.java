@@ -51,4 +51,8 @@ public class MembershipDAO {
         }
         return -1; // Indicate that the membership was not found
     }
+
+    public Membership findByField(String fieldName, Object value) {
+        return genericDAO.findByField(fieldName, value);
+    }
 }

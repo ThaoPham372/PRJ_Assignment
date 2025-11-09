@@ -694,6 +694,7 @@
                                     <th>Email / SĐT</th>
                                     <th>Gói tập</th>
                                     <th>Ngày đăng ký</th>
+                                    <th>Ngày bắt đầu</th>
                                     <th>Ngày hết hạn</th>
                                     <th>Trạng thái</th>
                                     <th>Thao tác</th>
@@ -714,44 +715,46 @@
                                         <tr>
                                             <c:choose>
                                                 <c:when test="${membership.id != null}">
-                                            <input type="hidden" id="${membership.id}"/>
-                                        </c:when>
-                                        <c:otherwise></c:otherwise>
-                                    </c:choose>
-                                    <td><c:choose><c:when test="${membership.member != null}">${membership.member.id}</c:when><c:otherwise></c:otherwise></c:choose></td>
-                                    <td><c:choose><c:when test="${membership.member != null}">${membership.member.name}</c:when><c:otherwise></c:otherwise></c:choose></td>
-                                    <td><c:choose><c:when test="${membership.member != null}">${membership.member.email}</c:when><c:otherwise></c:otherwise></c:choose></td>
-                                            <td>
-                                                <span class="badge badge-pt">
-                                            <c:choose>
-                                                <c:when test="${membership.packageO != null}">${membership.packageO.name}</c:when>
-                                                <c:otherwise></c:otherwise>
+                                                    <input type="hidden" id="${membership.id}"/>
+                                                </c:when>
+                                            <c:otherwise></c:otherwise>
                                             </c:choose>
-                                        </span>
-                                    </td>
-                                    <td><c:choose><c:when test="${membership.createdDate != null}"><fmt:formatDate value="${membership.createdDate}" pattern="dd/MM/yyyy" /></c:when><c:otherwise></c:otherwise></c:choose></td>
-                                    <td><c:choose><c:when test="${membership.endDate != null}"><fmt:formatDate value="${membership.endDate}" pattern="dd/MM/yyyy" /></c:when><c:otherwise></c:otherwise></c:choose></td>
-                                    <td><c:choose><c:when test="${membership.status != null}"><span class="badge badge-active">${membership.status}</span></c:when><c:otherwise></c:otherwise></c:choose></td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    <button id="btn-edit" class="btn-icon btn-edit" title="Sửa thông tin" onclick="openEditMembershipModal()">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button
-                                                        class="btn-icon"
-                                                        style="background: #9b59b6"
-                                                        title="Gia hạn"
-                                                        >
-                                                        <i class="fas fa-calendar-plus"></i>
-                                                    </button>
-                                                    <button class="btn-icon btn-delete" title="Xóa" name="deleteMembership">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                            </tr>
-                                </c:forEach>
-                            </c:if>
+                                        <td><c:choose><c:when test="${membership.member != null}">${membership.member.id}</c:when><c:otherwise></c:otherwise></c:choose></td>
+                                        <td><c:choose><c:when test="${membership.member != null}">${membership.member.name}</c:when><c:otherwise></c:otherwise></c:choose></td>
+                                        <td><c:choose><c:when test="${membership.member != null}">${membership.member.email}</c:when><c:otherwise></c:otherwise></c:choose></td>
+                                                <td>
+                                                    <span class="badge badge-pt">
+                                                <c:choose>
+                                                    <c:when test="${membership.packageO != null}">${membership.packageO.name}</c:when>
+                                                    <c:otherwise></c:otherwise>
+                                                </c:choose>
+                                            </span>
+                                        </td>
+                                        <td><c:choose><c:when test="${membership.createdDate != null}"><fmt:formatDate value="${membership.createdDate}" pattern="dd/MM/yyyy" /></c:when><c:otherwise></c:otherwise></c:choose></td>
+                                        <td><c:choose><c:when test="${membership.startDate != null}"><fmt:formatDate value="${membership.startDate}" pattern="dd/MM/yyyy" /></c:when><c:otherwise></c:otherwise></c:choose></td>
+                                        <td><c:choose><c:when test="${membership.endDate != null}"><fmt:formatDate value="${membership.endDate}" pattern="dd/MM/yyyy" /></c:when><c:otherwise></c:otherwise></c:choose></td>
+                                        <td><c:choose><c:when test="${membership.status != null}"><span class="badge badge-active">${membership.status}</span></c:when><c:otherwise></c:otherwise></c:choose></td>
+                                                <td>
+                                                    <div class="action-buttons">
+                                                        <button id="btn-edit" class="btn-icon btn-edit" title="Sửa thông tin" 
+                                                                onclick="openEditMembershipModal('${membership.id}', '${membership.member.username}', '${membership.member.name}', '${membership.packageO.id}', '${membership.status}', '${membership.startDate}')" >
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button
+                                                            class="btn-icon"
+                                                            style="background: #9b59b6"
+                                                            title="Gia hạn"
+                                                            >
+                                                            <i class="fas fa-calendar-plus"></i>
+                                                        </button>
+                                                        <button class="btn-icon btn-delete" title="Xóa" name="deleteMembership">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                                </tr>
+                                    </c:forEach>
+                                </c:if>
 
                             </tbody>
                         </table>
@@ -769,6 +772,7 @@
                     </button>
                 </div>
                 <form action="#" method="post" id="membershipForm">
+                    <input type="hidden" name="action" value="addMembership" />
                     <input type="hidden" name="action" value="addMembership" />
                     <div class="form-group">
                         <label class="form-label">Username</label>
@@ -823,11 +827,16 @@
                         &times;
                     </button>
                 </div>
-                <form action="#" method="post" id="editMembership">
+                <form action="#" method="post" id="editFrom">
                     <input type="hidden" name="action" value="editMembership" />
+                    <input type="hidden" name="id" value="-1" />
                     <div class="form-group">
                         <label class="form-label">Username</label>
-                        <input type="text" class="form-input" name="username" required />
+                        <input type="text" class="form-input" name="username" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tên</label>
+                        <input type="text" class="form-input" name="name" readonly />
                     </div>
                     <div class="form-group">
                         <label class="form-label">Gói tập</label>
@@ -843,10 +852,22 @@
                             </c:if>
                         </select>
                     </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Trạng thái</label>
+
+                        <select class="form-input" name="status" required>
+                            <option value="active">ACTIVE</option>
+                            <option value="inactive">INACTIVE</option>
+                            <option value="suspended">SUSPENDED</option>
+                            <option value="expired">EXPIRED</option>
+                            <option value="cancelled">CANCELLED</option>
+                        </select>
+                    </div>
 
                     <div class="form-group">
                         <label class="form-label">Ngày bắt đầu</label>
-                        <input type="date" class="form-input" name="startDate" required />
+                        <input type="date" class="form-input" name="startDate" value="<fmt:formatDate value='' pattern='yyyy-MM-dd'/>" required />
                     </div>
 
                     <div
@@ -890,12 +911,43 @@
                 form.querySelector('input[name="action"]').value = 'addMembership';
             }
             
-            function openEditMembershipModal() {
+            function formatDateForInput(dateString) {
+                if (!dateString) return "";
+
+                // Ví dụ chuỗi: "Sat Nov 01 00:00:00 ICT 2025"
+                const parts = dateString.split(" ");
+                if (parts.length < 6) return "";
+
+                const monthMap = {
+                    Jan: "01", Feb: "02", Mar: "03", Apr: "04",
+                    May: "05", Jun: "06", Jul: "07", Aug: "08",
+                    Sep: "09", Oct: "10", Nov: "11", Dec: "12"
+                };
+
+                const day = parts[2];
+                const month = monthMap[parts[1]];
+                const year = parts[5];
+                
+                let result = year + "-" + month + "-" + day;
+                return result;
+            }
+         
+            function openEditMembershipModal(id, username, name, packageId, status, startDate) {
                 document.getElementById('editMembership').classList.add('active');
-                const form = document.querySelector('#editMembership');
+                const form = document.querySelector('#editFrom');
                 form.action = `${contextPath}/admin/membership-management`;
                 form.method = 'post';
                 form.querySelector('input[name="action"]').value = 'editMembership';
+                form.querySelector('input[name="id"]').value = id;
+                form.querySelector('input[name="username"]').value = username;
+                form.querySelector('input[name="name"]').value = name;
+                form.querySelector('select[name="package_id"]').value = packageId;
+                form.querySelector('select[name="status"]').value = status.toLowerCase();
+                console.log(startDate);
+                console.log(formatDateForInput(startDate));
+                form.querySelector('input[name="startDate"]').value = formatDateForInput(startDate);
+                
+                
             }
 
             function closeModal(modalId) {

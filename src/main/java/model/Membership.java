@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -133,7 +134,7 @@ public class Membership implements Serializable {
     public void setStartDate(Date startDate) {
         this.startDate = startDate;
     }
-
+    
     public Date getEndDate() {
         return endDate;
     }
