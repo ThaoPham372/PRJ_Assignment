@@ -8,6 +8,8 @@ import exception.EmptyCartException;
 import exception.InsufficientStockException;
 import model.Product;
 import model.shop.*;
+import service.shop.PaymentService;
+import service.shop.PaymentServiceImpl;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -28,22 +30,25 @@ public class CheckoutServiceImpl implements CheckoutService {
     private final OrderDao orderDao;
     private final OrderItemDao orderItemDao;
     private final ProductDAO productDao;
+    private final PaymentService paymentService;
     
     public CheckoutServiceImpl() {
         this.cartService = new CartServiceImpl();
         this.orderDao = new OrderDao();
         this.orderItemDao = new OrderItemDao();
         this.productDao = new ProductDAO();
+        this.paymentService = new PaymentServiceImpl();
     }
     
     // Constructor for dependency injection
     public CheckoutServiceImpl(CartService cartService, 
                               OrderDao orderDao, OrderItemDao orderItemDao, 
-                              ProductDAO productDao) {
+                              ProductDAO productDao, PaymentService paymentService) {
         this.cartService = cartService;
         this.orderDao = orderDao;
         this.orderItemDao = orderItemDao;
         this.productDao = productDao;
+        this.paymentService = paymentService;
     }
 
     @Override
@@ -98,7 +103,10 @@ public class CheckoutServiceImpl implements CheckoutService {
             // 6. Update product stock
             updateProductStock(cartItems);
             
-            // 7. Clear cart
+            // 7. Create payment record
+            createPaymentForOrder(userId.intValue(), orderId, totalAmount, paymentMethod);
+            
+            // 8. Clear cart
             cartService.clear(userId);
             
             LOGGER.info("Checkout completed successfully");
@@ -164,6 +172,9 @@ public class CheckoutServiceImpl implements CheckoutService {
             orderItems.add(packageItem);
             
             orderItemDao.insertBatch(orderId, orderItems);
+            
+            // 4. Create payment record for package order
+            createPaymentForOrder(userId.intValue(), orderId, pkg.getPrice(), paymentMethod);
             
             LOGGER.info("Package checkout completed successfully");
             
@@ -267,6 +278,37 @@ public class CheckoutServiceImpl implements CheckoutService {
         String timestamp = LocalDateTime.now().format(formatter);
         int random = (int) (Math.random() * 1000);
         return "ORD" + timestamp + String.format("%03d", random);
+    }
+    
+    /**
+     * Create payment record for an order
+     * Follows Single Responsibility Principle - handles payment creation logic
+     * Payment status will be PENDING regardless of payment method
+     * 
+     * @param userId User ID
+     * @param orderId Order ID
+     * @param amount Payment amount
+     * @param paymentMethod Payment method
+     */
+    private void createPaymentForOrder(Integer userId, Integer orderId, 
+                                      BigDecimal amount, PaymentMethod paymentMethod) {
+        try {
+            String referenceId = "ORDER-" + orderId + "-" + System.currentTimeMillis();
+            Integer paymentId = paymentService.createPaymentForOrder(
+                userId,
+                orderId.longValue(),
+                amount,
+                paymentMethod,
+                referenceId,
+                null // No shared EntityManager
+            );
+            LOGGER.info(String.format("Payment record created - ID: %d, Order: %d, Amount: %s, Method: %s, Status: PENDING",
+                paymentId, orderId, amount, paymentMethod));
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, 
+                String.format("Failed to create payment record for order: %d", orderId), e);
+            // Don't fail checkout if payment record creation fails - order is already created
+        }
     }
 }
 
