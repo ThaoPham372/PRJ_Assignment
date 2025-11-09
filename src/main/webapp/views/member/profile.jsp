@@ -34,7 +34,7 @@
         background: var(--gradient-primary);
         border-radius: 20px;
         padding: 40px;
-        margin-bottom: 30px;
+        margin-bottom: 40px;
         color: white;
         position: relative;
         overflow: hidden;
@@ -244,7 +244,7 @@
         background: var(--card);
         border-radius: 15px;
         padding: 30px;
-        margin-bottom: 20px;
+        margin-bottom: 30px;
         box-shadow: 0 4px 15px var(--shadow);
     }
 
@@ -409,7 +409,7 @@
 
 <div class="profile-container">
     <!-- Back Button -->
-    <div class="mb-3">
+    <div style="margin-bottom: 25px;">
         <a href="${pageContext.request.contextPath}/member/dashboard" class="btn-back-top">
             <i class="fas fa-arrow-left"></i>
             Quay lại Dashboard
@@ -472,7 +472,7 @@
                         </span>
                     </div>
                 </div>
-                <div class="mt-3">
+                <div style="margin-top: 20px;">
                     <a href="${pageContext.request.contextPath}/member/profile-edit" class="btn-edit-profile">
                         <i class="fas fa-edit"></i>
                         Chỉnh sửa thông tin
