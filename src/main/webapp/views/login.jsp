@@ -1,12 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %> 
-<%@ taglibprefix= "c" uri="http://java.sun.com/jsp/jstl/core" %>
-
-    <% // If googleClientId is not set by servlet, load it from ConfigManager if
-//(request.getAttribute("googleClientId") == null) { try { Utils.ConfigManager configManager = Utils.ConfigManager.getInstance(); String clientId =
-//configManager.getGoogleClientId(); request.setAttribute("googleClientId",
-//clientId); } catch (Exception e) { System.err.println("[login.jsp] Error loading
-//Google Client ID: " + e.getMessage()); request.setAttribute("googleClientId",
-//null); } } %>
+<%@taglib prefix= "c" uri="http://java.sun.com/jsp/jstl/core" %> 
 
 <!DOCTYPE html>
 <html lang="vi">

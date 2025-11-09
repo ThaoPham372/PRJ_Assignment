@@ -9,15 +9,10 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "trainer")
-<<<<<<< HEAD
-@PrimaryKeyJoinColumn(name ="trainer_id")
-public class Trainer extends User implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-=======
 @PrimaryKeyJoinColumn(name = "trainer_id")
 public class Trainer extends User {
->>>>>>> e58f3bf612232be8158c25701e24afb7b4eb492d
+
 
     @Column(name = "specialization")
     private String specialization;
