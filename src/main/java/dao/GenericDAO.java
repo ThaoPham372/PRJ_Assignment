@@ -1,7 +1,6 @@
 package dao;
 
 import jakarta.persistence.NoResultException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import model.User;
@@ -17,15 +16,15 @@ public class GenericDAO<T> extends BaseDAO {
         super();
         this.entityClass = entityClass;
     }
-    
+
     // Create
     public int save(T entity) {
         try {
             beginTransaction();
             em.persist(entity);
             commitTransaction();
-            
-            if(entity instanceof User) {
+
+            if (entity instanceof User) {
                 return ((User) entity).getId();
             }
         } catch (Exception e) {
@@ -34,10 +33,9 @@ public class GenericDAO<T> extends BaseDAO {
         }
         return -1;
     }
-    
-    
+
     // Read
-    
+
     public T findById(int id) {
         return em.find(entityClass, id);
     }
@@ -46,23 +44,25 @@ public class GenericDAO<T> extends BaseDAO {
         try {
             return em.createQuery("SELECT e FROM " + entityClass.getSimpleName() + " e", entityClass)
                     .getResultList();
-        } catch (Exception e){
-            System.out.println("Error: Find ALL ---> ");
+        } catch (Exception e) {
+            System.out.println("Error: Find ALL ---> " + e.getMessage());
         }
         return Collections.emptyList();
     }
-    
-     public T findByField(String fieldName, Object value){
-        try{
-            T entity = em.createQuery("SELECT e FROM " + entityClass.getSimpleName() + " e WHERE e." + fieldName + " = :val", entityClass)
-                     .setParameter("val", value)
-                     .getSingleResult();
+
+    public T findByField(String fieldName, Object value) {
+        try {
+            T entity = em
+                    .createQuery("SELECT e FROM " + entityClass.getSimpleName() + " e WHERE e." + fieldName + " = :val",
+                            entityClass)
+                    .setParameter("val", value)
+                    .getSingleResult();
             return entity;
-        } catch(NoResultException e){
+        } catch (NoResultException e) {
             return null;
         }
     }
-    
+
     // Update
     public int update(T entity) {
         try {
@@ -73,12 +73,11 @@ public class GenericDAO<T> extends BaseDAO {
             rollbackTransaction();
             return -1;
         }
-        if(entity instanceof User)
+        if (entity instanceof User)
             return ((User) entity).getId();
         return -1;
-    }   
-    
-    
+    }
+
     // Delete
     public int delete(T entity) {
         try {
@@ -89,8 +88,8 @@ public class GenericDAO<T> extends BaseDAO {
             rollbackTransaction();
             return -1;
         }
-        if(entity instanceof User) 
-            return ((User)entity).getId();
+        if (entity instanceof User)
+            return ((User) entity).getId();
         return -1;
     }
 }

@@ -9,8 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.google.gson.Gson;
 import java.util.ArrayList;
@@ -41,10 +39,10 @@ public class AccountManagementServlet extends HttpServlet {
         System.out.println("URL: " + req.getRequestURL() + "");
         System.out.println("Query: " + req.getQueryString());
         System.out.println("\n");
-        
+
         List<User> users = getAccounts();
-        
-        //Need: fix edit account (JSON -> API)
+
+        // Need: fix edit account (JSON -> API)
         if ("editAccount".equals(req.getParameter("action"))) {
             int id = Integer.parseInt(req.getParameter("id"));
             UserService userService = new UserService();
@@ -52,17 +50,16 @@ public class AccountManagementServlet extends HttpServlet {
             res.setContentType("application/json");
             res.getWriter().write(new Gson().toJson(user));
             return;
-        } else
-        if ("filterAccounts".equals(req.getParameter("action"))) {
+        } else if ("filterAccounts".equals(req.getParameter("action"))) {
             String roleFilter = req.getParameter("roleFilter");
             String statusFilter = req.getParameter("statusFilter");
-            
+
             users = filterAccounts(users, roleFilter, statusFilter);
-            
+
             req.setAttribute("roleFilter", roleFilter);
             req.setAttribute("statusFilter", statusFilter);
-        } 
-        
+        }
+
         req.setAttribute("accounts", users);
         req.getRequestDispatcher("/views/admin/account_management.jsp").forward(req, res);
     }
@@ -83,7 +80,7 @@ public class AccountManagementServlet extends HttpServlet {
             default:
                 break;
         }
-        
+
         List<User> users = getAccounts();
         req.setAttribute("accounts", users);
         req.getRequestDispatcher("/views/admin/account_management.jsp").forward(req, res);
@@ -93,22 +90,23 @@ public class AccountManagementServlet extends HttpServlet {
             throws ServletException, IOException {
         String username = req.getParameter("username");
         String email = req.getParameter("email");
-        
+
         boolean isValidInput = isValidUsernameAndEmail(username, email); // Có thể đưa vào class InputValidator
-        if(!isValidInput) return;
+        if (!isValidInput)
+            return;
 
         String role = req.getParameter("role").toLowerCase();
-        if(role == null) role = "member";
-        
+        if (role == null)
+            role = "member";
+
         createAccountByRole(role, req);
 
-        
         req.setAttribute("message", "Add account successful!");
     }
 
     private void updateAccount(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         boolean isValidChangeUsernameAndEmail = checkInfoExist(req, res);
-        if(!isValidChangeUsernameAndEmail) 
+        if (!isValidChangeUsernameAndEmail)
             return;
 
         int id = Integer.parseInt(req.getParameter("id"));
@@ -162,12 +160,12 @@ public class AccountManagementServlet extends HttpServlet {
                 return false;
             }
 
-        if (!email.trim().equalsIgnoreCase(user.getEmail())) 
+        if (!email.trim().equalsIgnoreCase(user.getEmail()))
             if (!InputValidator.isValidEmail(email)) {
                 req.setAttribute("errorMessage", "Invalid email format or email already exists.");
                 return false;
             }
-        
+
         return true;
     }
 
@@ -194,10 +192,11 @@ public class AccountManagementServlet extends HttpServlet {
         trainerService.add(trainer);
     }
 
-    private List<User> filterAccounts(List<User> users, String roleFilter, String statusFilter) throws ServletException, IOException {
-        if(roleFilter != null)
+    private List<User> filterAccounts(List<User> users, String roleFilter, String statusFilter)
+            throws ServletException, IOException {
+        if (roleFilter != null)
             users = filterAccountsByRole(users, roleFilter);
-        if(statusFilter != null)
+        if (statusFilter != null)
             users = filterAccountsByStatus(users, statusFilter);
 
         return users;

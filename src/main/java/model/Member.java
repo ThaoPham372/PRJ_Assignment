@@ -9,45 +9,43 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
-import java.io.Serializable;
 import java.util.Collection;
 
 @Entity
 @Table(name = "members")
 @PrimaryKeyJoinColumn(name = "member_id", referencedColumnName = "user_id")
-public class Member extends User implements Serializable {
+public class Member extends User {
 
-    private static final long serialVersionUID = 1L;
-     
-    // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
+    // @Max(value=?) @Min(value=?)//if you know range of your decimal fields
+    // consider using these annotations to enforce field validation
     @Column(name = "weight")
     private Float weight;
-    
+
     @Column(name = "height")
     private Float height;
-    
+
     @Column(name = "bmi")
     private Float bmi;
-    
+
     @Column(name = "emergency_contact_name")
     private String emergencyContactName;
-    
+
     @Column(name = "emergency_contact_phone")
     private String emergencyContactPhone;
-    
+
     @Column(name = "emergency_contact_relation")
     private String emergencyContactRelation;
-    
+
     @Column(name = "emergency_contact_address")
     private String emergencyContactAddress;
-    
+
     @Column(name = "goal")
     private String goal;
-    
+
     @Lob
     @Column(name = "pt_note")
     private String ptNote;
-    
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "member")
     private Collection<Membership> membershipCollection;
 
@@ -150,6 +148,7 @@ public class Member extends User implements Serializable {
 
     @Override
     public String toString() {
-        return "Member{id=" + getId() + ", username=" + getUsername() + ", weight=" + weight + ", height=" + height + ", bmi=" + bmi + ", goal=" + goal + '}';
+        return "Member{id=" + getId() + ", username=" + getUsername() + ", weight=" + weight + ", height=" + height
+                + ", bmi=" + bmi + ", goal=" + goal + '}';
     }
 }

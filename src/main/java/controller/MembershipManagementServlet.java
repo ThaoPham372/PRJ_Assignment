@@ -73,7 +73,7 @@ public class MembershipManagementServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String action = req.getParameter("action");
-        if(action == null)
+        if (action == null)
             action = "";
         switch (action) {
             case "addMembership" -> {
@@ -184,7 +184,7 @@ public class MembershipManagementServlet extends HttpServlet {
                 return packageO == null || !packageO.getName().equalsIgnoreCase(packageType);
             });
         }
-        
+
         return memberships;
     }
 
@@ -205,50 +205,48 @@ public class MembershipManagementServlet extends HttpServlet {
 
     private int countNumberMembershipsExpiringSoon(List<Membership> memberships) {
         return (int) memberships.stream()
-                .filter(m -> 
-                    (DateUtils.checkDateDifference(m.getEndDate(), new Date()) == 1) &&
-                    (DateUtils.compareDates(m.getEndDate(), new Date()) > 1)
-                )
+                .filter(m -> (DateUtils.checkDateDifference(m.getEndDate(), new Date()) == 1) &&
+                        (DateUtils.compareDates(m.getEndDate(), new Date()) > 1))
                 .count();
     }
 
     private void handleEditMembership(HttpServletRequest req, HttpServletResponse resp) {
-        String name = req.getParameter("name");
         String username = req.getParameter("username");
         int memberId = memberService.getByUsername(username).getId();
         int packageId = Integer.parseInt(req.getParameter("package_id"));
         int membershipId = Integer.parseInt(req.getParameter("id"));
         String status = req.getParameter("status");
         String startDateStr = req.getParameter("startDate");
-        
+
         Membership tempMembership = membershipService.getByMemberIdAndPackageId(memberId, packageId);
-        if(tempMembership == null) {
+        if (tempMembership == null) {
             Membership membership = membershipService.getMembershipById(membershipId);
             Package packageO = packageService.getById(packageId);
-            
+
             membership.setStatus(status);
             membership.setStartDate(DateUtils.parseToDate(startDateStr));
             membership.setPackageO(packageO);
-            
+
             membershipService.update(membership);
         }
     }
 
-    //Cần tối ưu hơn
+    // Cần tối ưu hơn
     private void handleAddMembership(HttpServletRequest req, HttpServletResponse resp) {
         String username = req.getParameter("username");
         int memberId = memberService.getByUsername(username).getId();
         int packageId = Integer.parseInt(req.getParameter("package_id"));
         String startDateStr = req.getParameter("startDate");
-        
-        if(!isExistMembership(memberId, packageId))
+
+        if (!isExistMembership(memberId, packageId))
             addMembership(username, packageId, startDateStr);
     }
 
     private boolean isExistMembership(int memberId, int packageId) {
         Membership membership = membershipService.getByMemberIdAndPackageId(memberId, packageId);
-        if(membership == null) return false;
-            
+        if (membership == null)
+            return false;
+
         return true;
     }
 }

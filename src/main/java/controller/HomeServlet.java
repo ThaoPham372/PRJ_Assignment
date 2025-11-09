@@ -1,8 +1,6 @@
 package controller;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import model.User;
 //import com.gym.model.shop.Product;
@@ -23,14 +21,14 @@ import jakarta.servlet.http.HttpSession;
  */
 @WebServlet(name = "HomeServlet", urlPatterns = { "/home", "/HomeServlet" })
 public class HomeServlet extends HttpServlet {
-  
-//  private ProductService productService;
 
-//  @Override
-//  public void init() throws ServletException {
-//    super.init();
-//    this.productService = new ProductServiceImpl();
-//  }
+  // private ProductService productService;
+
+  // @Override
+  // public void init() throws ServletException {
+  // super.init();
+  // this.productService = new ProductServiceImpl();
+  // }
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -38,14 +36,14 @@ public class HomeServlet extends HttpServlet {
     try {
       // Load user session if available
       loadUserSession(request);
-      
+
       // Load featured/latest products for home page
-//      loadFeaturedProducts(request);
-      
+      // loadFeaturedProducts(request);
+
       // Placeholder for future features (news, feedback, etc.)
       // loadLatestNews(request);
       // loadFeaturedFeedback(request);
-      
+
       // Forward đến home.jsp
       request.getRequestDispatcher("/home.jsp").forward(request, response);
     } catch (Exception e) {
@@ -85,39 +83,39 @@ public class HomeServlet extends HttpServlet {
    * Load featured/latest products to display on home page
    * Gets the 6 most recent active products
    */
-//  private void loadFeaturedProducts(HttpServletRequest request) {
-//    try {
-//      // Get 6 latest products (no filter, just newest first)
-////      List<Product> featuredProducts = productService.search(null, null, 1, 6);
-//      
-//      if (featuredProducts == null) {
-//        featuredProducts = new ArrayList<>();
-//      }
-//      
-//      request.setAttribute("featuredProducts", featuredProducts);
-//    } catch (Exception e) {
-//      System.err.println("[HomeServlet] Error loading featured products: " + e.getMessage());
-//      // Set empty list on error
-////      request.setAttribute("featuredProducts", new ArrayList<Product>());
-//    }
-//  }
-
- 
+  // private void loadFeaturedProducts(HttpServletRequest request) {
+  // try {
+  // // Get 6 latest products (no filter, just newest first)
+  //// List<Product> featuredProducts = productService.search(null, null, 1, 6);
+  //
+  // if (featuredProducts == null) {
+  // featuredProducts = new ArrayList<>();
+  // }
+  //
+  // request.setAttribute("featuredProducts", featuredProducts);
+  // } catch (Exception e) {
+  // System.err.println("[HomeServlet] Error loading featured products: " +
+  // e.getMessage());
+  // // Set empty list on error
+  //// request.setAttribute("featuredProducts", new ArrayList<Product>());
+  // }
+  // }
 
   /**
    * Placeholder method for loading featured feedback/testimonials
    * TODO: Implement when Feedback model/DAO is available
    */
   /*
-  private void loadFeaturedFeedback(HttpServletRequest request) {
-    try {
-      // Future implementation:
-      // FeedbackService feedbackService = new FeedbackServiceImpl();
-      // List<Feedback> featuredFeedback = feedbackService.findFeatured(3);
-      // request.setAttribute("featuredFeedback", featuredFeedback);
-    } catch (Exception e) {
-      System.err.println("[HomeServlet] Error loading featured feedback: " + e.getMessage());
-    }
-  }
-  */
+   * private void loadFeaturedFeedback(HttpServletRequest request) {
+   * try {
+   * // Future implementation:
+   * // FeedbackService feedbackService = new FeedbackServiceImpl();
+   * // List<Feedback> featuredFeedback = feedbackService.findFeatured(3);
+   * // request.setAttribute("featuredFeedback", featuredFeedback);
+   * } catch (Exception e) {
+   * System.err.println("[HomeServlet] Error loading featured feedback: " +
+   * e.getMessage());
+   * }
+   * }
+   */
 }
