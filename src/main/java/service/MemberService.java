@@ -44,4 +44,8 @@ public class MemberService {
     public int delete(Member member) {
         return memberDAO.delete(member);
     }
+
+    public Member getByUsername(String username) {
+        return memberDAO.findByUsername(username);
+    }
 }

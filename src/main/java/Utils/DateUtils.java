@@ -14,4 +14,9 @@ public class DateUtils {
             return null; // hoặc throw RuntimeException nếu muốn
         }
     }
+
+    public static Date addMonths(int months) {
+        Date now = new Date();
+        return new Date(now.getTime() + months * 30L * 24 * 60 * 60 * 1000); // Giả sử mỗi tháng có 30 ngày
+    }
 }

@@ -2,6 +2,7 @@ package dao;
 
 import jakarta.persistence.NoResultException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import model.User;
 
@@ -48,7 +49,7 @@ public class GenericDAO<T> extends BaseDAO {
         } catch (Exception e){
             System.out.println("Error: Find ALL ---> ");
         }
-        return new ArrayList<>(List.of());
+        return Collections.emptyList();
     }
     
      public T findByField(String fieldName, Object value){

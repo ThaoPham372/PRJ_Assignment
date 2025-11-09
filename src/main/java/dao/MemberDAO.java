@@ -31,6 +31,10 @@ public class MemberDAO {
     public Member findByName(String name) {
         return genericDAO.findByField("name", name);
     }
+    
+    public Member findByUsername(String username) {
+        return genericDAO.findByField("username", username);
+    }
 
     public Member findByEmail(String email) {
         return genericDAO.findByField("email", email);

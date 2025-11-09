@@ -1,5 +1,5 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-    uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %> 
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
     <!DOCTYPE html>
     <html lang="vi">
@@ -574,7 +574,7 @@
                         </li>
                         <li class="sidebar-menu-item">
                             <a
-                                href="${pageContext.request.contextPath}/admin/member-management"
+                                href="${pageContext.request.contextPath}/admin/membership-management"
                                 class="sidebar-menu-link"
                                 >
                                 <i class="fas fa-users"></i>

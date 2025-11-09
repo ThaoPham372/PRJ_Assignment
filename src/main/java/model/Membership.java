@@ -65,7 +65,7 @@ public class Membership implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date suspendedAt;
 
-    @JoinColumn(name = "member_id", referencedColumnName = "member_id") // user_id or id ?
+    @JoinColumn(name = "member_id", referencedColumnName = "member_id")
     @ManyToOne(optional = false)
     private Member member;
 

@@ -9,7 +9,7 @@ import model.Membership;
  */
 public class MembershipDAO {
 
-    GenericDAO<Membership> genericDAO;
+    private final GenericDAO<Membership> genericDAO;
 
     public MembershipDAO() {
         genericDAO = new GenericDAO<>(Membership.class);

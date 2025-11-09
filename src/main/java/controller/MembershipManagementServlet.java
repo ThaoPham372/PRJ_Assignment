@@ -1,13 +1,12 @@
 package controller;
 
+import Utils.DateUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import model.Member;
@@ -20,139 +19,97 @@ import service.PackageService;
 /*
     Note: 
  */
-@WebServlet(urlPatterns = "/admin/member-management")
+@WebServlet(urlPatterns = "/admin/membership-management")
 public class MembershipManagementServlet extends HttpServlet {
+
+    private final MembershipService membershipService = new MembershipService();
+    private final MemberService memberService = new MemberService();
+    private final PackageService packageService = new PackageService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String action = req.getParameter("action");
-        List<Membership> memberships = getMembership();
+        try {
+            System.out.println("\nMEMBERSHIP MANAGEMENT");
+            String action = req.getParameter("action");
+            if (action == null)
+                action = "";
+            System.out.println("AAction: " + action);
+            System.out.println("------------------------");
+            List<Membership> memberships = getMembership();
+            List<Package> packages = packageService.getAll();
 
-        if ("deleteMembership".equals(action)) {
-            int id = Integer.parseInt(req.getParameter("membershipId"));
-            deleteMembership(memberships, id);
-        } else if ("filterMemberships".equals(action)) {
-            System.out.println("FILTER CALLED\n\n\n");
-            String keyword = req.getParameter("keyword");
-            String status = req.getParameter("status");
+            if ("deleteMembership".equals(action)) {
+                int id = Integer.parseInt(req.getParameter("membershipId"));
+                deleteMembership(memberships, id);
+            } else if ("filterMemberships".equals(action)) {
+                String keyword = req.getParameter("keyword");
+                String status = req.getParameter("status");
+                memberships = filterMemberships(memberships, keyword, status);
+            }
 
-            memberships = filterMemberships(memberships, keyword, status);
+            System.out.println("Finish GET");
+
+            req.setAttribute("packages", packages);
+            req.setAttribute("memberships", memberships);
+            req.getRequestDispatcher("/views/admin/membership_management.jsp").forward(req, resp);
+        } catch (ServletException | IOException | NumberFormatException e) {
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Có lỗi xảy ra khi xử lý yêu cầu.");
         }
-
-        req.setAttribute("memberships", memberships);
-        req.getRequestDispatcher("/views/admin/member_management.jsp").forward(req, resp);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String action = req.getParameter("action");
         switch (action) {
-            case "addMembership" ->
-                addMembership(req, resp);
+            case "addMembership" -> {
+                String username = req.getParameter("username");
+                int packageId = Integer.parseInt(req.getParameter("package_id"));
+                String startDateStr = req.getParameter("startDate");
+                addMembership(username, packageId, startDateStr);
+            }
             default -> {
                 System.out.println("Action is null");
-                req.getRequestDispatcher("/views/admin/member_management.jsp").forward(req, resp);
             }
         }
+        resp.sendRedirect(req.getContextPath() + "/admin/membership-management");
     }
 
     public List<Membership> deleteMembership(List<Membership> memberships, int id) {
         Membership membership = null;
         for (Membership m : memberships) {
-            if (m.getMembershipId() == id) {
+            if (m.getId() == id) {
                 membership = m;
                 break;
             }
         }
 
-        MembershipService membershipService = new MembershipService();
         membershipService.delete(membership);
 
         return memberships;
     }
 
-    private void addMembership(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-        boolean success = false;
-        try {
-            String username = req.getParameter("username");
-            String phone = req.getParameter("phone");
-            String packageIdStr = req.getParameter("package_id");
-            String startDateStr = req.getParameter("startDate");
-
-            if (username == null || username.trim().isEmpty()) {
-                throw new IllegalArgumentException("Tên người dùng không được để trống.");
-            }
-            if (packageIdStr == null || packageIdStr.trim().isEmpty()) {
-                throw new IllegalArgumentException("Gói tập không được để trống.");
-            }
-            if (startDateStr == null || startDateStr.trim().isEmpty()) {
-                throw new IllegalArgumentException("Ngày bắt đầu không được để trống.");
-            }
-            if (phone == null || phone.trim().isEmpty()) {
-                throw new IllegalArgumentException("Phone bắt đầu không được để trống.");
-            }
-
-            int packageId;
-            try {
-                packageId = Integer.parseInt(packageIdStr);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Gói tập không hợp lệ (phải là số nguyên).", e);
-            }
-
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            sdf.setLenient(false); // không cho ngày sai kiểu 2025-13-50
-
-            Date startDate;
-            try {
-                startDate = new SimpleDateFormat("yyyy-MM-dd").parse(startDateStr);
-            } catch (ParseException e) {
-                throw new IllegalArgumentException("Định dạng ngày không hợp lệ. Phải là yyyy-MM-dd.", e);
-            }
-
-            success = true;
-        } catch (IllegalArgumentException e) {
-            System.err.println("⚠️ Lỗi dữ liệu đầu vào: " + e.getMessage());
-            req.setAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            System.err.println("🔥 Lỗi không xác định khi thêm membership:");
-            req.setAttribute("errorMessage", "Đã xảy ra lỗi khi thêm membership.");
-        }
-
-        if (success) {
-            resp.sendRedirect(req.getContextPath() + "/admin/member-management");
-        }
-
-    }
-
-    private void createMembership(int memberId, int packageId) {
-        MemberService memberService = new MemberService();
-        PackageService packageService = new PackageService();
-        
-        Member member = memberService.getById(memberId);
+    private void addMembership(String username, int packageId, String startDateStr) {
+        Member member = memberService.getByUsername(username);
         Package packageO = packageService.getById(packageId);
+        if (member != null && packageO != null) {
+            Membership membership = new Membership(member, packageO);
+            int months = packageO.getDurationMonths();
+            Date startDate = DateUtils.parseToDate(startDateStr);
+            Date endDate = DateUtils.addMonths(months);
 
-        if (memberId > -1) {
-            Membership membership = new Membership();
-            membership.setMember(member);
-            membership.setPackageO(packageO);
-            membership.setStartDate(new Date());
+            membership.setStartDate(startDate);
+            membership.setEndDate(endDate);
 
-            Date now = new Date();
-            membership.setEndDate(new Date(now.getTime() + 30L * 24 * 60 * 60 * 1000)); // + 30 ngay
-
-            MembershipService membershipService = new MembershipService();
             membershipService.add(membership);
         }
     }
 
     private List<Membership> getMembership() {
-        MembershipService membershipService = new MembershipService();
-        List<Membership> memberships = membershipService.getAll();
-        return memberships;
+        return membershipService.getAll();
     }
 
-    private List<Membership> filterMemberships(List<Membership> memberships, String keyword, String status) throws ServletException, IOException {
+    private List<Membership> filterMemberships(List<Membership> memberships, String keyword, String status)
+            throws ServletException, IOException {
 
         memberships = filterByKeyword(memberships, keyword);
         memberships = filterByStatus(memberships, status);

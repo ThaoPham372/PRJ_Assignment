@@ -7,13 +7,15 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.util.Collection;
 
 @Entity
 @Table(name = "members")
-public class Member  extends User implements Serializable {
+@PrimaryKeyJoinColumn(name = "member_id", referencedColumnName = "user_id")
+public class Member extends User implements Serializable {
 
     private static final long serialVersionUID = 1L;
      
