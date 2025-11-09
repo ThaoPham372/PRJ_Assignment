@@ -100,6 +100,7 @@ public class Membership implements Serializable {
     }
 
     public Membership() {
+        setEndDate(new Date());
     }
 
     public Membership(Integer membershipId) {
