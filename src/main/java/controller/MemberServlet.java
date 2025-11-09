@@ -37,8 +37,6 @@ import java.util.stream.Collectors;
     "/member/goals-edit",
     "/member/membership",
     "/member/schedule",
-    "/member/nutrition",
-    "/member/nutrition-history",
     "/member/support"
 })
 public class MemberServlet extends HttpServlet {
@@ -112,8 +110,6 @@ public class MemberServlet extends HttpServlet {
 
                 // Các trang chưa implement - tạm thời forward đơn giản
                 case "/member/schedule":
-                case "/member/nutrition":
-                case "/member/nutrition-history":
                 case "/member/support":
                     request.getRequestDispatcher("/views" + path + ".jsp").forward(request, response);
                     break;

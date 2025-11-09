@@ -631,7 +631,7 @@
                 <div class="summary-item calories">
                     <div class="summary-label">Calories</div>
                     <div class="summary-value">
-                        <fmt:formatNumber value="${totals.caloriesKcal}" maxFractionDigits="0" />
+                        <fmt:formatNumber value="${totals != null && totals.caloriesKcal != null ? totals.caloriesKcal : 0}" maxFractionDigits="0" />
                         <span class="summary-unit">kcal</span>
                     </div>
                     <div class="progress-container">
@@ -649,7 +649,7 @@
                 <div class="summary-item protein">
                     <div class="summary-label">Protein</div>
                     <div class="summary-value">
-                        <fmt:formatNumber value="${totals.proteinG}" maxFractionDigits="1" />
+                        <fmt:formatNumber value="${totals != null && totals.proteinG != null ? totals.proteinG : 0}" maxFractionDigits="1" />
                         <span class="summary-unit">g</span>
                     </div>
                     <div class="progress-container">
