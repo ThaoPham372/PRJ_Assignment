@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * RoleBasedRedirectFilter - Filter để điều hướng user dựa trên role sau khi đăng nhập
@@ -22,6 +23,19 @@ import java.io.IOException;
  */
 @WebFilter(filterName = "RoleBasedRedirectFilter", urlPatterns = {"/home"})
 public class RoleBasedRedirectFilter implements Filter {
+    
+    // Role constants - Case-insensitive comparison
+    private static final String ROLE_ADMIN = "ADMIN";
+    private static final String ROLE_PT = "PT";
+    private static final String ROLE_TRAINER = "TRAINER";
+    private static final String ROLE_MEMBER = "MEMBER";
+    private static final String ROLE_USER = "USER";
+    
+    // Dashboard URLs
+    private static final String URL_ADMIN_DASHBOARD = "/admin/dashboard";
+    private static final String URL_PT_DASHBOARD = "/pt/dashboard";
+    private static final String URL_MEMBER_DASHBOARD = "/member/dashboard";
+    private static final String URL_HOME = "/home";
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -41,17 +55,20 @@ public class RoleBasedRedirectFilter implements Filter {
             Boolean isLoggedIn = (Boolean) session.getAttribute("isLoggedIn");
             
             if (isLoggedIn) {
-                String role = (String) session.getAttribute("userRoles");
+                // Extract and normalize role from session
+                String role = extractRoleFromSession(session);
                 
-                System.out.println("[RoleBasedRedirectFilter] User logged in with role: " + role);
-                
-                // Điều hướng dựa trên role
-                String redirectUrl = getDashboardUrlByRole(role);
-                
-                if (redirectUrl != null && !redirectUrl.equals("/home")) {
-                    System.out.println("[RoleBasedRedirectFilter] Redirecting to: " + redirectUrl);
-                    httpResponse.sendRedirect(httpRequest.getContextPath() + redirectUrl);
-                    return; // Dừng filter chain
+                if (role != null) {
+                    System.out.println("[RoleBasedRedirectFilter] User logged in with role: " + role);
+                    
+                    // Điều hướng dựa trên role
+                    String redirectUrl = getDashboardUrlByRole(role);
+                    
+                    if (redirectUrl != null && !redirectUrl.equals(URL_HOME)) {
+                        System.out.println("[RoleBasedRedirectFilter] Redirecting to: " + redirectUrl);
+                        httpResponse.sendRedirect(httpRequest.getContextPath() + redirectUrl);
+                        return; // Dừng filter chain
+                    }
                 }
             }
         }
@@ -66,30 +83,82 @@ public class RoleBasedRedirectFilter implements Filter {
     }
 
     /**
-     * Xác định URL dashboard dựa trên role
+     * Extract role from session and normalize it
+     * Handles both List<String> and String types for backward compatibility
      * 
-     * @param role User's role
-     * @return Dashboard URL
+     * @param session HTTP session
+     * @return Normalized role string (uppercase) or null if not found
+     */
+    private String extractRoleFromSession(HttpSession session) {
+        Object userRolesObj = session.getAttribute("userRoles");
+        String role = null;
+        
+        if (userRolesObj instanceof List) {
+            // userRoles is a List<String>, extract the first role
+            @SuppressWarnings("unchecked")
+            List<String> rolesList = (List<String>) userRolesObj;
+            if (!rolesList.isEmpty()) {
+                role = rolesList.get(0);
+            }
+        } else if (userRolesObj instanceof String) {
+            // Fallback for backward compatibility
+            role = (String) userRolesObj;
+        }
+        
+        // Normalize role to uppercase for case-insensitive comparison
+        return normalizeRole(role);
+    }
+    
+    /**
+     * Normalize role string for case-insensitive comparison
+     * 
+     * @param role Raw role string
+     * @return Normalized role (trimmed and uppercase) or null if invalid
+     */
+    private String normalizeRole(String role) {
+        if (role == null || role.trim().isEmpty()) {
+            return null;
+        }
+        return role.trim().toUpperCase();
+    }
+    
+    /**
+     * Xác định URL dashboard dựa trên role (case-insensitive)
+     * 
+     * @param role User's role (already normalized to uppercase)
+     * @return Dashboard URL corresponding to the role
      */
     private String getDashboardUrlByRole(String role) {
-        if (role == null || role.isEmpty()) {
-            return "/home"; // Guest user
+        if (role == null) {
+            return URL_HOME;
         }
-
-        switch (role.toUpperCase()) {
-            case "ADMIN":
-                return "/admin/dashboard";
-            
-            case "PT":
-            case "TRAINER":
-                return "/pt/dashboard";
-            
-            case "MEMBER":
-                return "/member/dashboard";
-            
-            default:
-                return "/home";
+        
+        // Use equalsIgnoreCase for extra safety, even though role is already normalized
+        if (isRoleMatch(role, ROLE_ADMIN)) {
+            return URL_ADMIN_DASHBOARD;
         }
+        
+        if (isRoleMatch(role, ROLE_PT) || isRoleMatch(role, ROLE_TRAINER)) {
+            return URL_PT_DASHBOARD;
+        }
+        
+        if (isRoleMatch(role, ROLE_MEMBER) || isRoleMatch(role, ROLE_USER)) {
+            return URL_MEMBER_DASHBOARD;
+        }
+        
+        // Default fallback
+        return URL_HOME;
+    }
+    
+    /**
+     * Check if role matches target role (case-insensitive)
+     * 
+     * @param role Role to check
+     * @param targetRole Target role constant
+     * @return true if roles match
+     */
+    private boolean isRoleMatch(String role, String targetRole) {
+        return role != null && role.equalsIgnoreCase(targetRole);
     }
 }
 

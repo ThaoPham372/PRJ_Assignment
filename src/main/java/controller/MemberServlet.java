@@ -9,8 +9,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import model.Member;
+import model.Membership;
+import model.Package;
 import model.User;
 import service.MemberService;
+import service.MembershipService;
+import service.PackageService;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * MemberServlet - Controller xử lý các chức năng của Member
@@ -29,6 +37,7 @@ import service.MemberService;
     "/member/body-metrics-edit",
     "/member/goals-edit",
     "/member/membership",
+    "/member/membership/buyNow",
     "/member/schedule",
     "/member/nutrition",
     "/member/nutrition-history",
@@ -37,11 +46,15 @@ import service.MemberService;
 public class MemberServlet extends HttpServlet {
 
     private MemberService memberService;
+    private MembershipService membershipService;
+    private PackageService packageService;
 
     @Override
     public void init() throws ServletException {
         super.init();
         this.memberService = new MemberService();
+        this.membershipService = new MembershipService();
+        this.packageService = new PackageService();
         System.out.println("[MemberServlet] Initialized successfully");
     }
 
@@ -95,8 +108,11 @@ public class MemberServlet extends HttpServlet {
                     showGoalsEdit(request, response, currentMember);
                     break;
 
-                // Các trang chưa implement - tạm thời forward đơn giản
                 case "/member/membership":
+                    showMembership(request, response, currentMember);
+                    break;
+
+                // Các trang chưa implement - tạm thời forward đơn giản
                 case "/member/schedule":
                 case "/member/nutrition":
                 case "/member/nutrition-history":
@@ -147,6 +163,10 @@ public class MemberServlet extends HttpServlet {
 
                 case "/member/goals-edit":
                     updateGoals(request, response, currentMember);
+                    break;
+
+                case "/member/membership/buyNow":
+                    buyMembership(request, response, currentMember);
                     break;
 
                 default:
@@ -448,6 +468,157 @@ public class MemberServlet extends HttpServlet {
             request.setAttribute("member", member);
             request.getRequestDispatcher("/views/member/goals-edit.jsp").forward(request, response);
         }
+    }
+
+    // ==================== MEMBERSHIP HANDLERS ====================
+
+    /**
+     * Hiển thị trang Membership - Quản lý gói tập
+     */
+    private void showMembership(HttpServletRequest request, HttpServletResponse response, Member member)
+            throws ServletException, IOException {
+        try {
+            // Lấy membership hiện tại của member (ACTIVE)
+            Membership currentMembership = getCurrentActiveMembership(member);
+            
+            // Lấy tất cả packages có sẵn (chỉ active packages)
+            List<Package> allPackages = packageService.getAll();
+            List<Package> activePackages = allPackages.stream()
+                .filter(pkg -> pkg.getIsActive() != null && pkg.getIsActive())
+                .collect(Collectors.toList());
+            
+            // Set attributes
+            request.setAttribute("currentMembership", currentMembership);
+            request.setAttribute("packages", activePackages);
+            
+            // Nếu có membership hiện tại, set thêm packageId để highlight
+            if (currentMembership != null && currentMembership.getPackageO() != null) {
+                request.setAttribute("currentPackageId", currentMembership.getPackageO().getId());
+            }
+            
+            System.out.println("[MemberServlet] Loading membership page for member: " + member.getId());
+            System.out.println("[MemberServlet] Current membership: " + (currentMembership != null ? currentMembership.getId() : "None"));
+            System.out.println("[MemberServlet] Available packages: " + activePackages.size());
+            
+            request.getRequestDispatcher("/views/member/membership.jsp").forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            handleError(request, response, e, "Có lỗi khi tải thông tin membership.");
+        }
+    }
+
+    /**
+     * Xử lý mua/gia hạn gói membership
+     */
+    private void buyMembership(HttpServletRequest request, HttpServletResponse response, Member member)
+            throws ServletException, IOException {
+        try {
+            String packageIdStr = request.getParameter("packageId");
+            if (packageIdStr == null || packageIdStr.trim().isEmpty()) {
+                throw new IllegalArgumentException("Vui lòng chọn gói thành viên");
+            }
+            
+            int packageId = Integer.parseInt(packageIdStr);
+            Package selectedPackage = packageService.getById(packageId);
+            
+            if (selectedPackage == null) {
+                throw new IllegalArgumentException("Gói thành viên không tồn tại");
+            }
+            
+            if (selectedPackage.getIsActive() == null || !selectedPackage.getIsActive()) {
+                throw new IllegalArgumentException("Gói thành viên này không còn khả dụng");
+            }
+            
+            // Kiểm tra xem member đã có membership ACTIVE chưa
+            Membership currentMembership = getCurrentActiveMembership(member);
+            
+            if (currentMembership != null) {
+                // Gia hạn - update membership hiện tại
+                extendMembership(currentMembership, selectedPackage);
+                membershipService.update(currentMembership);
+                System.out.println("[MemberServlet] Extended membership: " + currentMembership.getId());
+            } else {
+                // Tạo mới membership
+                Membership newMembership = createNewMembership(member, selectedPackage);
+                membershipService.add(newMembership);
+                System.out.println("[MemberServlet] Created new membership for member: " + member.getId());
+            }
+            
+            // Set success message
+            HttpSession session = request.getSession();
+            session.setAttribute("success", "Mua gói thành viên thành công!");
+            
+            // Redirect về trang membership
+            response.sendRedirect(request.getContextPath() + "/member/membership");
+            
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "ID gói không hợp lệ");
+            showMembership(request, response, member);
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", e.getMessage());
+            showMembership(request, response, member);
+        }
+    }
+
+    /**
+     * Lấy membership ACTIVE hiện tại của member
+     */
+    private Membership getCurrentActiveMembership(Member member) {
+        try {
+            List<Membership> allMemberships = membershipService.getAll();
+            Date now = new Date();
+            
+            // Tìm membership ACTIVE và chưa hết hạn
+            for (Membership m : allMemberships) {
+                if (m.getMember() != null && 
+                    m.getMember().getId().equals(member.getId()) &&
+                    "ACTIVE".equalsIgnoreCase(m.getStatus()) &&
+                    m.getEndDate() != null &&
+                    m.getEndDate().after(now)) {
+                    return m;
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            System.err.println("[MemberServlet] Error getting current membership: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Gia hạn membership hiện tại
+     */
+    private void extendMembership(Membership membership, Package selectedPackage) {
+        Date currentEndDate = membership.getEndDate();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(currentEndDate);
+        cal.add(Calendar.MONTH, selectedPackage.getDurationMonths());
+        membership.setEndDate(cal.getTime());
+        membership.setUpdatedDate(new Date());
+    }
+
+    /**
+     * Tạo membership mới
+     */
+    private Membership createNewMembership(Member member, Package selectedPackage) {
+        Membership membership = new Membership();
+        membership.setMember(member);
+        membership.setPackageO(selectedPackage);
+        
+        Date now = new Date();
+        membership.setStartDate(now);
+        membership.setCreatedDate(now);
+        membership.setActivatedAt(now);
+        membership.setStatus("ACTIVE");
+        
+        // Tính end date
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(now);
+        cal.add(Calendar.MONTH, selectedPackage.getDurationMonths());
+        membership.setEndDate(cal.getTime());
+        
+        return membership;
     }
 
     // ==================== UTILITY METHODS ====================

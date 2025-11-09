@@ -161,8 +161,13 @@ public class OrderServlet extends HttpServlet {
             for (Order order : orders) {
                 try {
                     System.out.println("[OrderServlet] showOrderList - Processing order: " + order.getOrderId() + ", status: " + order.getOrderStatus());
+                    
+                    // Load items - with null safety
                     List<OrderItem> items = orderItemDao.findByOrderId(order.getOrderId());
-                    System.out.println("[OrderServlet] showOrderList - Found " + (items != null ? items.size() : 0) + " items for order " + order.getOrderId());
+                    if (items == null) {
+                        items = new java.util.ArrayList<>();
+                    }
+                    System.out.println("[OrderServlet] showOrderList - Found " + items.size() + " items for order " + order.getOrderId());
                     order.setItems(items);
                     
                     // Load payments for this order
@@ -173,11 +178,13 @@ public class OrderServlet extends HttpServlet {
                 // Check if order contains a package (packageId in order items)
                 boolean hasPackage = false;
                 Integer packageId = null;
-                for (OrderItem item : items) {
-                    if (item.getPackageId() != null) {
-                        hasPackage = true;
-                        packageId = item.getPackageId();
-                        break;
+                if (items != null && !items.isEmpty()) {
+                    for (OrderItem item : items) {
+                        if (item != null && item.getPackageId() != null) {
+                            hasPackage = true;
+                            packageId = item.getPackageId();
+                            break;
+                        }
                     }
                 }
                 
@@ -220,14 +227,37 @@ public class OrderServlet extends HttpServlet {
                     }
                 }
                 
+                // Ensure payments is not null before putting into map
+                if (payments == null) {
+                    payments = new java.util.ArrayList<>();
+                }
                 paymentsMap.put(order.getOrderId(), payments);
+                
+                System.out.println("[OrderServlet] showOrderList - Successfully processed order: " + order.getOrderId());
+                
                 } catch (Exception e) {
-                    System.err.println("[OrderServlet] Error processing order " + order.getOrderId() + ": " + e.getMessage());
+                    System.err.println("[OrderServlet] ❌ ERROR processing order " + order.getOrderId() + ": " + e.getMessage());
                     e.printStackTrace();
-                    // Continue with next order even if this one fails
+                    // Ensure order still has empty items and payments to prevent JSP errors
+                    if (order.getItems() == null) {
+                        order.setItems(new java.util.ArrayList<>());
+                    }
                     paymentsMap.put(order.getOrderId(), new java.util.ArrayList<>());
+                    
+                    // ⚠️ IMPORTANT: Continue with next order - DON'T BREAK THE LOOP
+                    System.err.println("[OrderServlet] Continuing to next order...");
                 }
             }
+            
+            System.out.println("[OrderServlet] ========================================");
+            System.out.println("[OrderServlet] showOrderList - SUMMARY:");
+            System.out.println("[OrderServlet]   Total orders loaded: " + orders.size());
+            System.out.println("[OrderServlet]   Orders with payment data: " + paymentsMap.size());
+            for (Order o : orders) {
+                System.out.println("[OrderServlet]   - Order " + o.getOrderId() + ": " + 
+                    (o.getItems() != null ? o.getItems().size() : 0) + " items");
+            }
+            System.out.println("[OrderServlet] ========================================");
             
             System.out.println("[OrderServlet] showOrderList - Setting orders attribute: " + (orders != null ? orders.size() : 0) + " orders");
             System.out.println("[OrderServlet] showOrderList - Setting paymentsMap attribute: " + paymentsMap.size() + " entries");
@@ -357,4 +387,5 @@ public class OrderServlet extends HttpServlet {
         }
     }
 }
+
 

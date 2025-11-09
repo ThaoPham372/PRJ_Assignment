@@ -1,9 +1,10 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %> 
 <%@ include file="/views/common/header.jsp" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-
+<link href="${pageContext.request.contextPath}/css/home.css" rel="stylesheet" type="text/css"/>
 <main>
-  <style>
+    <style>
+        
     :root {
       --primary: #141a46;
       --primary-light: #1e2a5c;
@@ -522,8 +523,9 @@
         padding: 30px 20px;
       }
     }
-  </style>
 
+
+    </style>
   <!-- HERO -->
   <section class="hero">
     <h1>Chào mừng đến với GymFit</h1>

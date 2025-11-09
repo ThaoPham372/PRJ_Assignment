@@ -125,17 +125,23 @@ public class AuthServlet extends HttpServlet {
             User user = result.getUser();
             String role = result.getRole();
             
+            // Convert role to List for consistency with GoogleAuthServlet
+            java.util.List<String> roles = new java.util.ArrayList<>();
+            if (role != null && !role.trim().isEmpty()) {
+                roles.add(role);
+            }
+            
             System.out.println("[AuthServlet] Login successful!");
             System.out.println("[AuthServlet] User ID: " + (user != null ? user.getId() : "NULL"));
             System.out.println("[AuthServlet] Username: " + (user != null ? user.getUsername() : "NULL"));
-            System.out.println("[AuthServlet] Roles: " + (role != null ? role.toString() : "NULL"));
+            System.out.println("[AuthServlet] Roles: " + (roles != null ? roles.toString() : "NULL"));
             
             HttpSession session = request.getSession(true);
             System.out.println("[AuthServlet] Session created: " + session.getId());
             System.out.println("[AuthServlet] Session isNew: " + session.isNew());
             
             session.setAttribute("user", user);
-            session.setAttribute("userRoles", role);
+            session.setAttribute("userRoles", roles);  // Changed from String to List
             session.setAttribute("isLoggedIn", true);
             session.setAttribute("userId", user.getId());
             
