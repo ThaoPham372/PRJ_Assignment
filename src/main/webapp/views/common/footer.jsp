@@ -7,7 +7,7 @@
         <div class="footer-container">
             <div class="footer-column">
                 <div class="footer-brand">
-                    <img src="${pageContext.request.contextPath}/images/logo/logo.png" alt="GymFit Logo" class="footer-logo" />
+                    <img src="${pageContext.request.contextPath}/images/logo/logoGymfit.png" alt="GymFit Logo" class="footer-logo" />
                     GymFit
                 </div>
                 <p>Nơi thay đổi sức khỏe và vóc dáng của bạn.</p>
@@ -88,7 +88,7 @@
         }
 
         .footer-logo {
-            height: 40px;
+            height: 60px;
             width: auto;
             object-fit: contain;
         }

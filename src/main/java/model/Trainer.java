@@ -9,8 +9,10 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "trainer")
+
 @PrimaryKeyJoinColumn(name = "trainer_id")
 public class Trainer extends User {
+
 
     @Column(name = "specialization")
     private String specialization;

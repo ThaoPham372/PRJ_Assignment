@@ -99,10 +99,12 @@
         border: 2px solid #e9ecef;
         border-radius: 12px;
         padding: 15px 20px;
-        font-size: 1.05rem;
+        font-size: 1rem;
         transition: all 0.3s ease;
         background: white;
         font-weight: 500;
+        width: 100%;
+        min-width: 200px;
     }
 
     .form-control:focus {

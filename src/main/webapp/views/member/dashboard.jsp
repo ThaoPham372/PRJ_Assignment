@@ -24,7 +24,7 @@
     .member-card {
         background: var(--gradient-primary);
         color: white;
-        border-radius: 20px;
+        border-radius: 0px;
         padding: 40px;
         margin-bottom: 30px;
         box-shadow: 0 10px 40px var(--shadow);
@@ -802,10 +802,6 @@
             <button type="button" class="qa-search-clear" id="qaSearchClear" onclick="clearQuickActionSearch()" title="Xóa tìm kiếm">
                 <i class="fas fa-times"></i>
             </button>
-            <div class="qa-search-hint" id="qaSearchHint">
-                <i class="fas fa-keyboard"></i>
-                <span>Nhấn <kbd id="keyboardKey">Ctrl</kbd> + <kbd>K</kbd> để tìm kiếm nhanh</span>
-            </div>
         </div>
         
         <div class="qa-search-results-count" id="qaResultsCount"></div>
@@ -875,20 +871,6 @@
         </h6>
         <div class="qa-grid" data-section="support">
             <div class="qa-item-wrapper">
-                <a class="qa-item" href="${pageContext.request.contextPath}/member/support">
-                    <span class="qa-icon"><i class="fas fa-life-ring"></i></span>
-                    <span class="qa-title">Hỗ trợ</span>
-                    <span class="qa-description">Liên hệ và yêu cầu hỗ trợ</span>
-                </a>
-            </div>
-            <div class="qa-item-wrapper">
-                <a class="qa-item" href="${pageContext.request.contextPath}/member/support#chat">
-                    <span class="qa-icon"><i class="fas fa-comments"></i></span>
-                    <span class="qa-title">AI Chat</span>
-                    <span class="qa-description">Trò chuyện với AI hỗ trợ</span>
-                </a>
-            </div>
-            <div class="qa-item-wrapper">
                 <a class="qa-item" href="${pageContext.request.contextPath}/products">
                     <span class="qa-icon"><i class="fas fa-cart-shopping"></i></span>
                     <span class="qa-title">Mua hàng</span>
@@ -920,35 +902,6 @@
     </div>
 
 
-    <div class="row">
-        <!-- Recent Activities -->
-        <div class="col-md-6">
-            <div class="stat-card">
-                <h5 class="dashboard-title mb-4">
-                    <i class="fas fa-history me-2"></i>Hoạt động gần đây
-                </h5>
-                <div class="text-center py-4 text-muted">
-                    <i class="fas fa-history fa-3x mb-3 opacity-25"></i>
-                    <p class="mb-0">Chưa có hoạt động nào</p>
-                    <small>Tính năng đang được phát triển</small>
-                </div>
-            </div>
-        </div>
-
-        <!-- Upcoming Sessions -->
-        <div class="col-md-6">
-            <div class="stat-card">
-                <h5 class="dashboard-title mb-4">
-                    <i class="fas fa-calendar-alt me-2"></i>Buổi tập sắp tới
-                </h5>
-                <div class="text-center py-4 text-muted">
-                    <i class="fas fa-calendar-times fa-3x mb-3 opacity-25"></i>
-                    <p class="mb-0">Chưa có buổi tập sắp tới</p>
-                    <small>Tính năng đang được phát triển</small>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <script>

@@ -95,7 +95,7 @@
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         width: 100%;
         max-width: 500px;
-        border: none;
+        border: 2px solid #ec8b5a;
         position: relative;
         animation: fadeInUp 0.6s ease-out;
       }
@@ -389,7 +389,6 @@
       .login-section {
         text-align: center;
         padding-top: 20px;
-        border-top: 1px solid var(--accent);
       }
 
       .login-text {
@@ -621,7 +620,7 @@
         <!-- Login Section -->
         <div class="login-section">
           <div class="login-text">BẠN ĐÃ CÓ TÀI KHOẢN?</div>
-          <a href="${pageContext.request.contextPath}/login" class="login-btn" style="display:inline-block; text-align:center;">
+          <a href="${pageContext.request.contextPath}/login" class="login-btn" style="display:inline-block; text-align:center; text-decoration:none;">
             ĐĂNG NHẬP
           </a>
         </div>
