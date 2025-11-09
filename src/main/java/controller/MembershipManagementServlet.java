@@ -30,15 +30,23 @@ public class MembershipManagementServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             System.out.println("\nMEMBERSHIP MANAGEMENT");
+
             String action = req.getParameter("action");
-            if (action == null)
+            if (action == null) {
                 action = "";
+            }
+
             System.out.println("Action: " + action);
             System.out.println("Query: " + req.getQueryString());
             System.out.println("------------------------");
 
             List<Membership> memberships = getMembership();
             List<Package> packages = packageService.getAll();
+
+            int numberMemberships = countNumberMemberships(memberships);
+            int numberMembershipsActive = countNumberMembershipsActive(memberships);
+            int numberMembershipsExpired = countNumberMembershipsExpired(memberships);
+            int numberMembershipsExpiringSoon = countNumberMembershipsExpiringSoon(memberships);
 
             if ("deleteMembership".equals(action)) {
                 int id = Integer.parseInt(req.getParameter("membershipId"));
@@ -47,9 +55,9 @@ public class MembershipManagementServlet extends HttpServlet {
                 String keyword = req.getParameter("keyword");
                 String status = req.getParameter("status");
                 String packageType = req.getParameter("packageType");
-                
+
                 memberships = filterMemberships(memberships, keyword, status, packageType);
-                
+
                 req.setAttribute("keyword", keyword);
                 req.setAttribute("status", status);
                 req.setAttribute("packageType", packageType);
@@ -59,6 +67,11 @@ public class MembershipManagementServlet extends HttpServlet {
 
             req.setAttribute("packages", packages);
             req.setAttribute("memberships", memberships);
+            req.setAttribute("numberMemberships", numberMemberships);
+            req.setAttribute("numberMembershipsActive", numberMembershipsActive);
+            req.setAttribute("numberMembershipsExpired", numberMembershipsExpired);
+            req.setAttribute("numberMembershipsExpiringSoon", numberMembershipsExpiringSoon);
+
             req.getRequestDispatcher("/views/admin/membership_management.jsp").forward(req, resp);
         } catch (ServletException | IOException | NumberFormatException e) {
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Có lỗi xảy ra khi xử lý yêu cầu.");
@@ -120,13 +133,16 @@ public class MembershipManagementServlet extends HttpServlet {
     private List<Membership> filterMemberships(List<Membership> memberships, String keyword, String status,
             String packageType)
             throws ServletException, IOException {
-        
-        if(keyword != null)
+
+        if (keyword != null) {
             memberships = filterByKeyword(memberships, keyword);
-        if(status != null)
+        }
+        if (status != null) {
             memberships = filterByStatus(memberships, status);
-        if(packageType != null)
+        }
+        if (packageType != null) {
             memberships = filterByPackageType(memberships, packageType);
+        }
 
         return memberships;
     }
@@ -176,8 +192,35 @@ public class MembershipManagementServlet extends HttpServlet {
             });
         }
         System.out.println("After FP");
-        for(Membership m : memberships)
+        for (Membership m : memberships) {
             System.out.println(m);
+        }
         return memberships;
     }
+
+    private int countNumberMemberships(List<Membership> memberships) {
+        if (memberships == null) {
+            return 0;
+        }
+        return memberships.size();
+    }
+
+    private int countNumberMembershipsActive(List<Membership> memberships) {
+        return (int) memberships.stream().filter(m -> "active".equalsIgnoreCase(m.getStatus())).count();
+    }
+
+    private int countNumberMembershipsExpired(List<Membership> memberships) {
+        return (int) memberships.stream().filter(m -> DateUtils.compareDates(m.getEndDate(), new Date()) < 0).count();
+    }
+
+    //Cần kiểm tra lại
+    private int countNumberMembershipsExpiringSoon(List<Membership> memberships) {
+        return (int) memberships.stream()
+                .filter(m -> 
+                    (DateUtils.checkDateDifference(m.getEndDate(), new Date()) == 1) &&
+                    (DateUtils.compareDates(m.getEndDate(), new Date()) > 1)
+                )
+                .count();
+    }
+
 }

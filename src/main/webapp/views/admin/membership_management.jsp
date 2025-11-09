@@ -609,7 +609,7 @@
                                 <i class="fas fa-users"></i>
                             </div>
                             <div class="stat-info">
-                                <h3>1,245</h3>
+                                <h3>${numberMemberships}</h3>
                                 <p>Tổng hội viên</p>
                             </div>
                         </div>
@@ -619,7 +619,7 @@
                                 <i class="fas fa-user-check"></i>
                             </div>
                             <div class="stat-info">
-                                <h3>1,102</h3>
+                                <h3>${numberMembershipsActive}</h3>
                                 <p>Đang hoạt động</p>
                             </div>
                         </div>
@@ -629,7 +629,7 @@
                                 <i class="fas fa-user-clock"></i>
                             </div>
                             <div class="stat-info">
-                                <h3>87</h3>
+                                <h3>${numberMembershipsExpiringSoon}</h3>
                                 <p>Sắp hết hạn</p>
                             </div>
                         </div>
@@ -644,7 +644,7 @@
                                 <i class="fas fa-user-times"></i>
                             </div>
                             <div class="stat-info">
-                                <h3>56</h3>
+                                <h3>${numberMembershipsExpired}</h3>
                                 <p>Đã hết hạn</p>
                             </div>
                         </div>
@@ -734,7 +734,7 @@
                                     <td><c:choose><c:when test="${membership.status != null}"><span class="badge badge-active">${membership.status}</span></c:when><c:otherwise></c:otherwise></c:choose></td>
                                             <td>
                                                 <div class="action-buttons">
-                                                    <button class="btn-icon btn-edit" title="Sửa thông tin">
+                                                    <button id="btn-edit" class="btn-icon btn-edit" title="Sửa thông tin">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
                                                     <button
