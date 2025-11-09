@@ -5,6 +5,7 @@ import service.LoginService.LoginResult;
 import service.RegistrationService;
 import service.RegistrationService.RegisterRequest;
 import service.RegistrationService.RegisterResult;
+import Utils.ConfigManager;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -60,6 +61,10 @@ public class AuthServlet extends HttpServlet {
             }
         }
 
+        // Load Google Client ID from ConfigManager (used by both login and register)
+        String googleClientId = ConfigManager.getInstance().getGoogleClientId();
+        request.setAttribute("googleClientId", googleClientId);
+        
         switch (action) {
             case "register":
                 request.getRequestDispatcher("/views/register.jsp").forward(request, response);
@@ -157,6 +162,9 @@ public class AuthServlet extends HttpServlet {
             request.setAttribute("loginError", true);
             request.setAttribute("errors", result.getErrors());
             request.setAttribute("username", username);
+            // Load Google Client ID from ConfigManager and pass to JSP
+            String googleClientId = ConfigManager.getInstance().getGoogleClientId();
+            request.setAttribute("googleClientId", googleClientId);
             request.getRequestDispatcher("/views/login.jsp").forward(request, response);
         }
     }

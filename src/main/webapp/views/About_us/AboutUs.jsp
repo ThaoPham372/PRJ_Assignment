@@ -781,28 +781,38 @@ file="/views/common/header.jsp" %>
   </iframe>
 </section>
 
+<%@ include file="/views/common/footer.jsp" %>
+
 <!-- Floating Buttons -->
+<style>
+  .floating-buttons {
+    position: fixed !important;
+    bottom: 30px !important;
+    right: 30px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 18px !important;
+    z-index: 10000 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  .floating-btn, #chatToggleButton {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+</style>
 <div class="floating-buttons">
-  <a
-    href="${pageContext.request.contextPath}/advisory"
+  <button
     class="floating-btn tu-van"
+    onclick="window.location.href='${pageContext.request.contextPath}/advisory'"
   >
     <i class="fas fa-user-tie"></i> TƯ VẤN
-  </a>
-  <button
-    class="floating-btn chat-bot"
-    onclick="alert('Chức năng chat bot đang được phát triển!')"
-  >
-    <i class="fas fa-comments"></i> CHAT BOT
   </button>
+  <%@ include file="/views/common/chatbot.jsp" %>
 </div>
 
 <script>
-  // Add floating buttons CSS
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = '${pageContext.request.contextPath}/css/floating-buttons.css';
-  document.head.appendChild(link);
   // Enhanced image fallback handling
   function attachImageFallback() {
     document.querySelectorAll('img').forEach(function (img) {

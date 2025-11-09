@@ -1,9 +1,9 @@
 package controller;
 
-import model.User;
 import service.GoogleAuthService;
 import service.GoogleAuthService.AuthResult;
 import service.GoogleAuthService.VerifyResult;
+import Utils.ConfigManager;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -23,7 +23,13 @@ public class GoogleAuthServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        String clientId = getServletContext().getInitParameter("google.client.id");
+        // Read Google Client ID from email.properties via ConfigManager
+        String clientId = ConfigManager.getInstance().getGoogleClientId();
+        if (clientId == null || clientId.trim().isEmpty()) {
+            System.err.println("[GoogleAuthServlet] ERROR: google.client.id is missing in email.properties");
+        } else {
+            System.out.println("[GoogleAuthServlet] Google Client ID loaded successfully");
+        }
         this.googleAuthService = new GoogleAuthService(clientId);
     }
 

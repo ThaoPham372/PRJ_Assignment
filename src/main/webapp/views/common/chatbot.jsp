@@ -13,7 +13,26 @@
     /* ======= Nút Chat Nổi ======= */
     /* Đảm bảo z-index đủ cao để đè lên các thành phần khác của about-us */
     #chatToggleButton {
-        z-index: 9998 !important; 
+        z-index: 9998 !important;
+        position: relative !important;
+    }
+    
+    /* Màu cam cho nút chatbot */
+    .floating-btn.chat-bot,
+    #chatToggleButton {
+        background: linear-gradient(135deg, #ec8b5a 0%, #d67a4f 100%) !important;
+        color: #ffffff !important;
+    }
+    
+    .floating-btn.chat-bot:hover,
+    #chatToggleButton:hover {
+        background: linear-gradient(135deg, #d67a4f 0%, #c46944 100%) !important;
+        box-shadow: 0 12px 35px rgba(236, 139, 90, 0.5) !important;
+    }
+    
+    .floating-btn.chat-bot i,
+    #chatToggleButton i {
+        color: #ffffff !important;
     }
 
     .chat-popup {

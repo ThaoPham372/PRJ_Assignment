@@ -486,26 +486,44 @@
     });
   }, observerOptions);
 
-  // Observe cards for animation
+  // Observe cards for animation (exclude floating buttons)
   document.querySelectorAll('.card, .highlight').forEach((el) => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(30px)';
-    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-    observer.observe(el);
+    if (!el.closest('.floating-buttons')) {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(30px)';
+      el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+      observer.observe(el);
+    }
   });
   </script>
 
+<%@ include file="/views/common/footer.jsp" %>
+
 <!-- Floating Buttons -->
+<style>
+  .floating-buttons {
+    position: fixed !important;
+    bottom: 30px !important;
+    right: 30px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 18px !important;
+    z-index: 10000 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  .floating-btn, #chatToggleButton {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+</style>
 <div class="floating-buttons">
-  <button class="floating-btn tu-van" onclick="alert('Chức năng tư vấn sẽ được triển khai sớm!')">
+  <button
+    class="floating-btn tu-van"
+    onclick="window.location.href='${pageContext.request.contextPath}/advisory'"
+  >
     <i class="fas fa-user-tie"></i> TƯ VẤN
   </button>
-  <button class="floating-btn chat-bot" onclick="alert('Chức năng chat bot đang được phát triển!')">
-    <i class="fas fa-comments"></i> CHAT BOT
-  </button>
+  <%@ include file="/views/common/chatbot.jsp" %>
 </div>
-
-<!-- Add floating buttons CSS -->
-<link rel="stylesheet" href="${pageContext.request.contextPath}/css/floating-buttons.css">
-
-<%@ include file="/views/common/footer.jsp" %>

@@ -288,72 +288,6 @@
         font-style: italic;
     }
 
-    .avatar-upload-section {
-        display: flex;
-        align-items: center;
-        gap: 30px;
-        padding: 20px;
-        background: var(--muted);
-        border-radius: 15px;
-        margin-bottom: 20px;
-    }
-
-    .avatar-preview {
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
-        background: var(--gradient-accent);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 4rem;
-        color: white;
-        border: 5px solid white;
-        box-shadow: 0 4px 15px var(--shadow);
-        overflow: hidden;
-        flex-shrink: 0;
-    }
-
-    .avatar-preview img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .avatar-upload-controls {
-        flex: 1;
-    }
-
-    .avatar-upload-btn {
-        background: var(--accent);
-        color: white;
-        border: none;
-        border-radius: 10px;
-        padding: 10px 20px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .avatar-upload-btn:hover {
-        background: var(--accent-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(236, 139, 94, 0.3);
-    }
-
-    .avatar-url-input {
-        margin-top: 15px;
-    }
-
-    @media (max-width: 768px) {
-        .avatar-upload-section {
-            flex-direction: column;
-            text-align: center;
-        }
-    }
 
     .alert {
         padding: 15px 20px;
@@ -438,48 +372,8 @@
     </c:if>
 
     <!-- Edit Form -->
-    <form action="${pageContext.request.contextPath}/member/profile/update" method="POST" id="profileEditForm" enctype="multipart/form-data">
+    <form action="${pageContext.request.contextPath}/member/profile-edit" method="POST" id="profileEditForm">
         
-        <!-- Avatar Upload Card -->
-        <div class="info-card">
-            <div class="info-card-header">
-                <h2 class="info-card-title">
-                    <i class="fas fa-image"></i>
-                    Ảnh đại diện
-                </h2>
-            </div>
-            <div class="avatar-upload-section">
-                <div class="avatar-preview" id="avatarPreview">
-                    <c:choose>
-                        <c:when test="${not empty profileData.avatarUrl}">
-                            <img src="<c:out value='${profileData.avatarUrl}'/>" alt="Avatar" id="avatarImg">
-                        </c:when>
-                        <c:otherwise>
-                            <i class="fas fa-user" id="avatarIcon"></i>
-                        </c:otherwise>
-                    </c:choose>
-                </div>
-                <div class="avatar-upload-controls">
-                    <label class="avatar-upload-btn">
-                        <i class="fas fa-upload"></i>
-                        Chọn ảnh
-                        <input type="file" name="avatarFile" id="avatarFile" accept="image/*" style="display: none;" onchange="handleAvatarUpload(event)">
-                    </label>
-                    <div class="avatar-url-input">
-                        <label class="form-label">
-                            <i class="fas fa-link"></i>
-                            Hoặc nhập URL ảnh
-                        </label>
-                        <input type="url" class="form-control" name="avatarUrl" id="avatarUrl" 
-                               value="<c:out value='${profileData.avatarUrl}'/>" 
-                               placeholder="https://example.com/avatar.jpg"
-                               onchange="updateAvatarPreview(this.value)">
-                        <div class="help-text">Nhập URL ảnh hoặc chọn file từ máy tính</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Basic Information Card -->
         <div class="info-card">
             <div class="info-card-header">
@@ -495,18 +389,18 @@
                         Username
                     </label>
                     <input type="text" class="form-control" 
-                           value="<c:out value='${profileData.username}'/>" readonly>
+                           value="<c:out value='${member.username}'/>" readonly>
                     <div class="help-text">Username không thể thay đổi</div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">
                         <i class="fas fa-user"></i>
-                        Tên đầy đủ <span class="required">*</span>
+                        Tên đầy đủ
                     </label>
                     <input type="text" class="form-control" name="name" 
-                           value="<c:out value='${profileData.name}'/>" 
-                           placeholder="Nhập tên đầy đủ của bạn" required>
+                           value="<c:out value='${member.name}'/>" 
+                           placeholder="Nhập tên đầy đủ của bạn">
                 </div>
                 
                 <div class="form-group">
@@ -515,8 +409,19 @@
                         Email
                     </label>
                     <input type="email" class="form-control" 
-                           value="<c:out value='${profileData.email}'/>" readonly>
+                           value="<c:out value='${member.email}'/>" readonly>
                     <div class="help-text">Email không thể thay đổi</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-calendar-plus"></i>
+                        Ngày tham gia
+                    </label>
+                    <input type="text" class="form-control" 
+                           value="<c:choose><c:when test='${member.createdDate != null}'><fmt:formatDate value='${member.createdDate}' pattern='dd/MM/yyyy'/></c:when><c:otherwise>N/A</c:otherwise></c:choose>" 
+                           readonly>
+                    <div class="help-text">Ngày bạn đăng ký tài khoản</div>
                 </div>
                 
                 <div class="form-group">
@@ -525,9 +430,8 @@
                         Số điện thoại
                     </label>
                     <input type="tel" class="form-control" name="phone" 
-                           value="<c:out value='${profileData.phone}'/>" 
-                           placeholder="VD: 0987654321" pattern="[0-9]{10}">
-                    <div class="help-text">Nhập 10 chữ số</div>
+                           value="<c:out value='${member.phone}'/>" 
+                           placeholder="VD: 0987654321">
                 </div>
                 
                 <div class="form-group">
@@ -536,7 +440,7 @@
                         Ngày sinh
                     </label>
                     <input type="date" class="form-control" name="dob" 
-                           value="<c:choose><c:when test='${profileData.dob != null}'><fmt:formatDate value='${profileData.dob}' pattern='yyyy-MM-dd'/></c:when><c:otherwise></c:otherwise></c:choose>">
+                           value="<c:choose><c:when test='${member.dob != null}'><fmt:formatDate value='${member.dob}' pattern='yyyy-MM-dd'/></c:when><c:otherwise></c:otherwise></c:choose>">
                 </div>
                 
                 <div class="form-group">
@@ -546,9 +450,9 @@
                     </label>
                     <select class="form-control" name="gender">
                         <option value="">-- Chọn giới tính --</option>
-                        <option value="male" ${profileData.gender == 'male' || profileData.gender == 'Male' ? 'selected' : ''}>Nam</option>
-                        <option value="female" ${profileData.gender == 'female' || profileData.gender == 'Female' ? 'selected' : ''}>Nữ</option>
-                        <option value="other" ${profileData.gender == 'other' || profileData.gender == 'Other' ? 'selected' : ''}>Khác</option>
+                        <option value="Nam" ${member.gender == 'Nam' || member.gender == 'male' || member.gender == 'Male' ? 'selected' : ''}>Nam</option>
+                        <option value="Nữ" ${member.gender == 'Nữ' || member.gender == 'female' || member.gender == 'Female' ? 'selected' : ''}>Nữ</option>
+                        <option value="Khác" ${member.gender == 'Khác' || member.gender == 'other' || member.gender == 'Other' ? 'selected' : ''}>Khác</option>
                     </select>
                 </div>
                 
@@ -557,8 +461,9 @@
                         <i class="fas fa-map-marker-alt"></i>
                         Địa chỉ
                     </label>
-                    <textarea class="form-control" name="address" rows="2" 
-                              placeholder="Nhập địa chỉ của bạn..."><c:out value="${profileData.address}"/></textarea>
+                    <input type="text" class="form-control" name="address" 
+                           value="<c:out value='${member.address}'/>" 
+                           placeholder="Nhập địa chỉ của bạn...">
                 </div>
             </div>
         </div>
@@ -578,7 +483,7 @@
                         Chiều cao (cm)
                     </label>
                     <input type="number" class="form-control" name="height" 
-                           value="${profileData.height}" 
+                           value="<c:out value='${member.height}'/>" 
                            min="100" max="250" step="0.1" placeholder="VD: 175">
                 </div>
                 
@@ -588,9 +493,9 @@
                         Cân nặng (kg)
                     </label>
                     <input type="number" class="form-control" name="weight" 
-                           value="${profileData.weight}" 
+                           value="<c:out value='${member.weight}'/>" 
                            min="30" max="200" step="0.1" placeholder="VD: 70">
-                    <div class="help-text">BMI sẽ tự động tính toán</div>
+                    <div class="help-text">BMI sẽ tự động tính toán khi lưu</div>
                 </div>
                 
                 <div class="form-group">
@@ -599,7 +504,7 @@
                         Chỉ số BMI
                     </label>
                     <input type="text" class="form-control" 
-                           value="<c:choose><c:when test='${profileData.bmi != null}'><fmt:formatNumber value='${profileData.bmi}' pattern='#,##0.00'/></c:when><c:otherwise>--</c:otherwise></c:choose>" 
+                           value="<c:choose><c:when test='${member.bmi != null}'><fmt:formatNumber value='${member.bmi}' pattern='#,##0.00'/></c:when><c:otherwise>--</c:otherwise></c:choose>" 
                            readonly>
                     <div class="help-text">Tự động tính từ chiều cao & cân nặng</div>
                 </div>
@@ -627,7 +532,7 @@
                         Họ tên người thân
                     </label>
                     <input type="text" class="form-control" name="emergencyContactName" 
-                           value="<c:out value='${profileData.emergencyContactName}'/>" 
+                           value="<c:out value='${member.emergencyContactName}'/>" 
                            placeholder="VD: Nguyễn Văn A">
                 </div>
                 
@@ -637,8 +542,8 @@
                         Số điện thoại người thân
                     </label>
                     <input type="tel" class="form-control" name="emergencyContactPhone" 
-                           value="<c:out value='${profileData.emergencyContactPhone}'/>" 
-                           pattern="[0-9]{10}" placeholder="VD: 0987654321">
+                           value="<c:out value='${member.emergencyContactPhone}'/>" 
+                           placeholder="VD: 0987654321">
                 </div>
                 
                 <div class="form-group">
@@ -647,7 +552,7 @@
                         Mối quan hệ
                     </label>
                     <input type="text" class="form-control" name="emergencyContactRelation" 
-                           value="<c:out value='${profileData.emergencyContactRelation}'/>" 
+                           value="<c:out value='${member.emergencyContactRelation}'/>" 
                            placeholder="VD: Bố/Mẹ, Vợ/Chồng, Anh/Chị/Em">
                 </div>
                 
@@ -657,7 +562,7 @@
                         Địa chỉ người thân
                     </label>
                     <input type="text" class="form-control" name="emergencyContactAddress" 
-                           value="<c:out value='${profileData.emergencyContactAddress}'/>" 
+                           value="<c:out value='${member.emergencyContactAddress}'/>" 
                            placeholder="Địa chỉ liên lạc khẩn cấp">
                 </div>
             </div>
@@ -692,112 +597,8 @@
         }
     }
 
-    // Avatar upload and preview
-    function handleAvatarUpload(event) {
-        const file = event.target.files[0];
-        if (file) {
-            // Check file type
-            if (!file.type.startsWith('image/')) {
-                alert('Vui lòng chọn file ảnh!');
-                event.target.value = '';
-                return;
-            }
-            
-            // Check file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Kích thước file quá lớn! Vui lòng chọn ảnh nhỏ hơn 5MB.');
-                event.target.value = '';
-                return;
-            }
-            
-            // Preview image
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const avatarPreview = document.getElementById('avatarPreview');
-                const avatarImg = document.getElementById('avatarImg');
-                const avatarIcon = document.getElementById('avatarIcon');
-                
-                if (avatarImg) {
-                    avatarImg.src = e.target.result;
-                } else {
-                    // Create img element if not exists
-                    const img = document.createElement('img');
-                    img.id = 'avatarImg';
-                    img.src = e.target.result;
-                    img.alt = 'Avatar';
-                    if (avatarIcon) {
-                        avatarIcon.remove();
-                    }
-                    avatarPreview.appendChild(img);
-                }
-                
-                // Clear URL input when file is selected
-                document.getElementById('avatarUrl').value = '';
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-    
-    function updateAvatarPreview(url) {
-        if (url && url.trim() !== '') {
-            const avatarPreview = document.getElementById('avatarPreview');
-            const avatarImg = document.getElementById('avatarImg');
-            const avatarIcon = document.getElementById('avatarIcon');
-            
-            // Clear file input when URL is entered
-            document.getElementById('avatarFile').value = '';
-            
-            if (avatarImg) {
-                avatarImg.src = url;
-            } else {
-                // Create img element if not exists
-                const img = document.createElement('img');
-                img.id = 'avatarImg';
-                img.src = url;
-                img.alt = 'Avatar';
-                img.onerror = function() {
-                    alert('Không thể tải ảnh từ URL này!');
-                    this.remove();
-                    if (!document.getElementById('avatarIcon')) {
-                        const icon = document.createElement('i');
-                        icon.id = 'avatarIcon';
-                        icon.className = 'fas fa-user';
-                        avatarPreview.appendChild(icon);
-                    }
-                };
-                if (avatarIcon) {
-                    avatarIcon.remove();
-                }
-                avatarPreview.appendChild(img);
-            }
-        } else {
-            // If URL is empty, show default icon
-            const avatarImg = document.getElementById('avatarImg');
-            const avatarIcon = document.getElementById('avatarIcon');
-            if (avatarImg && !avatarIcon) {
-                avatarImg.remove();
-                const icon = document.createElement('i');
-                icon.id = 'avatarIcon';
-                icon.className = 'fas fa-user';
-                document.getElementById('avatarPreview').appendChild(icon);
-            }
-        }
-    }
-
     // Form validation
     document.getElementById('profileEditForm').addEventListener('submit', function(e) {
-        const emergencyPhone = document.querySelector('input[name="emergencyContactPhone"]').value;
-        
-        // Validate phone numbers if provided
-        const phoneRegex = /^[0-9]{10}$/;
-        
-        if (emergencyPhone && !phoneRegex.test(emergencyPhone.replace(/\s/g, ''))) {
-            e.preventDefault();
-            alert('Số điện thoại người thân không hợp lệ! Vui lòng nhập 10 chữ số.');
-            return false;
-        }
-        
-        // Show loading
         const submitBtn = this.querySelector('button[type="submit"]');
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
         submitBtn.disabled = true;

@@ -708,7 +708,27 @@
     </div>
   </div>
 
+  <%@ include file="/views/common/footer.jsp" %>
+
   <!-- Floating Buttons -->
+  <style>
+    .floating-buttons {
+      position: fixed !important;
+      bottom: 30px !important;
+      right: 30px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 18px !important;
+      z-index: 10000 !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+    .floating-btn, #chatToggleButton {
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+  </style>
   <div class="floating-buttons">
     <button
       class="floating-btn tu-van"
@@ -716,19 +736,8 @@
     >
       <i class="fas fa-user-tie"></i> TƯ VẤN
     </button>
-    <button
-      class="floating-btn chat-bot"
-      onclick="alert('Chức năng chat bot đang được phát triển!')"
-    >
-      <i class="fas fa-comments"></i> CHAT BOT
-    </button>
+    <%@ include file="/views/common/chatbot.jsp" %>
   </div>
-
-  <!-- Add floating buttons CSS -->
-  <link
-    rel="stylesheet"
-    href="${pageContext.request.contextPath}/css/floating-buttons.css"
-  />
 
   <script>
     // Danh sách ảnh transformation từ thư mục local (chỉ dùng ảnh liên quan đến sự thay đổi)
@@ -825,11 +834,5 @@
       observer.observe(el);
     });
 
-    // Chat icon interaction
-    document.querySelector('.chat-icon').addEventListener('click', function () {
-      alert('Chức năng AI Chat đang được phát triển!');
-    });
   </script>
-
-  <%@ include file="/views/common/footer.jsp" %>
 </main>

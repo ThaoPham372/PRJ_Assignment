@@ -436,28 +436,21 @@
         <div class="profile-hero-content">
             <div class="profile-avatar-container">
                 <div class="profile-avatar">
-                    <c:choose>
-                        <c:when test="${not empty profileData.avatarUrl}">
-                            <img src="${profileData.avatarUrl}" alt="Avatar">
-                        </c:when>
-                        <c:otherwise>
-                            <i class="fas fa-user"></i>
-                        </c:otherwise>
-                    </c:choose>
+                    <i class="fas fa-user"></i>
                 </div>
                 <div class="status-badge" title="Active"></div>
             </div>
             <div class="profile-info">
                 <h1 class="profile-name">
-                    <c:out value="${profileData.name != null && !empty profileData.name ? profileData.name : (profileData.username != null ? profileData.username : 'Member')}" />
+                    <c:out value="${member.name != null && !empty member.name ? member.name : (member.username != null ? member.username : 'Member')}" />
                 </h1>
                 <div class="profile-meta">
                     <div class="profile-meta-item">
                         <i class="fas fa-calendar-plus"></i>
                         <span><strong>Tham gia:</strong> 
                             <c:choose>
-                                <c:when test="${profileData.createdDate != null}">
-                                    <fmt:formatDate value="${profileData.createdDate}" pattern="dd/MM/yyyy" />
+                                <c:when test="${member.createdDate != null}">
+                                    <fmt:formatDate value="${member.createdDate}" pattern="dd/MM/yyyy" />
                                 </c:when>
                                 <c:otherwise>N/A</c:otherwise>
                             </c:choose>
@@ -465,22 +458,22 @@
                     </div>
                     <div class="profile-meta-item">
                         <i class="fas fa-envelope"></i>
-                        <span><c:out value="${profileData.email}" /></span>
+                        <span><c:out value="${member.email}" /></span>
                     </div>
                     <div class="profile-meta-item">
                         <i class="fas fa-info-circle"></i>
                         <span><strong>Trạng thái:</strong> 
                             <c:choose>
-                                <c:when test="${profileData.status == 'ACTIVE'}">Đang hoạt động</c:when>
-                                <c:when test="${profileData.status == 'INACTIVE'}">Không hoạt động</c:when>
-                                <c:when test="${profileData.status == 'SUSPENDED'}">Tạm khóa</c:when>
-                                <c:otherwise><c:out value="${profileData.status}"/></c:otherwise>
+                                <c:when test="${member.status == 'active' || member.status == 'ACTIVE'}">Đang hoạt động</c:when>
+                                <c:when test="${member.status == 'INACTIVE'}">Không hoạt động</c:when>
+                                <c:when test="${member.status == 'SUSPENDED'}">Tạm khóa</c:when>
+                                <c:otherwise><c:out value="${member.status}"/></c:otherwise>
                             </c:choose>
                         </span>
                     </div>
                 </div>
                 <div class="mt-3">
-                    <a href="${pageContext.request.contextPath}/member/profile/edit" class="btn-edit-profile">
+                    <a href="${pageContext.request.contextPath}/member/profile-edit" class="btn-edit-profile">
                         <i class="fas fa-edit"></i>
                         Chỉnh sửa thông tin
                     </a>
@@ -505,7 +498,7 @@
                     Username
                 </div>
                 <div class="info-value">
-                    <c:out value="${profileData.username != null ? profileData.username : 'N/A'}" />
+                    <c:out value="${member.username != null ? member.username : 'N/A'}" />
                 </div>
             </div>
             
@@ -514,8 +507,8 @@
                     <i class="fas fa-user"></i>
                     Tên đầy đủ
                 </div>
-                <div class="info-value ${empty profileData.name ? 'empty' : ''}">
-                    <c:out value="${profileData.name != null && !empty profileData.name ? profileData.name : 'Chưa cập nhật'}" />
+                <div class="info-value ${empty member.name ? 'empty' : ''}">
+                    <c:out value="${member.name != null && !empty member.name ? member.name : 'Chưa cập nhật'}" />
                 </div>
             </div>
             
@@ -525,7 +518,7 @@
                     Email
                 </div>
                 <div class="info-value">
-                    <c:out value="${profileData.email != null ? profileData.email : 'N/A'}" />
+                    <c:out value="${member.email != null ? member.email : 'N/A'}" />
                 </div>
             </div>
             
@@ -534,8 +527,8 @@
                     <i class="fas fa-phone-alt"></i>
                     Số điện thoại
                 </div>
-                <div class="info-value ${empty profileData.phone ? 'empty' : ''}">
-                    <c:out value="${profileData.phone != null ? profileData.phone : 'Chưa cập nhật'}" />
+                <div class="info-value ${empty member.phone ? 'empty' : ''}">
+                    <c:out value="${member.phone != null ? member.phone : 'Chưa cập nhật'}" />
                 </div>
             </div>
             
@@ -544,10 +537,10 @@
                     <i class="fas fa-birthday-cake"></i>
                     Ngày sinh
                 </div>
-                <div class="info-value ${empty profileData.dob ? 'empty' : ''}">
+                <div class="info-value ${empty member.dob ? 'empty' : ''}">
                     <c:choose>
-                        <c:when test="${profileData.dob != null}">
-                            <fmt:formatDate value="${profileData.dob}" pattern="dd/MM/yyyy" />
+                        <c:when test="${member.dob != null}">
+                            <fmt:formatDate value="${member.dob}" pattern="dd/MM/yyyy" />
                         </c:when>
                         <c:otherwise>Chưa cập nhật</c:otherwise>
                     </c:choose>
@@ -559,12 +552,27 @@
                     <i class="fas fa-venus-mars"></i>
                     Giới tính
                 </div>
-                <div class="info-value ${empty profileData.gender ? 'empty' : ''}">
+                <div class="info-value ${empty member.gender ? 'empty' : ''}">
                     <c:choose>
-                        <c:when test="${profileData.gender == 'male' || profileData.gender == 'Male'}">Nam</c:when>
-                        <c:when test="${profileData.gender == 'female' || profileData.gender == 'Female'}">Nữ</c:when>
-                        <c:when test="${profileData.gender == 'other' || profileData.gender == 'Other'}">Khác</c:when>
+                        <c:when test="${member.gender == 'Nam' || member.gender == 'male' || member.gender == 'Male'}">Nam</c:when>
+                        <c:when test="${member.gender == 'Nữ' || member.gender == 'female' || member.gender == 'Female'}">Nữ</c:when>
+                        <c:when test="${member.gender == 'Khác' || member.gender == 'other' || member.gender == 'Other'}">Khác</c:when>
                         <c:otherwise>Chưa cập nhật</c:otherwise>
+                    </c:choose>
+                </div>
+            </div>
+            
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-calendar-plus"></i>
+                    Ngày tham gia
+                </div>
+                <div class="info-value">
+                    <c:choose>
+                        <c:when test="${member.createdDate != null}">
+                            <fmt:formatDate value="${member.createdDate}" pattern="dd/MM/yyyy" />
+                        </c:when>
+                        <c:otherwise>N/A</c:otherwise>
                     </c:choose>
                 </div>
             </div>
@@ -576,10 +584,10 @@
                 </div>
                 <div class="info-value">
                     <c:choose>
-                        <c:when test="${profileData.status == 'ACTIVE'}">Đang hoạt động</c:when>
-                        <c:when test="${profileData.status == 'INACTIVE'}">Không hoạt động</c:when>
-                        <c:when test="${profileData.status == 'SUSPENDED'}">Tạm khóa</c:when>
-                        <c:otherwise><c:out value="${profileData.status}"/></c:otherwise>
+                        <c:when test="${member.status == 'active' || member.status == 'ACTIVE'}">Đang hoạt động</c:when>
+                        <c:when test="${member.status == 'INACTIVE'}">Không hoạt động</c:when>
+                        <c:when test="${member.status == 'SUSPENDED'}">Tạm khóa</c:when>
+                        <c:otherwise><c:out value="${member.status}"/></c:otherwise>
                     </c:choose>
                 </div>
             </div>
@@ -589,8 +597,8 @@
                     <i class="fas fa-map-marker-alt"></i>
                     Địa chỉ
                 </div>
-                <div class="info-value ${empty profileData.address ? 'empty' : ''}">
-                    <c:out value="${profileData.address != null ? profileData.address : 'Chưa cập nhật'}" />
+                <div class="info-value ${empty member.address ? 'empty' : ''}">
+                    <c:out value="${member.address != null ? member.address : 'Chưa cập nhật'}" />
                 </div>
             </div>
         </div>
@@ -610,10 +618,10 @@
                     <i class="fas fa-ruler-vertical"></i>
                     Chiều cao
                 </div>
-                <div class="info-value ${empty profileData.height ? 'empty' : ''}">
+                <div class="info-value ${empty member.height ? 'empty' : ''}">
                     <c:choose>
-                        <c:when test="${profileData.height != null}">
-                            <fmt:formatNumber value="${profileData.height}" pattern="#,##0.0" /> cm
+                        <c:when test="${member.height != null}">
+                            <fmt:formatNumber value="${member.height}" pattern="#,##0.0" /> cm
                         </c:when>
                         <c:otherwise>Chưa cập nhật</c:otherwise>
                     </c:choose>
@@ -625,10 +633,10 @@
                     <i class="fas fa-weight"></i>
                     Cân nặng
                 </div>
-                <div class="info-value ${empty profileData.weight ? 'empty' : ''}">
+                <div class="info-value ${empty member.weight ? 'empty' : ''}">
                     <c:choose>
-                        <c:when test="${profileData.weight != null}">
-                            <fmt:formatNumber value="${profileData.weight}" pattern="#,##0.0" /> kg
+                        <c:when test="${member.weight != null}">
+                            <fmt:formatNumber value="${member.weight}" pattern="#,##0.0" /> kg
                         </c:when>
                         <c:otherwise>Chưa cập nhật</c:otherwise>
                     </c:choose>
@@ -642,11 +650,18 @@
                 </div>
                 <div class="info-value">
                     <c:choose>
-                        <c:when test="${profileData.bmi != null}">
-                            <fmt:formatNumber value="${profileData.bmi}" pattern="#,##0.00" />
-                            <c:if test="${profileData.bmiCategory != null}">
-                                <span class="bmi-indicator ${profileData.bmiCategoryClass}">
-                                    ${profileData.bmiCategory}
+                        <c:when test="${member.bmi != null}">
+                            <fmt:formatNumber value="${member.bmi}" pattern="#,##0.00" />
+                            <c:if test="${bmiCategory != null}">
+                                <c:set var="bmiClass" value=""/>
+                                <c:choose>
+                                    <c:when test="${bmiCategory == 'Thiếu cân'}"><c:set var="bmiClass" value="underweight"/></c:when>
+                                    <c:when test="${bmiCategory == 'Bình thường'}"><c:set var="bmiClass" value="normal"/></c:when>
+                                    <c:when test="${bmiCategory == 'Thừa cân'}"><c:set var="bmiClass" value="overweight"/></c:when>
+                                    <c:when test="${bmiCategory == 'Béo phì'}"><c:set var="bmiClass" value="obese"/></c:when>
+                                </c:choose>
+                                <span class="bmi-indicator ${bmiClass}">
+                                    ${bmiCategory}
                                 </span>
                             </c:if>
                         </c:when>
@@ -679,8 +694,8 @@
                     <i class="fas fa-user-friends"></i>
                     Họ tên người thân
                 </div>
-                <div class="info-value ${empty profileData.emergencyContactName ? 'empty' : ''}">
-                    <c:out value="${profileData.emergencyContactName != null ? profileData.emergencyContactName : 'Chưa cập nhật'}" />
+                <div class="info-value ${empty member.emergencyContactName ? 'empty' : ''}">
+                    <c:out value="${member.emergencyContactName != null ? member.emergencyContactName : 'Chưa cập nhật'}" />
                 </div>
             </div>
             
@@ -689,8 +704,8 @@
                     <i class="fas fa-phone-alt"></i>
                     Số điện thoại
                 </div>
-                <div class="info-value ${empty profileData.emergencyContactPhone ? 'empty' : ''}">
-                    <c:out value="${profileData.emergencyContactPhone != null ? profileData.emergencyContactPhone : 'Chưa cập nhật'}" />
+                <div class="info-value ${empty member.emergencyContactPhone ? 'empty' : ''}">
+                    <c:out value="${member.emergencyContactPhone != null ? member.emergencyContactPhone : 'Chưa cập nhật'}" />
                 </div>
             </div>
 
@@ -699,8 +714,8 @@
                     <i class="fas fa-heart"></i>
                     Mối quan hệ
                 </div>
-                <div class="info-value ${empty profileData.emergencyContactRelation ? 'empty' : ''}">
-                    <c:out value="${profileData.emergencyContactRelation != null ? profileData.emergencyContactRelation : 'Chưa cập nhật'}" />
+                <div class="info-value ${empty member.emergencyContactRelation ? 'empty' : ''}">
+                    <c:out value="${member.emergencyContactRelation != null ? member.emergencyContactRelation : 'Chưa cập nhật'}" />
                 </div>
             </div>
             
@@ -709,8 +724,8 @@
                     <i class="fas fa-home"></i>
                     Địa chỉ người thân
                 </div>
-                <div class="info-value ${empty profileData.emergencyContactAddress ? 'empty' : ''}">
-                    <c:out value="${profileData.emergencyContactAddress != null ? profileData.emergencyContactAddress : 'Chưa cập nhật'}" />
+                <div class="info-value ${empty member.emergencyContactAddress ? 'empty' : ''}">
+                    <c:out value="${member.emergencyContactAddress != null ? member.emergencyContactAddress : 'Chưa cập nhật'}" />
                 </div>
             </div>
         </div>

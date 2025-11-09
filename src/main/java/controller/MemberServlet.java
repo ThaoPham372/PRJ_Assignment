@@ -198,32 +198,9 @@ public class MemberServlet extends HttpServlet {
      */
     private void showDashboard(HttpServletRequest request, HttpServletResponse response, Member member)
             throws ServletException, IOException {
-        
-        System.out.println("[MemberServlet] Loading dashboard for member ID: " + member.getId());
-        
-        // Chuẩn bị dữ liệu cho dashboard
-        request.setAttribute("memberName", member.getName() != null ? member.getName() : member.getUsername());
-        request.setAttribute("joinDate", member.getCreatedDate());
-        
-        // Thống kê cơ bản
         if (member.getBmi() != null) {
-            request.setAttribute("bmi", member.getBmi());
             request.setAttribute("bmiCategory", calculateBMICategory(member.getBmi()));
         }
-        
-        if (member.getWeight() != null) {
-            request.setAttribute("weight", member.getWeight());
-        }
-        
-        if (member.getHeight() != null) {
-            request.setAttribute("height", member.getHeight());
-        }
-        
-        if (member.getGoal() != null && !member.getGoal().isEmpty()) {
-            request.setAttribute("goal", member.getGoal());
-        }
-        
-        // Forward đến dashboard JSP
         request.getRequestDispatcher("/views/member/dashboard.jsp").forward(request, response);
     }
 
@@ -232,10 +209,10 @@ public class MemberServlet extends HttpServlet {
      */
     private void showProfile(HttpServletRequest request, HttpServletResponse response, Member member)
             throws ServletException, IOException {
-        
-        System.out.println("[MemberServlet] Loading profile for member ID: " + member.getId());
-        
-        // Member đã được set trong doGet, chỉ cần forward
+        // Set BMI category nếu có BMI
+        if (member.getBmi() != null) {
+            request.setAttribute("bmiCategory", calculateBMICategory(member.getBmi()));
+        }
         request.getRequestDispatcher("/views/member/profile.jsp").forward(request, response);
     }
 
@@ -244,9 +221,6 @@ public class MemberServlet extends HttpServlet {
      */
     private void showProfileEdit(HttpServletRequest request, HttpServletResponse response, Member member)
             throws ServletException, IOException {
-        
-        System.out.println("[MemberServlet] Loading profile edit for member ID: " + member.getId());
-        
         request.getRequestDispatcher("/views/member/profile-edit.jsp").forward(request, response);
     }
 
@@ -255,15 +229,9 @@ public class MemberServlet extends HttpServlet {
      */
     private void showBodyGoals(HttpServletRequest request, HttpServletResponse response, Member member)
             throws ServletException, IOException {
-        
-        System.out.println("[MemberServlet] Loading body goals for member ID: " + member.getId());
-        
-        // Chuẩn bị dữ liệu
         if (member.getBmi() != null) {
-            request.setAttribute("bmi", member.getBmi());
             request.setAttribute("bmiCategory", calculateBMICategory(member.getBmi()));
         }
-        
         request.getRequestDispatcher("/views/member/body-goals.jsp").forward(request, response);
     }
 
@@ -272,9 +240,6 @@ public class MemberServlet extends HttpServlet {
      */
     private void showBodyMetricsEdit(HttpServletRequest request, HttpServletResponse response, Member member)
             throws ServletException, IOException {
-        
-        System.out.println("[MemberServlet] Loading body metrics edit for member ID: " + member.getId());
-        
         request.getRequestDispatcher("/views/member/body-metrics-edit.jsp").forward(request, response);
     }
 
@@ -283,9 +248,6 @@ public class MemberServlet extends HttpServlet {
      */
     private void showGoalsEdit(HttpServletRequest request, HttpServletResponse response, Member member)
             throws ServletException, IOException {
-        
-        System.out.println("[MemberServlet] Loading goals edit for member ID: " + member.getId());
-        
         request.getRequestDispatcher("/views/member/goals-edit.jsp").forward(request, response);
     }
 
@@ -296,89 +258,103 @@ public class MemberServlet extends HttpServlet {
      */
     private void updateProfile(HttpServletRequest request, HttpServletResponse response, Member member)
             throws ServletException, IOException {
-        
-        System.out.println("[MemberServlet] Updating profile for member ID: " + member.getId());
-        
         try {
-            // Lấy dữ liệu từ form
-            String name = request.getParameter("name");
-            String phone = request.getParameter("phone");
-            String address = request.getParameter("address");
-            String gender = request.getParameter("gender");
-            String dobStr = request.getParameter("dob");
+            // Cập nhật thông tin User (kế thừa từ User)
+            updateUserFields(member, request);
             
-            // Emergency Contact
-            String emergencyName = request.getParameter("emergencyContactName");
-            String emergencyPhone = request.getParameter("emergencyContactPhone");
-            String emergencyRelation = request.getParameter("emergencyContactRelation");
-            String emergencyAddress = request.getParameter("emergencyContactAddress");
-
-            // Cập nhật member object
-            if (name != null && !name.trim().isEmpty()) {
-                member.setName(name.trim());
-            }
-            
-            if (phone != null && !phone.trim().isEmpty()) {
-                member.setPhone(phone.trim());
-            }
-            
-            if (address != null && !address.trim().isEmpty()) {
-                member.setAddress(address.trim());
-            }
-            
-            if (gender != null && !gender.trim().isEmpty()) {
-                member.setGender(gender.trim());
-            }
-            
-            // Parse date of birth
-            if (dobStr != null && !dobStr.trim().isEmpty()) {
-                try {
-                    java.sql.Date dob = java.sql.Date.valueOf(dobStr);
-                    member.setDob(dob);
-                } catch (IllegalArgumentException e) {
-                    System.err.println("[MemberServlet] Invalid date format: " + dobStr);
-                }
-            }
-            
-            // Update emergency contact
-            if (emergencyName != null) {
-                member.setEmergencyContactName(emergencyName.trim());
-            }
-            if (emergencyPhone != null) {
-                member.setEmergencyContactPhone(emergencyPhone.trim());
-            }
-            if (emergencyRelation != null) {
-                member.setEmergencyContactRelation(emergencyRelation.trim());
-            }
-            if (emergencyAddress != null) {
-                member.setEmergencyContactAddress(emergencyAddress.trim());
-            }
+            // Cập nhật thông tin Member (emergency contact)
+            updateMemberFields(member, request);
 
             // Lưu vào database
             int result = memberService.update(member);
-
             if (result > 0) {
-                System.out.println("[MemberServlet] Profile updated successfully for member ID: " + member.getId());
-                
-                // Cập nhật session
+                // Reload member từ database để có dữ liệu mới nhất
+                Member updatedMember = memberService.getById(member.getId());
                 HttpSession session = request.getSession();
-                session.setAttribute("user", member);
-                session.setAttribute("successMessage", "Cập nhật thông tin thành công!");
-                
-                // Redirect về profile
+                session.setAttribute("user", updatedMember);
+                session.setAttribute("success", "Cập nhật thông tin thành công!");
                 response.sendRedirect(request.getContextPath() + "/member/profile");
             } else {
-                throw new Exception("Không thể cập nhật thông tin. Vui lòng thử lại.");
+                throw new Exception("Không thể cập nhật thông tin.");
             }
-
         } catch (Exception e) {
-            System.err.println("[MemberServlet] Error updating profile: " + e.getMessage());
-            e.printStackTrace();
-            
-            request.setAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
+            request.setAttribute("error", e.getMessage());
             request.setAttribute("member", member);
             request.getRequestDispatcher("/views/member/profile-edit.jsp").forward(request, response);
         }
+    }
+    
+    /**
+     * Cập nhật các trường của User
+     */
+    private void updateUserFields(Member member, HttpServletRequest request) {
+        String name = getParameter(request, "name");
+        String phone = getParameter(request, "phone");
+        String address = getParameter(request, "address");
+        String gender = getParameter(request, "gender");
+        String dobStr = getParameter(request, "dob");
+        
+        if (name != null) member.setName(name);
+        if (phone != null) member.setPhone(phone);
+        if (address != null) member.setAddress(address);
+        if (gender != null) member.setGender(gender);
+        
+        if (dobStr != null && !dobStr.trim().isEmpty()) {
+            try {
+                member.setDob(java.sql.Date.valueOf(dobStr));
+            } catch (IllegalArgumentException e) {
+                System.err.println("[MemberServlet] Invalid date format: " + dobStr);
+            }
+        }
+    }
+    
+    /**
+     * Cập nhật các trường của Member
+     */
+    private void updateMemberFields(Member member, HttpServletRequest request) {
+        // Emergency Contact
+        String emergencyName = getParameter(request, "emergencyContactName");
+        String emergencyPhone = getParameter(request, "emergencyContactPhone");
+        String emergencyRelation = getParameter(request, "emergencyContactRelation");
+        String emergencyAddress = getParameter(request, "emergencyContactAddress");
+        
+        if (emergencyName != null) member.setEmergencyContactName(emergencyName);
+        if (emergencyPhone != null) member.setEmergencyContactPhone(emergencyPhone);
+        if (emergencyRelation != null) member.setEmergencyContactRelation(emergencyRelation);
+        if (emergencyAddress != null) member.setEmergencyContactAddress(emergencyAddress);
+        
+        // Physical Information
+        String weightStr = getParameter(request, "weight");
+        String heightStr = getParameter(request, "height");
+        
+        if (weightStr != null) {
+            try {
+                Float weight = parseFloat(weightStr, "Cân nặng", 0f, 500f);
+                member.setWeight(weight);
+            } catch (IllegalArgumentException e) {
+                // Giữ nguyên giá trị cũ nếu parse lỗi
+            }
+        }
+        
+        if (heightStr != null) {
+            try {
+                Float height = parseFloat(heightStr, "Chiều cao", 0f, 300f);
+                member.setHeight(height);
+            } catch (IllegalArgumentException e) {
+                // Giữ nguyên giá trị cũ nếu parse lỗi
+            }
+        }
+        
+        // Tính BMI nếu có đủ dữ liệu
+        calculateBMI(member);
+    }
+    
+    /**
+     * Lấy parameter và trim, trả về null nếu rỗng
+     */
+    private String getParameter(HttpServletRequest request, String name) {
+        String value = request.getParameter(name);
+        return (value != null && !value.trim().isEmpty()) ? value.trim() : null;
     }
 
     /**
@@ -386,82 +362,63 @@ public class MemberServlet extends HttpServlet {
      */
     private void updateBodyMetrics(HttpServletRequest request, HttpServletResponse response, Member member)
             throws ServletException, IOException {
-        
-        System.out.println("[MemberServlet] Updating body metrics for member ID: " + member.getId());
-        
         try {
-            // Lấy dữ liệu từ form
-            String weightStr = request.getParameter("weight");
-            String heightStr = request.getParameter("height");
+            String weightStr = getParameter(request, "weight");
+            String heightStr = getParameter(request, "height");
 
-            // Parse và validate
-            Float weight = null;
-            Float height = null;
-
-            if (weightStr != null && !weightStr.trim().isEmpty()) {
-                try {
-                    weight = Float.parseFloat(weightStr.trim());
-                    if (weight <= 0 || weight > 500) {
-                        throw new IllegalArgumentException("Cân nặng không hợp lệ (phải từ 0-500 kg)");
-                    }
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException("Cân nặng phải là số");
-                }
-            }
-
-            if (heightStr != null && !heightStr.trim().isEmpty()) {
-                try {
-                    height = Float.parseFloat(heightStr.trim());
-                    if (height <= 0 || height > 300) {
-                        throw new IllegalArgumentException("Chiều cao không hợp lệ (phải từ 0-300 cm)");
-                    }
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException("Chiều cao phải là số");
-                }
-            }
-
-            // Cập nhật member
-            if (weight != null) {
+            if (weightStr != null) {
+                Float weight = parseFloat(weightStr, "Cân nặng", 0f, 500f);
                 member.setWeight(weight);
             }
             
-            if (height != null) {
+            if (heightStr != null) {
+                Float height = parseFloat(heightStr, "Chiều cao", 0f, 300f);
                 member.setHeight(height);
             }
 
             // Tính BMI nếu có đủ dữ liệu
-            if (member.getWeight() != null && member.getHeight() != null && 
-                member.getWeight() > 0 && member.getHeight() > 0) {
-                float heightInMeters = member.getHeight() / 100.0f; // Convert cm to m
-                float bmi = member.getWeight() / (heightInMeters * heightInMeters);
-                member.setBmi(bmi);
-                System.out.println("[MemberServlet] Calculated BMI: " + bmi);
-            }
+            calculateBMI(member);
 
-            // Lưu vào database
             int result = memberService.update(member);
-
             if (result > 0) {
-                System.out.println("[MemberServlet] Body metrics updated successfully for member ID: " + member.getId());
-                
-                // Cập nhật session
                 HttpSession session = request.getSession();
                 session.setAttribute("user", member);
-                session.setAttribute("successMessage", "Cập nhật chỉ số cơ thể thành công!");
-                
-                // Redirect về body goals
+                session.setAttribute("success", "Cập nhật chỉ số cơ thể thành công!");
                 response.sendRedirect(request.getContextPath() + "/member/body-goals");
             } else {
-                throw new Exception("Không thể cập nhật chỉ số. Vui lòng thử lại.");
+                throw new Exception("Không thể cập nhật chỉ số.");
             }
-
         } catch (Exception e) {
-            System.err.println("[MemberServlet] Error updating body metrics: " + e.getMessage());
-            e.printStackTrace();
-            
-            request.setAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
+            request.setAttribute("error", e.getMessage());
             request.setAttribute("member", member);
             request.getRequestDispatcher("/views/member/body-metrics-edit.jsp").forward(request, response);
+        }
+    }
+    
+    /**
+     * Parse Float với validation
+     */
+    private Float parseFloat(String value, String fieldName, Float min, Float max) throws IllegalArgumentException {
+        try {
+            Float num = Float.parseFloat(value);
+            if (num <= min || num > max) {
+                throw new IllegalArgumentException(fieldName + " không hợp lệ (phải từ " + min + "-" + max + ")");
+            }
+            return num;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(fieldName + " phải là số");
+        }
+    }
+    
+    /**
+     * Tính BMI cho member
+     */
+    private void calculateBMI(Member member) {
+        if (member.getWeight() != null && member.getHeight() != null && 
+            member.getWeight() > 0 && member.getHeight() > 0) {
+            float heightInMeters = member.getHeight() / 100.0f;
+            float bmi = member.getWeight() / (heightInMeters * heightInMeters);
+            member.setBmi(bmi);
         }
     }
 
@@ -470,42 +427,24 @@ public class MemberServlet extends HttpServlet {
      */
     private void updateGoals(HttpServletRequest request, HttpServletResponse response, Member member)
             throws ServletException, IOException {
-        
-        System.out.println("[MemberServlet] Updating goals for member ID: " + member.getId());
-        
         try {
-            // Lấy dữ liệu từ form
-            String goal = request.getParameter("goal");
-
-            // Validate
-            if (goal != null && !goal.trim().isEmpty()) {
-                member.setGoal(goal.trim());
-            } else {
+            String goal = getParameter(request, "goal");
+            if (goal == null) {
                 throw new IllegalArgumentException("Mục tiêu không được để trống");
             }
+            member.setGoal(goal);
 
-            // Lưu vào database
             int result = memberService.update(member);
-
             if (result > 0) {
-                System.out.println("[MemberServlet] Goals updated successfully for member ID: " + member.getId());
-                
-                // Cập nhật session
                 HttpSession session = request.getSession();
                 session.setAttribute("user", member);
-                session.setAttribute("successMessage", "Cập nhật mục tiêu thành công!");
-                
-                // Redirect về body goals
+                session.setAttribute("success", "Cập nhật mục tiêu thành công!");
                 response.sendRedirect(request.getContextPath() + "/member/body-goals");
             } else {
-                throw new Exception("Không thể cập nhật mục tiêu. Vui lòng thử lại.");
+                throw new Exception("Không thể cập nhật mục tiêu.");
             }
-
         } catch (Exception e) {
-            System.err.println("[MemberServlet] Error updating goals: " + e.getMessage());
-            e.printStackTrace();
-            
-            request.setAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
+            request.setAttribute("error", e.getMessage());
             request.setAttribute("member", member);
             request.getRequestDispatcher("/views/member/goals-edit.jsp").forward(request, response);
         }
@@ -536,9 +475,6 @@ public class MemberServlet extends HttpServlet {
      */
     private void handleError(HttpServletRequest request, HttpServletResponse response, 
                            Exception e, String userMessage) throws ServletException, IOException {
-        System.err.println("[MemberServlet] Error: " + e.getMessage());
-        e.printStackTrace();
-        
         request.setAttribute("error", userMessage);
         request.getRequestDispatcher("/views/error/500.jsp").forward(request, response);
     }
