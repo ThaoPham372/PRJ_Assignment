@@ -2,12 +2,21 @@ package service.shop;
 
 import dao.PaymentDAO;
 import dao.shop.OrderDao;
+import dao.shop.OrderItemDao;
 import model.Payment;
+import model.Member;
+import model.Membership;
+import model.Package;
 import model.shop.PaymentMethod;
 import model.shop.PaymentStatus;
 import model.shop.OrderStatus;
+import model.shop.OrderItem;
+import service.MembershipService;
+import service.PackageService;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -22,16 +31,27 @@ public class PaymentServiceImpl implements PaymentService {
     private static final Logger LOGGER = Logger.getLogger(PaymentServiceImpl.class.getName());
     private final PaymentDAO paymentDAO;
     private final OrderDao orderDao;
+    private final OrderItemDao orderItemDao;
+    private final MembershipService membershipService;
+    private final PackageService packageService;
 
     public PaymentServiceImpl() {
         this.paymentDAO = new PaymentDAO();
         this.orderDao = new OrderDao();
+        this.orderItemDao = new OrderItemDao();
+        this.membershipService = new MembershipService();
+        this.packageService = new PackageService();
     }
     
     // Constructor for dependency injection
-    public PaymentServiceImpl(PaymentDAO paymentDAO, OrderDao orderDao) {
+    public PaymentServiceImpl(PaymentDAO paymentDAO, OrderDao orderDao, 
+                             OrderItemDao orderItemDao, MembershipService membershipService,
+                             PackageService packageService) {
         this.paymentDAO = paymentDAO;
         this.orderDao = orderDao;
+        this.orderItemDao = orderItemDao;
+        this.membershipService = membershipService;
+        this.packageService = packageService;
     }
 
     @Override
@@ -124,40 +144,195 @@ public class PaymentServiceImpl implements PaymentService {
     
     /**
      * Handle logic when payment status becomes PAID
+     * Follows Single Responsibility Principle - handles payment status transitions
      */
     private void handlePaidStatus(Payment payment) {
         if (payment.getTransactionType() == Payment.TransactionType.PRODUCT) {
-            // Update order status to COMPLETED
-            if (payment.getOrderId() != null) {
-                try {
-                    orderDao.updateOrderStatus(payment.getOrderId(), OrderStatus.COMPLETED);
-                    LOGGER.info("✅ [PAID→COMPLETED] Updated order status to COMPLETED: orderId=" + payment.getOrderId());
-                } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Error updating order status", e);
-                }
-            }
+            handleProductPaymentPaid(payment);
         } else if (payment.getTransactionType() == Payment.TransactionType.PACKAGE) {
-            // For package payments, update order status if exists
-            // Membership activation should be handled separately by admin or membership service
-            LOGGER.info("✅ [PAID] Package payment confirmed: membershipId=" + payment.getMembershipId());
-            
-            // Find and update related order if exists
-            try {
-                dao.MembershipDAO membershipDAO = new dao.MembershipDAO();
-                model.Membership membership = membershipDAO.findById(payment.getMembershipId());
-                if (membership != null) {
-                    // Update membership status to active
-                    membership.setStatus("ACTIVE");
-                    if (membership.getActivatedAt() == null) {
-                        membership.setActivatedAt(new java.util.Date());
-                    }
-                    membershipDAO.update(membership);
-                    LOGGER.info("✅ Membership activated: membershipId=" + payment.getMembershipId());
-                }
-            } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Error activating membership", e);
-            }
+            handlePackagePaymentPaid(payment);
         }
+    }
+    
+    /**
+     * Handle PRODUCT payment when status becomes PAID
+     * Updates order status and activates membership if order contains package
+     */
+    private void handleProductPaymentPaid(Payment payment) {
+        if (payment.getOrderId() == null) {
+            return;
+        }
+        
+        try {
+            // Update order status to COMPLETED
+            orderDao.updateOrderStatus(payment.getOrderId(), OrderStatus.COMPLETED);
+            LOGGER.info("✅ [PAID→COMPLETED] Updated order status to COMPLETED: orderId=" + payment.getOrderId());
+            
+            // Check if order contains a package (membership)
+            activateMembershipFromOrder(payment.getOrderId(), payment.getMemberId());
+            
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error handling product payment PAID status", e);
+        }
+    }
+    
+    /**
+     * Handle PACKAGE payment when status becomes PAID
+     * Activates existing membership
+     */
+    private void handlePackagePaymentPaid(Payment payment) {
+        if (payment.getMembershipId() == null) {
+            return;
+        }
+        
+        try {
+            Membership membership = membershipService.getMembershipById(payment.getMembershipId());
+            if (membership != null) {
+                membership.setStatus("ACTIVE");
+                if (membership.getActivatedAt() == null) {
+                    membership.setActivatedAt(new Date());
+                }
+                membershipService.update(membership);
+                LOGGER.info("✅ [PAID] Membership activated: membershipId=" + payment.getMembershipId());
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error activating membership from package payment", e);
+        }
+    }
+    
+    /**
+     * Activate membership from order if order contains package
+     * Reusable method following DRY principle
+     * 
+     * @param orderId Order ID
+     * @param memberId Member ID
+     */
+    private void activateMembershipFromOrder(Integer orderId, Integer memberId) {
+        try {
+            // Get order items to check for package
+            List<OrderItem> orderItems = orderItemDao.findByOrderId(orderId);
+            if (orderItems == null || orderItems.isEmpty()) {
+                return;
+            }
+            
+            // Find package in order items
+            Integer packageId = null;
+            for (OrderItem item : orderItems) {
+                if (item != null && item.getPackageId() != null) {
+                    packageId = item.getPackageId();
+                    break;
+                }
+            }
+            
+            if (packageId == null) {
+                // Order doesn't contain package, nothing to do
+                return;
+            }
+            
+            // Get package details
+            Package pkg = packageService.getById(packageId);
+            if (pkg == null) {
+                LOGGER.warning("Package not found: " + packageId);
+                return;
+            }
+            
+            // Get member
+            service.MemberService memberService = new service.MemberService();
+            Member member = memberService.getById(memberId);
+            if (member == null) {
+                LOGGER.warning("Member not found: " + memberId);
+                return;
+            }
+            
+            // Check if member already has active membership for this package
+            Membership existingMembership = findActiveMembershipForPackage(member, packageId);
+            
+            if (existingMembership != null) {
+                // Extend existing membership
+                extendMembership(existingMembership, pkg);
+                membershipService.update(existingMembership);
+                LOGGER.info("✅ [PAID] Extended membership: membershipId=" + existingMembership.getId() + 
+                           ", newEndDate=" + existingMembership.getEndDate());
+            } else {
+                // Create new membership
+                Membership newMembership = createMembershipFromPackage(member, pkg);
+                membershipService.add(newMembership);
+                LOGGER.info("✅ [PAID] Created new membership: membershipId=" + newMembership.getId() + 
+                           ", endDate=" + newMembership.getEndDate());
+            }
+            
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error activating membership from order: " + orderId, e);
+        }
+    }
+    
+    /**
+     * Find active membership for member and package
+     * Reusable method
+     */
+    private Membership findActiveMembershipForPackage(Member member, Integer packageId) {
+        try {
+            List<Membership> allMemberships = membershipService.getAll();
+            Date now = new Date();
+            
+            for (Membership m : allMemberships) {
+                if (m.getMember() != null && 
+                    m.getMember().getId().equals(member.getId()) &&
+                    m.getPackageO() != null &&
+                    m.getPackageO().getId().equals(packageId) &&
+                    "ACTIVE".equalsIgnoreCase(m.getStatus()) &&
+                    m.getEndDate() != null &&
+                    m.getEndDate().after(now)) {
+                    return m;
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error finding active membership", e);
+            return null;
+        }
+    }
+    
+    /**
+     * Extend existing membership by adding duration months
+     * Reusable method
+     */
+    private void extendMembership(Membership membership, Package pkg) {
+        Date currentEndDate = membership.getEndDate();
+        if (currentEndDate == null) {
+            currentEndDate = new Date();
+        }
+        
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(currentEndDate);
+        cal.add(Calendar.MONTH, pkg.getDurationMonths());
+        membership.setEndDate(cal.getTime());
+        membership.setUpdatedDate(new Date());
+    }
+    
+    /**
+     * Create new membership from package
+     * Calculates endDate based on createdDate + durationMonths
+     * Follows OOP principles - encapsulates membership creation logic
+     */
+    private Membership createMembershipFromPackage(Member member, Package pkg) {
+        Membership membership = new Membership();
+        membership.setMember(member);
+        membership.setPackageO(pkg);
+        
+        Date now = new Date();
+        membership.setCreatedDate(now);
+        membership.setStartDate(now);
+        membership.setActivatedAt(now);
+        membership.setStatus("ACTIVE");
+        
+        // Calculate endDate based on createdDate + durationMonths
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(now);
+        cal.add(Calendar.MONTH, pkg.getDurationMonths());
+        membership.setEndDate(cal.getTime());
+        
+        return membership;
     }
     
     /**

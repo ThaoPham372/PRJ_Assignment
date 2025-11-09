@@ -442,12 +442,10 @@
                                 </c:if>
                                 
                                 <div style="margin-top: 20px;">
-                                    <form method="post" action="${pageContext.request.contextPath}/member/membership/buyNow">
-                                        <input type="hidden" name="packageId" value="${pkg.id}"/>
-                                        <button type="submit" class="btn-membership w-100">
-                                            <i class="fas fa-credit-card"></i> Mua ngay
-                                        </button>
-                                    </form>
+                                    <a href="${pageContext.request.contextPath}/checkout?type=membership&packageId=${pkg.id}" 
+                                       class="btn-membership w-100" style="text-align: center; display: block;">
+                                        <i class="fas fa-credit-card"></i> Mua ngay
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -562,12 +560,10 @@
                     </div>
                     <h5 class="action-card-title">Gia Hạn Gói</h5>
                     <p class="action-card-description">Gia hạn gói thành viên hiện tại để tiếp tục sử dụng dịch vụ</p>
-                    <form method="post" action="${pageContext.request.contextPath}/member/membership/buyNow">
-                        <input type="hidden" name="packageId" value="${currentMembership.packageO.id}"/>
-                        <button type="submit" class="btn-membership">
-                            <i class="fas fa-credit-card me-2"></i>Gia Hạn Ngay
-                        </button>
-                    </form>
+                    <a href="${pageContext.request.contextPath}/checkout?type=membership&packageId=${currentMembership.packageO.id}" 
+                       class="btn-membership">
+                        <i class="fas fa-credit-card me-2"></i>Gia Hạn Ngay
+                    </a>
                 </div>
             </div>
         </c:if>
