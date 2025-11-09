@@ -29,16 +29,10 @@ public class MembershipManagementServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            System.out.println("\nMEMBERSHIP MANAGEMENT");
-
             String action = req.getParameter("action");
             if (action == null) {
                 action = "";
             }
-
-            System.out.println("Action: " + action);
-            System.out.println("Query: " + req.getQueryString());
-            System.out.println("------------------------");
 
             List<Membership> memberships = getMembership();
             List<Package> packages = packageService.getAll();
@@ -63,8 +57,6 @@ public class MembershipManagementServlet extends HttpServlet {
                 req.setAttribute("packageType", packageType);
             }
 
-            System.out.println("Finish GET");
-
             req.setAttribute("packages", packages);
             req.setAttribute("memberships", memberships);
             req.setAttribute("numberMemberships", numberMemberships);
@@ -83,9 +75,6 @@ public class MembershipManagementServlet extends HttpServlet {
         String action = req.getParameter("action");
         if(action == null)
             action = "";
-        System.out.println("\nPOST\n");
-        System.out.println(req.getParameterValues(action));
-        System.out.println("Action: " +action);
         switch (action) {
             case "addMembership" -> {
                 handleAddMembership(req, resp);
@@ -188,7 +177,6 @@ public class MembershipManagementServlet extends HttpServlet {
     }
 
     private List<Membership> filterByPackageType(List<Membership> memberships, String packageType) {
-        System.out.println("BEFORE FP");
 
         if (packageType != null && !packageType.trim().isEmpty()) {
             memberships.removeIf(m -> {
@@ -196,10 +184,7 @@ public class MembershipManagementServlet extends HttpServlet {
                 return packageO == null || !packageO.getName().equalsIgnoreCase(packageType);
             });
         }
-        System.out.println("After FP");
-        for (Membership m : memberships) {
-            System.out.println(m);
-        }
+        
         return memberships;
     }
 
@@ -229,9 +214,7 @@ public class MembershipManagementServlet extends HttpServlet {
 
     private void handleEditMembership(HttpServletRequest req, HttpServletResponse resp) {
         String name = req.getParameter("name");
-        System.out.println("\n\n\n" + name +"\n\n\n");
         String username = req.getParameter("username");
-        System.out.println("\n\n\n" + username +"\n\n\n");
         int memberId = memberService.getByUsername(username).getId();
         int packageId = Integer.parseInt(req.getParameter("package_id"));
         int membershipId = Integer.parseInt(req.getParameter("id"));
