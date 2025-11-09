@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%@ taglib
+uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -27,7 +28,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%@ taglib uri="http://jav
       href="${pageContext.request.contextPath}/css/styles.css"
       rel="stylesheet"
     />
-    
+
     <!-- Floating Buttons CSS -->
     <link
       href="${pageContext.request.contextPath}/css/floating-buttons.css"
@@ -110,6 +111,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%@ taglib uri="http://jav
         z-index: 100;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         backdrop-filter: blur(10px);
+        border-bottom: 3px solid #ec8b5a;
       }
 
       .logo {
@@ -118,7 +120,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%@ taglib uri="http://jav
         letter-spacing: 0.5px;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 12px;
         color: #fff;
         text-decoration: none;
         transition: all 0.3s ease;
@@ -127,6 +129,18 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%@ taglib uri="http://jav
       .logo:hover {
         color: var(--accent);
         transform: scale(1.05);
+      }
+
+      .logo img {
+        height: 60px;
+        width: auto;
+        object-fit: contain;
+        transition: all 0.3s ease;
+      }
+
+      .logo:hover img {
+        transform: scale(1.05);
+        filter: brightness(1.1);
       }
 
       nav ul {
@@ -194,7 +208,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%@ taglib uri="http://jav
       .auth-actions {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
       }
 
       /* Cart Icon */
@@ -263,12 +277,12 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%@ taglib uri="http://jav
         text-decoration: none;
         transition: all 0.3s ease;
       }
-      
+
       .btn-username:before {
         content: '👤';
         font-size: 1.1rem;
       }
-      
+
       .btn-username:hover {
         background: white;
         color: var(--accent);
@@ -307,19 +321,20 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%@ taglib uri="http://jav
   <body>
     <!-- HEADER -->
     <header>
-      <a href="${pageContext.request.contextPath}/home.jsp" class="logo"
-        >️ GymFit</a
-      >
+      <a href="${pageContext.request.contextPath}/home.jsp" class="logo">
+        <img
+          src="${pageContext.request.contextPath}/images/logo/logoGymfit.png"
+          alt="GymFit Logo"
+        />
+        GymFit
+      </a>
       <nav>
         <ul>
           <li>
             <a href="${pageContext.request.contextPath}/home.jsp">HOME</a>
           </li>
           <li>
-            <a
-              href="${pageContext.request.contextPath}/services"
-              >SERVICES</a
-            >
+            <a href="${pageContext.request.contextPath}/services">SERVICES</a>
           </li>
           <li>
             <a href="${pageContext.request.contextPath}/views/calendar.jsp"
@@ -342,34 +357,57 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%@ taglib uri="http://jav
       </nav>
       <c:choose>
         <c:when test="${sessionScope.user != null}">
-          <c:set var="dashboardHref" value="${pageContext.request.contextPath}/home" />
+          <c:set
+            var="dashboardHref"
+            value="${pageContext.request.contextPath}/home"
+          />
           <c:if test="${not empty sessionScope.userRoles}">
             <c:choose>
               <c:when test="${fn:contains(sessionScope.userRoles, 'ADMIN')}">
-                <c:set var="dashboardHref" value="${pageContext.request.contextPath}/admin/dashboard" />
+                <c:set
+                  var="dashboardHref"
+                  value="${pageContext.request.contextPath}/admin/dashboard"
+                />
               </c:when>
               <c:when test="${fn:contains(sessionScope.userRoles, 'PT')}">
-                <c:set var="dashboardHref" value="${pageContext.request.contextPath}/pt/dashboard" />
+                <c:set
+                  var="dashboardHref"
+                  value="${pageContext.request.contextPath}/pt/dashboard"
+                />
               </c:when>
               <c:when test="${fn:contains(sessionScope.userRoles, 'USER')}">
-                <c:set var="dashboardHref" value="${pageContext.request.contextPath}/member/dashboard" />
+                <c:set
+                  var="dashboardHref"
+                  value="${pageContext.request.contextPath}/member/dashboard"
+                />
               </c:when>
               <c:when test="${fn:contains(sessionScope.userRoles, 'MEMBER')}">
-                <c:set var="dashboardHref" value="${pageContext.request.contextPath}/member/dashboard" />
+                <c:set
+                  var="dashboardHref"
+                  value="${pageContext.request.contextPath}/member/dashboard"
+                />
               </c:when>
             </c:choose>
           </c:if>
-          
-        
-            
-            <a href="${dashboardHref}" class="btn-username" title="Xem Dashboard">
-              ${sessionScope.user.username != null ? sessionScope.user.username : 'User'}
+
+          <div class="auth-actions">
+            <a
+              href="${dashboardHref}"
+              class="btn-username"
+              title="Xem Dashboard"
+            >
+              ${sessionScope.user.username != null ? sessionScope.user.username
+              : 'User'}
             </a>
-            <a href="${pageContext.request.contextPath}/logout" class="btn">ĐĂNG XUẤT</a>
+            <a href="${pageContext.request.contextPath}/logout" class="btn"
+              >ĐĂNG XUẤT</a
+            >
           </div>
         </c:when>
         <c:otherwise>
-          <a href="${pageContext.request.contextPath}/login" class="btn">ĐĂNG NHẬP</a>
+          <a href="${pageContext.request.contextPath}/login" class="btn"
+            >ĐĂNG NHẬP</a
+          >
         </c:otherwise>
       </c:choose>
     </header>

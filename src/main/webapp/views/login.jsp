@@ -1,18 +1,5 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%
-  // If googleClientId is not set by servlet, load it from ConfigManager
-  if (request.getAttribute("googleClientId") == null) {
-    try {
-      Utils.ConfigManager configManager = Utils.ConfigManager.getInstance();
-      String clientId = configManager.getGoogleClientId();
-      request.setAttribute("googleClientId", clientId);
-    } catch (Exception e) {
-      System.err.println("[login.jsp] Error loading Google Client ID: " + e.getMessage());
-      request.setAttribute("googleClientId", null);
-    }
-  }
-%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %> 
+<%@taglib prefix= "c" uri="http://java.sun.com/jsp/jstl/core" %> 
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -20,9 +7,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Đăng Nhập - GymFit</title>
-    
+
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
 
     <style>
       :root {
@@ -608,9 +598,18 @@
 
         <!-- Error Messages -->
         <c:if test="${loginError == true && errors != null}">
-          <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+          <div
+            style="
+              background: #f8d7da;
+              color: #721c24;
+              padding: 15px;
+              border-radius: 4px;
+              margin-bottom: 20px;
+              border: 1px solid #f5c6cb;
+            "
+          >
             <strong>Lỗi đăng nhập:</strong>
-            <ul style="margin: 5px 0 0 20px;">
+            <ul style="margin: 5px 0 0 20px">
               <c:forEach var="error" items="${errors}">
                 <li>${error}</li>
               </c:forEach>
@@ -672,16 +671,22 @@
 
         <!-- Forgot Password -->
         <div class="forgot-link">
-          <a href="${pageContext.request.contextPath}/auth/forgot-password">Quên mật khẩu?</a>
+          <a href="${pageContext.request.contextPath}/auth/forgot-password"
+            >Quên mật khẩu?</a
+          >
         </div>
 
         <!-- Google Login -->
-        <div id="g_id_signin_login" style="margin-top: 10px;"></div>
+        <div id="g_id_signin_login" style="margin-top: 10px"></div>
 
         <!-- Register Section -->
         <div class="register-section">
           <div class="register-text">BẠN CHƯA CÓ TÀI KHOẢN?</div>
-          <a href="${pageContext.request.contextPath}/register" class="register-btn" style="display:inline-block; text-align:center;">
+          <a
+            href="${pageContext.request.contextPath}/register"
+            class="register-btn"
+            style="display: inline-block; text-align: center"
+          >
             ĐĂNG KÝ
           </a>
         </div>
@@ -769,24 +774,39 @@
         // Initialize Google Sign-In
         function initializeGoogleSignIn() {
           var clientId = '${googleClientId}';
-          console.log('[Google Sign-In] Client ID:', clientId ? 'SET' : 'NOT SET');
-          
-          if (!clientId || clientId.trim() === '' || clientId === 'YOUR_GOOGLE_CLIENT_ID_HERE' || clientId === 'null') {
+          console.log(
+            '[Google Sign-In] Client ID:',
+            clientId ? 'SET' : 'NOT SET',
+          );
+
+          if (
+            !clientId ||
+            clientId.trim() === '' ||
+            clientId === 'YOUR_GOOGLE_CLIENT_ID_HERE' ||
+            clientId === 'null'
+          ) {
             console.warn('[Google Sign-In] Google Client ID is not configured');
             var el = document.getElementById('g_id_signin_login');
             if (el) {
-              el.innerHTML = '<p style="color: #ff6b6b; font-size: 0.85rem; text-align: center;">Google Sign-In chưa được cấu hình</p>';
+              el.innerHTML =
+                '<p style="color: #ff6b6b; font-size: 0.85rem; text-align: center;">Google Sign-In chưa được cấu hình</p>';
             }
             return;
           }
-          
+
           // Check if Google API is loaded
-          if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
-            console.log('[Google Sign-In] Google API not loaded yet, retrying...');
+          if (
+            typeof google === 'undefined' ||
+            !google.accounts ||
+            !google.accounts.id
+          ) {
+            console.log(
+              '[Google Sign-In] Google API not loaded yet, retrying...',
+            );
             setTimeout(initializeGoogleSignIn, 500);
             return;
           }
-          
+
           try {
             google.accounts.id.initialize({
               client_id: clientId,
@@ -795,58 +815,70 @@
                 fetch('${pageContext.request.contextPath}/auth/google-login', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ credential: response.credential })
+                  body: JSON.stringify({ credential: response.credential }),
                 })
-                  .then(function (r) { return r.json(); })
+                  .then(function (r) {
+                    return r.json();
+                  })
                   .then(function (data) {
                     if (data && data.success) {
                       window.location.href = data.redirectUrl;
                     } else {
-                      alert('Đăng nhập Google thất bại' + (data && data.message ? ': ' + data.message : ''));
+                      alert(
+                        'Đăng nhập Google thất bại' +
+                          (data && data.message ? ': ' + data.message : ''),
+                      );
                     }
                   })
-                  .catch(function (err) { 
-                    console.error('[Google Sign-In] Error:', err); 
-                    alert('Có lỗi xảy ra khi đăng nhập Google'); 
+                  .catch(function (err) {
+                    console.error('[Google Sign-In] Error:', err);
+                    alert('Có lỗi xảy ra khi đăng nhập Google');
                   });
               },
               auto_select: false,
-              cancel_on_tap_outside: true
+              cancel_on_tap_outside: true,
             });
-            
+
             var el = document.getElementById('g_id_signin_login');
             if (el) {
-              google.accounts.id.renderButton(el, { 
-                theme: 'outline', 
-                size: 'large', 
-                shape: 'pill', 
-                text: 'continue_with' 
+              google.accounts.id.renderButton(el, {
+                theme: 'outline',
+                size: 'large',
+                shape: 'pill',
+                text: 'continue_with',
               });
               console.log('[Google Sign-In] Button rendered successfully');
             } else {
-              console.error('[Google Sign-In] Element g_id_signin_login not found');
+              console.error(
+                '[Google Sign-In] Element g_id_signin_login not found',
+              );
             }
           } catch (error) {
             console.error('[Google Sign-In] Initialization error:', error);
             var el = document.getElementById('g_id_signin_login');
             if (el) {
-              el.innerHTML = '<p style="color: #ff6b6b; font-size: 0.85rem; text-align: center;">Lỗi khởi tạo Google Sign-In</p>';
+              el.innerHTML =
+                '<p style="color: #ff6b6b; font-size: 0.85rem; text-align: center;">Lỗi khởi tạo Google Sign-In</p>';
             }
           }
         }
-        
+
         // Wait for Google script to load
         function waitForGoogleAPI() {
-          if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+          if (
+            typeof google !== 'undefined' &&
+            google.accounts &&
+            google.accounts.id
+          ) {
             initializeGoogleSignIn();
           } else {
             setTimeout(waitForGoogleAPI, 100);
           }
         }
-        
+
         // Start initialization when DOM is ready
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', function() {
+          document.addEventListener('DOMContentLoaded', function () {
             setTimeout(waitForGoogleAPI, 500);
           });
         } else {
