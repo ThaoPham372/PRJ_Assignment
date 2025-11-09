@@ -47,6 +47,7 @@ public class MembershipManagementServlet extends HttpServlet {
                 String keyword = req.getParameter("keyword");
                 String status = req.getParameter("status");
                 String packageType = req.getParameter("packageType");
+                
                 memberships = filterMemberships(memberships, keyword, status, packageType);
                 
                 req.setAttribute("keyword", keyword);
@@ -119,10 +120,13 @@ public class MembershipManagementServlet extends HttpServlet {
     private List<Membership> filterMemberships(List<Membership> memberships, String keyword, String status,
             String packageType)
             throws ServletException, IOException {
-
-        memberships = filterByKeyword(memberships, keyword);
-        memberships = filterByStatus(memberships, status);
-        memberships = filterByPackageType(memberships, packageType);
+        
+        if(keyword != null)
+            memberships = filterByKeyword(memberships, keyword);
+        if(status != null)
+            memberships = filterByStatus(memberships, status);
+        if(packageType != null)
+            memberships = filterByPackageType(memberships, packageType);
 
         return memberships;
     }

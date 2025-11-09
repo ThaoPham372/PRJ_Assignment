@@ -467,7 +467,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/admin/member-management"
+              href="${pageContext.request.contextPath}/admin/membership-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-users"></i><span>Quản lý hội viên</span>
