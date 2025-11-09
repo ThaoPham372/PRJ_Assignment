@@ -15,8 +15,7 @@ public class DateUtils {
         }
     }
 
-    public static Date addMonths(int months) {
-        Date now = new Date();
-        return new Date(now.getTime() + months * 30L * 24 * 60 * 60 * 1000); // Giả sử mỗi tháng có 30 ngày
+    public static Date addMonths(Date time, int months) {
+        return new Date(time.getTime() + months * 30L * 24 * 60 * 60 * 1000); // Giả sử mỗi tháng có 30 ngày
     }
 }

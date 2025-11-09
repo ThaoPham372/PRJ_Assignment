@@ -91,11 +91,12 @@ public class MembershipManagementServlet extends HttpServlet {
     private void addMembership(String username, int packageId, String startDateStr) {
         Member member = memberService.getByUsername(username);
         Package packageO = packageService.getById(packageId);
+        
         if (member != null && packageO != null) {
             Membership membership = new Membership(member, packageO);
             int months = packageO.getDurationMonths();
             Date startDate = DateUtils.parseToDate(startDateStr);
-            Date endDate = DateUtils.addMonths(months);
+            Date endDate = DateUtils.addMonths(startDate, months);
 
             membership.setStartDate(startDate);
             membership.setEndDate(endDate);
