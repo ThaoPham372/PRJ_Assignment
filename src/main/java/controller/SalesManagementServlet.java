@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import model.Product;
 import model.ProductType;
+import service.OrderService;
 import service.ProductService;
 
 /*
@@ -19,7 +20,7 @@ import service.ProductService;
 public class SalesManagementServlet extends HttpServlet {
 
     ProductService productService = new ProductService();
-    // OrderService orderService = new OrderService();
+    OrderService orderService = new OrderService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

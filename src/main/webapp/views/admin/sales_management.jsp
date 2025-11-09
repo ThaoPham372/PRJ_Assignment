@@ -578,7 +578,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/admin/order-management"
+              href="${pageContext.request.contextPath}/admin/sales-management"
               class="sidebar-menu-link active"
             >
               <i class="fas fa-box"></i><span>Quản lý đơn hàng</span>
@@ -780,7 +780,6 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
                   </div>
                 </div>
               </c:forEach>
-              <!-- Product 4 -->
           </div>
 
           <!-- Orders Tab -->

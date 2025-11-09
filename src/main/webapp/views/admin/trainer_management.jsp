@@ -422,7 +422,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/admin/order-management"
+              href="${pageContext.request.contextPath}/admin/sales-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-box"></i><span>Quản lý đơn hàng</span>

@@ -849,7 +849,7 @@
           <ul class="admin-menu-list">
             <li class="admin-menu-item">
               <a
-                href="${pageContext.request.contextPath}/views/admin/dashboard.jsp"
+                href="${pageContext.request.contextPath}/admin/dashboard"
                 class="admin-menu-link"
               >
                 <i class="fas fa-tachometer-alt"></i>
@@ -858,7 +858,7 @@
             </li>
             <li class="admin-menu-item">
               <a
-                href="${pageContext.request.contextPath}/views/admin/profile.jsp"
+                href="${pageContext.request.contextPath}/admin/profile"
                 class="admin-menu-link"
               >
                 <i class="fas fa-user-circle"></i>
@@ -867,7 +867,7 @@
             </li>
             <li class="admin-menu-item">
               <a
-                href="${pageContext.request.contextPath}/views/admin/account_management.jsp"
+                href="${pageContext.request.contextPath}/admin/account-management"
                 class="admin-menu-link"
               >
                 <i class="fas fa-users-cog"></i>
@@ -876,7 +876,7 @@
             </li>
             <li class="admin-menu-item">
               <a
-                href="${pageContext.request.contextPath}/views/admin/member_management.jsp"
+                href="${pageContext.request.contextPath}/admin/member-management"
                 class="admin-menu-link"
               >
                 <i class="fas fa-users"></i>
@@ -885,7 +885,7 @@
             </li>
             <li class="admin-menu-item">
               <a
-                href="${pageContext.request.contextPath}/views/admin/service_schedule.jsp"
+                href="${pageContext.request.contextPath}/admin/service-schedule"
                 class="admin-menu-link"
               >
                 <i class="fas fa-calendar-alt"></i>
@@ -894,7 +894,7 @@
             </li>
             <li class="admin-menu-item">
               <a
-                href="${pageContext.request.contextPath}/views/admin/trainer_management.jsp"
+                href="${pageContext.request.contextPath}/admin/trainer-management"
                 class="admin-menu-link"
               >
                 <i class="fas fa-chalkboard-teacher"></i>
@@ -903,7 +903,7 @@
             </li>
             <li class="admin-menu-item">
               <a
-                href="${pageContext.request.contextPath}/views/admin/order_management.jsp"
+                href="${pageContext.request.contextPath}/admin/order_management.jsp"
                 class="admin-menu-link"
               >
                 <i class="fas fa-box"></i>
@@ -949,13 +949,13 @@
       <p>Quản lý phòng gym của bạn một cách chuyên nghiệp</p>
       <div class="hero-actions">
         <a
-          href="${pageContext.request.contextPath}/views/admin/dashboard.jsp"
+          href="${pageContext.request.contextPath}/admin/dashboard"
           class="btn"
         >
           Dashboard Admin
         </a>
         <a
-          href="${pageContext.request.contextPath}/views/admin/member_management.jsp"
+          href="${pageContext.request.contextPath}/admin/member-management"
           class="btn btn-secondary"
         >
           Quản lý Hội viên
