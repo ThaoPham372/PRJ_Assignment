@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%@ include
+prefix="c" uri="http://java.sun.com/jsp/jstl/core" %> <%@ include
 file="/views/common/header.jsp" %>
 
 <style>
