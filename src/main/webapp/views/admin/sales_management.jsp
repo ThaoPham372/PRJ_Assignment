@@ -97,6 +97,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
         font-size: 0.95rem;
         margin-bottom: 3px;
       }
+
       .sidebar-user-info p {
         font-size: 0.75rem;
         opacity: 0.8;
@@ -105,6 +106,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
       .sidebar-menu {
         padding: 20px 0;
       }
+
       .sidebar-menu-item {
         list-style: none;
       }
@@ -157,6 +159,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
         font-weight: 700;
         color: var(--primary);
       }
+
       .top-bar-actions {
         display: flex;
         gap: 15px;
@@ -482,20 +485,24 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
         .sidebar {
           width: 70px;
         }
+
         .sidebar-brand span,
         .sidebar-menu-link span,
         .sidebar-user-info {
           display: none;
         }
+
         .main-content {
           margin-left: 70px;
         }
+
         .products-grid {
           grid-template-columns: 1fr;
         }
       }
     </style>
   </head>
+
   <body>
     <div class="admin-container">
       <!-- Sidebar -->
@@ -696,7 +703,18 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
                 <div class="product-card">
                   <c:choose>
                     <c:when test="${product.productType == 'SUPPLEMENT'}">
-                      <i class="fas fa-bottle-water"></i>
+                      <div
+                        class="product-image"
+                        style="
+                          background: linear-gradient(
+                            135deg,
+                            #11998e 0%,
+                            #38ef7d 100%
+                          );
+                        "
+                      >
+                        <i class="fas fa-bottle-water"></i>
+                      </div>
                     </c:when>
                     <c:when test="${product.productType == 'ACCESSORY'}">
                       <div
@@ -713,13 +731,22 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
                       </div>
                     </c:when>
                     <c:when test="${product.productType == 'EQUIPMENT'}">
-                      <i class="fas fa-dumbbell"></i>
+                      <div class="product-image">
+                        <i class="fas fa-dumbbell"></i>
+                      </div>
                     </c:when>
                     <c:when test="${product.productType == 'APPAREL'}">
-                      <i class="fas fa-tshirt"></i>
+                      <div
+                        class="product-image"
+                        style="background: var(--gradient-accent)"
+                      >
+                        <i class="fas fa-tshirt"></i>
+                      </div>
                     </c:when>
                     <c:otherwise>
-                      <i class="fas fa-box"></i>
+                      <div class="product-image">
+                        <i class="fas fa-box"></i>
+                      </div>
                     </c:otherwise>
                   </c:choose>
                   <div class="product-body">
@@ -735,126 +762,25 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
                       ${product.stockQuantity}
                     </div>
                     <div class="product-actions">
-                      <button class="btn btn-small" style="background: #3498db">
+                      <button
+                        class="btn btn-small"
+                        style="background: #3498db"
+                        onclick="handleEditProduct(${product.id}, '${product.productName}', '${product.productType}', ${product.price}, ${product.stockQuantity})"
+                      >
                         <i class="fas fa-edit edit-product"></i> Sửa
                       </button>
-                      <button class="btn btn-small" style="background: #e74c3c">
+                      <button
+                        class="btn btn-small"
+                        style="background: #e74c3c"
+                        onclick="handleDeleteProduct(${product.id})"
+                      >
                         <i class="fas fa-trash delete-product"></i> Xóa
                       </button>
                     </div>
                   </div>
                 </div>
               </c:forEach>
-              <!-- Product 1 -->
-              <div class="product-card">
-                <div class="product-image">
-                  <i class="fas fa-dumbbell"></i>
-                </div>
-                <div class="product-body">
-                  <div class="product-name">Whey Protein 1kg</div>
-                  <div class="product-price">850.000đ</div>
-                  <div class="product-stock">
-                    <i class="fas fa-warehouse"></i> Tồn kho: 45
-                  </div>
-                  <div class="product-actions">
-                    <button class="btn btn-small" style="background: #3498db">
-                      <i class="fas fa-edit"></i> Sửa
-                    </button>
-                    <button class="btn btn-small" style="background: #e74c3c">
-                      <i class="fas fa-trash"></i> Xóa
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Product 2 -->
-              <div class="product-card">
-                <div
-                  class="product-image"
-                  style="
-                    background: linear-gradient(
-                      135deg,
-                      #11998e 0%,
-                      #38ef7d 100%
-                    );
-                  "
-                >
-                  <i class="fas fa-bottle-water"></i>
-                </div>
-                <div class="product-body">
-                  <div class="product-name">Shaker Bottle</div>
-                  <div class="product-price">120.000đ</div>
-                  <div class="product-stock">
-                    <i class="fas fa-warehouse"></i> Tồn kho: 120
-                  </div>
-                  <div class="product-actions">
-                    <button class="btn btn-small" style="background: #3498db">
-                      <i class="fas fa-edit"></i> Sửa
-                    </button>
-                    <button class="btn btn-small" style="background: #e74c3c">
-                      <i class="fas fa-trash"></i> Xóa
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Product 3 -->
-              <div class="product-card">
-                <div
-                  class="product-image"
-                  style="background: var(--gradient-accent)"
-                >
-                  <i class="fas fa-tshirt"></i>
-                </div>
-                <div class="product-body">
-                  <div class="product-name">Gym T-Shirt</div>
-                  <div class="product-price">250.000đ</div>
-                  <div class="product-stock" style="color: #e74c3c">
-                    <i class="fas fa-exclamation-triangle"></i> Tồn kho: 8 (Sắp
-                    hết)
-                  </div>
-                  <div class="product-actions">
-                    <button class="btn btn-small" style="background: #3498db">
-                      <i class="fas fa-edit"></i> Sửa
-                    </button>
-                    <button class="btn btn-small" style="background: #e74c3c">
-                      <i class="fas fa-trash"></i> Xóa
-                    </button>
-                  </div>
-                </div>
-              </div>
-
               <!-- Product 4 -->
-              <div class="product-card">
-                <div
-                  class="product-image"
-                  style="
-                    background: linear-gradient(
-                      135deg,
-                      #f39c12 0%,
-                      #d68910 100%
-                    );
-                  "
-                >
-                  <i class="fas fa-mitten"></i>
-                </div>
-                <div class="product-body">
-                  <div class="product-name">Gym Gloves</div>
-                  <div class="product-price">180.000đ</div>
-                  <div class="product-stock">
-                    <i class="fas fa-warehouse"></i> Tồn kho: 35
-                  </div>
-                  <div class="product-actions">
-                    <button class="btn btn-small" style="background: #3498db">
-                      <i class="fas fa-edit"></i> Sửa
-                    </button>
-                    <button class="btn btn-small" style="background: #e74c3c">
-                      <i class="fas fa-trash"></i> Xóa
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
           <!-- Orders Tab -->
@@ -929,7 +855,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
     <div class="modal" id="addProductModal">
       <div class="modal-content">
         <div class="modal-header">
-          <h3 class="modal-title">Thêm sản phẩm</h3>
+          <h3 class="modal-title" id="formTitle">Thêm sản phẩm</h3>
           <button class="modal-close" onclick="closeModal('addProductModal')">
             &times;
           </button>
@@ -992,17 +918,52 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
             <button
               type="button"
               class="btn btn-outline"
-              onclick="closeModal('addMemberModal')"
+              onclick="closeModal('addProductModal')"
             >
               Hủy
             </button>
-            <button type="submit" class="btn">Thêm sản phẩm</button>
+            <button type="submit" class="btn" name="submit">
+              Thêm sản phẩm
+            </button>
           </div>
         </form>
       </div>
     </div>
 
     <script>
+      const handleEditProduct = (
+        productId,
+        productName,
+        productType,
+        price,
+        stockQuantity
+      ) => {
+        console.log('Edit product with ID:', productId)
+        document.getElementById('formTitle').innerText = 'Sửa sản phẩm'
+        document.getElementById('addProductModal').classList.add('active')
+        const form = document.getElementById('productForm')
+        form.action =
+          `${pageContext.request.contextPath}` +
+          `/admin/sales-management?action=editProduct&productId=` +
+          productId
+        form.method = 'post'
+        form.querySelector('input[name="name"]').value = productName
+        form.querySelector('select[name="productType"]').value = productType
+        form.querySelector('input[name="price"]').value = price
+        form.querySelector('input[name="stockQuantity"]').value = stockQuantity
+        form.querySelector('input[name="action"]').value = 'editProduct'
+        form.querySelector('button[type="submit"]').innerText = 'Lưu thay đổi'
+      }
+
+      const handleDeleteProduct = (productId) => {
+        if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')) {
+          window.location.href =
+            `${pageContext.request.contextPath}` +
+            `/admin/sales-management?action=deleteProduct&productId=` +
+            productId
+        }
+      }
+
       document
         .getElementById('btn-addProduct')
         .addEventListener('click', function () {

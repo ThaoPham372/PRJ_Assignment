@@ -147,6 +147,7 @@ public class Product implements Serializable {
     }
 
     public Boolean getActive() {
+        if(active == null) active = true;
         return active;
     }
 
