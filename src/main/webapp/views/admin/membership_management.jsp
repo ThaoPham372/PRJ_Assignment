@@ -773,7 +773,6 @@
                 </div>
                 <form action="#" method="post" id="membershipForm">
                     <input type="hidden" name="action" value="addMembership" />
-                    <input type="hidden" name="action" value="addMembership" />
                     <div class="form-group">
                         <label class="form-label">Username</label>
                         <input type="text" class="form-input" name="username" required />

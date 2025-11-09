@@ -51,7 +51,7 @@ public class FormUtils {
 
         String passwordStr = request.getParameter("password");
         if (passwordStr != null && !passwordStr.isEmpty() && passwordService.isValidPassword(passwordStr)) {
-            String passwordHash = passwordService.hashPassword(request.getParameter("password"));
+            String passwordHash = passwordService.hashPassword(passwordStr);
             obj.setPassword(passwordHash);
         }
 

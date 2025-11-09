@@ -8,6 +8,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -51,11 +52,26 @@ public class Product implements Serializable {
 
     @Column(name = "is_active", nullable = false)
     private Boolean active;
+    
+    @PrePersist
+    public void onCreate() {
+        if(active == null) active = true;
+        if(unit == null) unit = "cái";
+    }
 
     public Product() {
         this.active = true;
         this.stockQuantity = 0;
     }
+
+    public Product(String productName, ProductType productType, BigDecimal price, Integer stockQuantity) {
+        this.productName = productName;
+        this.productType = productType;
+        this.price = price;
+        this.stockQuantity = stockQuantity;
+    }
+    
+    
 
     public Product(Integer id) {
         this.id = id;

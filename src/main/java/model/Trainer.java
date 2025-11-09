@@ -4,11 +4,13 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import java.io.Serializable;
 
 @Entity
 @Table(name = "trainer")
+@PrimaryKeyJoinColumn(name = "trainer_id")
 public class Trainer extends User implements Serializable {
 
     private static final long serialVersionUID = 1L;

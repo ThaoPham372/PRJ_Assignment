@@ -14,7 +14,7 @@ import java.util.Collection;
 
 @Entity
 @Table(name = "members")
-@PrimaryKeyJoinColumn(name = "member_id", referencedColumnName = "user_id")
+@PrimaryKeyJoinColumn(name = "member_id")
 public class Member extends User implements Serializable {
 
     private static final long serialVersionUID = 1L;
