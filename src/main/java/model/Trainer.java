@@ -5,13 +5,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import java.io.Serializable;
 
 @Entity
 @Table(name = "trainer")
-public class Trainer extends User implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class Trainer extends User {
 
     @Column(name = "specialization")
     private String specialization;

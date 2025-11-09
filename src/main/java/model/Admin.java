@@ -5,17 +5,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import java.io.Serializable;
 
 @Entity
 @Table(name = "admin")
-public class Admin extends User implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class Admin extends User {
 
     @Column(name = "note")
     private String note;
-    
+
     @PrePersist
     @Override
     protected void onCreate() {
