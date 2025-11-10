@@ -1,6 +1,9 @@
 package controller;
 
 import java.io.IOException;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -10,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.Member;
 import model.Membership;
+import model.NutritionGoal;
 import model.Package;
 import model.User;
 import service.MemberService;
@@ -18,10 +22,6 @@ import service.PackageService;
 import service.PasswordService;
 import service.nutrition.NutritionService;
 import service.nutrition.NutritionServiceImpl;
-import model.NutritionGoal;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * MemberServlet - Controller xử lý các chức năng của Member
@@ -33,18 +33,6 @@ import java.util.stream.Collectors;
  * 3. Body Goals - Quản lý chỉ số cơ thể và mục tiêu
  */
 @WebServlet(name = "MemberServlet", urlPatterns = {
-<<<<<<< HEAD
-    "/member/dashboard",
-    "/member/profile",
-    "/member/profile-edit",
-    "/member/body-goals",
-    "/member/body-metrics-edit",
-    "/member/goals-edit",
-    "/member/membership",
-    "/member/schedule",
-    "/member/support",
-    "/member/change-password"
-=======
         "/member/dashboard",
         "/member/profile",
         "/member/profile-edit",
@@ -53,10 +41,8 @@ import java.util.stream.Collectors;
         "/member/goals-edit",
         "/member/membership",
         "/member/schedule",
-        "/member/nutrition",
-        "/member/nutrition-history",
-        "/member/support"
->>>>>>> dev/front-end-thao
+        "/member/support",
+        "/member/change-password"
 })
 public class MemberServlet extends HttpServlet {
 
@@ -133,6 +119,7 @@ public class MemberServlet extends HttpServlet {
 
                 // Các trang chưa implement - tạm thời forward đơn giản
                 case "/member/schedule":
+
                 case "/member/support":
                     request.getRequestDispatcher("/views" + path + ".jsp").forward(request, response);
                     break;
@@ -186,7 +173,7 @@ public class MemberServlet extends HttpServlet {
                 case "/member/goals-edit":
                     updateGoals(request, response, currentMember);
                     break;
-                    
+
                 case "/member/body-goals":
                     updateBodyGoals(request, response, currentMember);
                     break;
@@ -280,21 +267,21 @@ public class MemberServlet extends HttpServlet {
         if (member.getBmi() != null) {
             request.setAttribute("bmiCategory", calculateBMICategory(member.getBmi()));
         }
-        
+
         // Load nutrition goal if exists
         java.util.Optional<NutritionGoal> nutritionGoalOpt = nutritionService.getNutritionGoal(member.getId());
         if (nutritionGoalOpt.isPresent()) {
             NutritionGoal goal = nutritionGoalOpt.get();
             request.setAttribute("nutritionGoal", goal);
-            
+
             // Map activity factor to activity level string for JSP
             String activityLevel = mapActivityFactorToLevel(goal.getActivityFactor());
             request.setAttribute("currentActivityLevel", activityLevel);
         }
-        
+
         request.getRequestDispatcher("/views/member/body-goals.jsp").forward(request, response);
     }
-    
+
     /**
      * Map activity factor (BigDecimal) to activity level string
      */
@@ -302,7 +289,7 @@ public class MemberServlet extends HttpServlet {
         if (activityFactor == null) {
             return "";
         }
-        
+
         double value = activityFactor.doubleValue();
         if (value == 1.2) {
             return "sedentary";
@@ -540,7 +527,7 @@ public class MemberServlet extends HttpServlet {
             request.getRequestDispatcher("/views/member/goals-edit.jsp").forward(request, response);
         }
     }
-    
+
     /**
      * Cập nhật Body Goals - Chỉ số cơ thể và mục tiêu dinh dưỡng
      */
@@ -550,41 +537,41 @@ public class MemberServlet extends HttpServlet {
             // Get weight and height
             String weightStr = getParameter(request, "weight");
             String heightStr = getParameter(request, "height");
-            
+
             if (weightStr != null) {
                 Float weight = parseFloat(weightStr, "Cân nặng", 20f, 300f);
                 member.setWeight(weight);
             }
-            
+
             if (heightStr != null) {
                 Float height = parseFloat(heightStr, "Chiều cao", 100f, 250f);
                 member.setHeight(height);
             }
-            
+
             // Calculate BMI
             calculateBMI(member);
-            
+
             // Get fitness goal and activity level
             String fitnessGoal = getParameter(request, "fitnessGoal");
             String activityLevel = getParameter(request, "activityLevel");
-            
+
             if (fitnessGoal == null || fitnessGoal.trim().isEmpty()) {
                 throw new IllegalArgumentException("Vui lòng chọn mục tiêu tập luyện");
             }
-            
+
             if (activityLevel == null || activityLevel.trim().isEmpty()) {
                 throw new IllegalArgumentException("Vui lòng chọn mức độ hoạt động");
             }
-            
+
             // Update member goal
             member.setGoal(fitnessGoal);
-            
+
             // Update member in database
             int result = memberService.update(member);
             if (result <= 0) {
                 throw new Exception("Không thể cập nhật thông tin cơ thể.");
             }
-            
+
             // Calculate and save nutrition goal
             if (member.getWeight() != null && member.getHeight() != null) {
                 // Calculate age from DOB
@@ -599,33 +586,32 @@ public class MemberServlet extends HttpServlet {
                         age--;
                     }
                 }
-                
+
                 // Map fitness goal to nutrition goal type
                 String goalType = mapFitnessGoalToNutritionGoal(fitnessGoal);
-                
+
                 // Calculate and save nutrition goal
                 try {
                     nutritionService.calculateAndSaveNutritionGoal(
-                        member.getId(),
-                        member.getWeight(),
-                        member.getHeight(),
-                        age,
-                        member.getGender(),
-                        goalType,
-                        activityLevel
-                    );
+                            member.getId(),
+                            member.getWeight(),
+                            member.getHeight(),
+                            age,
+                            member.getGender(),
+                            goalType,
+                            activityLevel);
                 } catch (Exception e) {
                     System.err.println("[MemberServlet] Error calculating nutrition goal: " + e.getMessage());
                     e.printStackTrace();
                     // Continue even if nutrition goal calculation fails
                 }
             }
-            
+
             // Update session with updated member (already updated in database)
             HttpSession session = request.getSession();
             session.setAttribute("user", member);
             session.setAttribute("success", "Cập nhật thông tin và mục tiêu dinh dưỡng thành công!");
-            
+
             // Redirect - getCurrentMember will reload from DB in doGet
             // Ensure response is not committed before redirect
             if (!response.isCommitted()) {
@@ -634,14 +620,15 @@ public class MemberServlet extends HttpServlet {
                 System.err.println("[MemberServlet] WARNING: Response already committed! Cannot redirect.");
             }
             return; // Important: return after redirect to prevent further execution
-            
+
         } catch (IllegalArgumentException e) {
             HttpSession session = request.getSession();
             session.setAttribute("error", e.getMessage());
             if (!response.isCommitted()) {
                 response.sendRedirect(request.getContextPath() + "/member/body-goals");
             } else {
-                System.err.println("[MemberServlet] WARNING: Response already committed! Cannot redirect after validation error.");
+                System.err.println(
+                        "[MemberServlet] WARNING: Response already committed! Cannot redirect after validation error.");
             }
         } catch (Exception e) {
             System.err.println("[MemberServlet] Error updating body goals: " + e.getMessage());
@@ -655,7 +642,7 @@ public class MemberServlet extends HttpServlet {
             }
         }
     }
-    
+
     /**
      * Map fitness goal to nutrition goal type
      */
@@ -663,7 +650,7 @@ public class MemberServlet extends HttpServlet {
         if (fitnessGoal == null) {
             return "giu_dang";
         }
-        
+
         switch (fitnessGoal.toLowerCase()) {
             case "lose_weight":
                 return "giam_can";
@@ -688,26 +675,27 @@ public class MemberServlet extends HttpServlet {
         try {
             // Lấy membership hiện tại của member (ACTIVE)
             Membership currentMembership = getCurrentActiveMembership(member);
-            
+
             // Lấy tất cả packages có sẵn (chỉ active packages)
             List<Package> allPackages = packageService.getAll();
             List<Package> activePackages = allPackages.stream()
-                .filter(pkg -> pkg.getIsActive() != null && pkg.getIsActive())
-                .collect(Collectors.toList());
-            
+                    .filter(pkg -> pkg.getIsActive() != null && pkg.getIsActive())
+                    .collect(Collectors.toList());
+
             // Set attributes
             request.setAttribute("currentMembership", currentMembership);
             request.setAttribute("packages", activePackages);
-            
+
             // Nếu có membership hiện tại, set thêm packageId để highlight
             if (currentMembership != null && currentMembership.getPackageO() != null) {
                 request.setAttribute("currentPackageId", currentMembership.getPackageO().getId());
             }
-            
+
             System.out.println("[MemberServlet] Loading membership page for member: " + member.getId());
-            System.out.println("[MemberServlet] Current membership: " + (currentMembership != null ? currentMembership.getId() : "None"));
+            System.out.println("[MemberServlet] Current membership: "
+                    + (currentMembership != null ? currentMembership.getId() : "None"));
             System.out.println("[MemberServlet] Available packages: " + activePackages.size());
-            
+
             request.getRequestDispatcher("/views/member/membership.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -722,14 +710,14 @@ public class MemberServlet extends HttpServlet {
         try {
             List<Membership> allMemberships = membershipService.getAll();
             Date now = new Date();
-            
+
             // Tìm membership ACTIVE và chưa hết hạn
             for (Membership m : allMemberships) {
-                if (m.getMember() != null && 
-                    m.getMember().getId().equals(member.getId()) &&
-                    "ACTIVE".equalsIgnoreCase(m.getStatus()) &&
-                    m.getEndDate() != null &&
-                    m.getEndDate().after(now)) {
+                if (m.getMember() != null &&
+                        m.getMember().getId().equals(member.getId()) &&
+                        "ACTIVE".equalsIgnoreCase(m.getStatus()) &&
+                        m.getEndDate() != null &&
+                        m.getEndDate().after(now)) {
                     return m;
                 }
             }
@@ -772,13 +760,13 @@ public class MemberServlet extends HttpServlet {
         System.out.println("[MemberServlet] Method: " + request.getMethod());
         System.out.println("[MemberServlet] Path: " + request.getServletPath());
         System.out.println("[MemberServlet] Member ID: " + (member != null ? member.getId() : "NULL"));
-        
+
         try {
             // Lấy email của member
             String email = member.getEmail();
             HttpSession session = request.getSession();
             System.out.println("[MemberServlet] Member email: " + email);
-            
+
             if (email == null || email.trim().isEmpty()) {
                 session.setAttribute("error", "Không tìm thấy email. Vui lòng liên hệ quản trị viên.");
                 response.sendRedirect(request.getContextPath() + "/member/profile");
@@ -791,7 +779,8 @@ public class MemberServlet extends HttpServlet {
             // Kiểm tra rate limiting (30 giây)
             boolean hasPending = passwordService.hasPendingResetRequest(email);
             if (hasPending) {
-                session.setAttribute("error", "Bạn đã yêu cầu đổi mật khẩu gần đây. Vui lòng đợi 30 giây trước khi gửi lại.");
+                session.setAttribute("error",
+                        "Bạn đã yêu cầu đổi mật khẩu gần đây. Vui lòng đợi 30 giây trước khi gửi lại.");
                 response.sendRedirect(request.getContextPath() + "/member/profile");
                 return;
             }
@@ -799,7 +788,7 @@ public class MemberServlet extends HttpServlet {
             // Tạo password reset token và gửi email
             System.out.println("[MemberServlet] Calling passwordService.requestPasswordReset()...");
             String verificationCode = passwordService.requestPasswordReset(email);
-            
+
             if (verificationCode == null) {
                 System.err.println("[MemberServlet] ❌ Failed to generate verification code");
                 session.setAttribute("error", "Có lỗi xảy ra khi gửi email. Vui lòng thử lại sau.");
@@ -808,15 +797,15 @@ public class MemberServlet extends HttpServlet {
             }
 
             System.out.println("[MemberServlet] ✅ Verification code generated: " + verificationCode);
-            
+
             // Lưu email vào session và chuyển hướng sang trang reset password
             session.setAttribute("resetEmail", email);
             session.setAttribute("successMessage", "Mã xác nhận đã được gửi đến email: " + email);
-            
+
             String redirectUrl = request.getContextPath() + "/auth/reset-password";
             System.out.println("[MemberServlet] Redirecting to: " + redirectUrl);
             response.sendRedirect(redirectUrl);
-            
+
         } catch (Exception e) {
             System.err.println("[MemberServlet] Error handling change password: " + e.getMessage());
             e.printStackTrace();
