@@ -441,9 +441,10 @@
       Đăng ký ngay để được tư vấn miễn phí về sản phẩm phù hợp và nhận ưu đãi
       đặc biệt.
     </p>
+  
     <a
       href="javascript:void(0)"
-      onclick="alert('Chức năng tư vấn sẽ được triển khai sớm!')"
+      onclick="window.location.href='${pageContext.request.contextPath}/advisory'"
       class="cta-btn"
       >TƯ VẤN NGAY</a
     >
