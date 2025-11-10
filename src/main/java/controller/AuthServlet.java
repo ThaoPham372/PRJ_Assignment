@@ -130,26 +130,15 @@ public class AuthServlet extends HttpServlet {
             if (role != null && !role.trim().isEmpty()) {
                 roles.add(role);
             }
-            
-            System.out.println("[AuthServlet] Login successful!");
-            System.out.println("[AuthServlet] User ID: " + (user != null ? user.getId() : "NULL"));
-            System.out.println("[AuthServlet] Username: " + (user != null ? user.getUsername() : "NULL"));
-            System.out.println("[AuthServlet] Roles: " + (roles != null ? roles.toString() : "NULL"));
-            
+
             HttpSession session = request.getSession(true);
-            System.out.println("[AuthServlet] Session created: " + session.getId());
-            System.out.println("[AuthServlet] Session isNew: " + session.isNew());
-            
+                      
             session.setAttribute("user", user);
             session.setAttribute("userRoles", roles);  // Changed from String to List
             session.setAttribute("isLoggedIn", true);
             session.setAttribute("userId", user.getId());
             
-            System.out.println("[AuthServlet] Session attributes set:");
-            System.out.println("[AuthServlet]   - user: " + (session.getAttribute("user") != null ? "SET" : "NULL"));
-            System.out.println("[AuthServlet]   - userRoles: " + (session.getAttribute("userRoles") != null ? session.getAttribute("userRoles").toString() : "NULL"));
-            System.out.println("[AuthServlet]   - isLoggedIn: " + session.getAttribute("isLoggedIn"));
-
+     
             if ("on".equals(rememberMe)) {
                 session.setMaxInactiveInterval(7 * 24 * 60 * 60);
                 System.out.println("[AuthServlet] Remember me enabled - session timeout: 7 days");
@@ -158,13 +147,11 @@ public class AuthServlet extends HttpServlet {
                 System.out.println("[AuthServlet] Session timeout: 30 minutes");
             }
 
-            // Redirect to /home - RoleBasedRedirectFilter will handle role-based redirect
-            System.out.println("[AuthServlet] Login successful, redirecting to /home");
+        
             response.sendRedirect(request.getContextPath() + "/home");
 
         } else {
-            System.out.println("[AuthServlet] Login failed!");
-            System.out.println("[AuthServlet] Errors: " + (result.getErrors() != null ? result.getErrors().toString() : "NULL"));
+           
             request.setAttribute("loginError", true);
             request.setAttribute("errors", result.getErrors());
             request.setAttribute("username", username);
@@ -221,9 +208,7 @@ public class AuthServlet extends HttpServlet {
                 username = user.getUsername();
             }
             
-            System.out.println("[AuthServlet] Logging out user: " + username);
-            System.out.println("[AuthServlet] Session ID: " + session.getId());
-            
+  
             // Invalidate session - xóa tất cả attributes và dừng session
             session.invalidate();
             System.out.println("[AuthServlet] Session invalidated successfully");
@@ -231,8 +216,7 @@ public class AuthServlet extends HttpServlet {
             System.out.println("[AuthServlet] No active session found");
         }
         
-        // Redirect về trang home
-        System.out.println("[AuthServlet] Redirecting to home page");
+  
         response.sendRedirect(request.getContextPath() + "/home");
     }
   

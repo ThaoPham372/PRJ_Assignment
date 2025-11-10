@@ -6,12 +6,10 @@ import model.Food;
 import model.UserMeal;
 import jakarta.persistence.TypedQuery;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -142,6 +140,7 @@ public class UserMealDao extends GenericDAO<UserMeal> {
     /**
      * Helper method to query meals with food names
      * Reusable method following DRY principle
+     * Ensures generated columns (total_*) are loaded and calculated
      */
     private List<UserMeal> queryMealsWithFoodNames(Long userId, LocalDateTime startUTC, LocalDateTime endUTC) {
         TypedQuery<UserMeal> query = em.createQuery(
@@ -156,8 +155,24 @@ public class UserMealDao extends GenericDAO<UserMeal> {
         
         List<UserMeal> meals = query.getResultList();
         
-        // Fetch food names separately
+        // Process each meal: fetch food names and ensure total_* values are calculated
         for (UserMeal meal : meals) {
+            // If total_* are null, calculate from snap_* and servings
+            // This handles cases where generated columns are not loaded by JPA
+            if (meal.getTotalCalories() == null && meal.getSnapCalories() != null && meal.getServings() != null) {
+                meal.setTotalCalories(meal.getSnapCalories().multiply(meal.getServings()));
+            }
+            if (meal.getTotalProteinG() == null && meal.getSnapProteinG() != null && meal.getServings() != null) {
+                meal.setTotalProteinG(meal.getSnapProteinG().multiply(meal.getServings()));
+            }
+            if (meal.getTotalCarbsG() == null && meal.getSnapCarbsG() != null && meal.getServings() != null) {
+                meal.setTotalCarbsG(meal.getSnapCarbsG().multiply(meal.getServings()));
+            }
+            if (meal.getTotalFatG() == null && meal.getSnapFatG() != null && meal.getServings() != null) {
+                meal.setTotalFatG(meal.getSnapFatG().multiply(meal.getServings()));
+            }
+            
+            // Fetch food names separately
             if (meal.getFoodId() != null) {
                 Food food = em.find(Food.class, meal.getFoodId());
                 if (food != null) {
@@ -171,13 +186,15 @@ public class UserMealDao extends GenericDAO<UserMeal> {
 
     /**
      * Sum total calories and protein for a specific day
-     * Uses native SQL query for performance (aggregation)
+     * Calculates from meal list to ensure accuracy
+     * This method is more reliable than native query for generated columns
      * @param userId user ID
      * @param localDateVN date in Vietnam timezone
      * @return DailyIntakeDTO with totals
      */
     public DailyIntakeDTO sumOfDay(Long userId, LocalDate localDateVN) {
         if (userId == null || localDateVN == null) {
+            System.out.println("[UserMealDao] sumOfDay - Invalid parameters: userId=" + userId + ", date=" + localDateVN);
             return new DailyIntakeDTO();
         }
         
@@ -187,41 +204,92 @@ public class UserMealDao extends GenericDAO<UserMeal> {
             LocalDateTime startUTC = utcRange[0];
             LocalDateTime endUTC = utcRange[1];
             
-            // Native SQL query for aggregation
-            String sql = "SELECT " +
-                        "SUM(total_calories) as total_calories, " +
-                        "SUM(total_protein_g) as total_protein_g, " +
-                        "SUM(total_carbs_g) as total_carbs_g, " +
-                        "SUM(total_fat_g) as total_fat_g " +
-                        "FROM user_meals " +
-                        "WHERE user_id = ? " +
-                        "AND eaten_at >= ? " +
-                        "AND eaten_at < ?";
+            System.out.println("[UserMealDao] sumOfDay - Querying meals for userId=" + userId + 
+                             ", dateVN=" + localDateVN + ", UTC range=[" + startUTC + " to " + endUTC + "]");
             
-            jakarta.persistence.Query query = em.createNativeQuery(sql);
-            query.setParameter(1, userId);
-            query.setParameter(2, Timestamp.valueOf(startUTC));
-            query.setParameter(3, Timestamp.valueOf(endUTC));
+            // Always calculate from meal list for reliability
+            // This ensures we get accurate totals even if generated columns aren't loaded
+            List<UserMeal> meals = queryMealsWithFoodNames(userId, startUTC, endUTC);
             
-            try {
-                Object[] result = (Object[]) query.getSingleResult();
-                
-                if (result != null && result.length >= 4) {
-                    BigDecimal totalCalories = result[0] != null ? (BigDecimal) result[0] : BigDecimal.ZERO;
-                    BigDecimal totalProtein = result[1] != null ? (BigDecimal) result[1] : BigDecimal.ZERO;
-                    BigDecimal totalCarbs = result[2] != null ? (BigDecimal) result[2] : BigDecimal.ZERO;
-                    BigDecimal totalFat = result[3] != null ? (BigDecimal) result[3] : BigDecimal.ZERO;
-                    
-                    return new DailyIntakeDTO(totalCalories, totalProtein, totalCarbs, totalFat);
-                }
-            } catch (jakarta.persistence.NoResultException e) {
-                // No meals found for this day
-            }
+            System.out.println("[UserMealDao] sumOfDay - Found " + meals.size() + " meals");
+            
+            DailyIntakeDTO result = calculateTotalsFromMeals(meals);
+            
+            System.out.println("[UserMealDao] sumOfDay - Final result: calories=" + result.getCaloriesKcal() + 
+                             ", protein=" + result.getProteinG() + ", carbs=" + result.getCarbsG() + 
+                             ", fat=" + result.getFatG());
+            
+            return result;
+            
         } catch (Exception e) {
             System.err.println("[UserMealDao] Error summing day totals: " + e.getMessage());
+            e.printStackTrace();
         }
         
         return new DailyIntakeDTO(); // Return zero totals
+    }
+    
+    /**
+     * Helper method to calculate totals from meal list
+     * Always calculates from snap_* * servings for accuracy
+     * This ensures correct calculation even if generated columns aren't loaded
+     */
+    private DailyIntakeDTO calculateTotalsFromMeals(List<UserMeal> meals) {
+        BigDecimal totalCalories = BigDecimal.ZERO;
+        BigDecimal totalProtein = BigDecimal.ZERO;
+        BigDecimal totalCarbs = BigDecimal.ZERO;
+        BigDecimal totalFat = BigDecimal.ZERO;
+        
+        System.out.println("[UserMealDao] calculateTotalsFromMeals - Processing " + meals.size() + " meals");
+        
+        for (UserMeal meal : meals) {
+            // Always calculate from snap_* * servings for accuracy
+            // This is the source of truth, regardless of generated columns
+            BigDecimal mealCalories = BigDecimal.ZERO;
+            BigDecimal mealProtein = BigDecimal.ZERO;
+            BigDecimal mealCarbs = BigDecimal.ZERO;
+            BigDecimal mealFat = BigDecimal.ZERO;
+            
+            // Calculate from snap values and servings
+            if (meal.getSnapCalories() != null && meal.getServings() != null) {
+                mealCalories = meal.getSnapCalories().multiply(meal.getServings());
+            } else if (meal.getTotalCalories() != null) {
+                // Fallback to total if snap is not available
+                mealCalories = meal.getTotalCalories();
+            }
+            
+            if (meal.getSnapProteinG() != null && meal.getServings() != null) {
+                mealProtein = meal.getSnapProteinG().multiply(meal.getServings());
+            } else if (meal.getTotalProteinG() != null) {
+                mealProtein = meal.getTotalProteinG();
+            }
+            
+            if (meal.getSnapCarbsG() != null && meal.getServings() != null) {
+                mealCarbs = meal.getSnapCarbsG().multiply(meal.getServings());
+            } else if (meal.getTotalCarbsG() != null) {
+                mealCarbs = meal.getTotalCarbsG();
+            }
+            
+            if (meal.getSnapFatG() != null && meal.getServings() != null) {
+                mealFat = meal.getSnapFatG().multiply(meal.getServings());
+            } else if (meal.getTotalFatG() != null) {
+                mealFat = meal.getTotalFatG();
+            }
+            
+            // Add to totals
+            totalCalories = totalCalories.add(mealCalories);
+            totalProtein = totalProtein.add(mealProtein);
+            totalCarbs = totalCarbs.add(mealCarbs);
+            totalFat = totalFat.add(mealFat);
+            
+            System.out.println("[UserMealDao] Meal " + meal.getId() + ": snapCal=" + meal.getSnapCalories() + 
+                             ", servings=" + meal.getServings() + ", calculated=" + mealCalories);
+        }
+        
+        System.out.println("[UserMealDao] calculateTotalsFromMeals - Final totals: calories=" + totalCalories + 
+                         ", protein=" + totalProtein + ", carbs=" + totalCarbs + ", fat=" + totalFat);
+        
+        return new DailyIntakeDTO(totalCalories, totalProtein, totalCarbs, totalFat);
     }
 
     /**

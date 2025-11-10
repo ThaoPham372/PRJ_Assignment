@@ -169,6 +169,10 @@ public class NutritionServlet extends HttpServlet {
             
             // Load today's totals
             model.DailyIntakeDTO totals = nutritionService.todayTotals(userId);
+            // Ensure totals is never null
+            if (totals == null) {
+                totals = new model.DailyIntakeDTO();
+            }
             request.setAttribute("totals", totals);
             
             // Load nutrition goals for progress calculation
@@ -181,20 +185,30 @@ public class NutritionServlet extends HttpServlet {
                 
                 if (targetCalories != null && targetCalories.compareTo(BigDecimal.ZERO) > 0) {
                     request.setAttribute("targetCalories", targetCalories);
-                    // Calculate progress percentage
-                    BigDecimal caloriesPercent = totals.getCaloriesKcal()
-                        .divide(targetCalories, 2, RoundingMode.HALF_UP)
-                        .multiply(new BigDecimal("100"));
-                    request.setAttribute("caloriesPercent", caloriesPercent);
+                    // Calculate progress percentage - safe null handling
+                    BigDecimal currentCalories = totals.getCaloriesKcal();
+                    if (currentCalories != null) {
+                        BigDecimal caloriesPercent = currentCalories
+                            .divide(targetCalories, 2, RoundingMode.HALF_UP)
+                            .multiply(new BigDecimal("100"));
+                        request.setAttribute("caloriesPercent", caloriesPercent);
+                    } else {
+                        request.setAttribute("caloriesPercent", BigDecimal.ZERO);
+                    }
                 }
                 
                 if (targetProtein != null && targetProtein.compareTo(BigDecimal.ZERO) > 0) {
                     request.setAttribute("targetProtein", targetProtein);
-                    // Calculate progress percentage
-                    BigDecimal proteinPercent = totals.getProteinG()
-                        .divide(targetProtein, 2, RoundingMode.HALF_UP)
-                        .multiply(new BigDecimal("100"));
-                    request.setAttribute("proteinPercent", proteinPercent);
+                    // Calculate progress percentage - safe null handling
+                    BigDecimal currentProtein = totals.getProteinG();
+                    if (currentProtein != null) {
+                        BigDecimal proteinPercent = currentProtein
+                            .divide(targetProtein, 2, RoundingMode.HALF_UP)
+                            .multiply(new BigDecimal("100"));
+                        request.setAttribute("proteinPercent", proteinPercent);
+                    } else {
+                        request.setAttribute("proteinPercent", BigDecimal.ZERO);
+                    }
                 }
             }
             
