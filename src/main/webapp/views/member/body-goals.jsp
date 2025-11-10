@@ -328,29 +328,144 @@
     }
 
     .bmi-display {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
         border-radius: 15px;
-        padding: 25px;
+        padding: 30px;
         margin-top: 20px;
         text-align: center;
         border: 2px solid var(--accent);
+        box-shadow: 0 4px 15px rgba(236, 139, 94, 0.15);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .bmi-display::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-accent);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.5s ease;
+    }
+
+    .bmi-display.has-value::before {
+        transform: scaleX(1);
+    }
+
+    .bmi-display:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(236, 139, 94, 0.2);
+    }
+
+    .bmi-label {
+        color: var(--text-light);
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .bmi-label i {
+        color: var(--accent);
+        font-size: 1.1rem;
     }
 
     .bmi-value {
-        font-size: 2.5rem;
+        font-size: 3rem;
         font-weight: 900;
         color: var(--accent);
-        margin-bottom: 10px;
+        margin-bottom: 15px;
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        line-height: 1;
+    }
+
+    .bmi-value.empty {
+        font-size: 2rem;
+        color: var(--text-light);
+        font-weight: 500;
+        font-style: italic;
     }
 
     .bmi-category {
         font-size: 1.1rem;
         font-weight: 600;
         color: var(--text);
-        padding: 8px 16px;
-        border-radius: 20px;
+        padding: 10px 20px;
+        border-radius: 25px;
         display: inline-block;
         background: rgba(236, 139, 94, 0.1);
+        transition: all 0.3s ease;
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .bmi-category.empty {
+        background: rgba(108, 117, 125, 0.1);
+        color: var(--text-light);
+        font-style: italic;
+        font-weight: 500;
+    }
+
+    .bmi-category.underweight {
+        background: rgba(23, 162, 184, 0.15);
+        color: #17a2b8;
+        border: 2px solid rgba(23, 162, 184, 0.3);
+    }
+
+    .bmi-category.normal {
+        background: rgba(40, 167, 69, 0.15);
+        color: #28a745;
+        border: 2px solid rgba(40, 167, 69, 0.3);
+    }
+
+    .bmi-category.overweight {
+        background: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
+        border: 2px solid rgba(255, 193, 7, 0.3);
+    }
+
+    .bmi-category.obese {
+        background: rgba(220, 53, 69, 0.15);
+        color: #dc3545;
+        border: 2px solid rgba(220, 53, 69, 0.3);
+    }
+
+    .bmi-info {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        font-size: 0.85rem;
+        color: var(--text-light);
+        line-height: 1.6;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.6;
+        }
+    }
+
+    .bmi-value.empty {
+        animation: pulse 2s ease-in-out infinite;
     }
 
     @media (max-width: 768px) {
@@ -443,6 +558,7 @@
                                    max="300" 
                                    step="0.1"
                                    placeholder="Nhập cân nặng (kg)"
+                                   oninput="calculateBMI(); updateCaloriesPreview()" 
                                    onchange="calculateBMI(); updateCaloriesPreview()">
                         </div>
                     </div>
@@ -460,23 +576,41 @@
                                    max="250" 
                                    step="0.1"
                                    placeholder="Nhập chiều cao (cm)"
+                                   oninput="calculateBMI(); updateCaloriesPreview()" 
                                    onchange="calculateBMI(); updateCaloriesPreview()">
                         </div>
                     </div>
                 </div>
 
-                <!-- BMI Display -->
-                <div class="bmi-display" id="bmiDisplay" style="display: ${member.bmi != null ? 'block' : 'none'};">
-                    <div class="bmi-value" id="bmiValue">
-                        <c:if test="${member.bmi != null}">
-                            <fmt:formatNumber value="${member.bmi}" maxFractionDigits="1" />
-                        </c:if>
+                <!-- BMI Display - Always Visible -->
+                <div class="bmi-display" id="bmiDisplay">
+                    <div class="bmi-label">
+                        <i class="fas fa-heartbeat"></i>
+                        <span>Chỉ số BMI</span>
                     </div>
-                    <div style="color: var(--text-light); margin-bottom: 10px; font-weight: 600;">Chỉ số BMI</div>
-                    <div class="bmi-category" id="bmiCategory">
-                        <c:if test="${not empty bmiCategory}">
-                            ${bmiCategory}
-                        </c:if>
+                    <div class="bmi-value ${member.bmi == null ? 'empty' : ''}" id="bmiValue">
+                        <c:choose>
+                            <c:when test="${member.bmi != null}">
+                                <fmt:formatNumber value="${member.bmi}" maxFractionDigits="1" />
+                            </c:when>
+                            <c:otherwise>
+                                <span>--</span>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                    <div class="bmi-category ${empty bmiCategory ? 'empty' : ''}" id="bmiCategory">
+                        <c:choose>
+                            <c:when test="${not empty bmiCategory}">
+                                ${bmiCategory}
+                            </c:when>
+                            <c:otherwise>
+                                <span>Nhập chiều cao và cân nặng để tính BMI</span>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                    <div class="bmi-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span>BMI = Cân nặng (kg) / [Chiều cao (m)]²</span>
                     </div>
                 </div>
             </div>
@@ -657,23 +791,54 @@
         if (height > 0 && weight > 0) {
             const heightM = height / 100; // Convert cm to meters
             const bmi = weight / (heightM * heightM);
-            bmiValue.textContent = bmi.toFixed(1);
             
+            // Update BMI value
+            bmiValue.textContent = bmi.toFixed(1);
+            bmiValue.classList.remove('empty');
+            
+            // Determine category and styling
             let category = '';
+            let categoryClass = '';
             if (bmi < 18.5) {
                 category = 'Thiếu cân';
+                categoryClass = 'underweight';
             } else if (bmi < 25) {
                 category = 'Bình thường';
+                categoryClass = 'normal';
             } else if (bmi < 30) {
                 category = 'Thừa cân';
+                categoryClass = 'overweight';
             } else {
                 category = 'Béo phì';
+                categoryClass = 'obese';
             }
             
+            // Update category
             bmiCategory.textContent = category;
-            bmiDisplay.style.display = 'block';
+            bmiCategory.className = 'bmi-category ' + categoryClass;
+            bmiCategory.classList.remove('empty');
+            
+            // Add has-value class for animation
+            bmiDisplay.classList.add('has-value');
+            
+            // Update value color based on category
+            const categoryColors = {
+                'underweight': '#17a2b8',
+                'normal': '#28a745',
+                'overweight': '#ffc107',
+                'obese': '#dc3545'
+            };
+            bmiValue.style.color = categoryColors[categoryClass] || '#ec8b5e';
         } else {
-            bmiDisplay.style.display = 'none';
+            // Reset to empty state
+            bmiValue.innerHTML = '<span>--</span>';
+            bmiValue.classList.add('empty');
+            bmiValue.style.color = '';
+            
+            bmiCategory.innerHTML = '<span>Nhập chiều cao và cân nặng để tính BMI</span>';
+            bmiCategory.className = 'bmi-category empty';
+            
+            bmiDisplay.classList.remove('has-value');
         }
     }
 
@@ -763,7 +928,35 @@
 
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
-        // Calculate BMI on load
+        // Set initial BMI display state if values exist
+        const height = parseFloat(document.getElementById('height').value);
+        const weight = parseFloat(document.getElementById('weight').value);
+        const bmiDisplay = document.getElementById('bmiDisplay');
+        const bmiValue = document.getElementById('bmiValue');
+        const bmiCategory = document.getElementById('bmiCategory');
+        
+        // If BMI exists from server, add has-value class
+        if (bmiValue && !bmiValue.classList.contains('empty')) {
+            bmiDisplay.classList.add('has-value');
+            
+            // Set category color based on existing category
+            const categoryText = bmiCategory.textContent.trim();
+            if (categoryText.includes('Thiếu cân')) {
+                bmiValue.style.color = '#17a2b8';
+                bmiCategory.className = 'bmi-category underweight';
+            } else if (categoryText.includes('Bình thường')) {
+                bmiValue.style.color = '#28a745';
+                bmiCategory.className = 'bmi-category normal';
+            } else if (categoryText.includes('Thừa cân')) {
+                bmiValue.style.color = '#ffc107';
+                bmiCategory.className = 'bmi-category overweight';
+            } else if (categoryText.includes('Béo phì')) {
+                bmiValue.style.color = '#dc3545';
+                bmiCategory.className = 'bmi-category obese';
+            }
+        }
+        
+        // Calculate BMI on load (will update if values exist)
         calculateBMI();
         
         // Add event listeners for goal radio buttons to update selected state
