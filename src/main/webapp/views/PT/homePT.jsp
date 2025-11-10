@@ -702,7 +702,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
             <div class="pt-menu-footer">
               <button
                 class="btn-logout"
-                onclick="window.location.href='${pageContext.request.contextPath}/views/login.jsp'"
+                onclick="window.location.href='${pageContext.request.contextPath}/logout"
               >
                 <i class="fas fa-sign-out-alt"></i>
                 Đăng xuất
