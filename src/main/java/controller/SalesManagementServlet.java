@@ -11,7 +11,9 @@ import java.util.List;
 import model.Product;
 import model.ProductType;
 import model.shop.OrderItem;
+import model.shop.OrderStatus;
 import service.OrderItemService;
+import service.OrderService;
 import service.ProductService;
 
 /*
@@ -23,7 +25,7 @@ public class SalesManagementServlet extends HttpServlet {
     ProductService productService = new ProductService();
     OrderItemService orderItemService = new OrderItemService();
 
-    //TODO: Tách products và orderItems
+    // TODO: Tách products và orderItems
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String action = req.getParameter("action");
@@ -32,31 +34,33 @@ public class SalesManagementServlet extends HttpServlet {
 
         List<Product> products = getProducts();
         List<OrderItem> orderItems = orderItemService.getAll();
-        
+
         System.out.println("\nORDER ITEMS");
-        for(OrderItem o: orderItems) {
-            System.out.println("> " + 
-                    o.getOrderItemId() + ", " + 
-                    o.getOrder().getUser().getName()+ ", " +
-                    o.getProductName()+ ", " + 
+        for (OrderItem o : orderItems) {
+            System.out.println("> " +
+                    o.getOrderItemId() + ", " +
+                    o.getOrder().getUser().getName() + ", " +
+                    o.getProductName() + ", " +
                     o.getQuantity() + ", " +
-                    o.getSubtotal()+ ", " + 
+                    o.getSubtotal() + ", " +
                     o.getOrder().getCreatedAt() + ", " +
                     o.getOrder().getOrderStatus());
         }
         System.out.println("\n--------------END\n");
-        
+
         loadDashboardMetrics(req, products);
 
         switch (action) {
             case "deleteProduct" -> {
-                int id = Integer.parseInt(req.getParameter("productId"));
-                handleDeleteProduct(products, id);
+                int productId = Integer.parseInt(req.getParameter("productId"));
+                handleDeleteProduct(products, productId);
+            }
+            case "confirmOrder" -> {
+                int orderId = Integer.parseInt(req.getParameter("orderId"));
+                handleConfirmOrder(orderItems, orderId);
             }
         }
 
-        
-        
         req.setAttribute("orderItems", orderItems);
         req.setAttribute("products", products);
 
@@ -145,7 +149,7 @@ public class SalesManagementServlet extends HttpServlet {
         int monthlyOrderCount = getMonthlyOrderCount(products); // Số đơn hàng tháng này
         double monthlyRevenue = getMonthlyRevenue(products); // Doanh thu tháng này
         int lowStockCount = getLowStockCount(products);
-        
+
         req.setAttribute("productCount", productCount);
         req.setAttribute("monthlyOrderCount", monthlyOrderCount);
         req.setAttribute("monthlyRevenue", monthlyRevenue);
@@ -156,5 +160,15 @@ public class SalesManagementServlet extends HttpServlet {
         List<Product> products = productService.getAll();
         products = getProductsActive(products);
         return products;
+    }
+
+    private void handleConfirmOrder(List<OrderItem> orderItems, int orderId) {
+        for (OrderItem o : orderItems) {
+            if (o.getOrder().getOrderId() == orderId) {
+                o.getOrder().setOrderStatus(OrderStatus.CONFIRMED);
+                new OrderService().update(o.getOrder());
+                break;
+            }
+        }
     }
 }

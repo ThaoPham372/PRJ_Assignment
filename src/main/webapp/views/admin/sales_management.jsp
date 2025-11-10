@@ -883,56 +883,12 @@
                                                     </c:choose>
                                                 </td>
                                                 <td>
-                                                    <button class="btn btn-small" style="background: #3498db">
-                                                        <a href="#"><i class="fas fa-eye"></i></a>
+                                                    <button class="btn btn-small" style="background: #FFF">
+                                                        <a style="text-decoration: none;" href="${pageContext.request.contextPath}/admin/sales-management?action=confirmOrder&orderId=${order.orderId}">Xác nhận</a>
                                                     </button>
                                                 </td>
                                             </tr>
                                         </c:forEach>
-                                        <tr>
-                                            <td>#DH001</td>
-                                            <td>Nguyễn Văn A</td>
-                                            <td>Whey Protein 1kg</td>
-                                            <td>2</td>
-                                            <td>1.700.000đ</td>
-                                            <td>10/02/2025</td>
-                                            <td><span class="badge badge-success">Hoàn thành</span></td>
-                                            <td>
-                                                <button class="btn btn-small" style="background: #3498db">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>#DH002</td>
-                                            <td>Trần Thị B</td>
-                                            <td>Shaker Bottle</td>
-                                            <td>1</td>
-                                            <td>120.000đ</td>
-                                            <td>11/02/2025</td>
-                                            <td><span class="badge badge-warning">Đang giao</span></td>
-                                            <td>
-                                                <button class="btn btn-small" style="background: #3498db">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>#DH003</td>
-                                            <td>Lê Văn C</td>
-                                            <td>Gym T-Shirt</td>
-                                            <td>3</td>
-                                            <td>750.000đ</td>
-                                            <td>12/02/2025</td>
-                                            <td>
-                                                <span class="badge badge-danger">Chờ xác nhận</span>
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-small" style="background: #3498db">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
