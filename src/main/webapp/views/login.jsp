@@ -555,13 +555,23 @@
           />
         </div>
 
-        <!-- Success Message -->
+        <!-- Success Messages -->
         <c:if test="${not empty sessionScope.loginSuccessMessage}">
           <div class="success-message">
             <i class="fas fa-check-circle"></i>
             <span>${sessionScope.loginSuccessMessage}</span>
           </div>
           <c:remove var="loginSuccessMessage" scope="session" />
+        </c:if>
+
+        <!-- Register Success Message (sau khi đăng ký thành công) -->
+        <c:if test="${not empty sessionScope.registerSuccessMessage}">
+          <div class="success-message">
+            <i class="fas fa-check-circle"></i>
+            <span>${sessionScope.registerSuccessMessage}</span>
+          </div>
+          <c:remove var="registerSuccessMessage" scope="session" />
+          <c:remove var="registeredUsername" scope="session" />
         </c:if>
 
         <!-- Error Messages -->
@@ -599,7 +609,7 @@
               name="username"
               class="form-input"
               placeholder="user name"
-              value="${username}"
+              value="${username != null ? username : (sessionScope.registeredUsername != null ? sessionScope.registeredUsername : '')}"
               required
             />
             <div id="username-error" class="error-message"></div>

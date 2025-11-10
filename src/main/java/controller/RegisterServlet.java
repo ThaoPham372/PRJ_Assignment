@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import service.RegistrationService;
 import service.RegistrationService.RegisterRequest;
 import service.RegistrationService.RegisterResult;
@@ -87,17 +88,20 @@ public class RegisterServlet extends BaseAuthServlet {
         RegisterResult result = registrationService.register(registerRequest);
         
         if (result.isSuccess()) {
-            // Đăng ký thành công
+            // Đăng ký thành công - Redirect sang trang login với thông báo thành công
             System.out.println("[RegisterServlet] Registration successful! User ID: " + result.getUserId());
-            request.setAttribute("registerSuccess", true);
-            request.setAttribute("successMessage", result.getMessage());
             
-            // Clear form data
-            request.setAttribute("username", "");
-            request.setAttribute("name", "");
-            request.setAttribute("email", "");
+            // Set success message và username vào session để hiển thị ở trang login
+            HttpSession session = request.getSession();
+            session.setAttribute("registerSuccessMessage", result.getMessage());
+            // Lưu username để tự động điền vào form login (UX improvement)
+            session.setAttribute("registeredUsername", username);
+            
+            // Redirect sang trang login
+            response.sendRedirect(request.getContextPath() + "/login");
+            return; // Quan trọng: return sau redirect để không tiếp tục xử lý
         } else {
-            // Đăng ký thất bại - hiển thị lỗi
+            // Đăng ký thất bại - hiển thị lỗi trên trang register
             System.err.println("[RegisterServlet] Registration failed. Errors: " + result.getErrors());
             request.setAttribute("registerSuccess", false);
             request.setAttribute("errors", result.getErrors());
@@ -106,13 +110,13 @@ public class RegisterServlet extends BaseAuthServlet {
             request.setAttribute("username", username);
             request.setAttribute("name", name);
             request.setAttribute("email", email);
+            
+            // Load Google Client ID để hiển thị lại form
+            loadGoogleClientId(request);
+            
+            // Forward đến trang register với lỗi
+            request.getRequestDispatcher("/views/register.jsp").forward(request, response);
         }
-
-        // Load Google Client ID để hiển thị lại form
-        loadGoogleClientId(request);
-        
-        // Forward đến trang register với kết quả
-        request.getRequestDispatcher("/views/register.jsp").forward(request, response);
     }
 }
 
