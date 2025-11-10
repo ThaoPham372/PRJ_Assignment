@@ -557,7 +557,7 @@
                     </li>
                     <li class="sidebar-menu-item">
                         <a
-                            href="${pageContext.request.contextPath}/admin/order-management"
+                            href="${pageContext.request.contextPath}/admin/sales-management"
                             class="sidebar-menu-link"
                             >
                             <i class="fas fa-box"></i>
@@ -747,7 +747,7 @@
                                                             >
                                                             <i class="fas fa-calendar-plus"></i>
                                                         </button>
-                                                        <button class="btn-icon btn-delete" title="Xóa" name="deleteMembership">
+                                                        <button class="btn-icon btn-delete" title="Xóa" name="deleteMembership" onclick="handleClickDelete(${membership.id})">
                                                             <i class="fas fa-trash"></i>
                                                         </button>
                                                     </div>
@@ -894,6 +894,10 @@
             console.log("JS Loaded ✅");
 
             const contextPath = '${pageContext.request.contextPath}';
+
+            handleClickDelete = function(membershipId) {
+                deleteMembership(membershipId);
+            }
 
             document.querySelectorAll('button[name="deleteMembership"]').forEach(button => {
                 button.addEventListener('click', function () {

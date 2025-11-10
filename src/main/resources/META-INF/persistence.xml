@@ -3,6 +3,7 @@
   <persistence-unit name="gymPU" transaction-type="RESOURCE_LOCAL">
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <class>model.Package</class>
+    <class>model.Orders</class>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <class>model.Member</class>
     <class>model.Membership</class>

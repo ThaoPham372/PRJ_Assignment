@@ -21,6 +21,7 @@ public abstract class BaseDAO {
         }
     }
 
+    //TODO: create func: createEntityManager
     public BaseDAO() {
         if(emf == null)
             emf = Persistence.createEntityManagerFactory("gymPU");
