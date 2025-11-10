@@ -763,13 +763,13 @@
                                             <!-- ACTION BUTTONS -->
                                             <div class="product-actions">
                                                 <button class="btn btn-small" style="background:#3498db"
-                                                        onclick="handleEditProduct(${product.productId}, '${product.productName}',
+                                                        onclick="handleEditProduct('${product.productId}', '${product.productName}',
                                         '${product.productType}', '${product.price}', '${product.stockQuantity}')">
                                                     <i class="fas fa-edit"></i> Sửa
                                                 </button>
 
                                                 <button class="btn btn-small" style="background:#e74c3c"
-                                                        onclick="handleDeleteProduct(${product.productId})">
+                                                        onclick="handleDeleteProduct('${product.productId}')">
                                                     <i class="fas fa-trash"></i> Xóa
                                                 </button>
                                             </div>
@@ -836,7 +836,7 @@
             <div class="modal" id="addProductModal">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h3 class="modal-title">Thêm sản phẩm</h3>
+                        <h3 class="modal-title" id="formTitle">Thêm sản phẩm</h3>
                         <button class="modal-close" onclick="closeModal('addProductModal')">
                             &times;
                         </button>
