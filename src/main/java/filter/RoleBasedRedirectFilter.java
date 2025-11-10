@@ -132,11 +132,7 @@ public class RoleBasedRedirectFilter implements Filter {
         if (role == null) {
             return URL_HOME;
         }
-        
-        // Use equalsIgnoreCase for extra safety, even though role is already normalized
-        if (isRoleMatch(role, ROLE_ADMIN)) {
-            return URL_ADMIN_DASHBOARD;
-        }
+
         
         if (isRoleMatch(role, ROLE_PT) || isRoleMatch(role, ROLE_TRAINER)) {
             return URL_PT_DASHBOARD;
