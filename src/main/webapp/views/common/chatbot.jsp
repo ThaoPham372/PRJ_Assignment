@@ -10,40 +10,6 @@
         --text-dark-cb: #1f2937;
     }
 
-    #chatToggleButton {
-
-    background: #ffde59; 
-    color: var(--primary-dark-cb); 
-    font-weight: 700;
-    font-size: 1.1rem;
-    border-radius: 50px;
-    padding: 15px 25px;
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-    border: none;
-    transition: all 0.3s ease;
-    gap: 10px;
-    
-
-    z-index: 9998; 
-    position: relative;
-
-}
-
-#chatToggleButton:hover {
-    background: #f0c84c; 
-    transform: translateY(-2px);
-    box-shadow: 0 12px 35px rgba(255, 222, 89, 0.5);
-}
-
-#chatToggleButton i {
-    color: var(--primary-dark-cb);
-    font-size: 1.2rem;
-}
-
-    #chatToggleButton {
-        z-index: 9998 !important;
-        position: relative !important;
-    }
 
     .chat-popup {
         display: none;
@@ -218,7 +184,6 @@
     </div>
 </div>
 
-<link rel="stylesheet" href="${pageContext.request.contextPath}/css/floating-buttons.css">
 
 <script>
     (function() {

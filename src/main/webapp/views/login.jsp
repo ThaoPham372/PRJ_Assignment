@@ -683,6 +683,25 @@
         const usernameError = document.getElementById('username-error');
         const passwordError = document.getElementById('password-error');
 
+        // Flag to prevent double submission
+        let isSubmitting = false;
+
+        // Function to enable login button
+        function enableLoginButton() {
+          loginBtn.disabled = false;
+          isSubmitting = false;
+          if (loginText) loginText.style.display = '';
+          if (loadingSpinner) loadingSpinner.style.display = 'none';
+        }
+
+        // Function to disable login button
+        function disableLoginButton() {
+          loginBtn.disabled = true;
+          isSubmitting = true;
+          if (loginText) loginText.style.display = 'none';
+          if (loadingSpinner) loadingSpinner.style.display = 'inline-block';
+        }
+
         // Form validation
         function validateForm() {
           let isValid = true;
@@ -710,15 +729,29 @@
 
         // Form submission
         form.addEventListener('submit', function (e) {
-          if (!validateForm()) {
+          // Prevent double submission
+          if (isSubmitting) {
             e.preventDefault();
             return;
           }
 
-          // Show loading state and let the form submit to backend
-          loginBtn.disabled = true;
-          if (loginText) loginText.style.display = 'none';
-          if (loadingSpinner) loadingSpinner.style.display = 'inline-block';
+          // Validate form first
+          if (!validateForm()) {
+            e.preventDefault();
+            enableLoginButton(); // Ensure button is enabled if validation fails
+            return;
+          }
+
+          // Only disable button if validation passes
+          disableLoginButton();
+
+          // Safety net: Re-enable button after 10 seconds if form doesn't submit
+          setTimeout(function() {
+            if (isSubmitting) {
+              console.warn('[Login] Form submission timeout - re-enabling button');
+              enableLoginButton();
+            }
+          }, 10000);
         });
 
         // Real-time validation
@@ -743,10 +776,18 @@
         // Clear errors on input
         usernameInput.addEventListener('input', function () {
           usernameError.classList.remove('show');
+          // Re-enable button if user starts typing after error
+          if (isSubmitting && this.value.trim()) {
+            enableLoginButton();
+          }
         });
 
         passwordInput.addEventListener('input', function () {
           passwordError.classList.remove('show');
+          // Re-enable button if user starts typing after error
+          if (isSubmitting && this.value.trim()) {
+            enableLoginButton();
+          }
         });
 
         // Initialize Google Sign-In
@@ -867,16 +908,30 @@
 
         // Forgot password link - handled by href, no JS needed
 
-        // Keyboard navigation
-        document.addEventListener('keydown', function (e) {
-          if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') {
+        // Keyboard navigation - Improved to avoid conflicts
+        form.addEventListener('keydown', function (e) {
+          // Only handle Enter key
+          if (e.key !== 'Enter') return;
+          
+          // Don't interfere if already submitting
+          if (isSubmitting) {
+            e.preventDefault();
+            return;
+          }
+
+          // If Enter is pressed on an input field
+          if (e.target.tagName === 'INPUT') {
             const inputs = [usernameInput, passwordInput];
             const currentIndex = inputs.indexOf(e.target);
+            
+            // If not the last input, move to next field
             if (currentIndex < inputs.length - 1) {
+              e.preventDefault();
               inputs[currentIndex + 1].focus();
-            } else {
-              form.dispatchEvent(new Event('submit'));
             }
+            // If last input (password), let form submit naturally
+            // Don't dispatch event - let browser handle it naturally
+            // This prevents double submission issues
           }
         });
       });

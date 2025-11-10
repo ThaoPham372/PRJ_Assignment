@@ -29,11 +29,6 @@ uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
       rel="stylesheet"
     />
 
-    <!-- Floating Buttons CSS -->
-    <link
-      href="${pageContext.request.contextPath}/css/floating-buttons.css"
-      rel="stylesheet"
-    />
 
     <style>
       :root {
