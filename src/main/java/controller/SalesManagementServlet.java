@@ -35,19 +35,6 @@ public class SalesManagementServlet extends HttpServlet {
         List<Product> products = getProducts();
         List<OrderItem> orderItems = orderItemService.getAll();
 
-        System.out.println("\nORDER ITEMS");
-        for (OrderItem o : orderItems) {
-            System.out.println("> " +
-                    o.getOrderItemId() + ", " +
-                    o.getOrder().getUser().getName() + ", " +
-                    o.getProductName() + ", " +
-                    o.getQuantity() + ", " +
-                    o.getSubtotal() + ", " +
-                    o.getOrder().getCreatedAt() + ", " +
-                    o.getOrder().getOrderStatus());
-        }
-        System.out.println("\n--------------END\n");
-
         loadDashboardMetrics(req, products);
 
         switch (action) {
@@ -57,6 +44,7 @@ public class SalesManagementServlet extends HttpServlet {
             }
             case "confirmOrder" -> {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
+                System.out.println("\n\n\n" + orderId);
                 handleConfirmOrder(orderItems, orderId);
             }
         }
@@ -165,7 +153,8 @@ public class SalesManagementServlet extends HttpServlet {
     private void handleConfirmOrder(List<OrderItem> orderItems, int orderId) {
         for (OrderItem o : orderItems) {
             if (o.getOrder().getOrderId() == orderId) {
-                o.getOrder().setOrderStatus(OrderStatus.CONFIRMED);
+                o.getOrder().setOrderStatus(OrderStatus.COMPLETED);
+                System.out.println("OD status : " + o.getOrder().getOrderStatus());
                 new OrderService().update(o.getOrder());
                 break;
             }

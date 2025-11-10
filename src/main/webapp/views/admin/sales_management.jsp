@@ -570,7 +570,7 @@
                         </li>
                         <li class="sidebar-menu-item">
                             <a
-                                href="${pageContext.request.contextPath}/admin/order-management"
+                                href="${pageContext.request.contextPath}/admin/sales-management"
                                 class="sidebar-menu-link active"
                                 >
                                 <i class="fas fa-box"></i><span>Quản lý đơn hàng</span>
@@ -820,7 +820,7 @@
                                                 </td>
                                                 <td>
                                                     <button class="btn btn-small" style="background: #FFF">
-                                                        <a style="text-decoration: none;" href="${pageContext.request.contextPath}/admin/sales-management?action=confirmOrder&orderId=${order.orderId}">Xác nhận</a>
+                                                        <a style="text-decoration: none;" href="${pageContext.request.contextPath}/admin/sales-management?action=confirmOrder&orderId=${orderItem.order.orderId}">Xác nhận</a>
                                                     </button>
                                                 </td>
                                             </tr>

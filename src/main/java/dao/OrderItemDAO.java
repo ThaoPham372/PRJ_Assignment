@@ -20,16 +20,7 @@ public class OrderItemDAO {
     }
 
     public List<OrderItem> findAll() {
-        System.out.println(">>OrderItem: FIND ALL");
-        System.out.println("result: ");
         List<OrderItem> orderItems = genericDAO.findAll();
-        if (orderItems != null) {
-            System.out.println("");
-            for (OrderItem a : orderItems) {
-                System.out.println(a);
-            }
-        }
-        System.out.println("-----------------------------");
         return orderItems != null ? orderItems : List.of();
     }
 
