@@ -80,9 +80,10 @@ public class RoleBasedRedirectFilter implements Filter {
             case "ADMIN":
                 return "/admin/dashboard";
             
-            case "PT":
+            case "trainer":
             case "TRAINER":
-                return "/pt/dashboard";
+                case "Trainer":
+                return "/pt/home";
             
             case "MEMBER":
                 return "/member/dashboard";

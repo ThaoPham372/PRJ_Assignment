@@ -13,7 +13,6 @@ import jakarta.persistence.Table;
 @PrimaryKeyJoinColumn(name = "trainer_id")
 public class Trainer extends User {
 
-
     @Column(name = "specialization")
     private String specialization;
 
