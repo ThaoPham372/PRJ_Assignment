@@ -17,7 +17,6 @@
                 href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
                 rel="stylesheet"
                 />
-
             <style>
                 :root {
                     --primary: #141a49;
@@ -694,7 +693,29 @@
 
                                 <c:forEach var="product" items="${products}">
                                     <div class="product-card">
-                                        <div class="product-image">
+
+                                        <!-- IMAGE BOX -->
+                                        <div class="product-image"
+                                             style="
+                                             <c:choose>
+                                                 <c:when test='${product.productType == "SUPPLEMENT"}'>
+                                                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                                 </c:when>
+                                                 <c:when test='${product.productType == "ACCESSORY"}'>
+                                                     background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);
+                                                 </c:when>
+                                                 <c:when test='${product.productType == "EQUIPMENT"}'>
+                                                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                                 </c:when>
+                                                 <c:when test='${product.productType == "APPAREL"}'>
+                                                     background: var(--gradient-accent);
+                                                 </c:when>
+                                                 <c:otherwise>
+                                                     background: linear-gradient(135deg, #999 0%, #666 100%);
+                                                 </c:otherwise>
+                                             </c:choose>
+                                             ">
+
                                             <c:choose>
                                                 <c:when test="${product.productType == 'SUPPLEMENT'}">
                                                     <i class="fas fa-bottle-water"></i>
@@ -712,135 +733,50 @@
                                                     <i class="fas fa-box"></i>
                                                 </c:otherwise>
                                             </c:choose>
+
                                         </div>
+
+                                        <!-- BODY -->
                                         <div class="product-body">
                                             <div class="product-name">${product.productName}</div>
+
                                             <div class="product-price">
                                                 <fmt:formatNumber value="${product.price}" pattern="#,###" />đ
                                             </div>
-                                            <div class="product-stock">
-                                                <i class="fas fa-warehouse"></i> Tồn kho: ${product.stockQuantity}
+
+                                            <!-- STOCK -->
+                                            <div class="product-stock"
+                                                 style="<c:if test='${product.stockQuantity lt 10}'>color:#e74c3c;</c:if>">
+
+                                                 <c:choose>
+                                                     <c:when test="${product.stockQuantity lt 10}">
+                                                         <i class="fas fa-exclamation-triangle"></i>
+                                                         Tồn kho: ${product.stockQuantity} (Sắp hết)
+                                                     </c:when>
+                                                     <c:otherwise>
+                                                         <i class="fas fa-warehouse"></i>
+                                                         Tồn kho: ${product.stockQuantity}
+                                                     </c:otherwise>
+                                                 </c:choose>
                                             </div>
+
+                                            <!-- ACTION BUTTONS -->
                                             <div class="product-actions">
-                                                <button class="btn btn-small" style="background: #3498db">
+                                                <button class="btn btn-small" style="background:#3498db"
+                                                        onclick="handleEditProduct(${product.productId}, '${product.productName}',
+                                        '${product.productType}', '${product.price}', '${product.stockQuantity}')">
                                                     <i class="fas fa-edit"></i> Sửa
                                                 </button>
-                                                <button class="btn btn-small" style="background: #e74c3c">
+
+                                                <button class="btn btn-small" style="background:#e74c3c"
+                                                        onclick="handleDeleteProduct(${product.productId})">
                                                     <i class="fas fa-trash"></i> Xóa
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
                                 </c:forEach>
-                                <!-- Product 1 -->
-                                <div class="product-card">
-                                    <div class="product-image">
-                                        <i class="fas fa-dumbbell"></i>
-                                    </div>
-                                    <div class="product-body">
-                                        <div class="product-name">Whey Protein 1kg</div>
-                                        <div class="product-price">850.000đ</div>
-                                        <div class="product-stock">
-                                            <i class="fas fa-warehouse"></i> Tồn kho: 45
-                                        </div>
-                                        <div class="product-actions">
-                                            <button class="btn btn-small" style="background: #3498db">
-                                                <i class="fas fa-edit"></i> Sửa
-                                            </button>
-                                            <button class="btn btn-small" style="background: #e74c3c">
-                                                <i class="fas fa-trash"></i> Xóa
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <!-- Product 2 -->
-                                <div class="product-card">
-                                    <div
-                                        class="product-image"
-                                        style="
-                                        background: linear-gradient(
-                                        135deg,
-                                        #11998e 0%,
-                                        #38ef7d 100%
-                                        );
-                                        "
-                                        >
-                                        <i class="fas fa-bottle-water"></i>
-                                    </div>
-                                    <div class="product-body">
-                                        <div class="product-name">Shaker Bottle</div>
-                                        <div class="product-price">120.000đ</div>
-                                        <div class="product-stock">
-                                            <i class="fas fa-warehouse"></i> Tồn kho: 120
-                                        </div>
-                                        <div class="product-actions">
-                                            <button class="btn btn-small" style="background: #3498db">
-                                                <i class="fas fa-edit"></i> Sửa
-                                            </button>
-                                            <button class="btn btn-small" style="background: #e74c3c">
-                                                <i class="fas fa-trash"></i> Xóa
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Product 3 -->
-                                <div class="product-card">
-                                    <div
-                                        class="product-image"
-                                        style="background: var(--gradient-accent)"
-                                        >
-                                        <i class="fas fa-tshirt"></i>
-                                    </div>
-                                    <div class="product-body">
-                                        <div class="product-name">Gym T-Shirt</div>
-                                        <div class="product-price">250.000đ</div>
-                                        <div class="product-stock" style="color: #e74c3c">
-                                            <i class="fas fa-exclamation-triangle"></i> Tồn kho: 8 (Sắp
-                                            hết)
-                                        </div>
-                                        <div class="product-actions">
-                                            <button class="btn btn-small" style="background: #3498db">
-                                                <i class="fas fa-edit"></i> Sửa
-                                            </button>
-                                            <button class="btn btn-small" style="background: #e74c3c">
-                                                <i class="fas fa-trash"></i> Xóa
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Product 4 -->
-                                <div class="product-card">
-                                    <div
-                                        class="product-image"
-                                        style="
-                                        background: linear-gradient(
-                                        135deg,
-                                        #f39c12 0%,
-                                        #d68910 100%
-                                        );
-                                        "
-                                        >
-                                        <i class="fas fa-mitten"></i>
-                                    </div>
-                                    <div class="product-body">
-                                        <div class="product-name">Gym Gloves</div>
-                                        <div class="product-price">180.000đ</div>
-                                        <div class="product-stock">
-                                            <i class="fas fa-warehouse"></i> Tồn kho: 35
-                                        </div>
-                                        <div class="product-actions">
-                                            <button class="btn btn-small" style="background: #3498db">
-                                                <i class="fas fa-edit"></i> Sửa
-                                            </button>
-                                            <button class="btn btn-small" style="background: #e74c3c">
-                                                <i class="fas fa-trash"></i> Xóa
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
