@@ -8,10 +8,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * DAO for TimeSlot entity - extends GenericDAO for CRUD operations
- * Follows OOP principles and reuses GenericDAO methods
- */
 public class TimeSlotDAO extends GenericDAO<TimeSlot> {
     private static final Logger LOGGER = Logger.getLogger(TimeSlotDAO.class.getName());
 
@@ -19,9 +15,6 @@ public class TimeSlotDAO extends GenericDAO<TimeSlot> {
         super(TimeSlot.class);
     }
 
-    /**
-     * Find all active time slots
-     */
     public List<TimeSlot> findActiveSlots() {
         try {
             String jpql = "SELECT t FROM TimeSlot t WHERE t.isActive = true ORDER BY t.startTime";

@@ -459,10 +459,13 @@ file="/views/common/header.jsp" %>
       <p style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 25px">
         Quản lý và đặt lịch tập luyện
       </p>
-      <button class="btn-schedule">
-        <i class="fas fa-plus"></i>
-        Đặt Lịch Mới
-      </button>
+      
+      <a href="${pageContext.request.contextPath}/member/schedule/create" class="btn-schedule">
+         <i class="fas fa-plus"></i>
+             Đặt Lịch Mới
+      </a>
+
+      
     </div>
   </div>
 
@@ -620,3 +623,26 @@ file="/views/common/header.jsp" %>
 </div>
 
 <%@ include file="/views/common/footer.jsp" %>
+
+// Thêm vào cuối file schedule.jsp
+<script>
+    async function loadSchedule() {
+        try {
+            const res = await fetch('${pageContext.request.contextPath}/api/member/schedule/history');
+            if (res.ok) {
+                const bookings = await res.json();
+                renderCalendar(bookings);
+            }
+        } catch (e) {
+            console.error("Error loading schedule", e);
+        }
+    }
+
+    function renderCalendar(bookings) {
+        // Logic để loop qua bookings và tạo các thẻ HTML .calendar-day tương ứng
+        // Đây là phần bạn cần tự implement dựa trên giao diện mong muốn.
+        console.log("Loaded bookings:", bookings);
+    }
+
+    loadSchedule();
+</script>

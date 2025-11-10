@@ -11,7 +11,7 @@ public class GymInfo {
     @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY) 
     @Column(name = "gym_id") 
-    private Long gymId; 
+    private Integer gymId; 
 
     @Column(name = "name") 
     private String name;
@@ -39,7 +39,7 @@ public class GymInfo {
     public GymInfo() {
     }
 
-    public GymInfo(Long gymId, String name, String address, String hotline, String email, String description, Date createdDate, Date updatedDate) {
+    public GymInfo(Integer gymId, String name, String address, String hotline, String email, String description, Date createdDate, Date updatedDate) {
         this.gymId = gymId;
         this.name = name;
         this.address = address;
@@ -51,11 +51,11 @@ public class GymInfo {
     }
     
 
-    public Long getGymId() {
+    public Integer getGymId() {
         return gymId;
     }
 
-    public void setGymId(Long gymId) {
+    public void setGymId(Integer gymId) {
         this.gymId = gymId;
     }
 
