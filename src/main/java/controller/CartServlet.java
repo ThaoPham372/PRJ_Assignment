@@ -100,6 +100,10 @@ public class CartServlet extends HttpServlet {
                 System.out.println("[CartServlet] Calling removeFromCart");
                 removeFromCart(request, response, userId);
                 break;
+            case "clear":
+                System.out.println("[CartServlet] Calling clearCart");
+                clearCart(request, response, userId);
+                break;
             default:
                 System.out.println("[CartServlet] Unknown action: '" + action + "', redirecting to cart");
                 response.sendRedirect(request.getContextPath() + "/cart");
@@ -130,7 +134,10 @@ public class CartServlet extends HttpServlet {
         request.setAttribute("cart", cartItems);
         request.setAttribute("total", total);
 
-        // Check for error messages
+        // Handle session messages (success/error)
+        handleSessionMessages(request);
+
+        // Check for error messages from request parameters
         String error = request.getParameter("error");
         if (error != null) {
             if ("empty".equals(error)) {
@@ -143,23 +150,52 @@ public class CartServlet extends HttpServlet {
         request.getRequestDispatcher("/views/cart/cart.jsp").forward(request, response);
     }
 
+    /**
+     * Handle messages from session (similar to ProductServlet)
+     * Moves session messages to request attributes for JSP display
+     */
+    private void handleSessionMessages(HttpServletRequest request) {
+        jakarta.servlet.http.HttpSession session = request.getSession(false);
+        if (session != null) {
+            String message = (String) session.getAttribute("message");
+            String error = (String) session.getAttribute("error");
+            
+            if (message != null) {
+                request.setAttribute("message", message);
+                session.removeAttribute("message");
+            }
+            
+            if (error != null) {
+                request.setAttribute("error", error);
+                session.removeAttribute("error");
+            }
+        }
+    }
+
     private void addToCart(HttpServletRequest request, HttpServletResponse response, Long userId)
             throws ServletException, IOException {
-        String redirectUrl = request.getContextPath() + "/cart";
+        // Set character encoding for reading parameters
+        request.setCharacterEncoding("UTF-8");
+        
+        // Get referer to redirect back to product page
+        String referer = request.getHeader("Referer");
+        String redirectUrl = (referer != null && referer.contains("/products")) 
+                ? referer 
+                : request.getContextPath() + "/products";
         
         try {
+            // Try to get parameters
             String productIdStr = request.getParameter("productId");
             String quantityStr = request.getParameter("quantity");
             
             System.out.println("[CartServlet] addToCart - productId: " + productIdStr + ", quantity: " + quantityStr);
-            System.out.println("[CartServlet] Request URL: " + request.getRequestURL());
-            System.out.println("[CartServlet] Request URI: " + request.getRequestURI());
             
             if (productIdStr == null || quantityStr == null) {
                 System.err.println("[CartServlet] Missing parameters: productId or quantity");
                 request.getSession().setAttribute("error", "Thông tin sản phẩm không hợp lệ");
-                System.out.println("[CartServlet] Redirecting to: " + redirectUrl);
-                response.sendRedirect(redirectUrl);
+                if (!response.isCommitted()) {
+                    response.sendRedirect(redirectUrl);
+                }
                 return;
             }
             
@@ -169,24 +205,35 @@ public class CartServlet extends HttpServlet {
             System.out.println("[CartServlet] Adding product " + productId + " with quantity " + quantity + " to cart for user " + userId);
             cartService.add(userId, productId, quantity);
 
-            request.getSession().setAttribute("message", "Đã thêm sản phẩm vào giỏ hàng");
+            String successMessage = "Đã thêm sản phẩm vào giỏ hàng thành công!";
             System.out.println("[CartServlet] Product added successfully");
+            
+            // Set success message in session and redirect back to product page
+            request.getSession().setAttribute("message", successMessage);
+            if (!response.isCommitted()) {
+                response.sendRedirect(redirectUrl);
+            }
         } catch (NumberFormatException e) {
             System.err.println("[CartServlet] NumberFormatException: " + e.getMessage());
             e.printStackTrace();
             request.getSession().setAttribute("error", "Dữ liệu không hợp lệ");
+            if (!response.isCommitted()) {
+                response.sendRedirect(redirectUrl);
+            }
+        } catch (IllegalArgumentException e) {
+            System.err.println("[CartServlet] IllegalArgumentException: " + e.getMessage());
+            e.printStackTrace();
+            request.getSession().setAttribute("error", e.getMessage());
+            if (!response.isCommitted()) {
+                response.sendRedirect(redirectUrl);
+            }
         } catch (Exception e) {
             System.err.println("[CartServlet] Exception adding to cart: " + e.getMessage());
             e.printStackTrace();
             request.getSession().setAttribute("error", "Không thể thêm sản phẩm: " + e.getMessage());
-        }
-
-        // Always redirect to cart page - ensure response is not committed
-        if (response.isCommitted()) {
-            System.err.println("[CartServlet] WARNING: Response already committed! Cannot redirect.");
-        } else {
-            System.out.println("[CartServlet] Redirecting to: " + redirectUrl);
-            response.sendRedirect(redirectUrl);
+            if (!response.isCommitted()) {
+                response.sendRedirect(redirectUrl);
+            }
         }
     }
 
@@ -219,6 +266,27 @@ public class CartServlet extends HttpServlet {
             request.getSession().setAttribute("error", "Dữ liệu không hợp lệ");
         } catch (Exception e) {
             request.getSession().setAttribute("error", "Không thể xóa: " + e.getMessage());
+        }
+
+        response.sendRedirect(request.getContextPath() + "/cart");
+    }
+
+    /**
+     * Clear all items from cart
+     * Follows MVC pattern - Controller delegates to Service layer
+     */
+    private void clearCart(HttpServletRequest request, HttpServletResponse response, Long userId)
+            throws ServletException, IOException {
+        try {
+            System.out.println("[CartServlet] Clearing cart for user: " + userId);
+            cartService.clear(userId);
+
+            request.getSession().setAttribute("message", "Đã xóa tất cả sản phẩm khỏi giỏ hàng");
+            System.out.println("[CartServlet] Cart cleared successfully");
+        } catch (Exception e) {
+            System.err.println("[CartServlet] Exception clearing cart: " + e.getMessage());
+            e.printStackTrace();
+            request.getSession().setAttribute("error", "Không thể xóa giỏ hàng: " + e.getMessage());
         }
 
         response.sendRedirect(request.getContextPath() + "/cart");

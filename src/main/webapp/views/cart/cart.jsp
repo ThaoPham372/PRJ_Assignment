@@ -454,10 +454,13 @@
                 Tiếp tục mua sắm
             </a>
             <c:if test="${not empty cart}">
-                <a href="${pageContext.request.contextPath}/cart/clear" class="btn btn-danger">
-                    <i class="fas fa-trash"></i>
-                    Xóa giỏ hàng
-                </a>
+                <form action="${pageContext.request.contextPath}/cart/clear" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('Bạn có chắc muốn xóa tất cả sản phẩm khỏi giỏ hàng? Hành động này không thể hoàn tác.')">
+                        <i class="fas fa-trash"></i>
+                        Xóa giỏ hàng
+                    </button>
+                </form>
             </c:if>
         </div>
     </div>

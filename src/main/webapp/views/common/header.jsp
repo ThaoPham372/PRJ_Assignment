@@ -1,6 +1,9 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%@ taglib
-uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="Utils.SessionUtil" %>
+<%@ page import="service.shop.CartService" %>
+<%@ page import="service.shop.CartServiceImpl" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -350,6 +353,50 @@ uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
           </li>
         </ul>
       </nav>
+              
+              
+                
+          <%-- Load cart count if user is logged in --%>
+          <c:set var="cartCount" value="0" />
+          <c:if test="${sessionScope.user != null && sessionScope.user.id != null}">
+            <%
+              try {
+                // Use SessionUtil from Utils package (correct package structure)
+                Integer userIdInt = SessionUtil.getUserId(request);
+                if (userIdInt != null) {
+                  // Convert Integer to Long for CartService
+                  Long userId = userIdInt.longValue();
+                  
+                  // Use CartService from service.shop package (correct package structure)
+                  // Reuse existing service layer following MVC pattern
+                  CartService cartService = new CartServiceImpl();
+                  
+                  // Use getCartItemCount() method - optimized method instead of view().size()
+                  // This method is more efficient as it only counts items without loading all data
+                  int count = cartService.getCartItemCount(userId);
+                  pageContext.setAttribute("cartCount", count);
+                }
+              } catch (Exception e) {
+                // Silently fail, cart count will be 0
+                // Log error for debugging but don't break the page
+                // This ensures the header always renders even if cart service fails
+                System.err.println("[Header] Error loading cart count: " + e.getMessage());
+                e.printStackTrace();
+                pageContext.setAttribute("cartCount", 0);
+              }
+            %>
+          </c:if>
+          
+          <div class="auth-actions">
+            <%-- Cart Icon --%>
+            <div class="cart-icon-wrapper">
+              <a href="${pageContext.request.contextPath}/cart" class="cart-icon-link" title="Giỏ hàng">
+                <i class="fas fa-shopping-cart"></i>
+                <c:if test="${cartCount > 0}">
+                  <span class="cart-badge">${cartCount > 99 ? '99+' : cartCount}</span>
+                </c:if>
+              </a>
+            </div>
       <c:choose>
         <c:when test="${sessionScope.user != null}">
           <c:set

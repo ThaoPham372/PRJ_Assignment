@@ -360,15 +360,22 @@
     </select>
   </div>
 
-  <c:if test="${not empty message}">
-    <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-      ${message}
+  <!-- Success Messages -->
+  <c:if test="${not empty sessionScope.message}">
+    <div class="success-message">
+      <i class="fas fa-check-circle"></i>
+      <span>${sessionScope.message}</span>
     </div>
+    <c:remove var="message" scope="session" />
   </c:if>
-  <c:if test="${not empty error}">
-    <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-      ${error}
+
+  <!-- Error Messages -->
+  <c:if test="${not empty sessionScope.error}">
+    <div class="error-message">
+      <i class="fas fa-exclamation-circle"></i>
+      <span>${sessionScope.error}</span>
     </div>
+    <c:remove var="error" scope="session" />
   </c:if>
 
   <div class="products-grid">
@@ -451,18 +458,62 @@
   </div>
 </main>
 
-<script>
-  // Ensure forms submit correctly
-  document.addEventListener('DOMContentLoaded', function() {
-    const forms = document.querySelectorAll('form[action*="/cart/add"]');
-    forms.forEach(form => {
-      form.addEventListener('submit', function(e) {
-        // Allow form to submit naturally - servlet will handle redirect
-        console.log('Submitting to cart:', this.action);
-        // Don't preventDefault - let the form submit normally
-      });
-    });
-  });
-</script>
+<style>
+  .btn-cart:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Success Message - Similar to login.jsp */
+  .success-message {
+    background: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #c3e6cb;
+    border-left: 4px solid #28a745;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideDown 0.5s ease-out;
+  }
+
+  .success-message i {
+    font-size: 1.2rem;
+    color: #28a745;
+  }
+
+  /* Error Message */
+  .error-message {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #f5c6cb;
+    border-left: 4px solid #dc3545;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideDown 0.5s ease-out;
+  }
+
+  .error-message i {
+    font-size: 1.2rem;
+    color: #dc3545;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
 
 <%@ include file="/views/common/footer.jsp" %>
