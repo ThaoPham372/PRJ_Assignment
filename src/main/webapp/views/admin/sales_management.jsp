@@ -671,24 +671,46 @@
                             </div>
                         </div>
 
+                        <!-- Messages -->
+                        <c:if test="${not empty success}">
+                            <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
+                                <i class="fas fa-check-circle"></i> ${success}
+                            </div>
+                        </c:if>
+                        <c:if test="${not empty error}">
+                            <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+                                <i class="fas fa-exclamation-circle"></i> ${error}
+                            </div>
+                        </c:if>
+
                         <!-- Tabs -->
                         <div class="tabs">
-                            <button class="tab active" onclick="switchTab('products')">
+                            <button class="tab ${activeTab == 'products' || empty activeTab ? 'active' : ''}" onclick="switchTab('products')">
                                 <i class="fas fa-box"></i> Quản lý sản phẩm
                             </button>
-                            <button class="tab" onclick="switchTab('orders')">
+                            <button class="tab ${activeTab == 'orders' ? 'active' : ''}" onclick="switchTab('orders')">
                                 <i class="fas fa-shopping-cart"></i> Đơn hàng
                             </button>
                         </div>
 
                         <!-- Products Tab -->
-                        <div id="products" class="tab-content active">
+                        <div id="products" class="tab-content ${activeTab == 'products' || empty activeTab ? 'active' : ''}">
                             <div style="margin-bottom: 15px">
                                 <button class="btn" id="btn-addProduct">
                                     <i class="fas fa-plus"></i> Thêm sản phẩm mới
                                 </button>
                             </div>
 
+                            <c:if test="${empty products}">
+                                <div style="text-align: center; padding: 40px; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px var(--shadow);">
+                                    <i class="fas fa-box" style="font-size: 3rem; color: #ccc; margin-bottom: 15px;"></i>
+                                    <p style="color: #5a6c7d; font-size: 1.1rem;">Chưa có sản phẩm nào</p>
+                                    <button class="btn" onclick="document.getElementById('btn-addProduct').click()" style="margin-top: 15px;">
+                                        <i class="fas fa-plus"></i> Thêm sản phẩm đầu tiên
+                                    </button>
+                                </div>
+                            </c:if>
+                            <c:if test="${not empty products}">
                             <div class="products-grid">
 
                                 <c:forEach var="product" items="${products}">
@@ -778,10 +800,18 @@
                                 </c:forEach>
 
                             </div>
+                            </c:if>
                         </div>
 
                         <!-- Orders Tab -->
-                        <div id="orders" class="tab-content">
+                        <div id="orders" class="tab-content ${activeTab == 'orders' ? 'active' : ''}">
+                            <c:if test="${empty orderItems}">
+                                <div style="text-align: center; padding: 40px; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px var(--shadow);">
+                                    <i class="fas fa-shopping-cart" style="font-size: 3rem; color: #ccc; margin-bottom: 15px;"></i>
+                                    <p style="color: #5a6c7d; font-size: 1.1rem;">Chưa có đơn hàng nào</p>
+                                </div>
+                            </c:if>
+                            <c:if test="${not empty orderItems}">
                             <div class="table-container">
                                 <table class="table">
                                     <thead>
@@ -799,12 +829,39 @@
                                     <tbody>
                                         <c:forEach var="orderItem" items="${orderItems}">
                                             <tr>
-                                                <td>${orderItem.orderItemId}</td>
-                                                <td>${orderItem.order.user.name}</td>
+                                                <td>
+                                                    <c:choose>
+                                                        <c:when test="${orderItem.order.orderNumber != null && !orderItem.order.orderNumber.isEmpty()}">
+                                                            ${orderItem.order.orderNumber}
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            #${orderItem.order.orderId}
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                                <td>
+                                                    <c:choose>
+                                                        <c:when test="${orderItem.order.user != null && orderItem.order.user.name != null}">
+                                                            ${orderItem.order.user.name}
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            Khách hàng #${orderItem.order.memberId}
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
                                                 <td>${orderItem.productName}</td>
                                                 <td>${orderItem.quantity}</td>
-                                                <td>${orderItem.subtotal}</td>
-                                                <td>${orderItem.order.createdAt}</td>
+                                                <td>
+                                                    <fmt:formatNumber value="${orderItem.subtotal}" pattern="#,###" /> đ
+                                                </td>
+                                                <td>
+                                                    <c:choose>
+                                                        <c:when test="${orderItem.order.createdAt != null}">
+                                                            <fmt:formatDate value="${orderItem.order.createdAt}" pattern="dd/MM/yyyy HH:mm" />
+                                                        </c:when>
+                                                        <c:otherwise>N/A</c:otherwise>
+                                                    </c:choose>
+                                                </td>
                                                 <td>
                                                     <c:choose>
                                                         <c:when test="${orderItem.order.orderStatus.toString() == 'PENDING'}">
@@ -819,15 +876,26 @@
                                                     </c:choose>
                                                 </td>
                                                 <td>
-                                                    <button class="btn btn-small" style="background: #FFF">
-                                                        <a style="text-decoration: none;" href="${pageContext.request.contextPath}/admin/sales-management?action=confirmOrder&orderId=${orderItem.order.orderId}">Xác nhận</a>
-                                                    </button>
+                                                    <c:if test="${orderItem.order.orderStatus.toString() != 'COMPLETED'}">
+                                                        <a href="${pageContext.request.contextPath}/admin/sales-management?action=confirmOrder&orderId=${orderItem.order.orderId}&tab=orders" 
+                                                           class="btn btn-small" 
+                                                           style="background: #27ae60; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;"
+                                                           onclick="return confirm('Bạn có chắc chắn muốn xác nhận đơn hàng này?')">
+                                                            <i class="fas fa-check"></i> Xác nhận
+                                                        </a>
+                                                    </c:if>
+                                                    <c:if test="${orderItem.order.orderStatus.toString() == 'COMPLETED'}">
+                                                        <span style="color: #27ae60; font-weight: 600;">
+                                                            <i class="fas fa-check-circle"></i> Đã xác nhận
+                                                        </span>
+                                                    </c:if>
                                                 </td>
                                             </tr>
                                         </c:forEach>
                                     </tbody>
                                 </table>
                             </div>
+                            </c:if>
                         </div>
                     </div>
                 </main>
@@ -932,20 +1000,6 @@
                             })
 
                     function switchTab(tabName) {
-                        const tabs = document.querySelectorAll('.tab-content')
-                        tabs.forEach((tab) => tab.classList.remove('active'))
-
-                        const tabButtons = document.querySelectorAll('.tab')
-                        tabButtons.forEach((btn) => btn.classList.remove('active'))
-
-                        document.getElementById(tabName).classList.add('active')
-                        event.target.closest('.tab').classList.add('active')
-                    }
-                    function closeModal(modalId) {
-                        document.getElementById(modalId).classList.remove('active')
-                    }
-
-                    function switchTab(tabName) {
                         const tabs = document.querySelectorAll('.tab-content');
                         tabs.forEach((tab) => tab.classList.remove('active'));
 
@@ -953,8 +1007,28 @@
                         tabButtons.forEach((btn) => btn.classList.remove('active'));
 
                         document.getElementById(tabName).classList.add('active');
-                        event.target.closest('.tab').classList.add('active');
+                        if (event && event.target) {
+                            event.target.closest('.tab').classList.add('active');
+                        }
+                        
+                        // Update URL without reloading page
+                        const url = new URL(window.location);
+                        url.searchParams.set('tab', tabName);
+                        window.history.pushState({}, '', url);
                     }
+                    
+                    function closeModal(modalId) {
+                        document.getElementById(modalId).classList.remove('active');
+                    }
+                    
+                    // Initialize tab on page load
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const tab = urlParams.get('tab');
+                        if (tab) {
+                            switchTab(tab);
+                        }
+                    });
                 </script>
         </body>
     </html>

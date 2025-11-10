@@ -7,9 +7,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import model.Product;
 import model.ProductType;
+import model.shop.Order;
 import model.shop.OrderItem;
 import model.shop.OrderStatus;
 import service.OrderItemService;
@@ -22,10 +24,16 @@ import service.ProductService;
 @WebServlet(name = "SalesManagementServlet", urlPatterns = "/admin/sales-management")
 public class SalesManagementServlet extends HttpServlet {
 
-    ProductService productService = new ProductService();
-    OrderItemService orderItemService = new OrderItemService();
+    private final ProductService productService;
+    private final OrderItemService orderItemService;
+    private final OrderService orderService;
 
-    // TODO: Tách products và orderItems
+    public SalesManagementServlet() {
+        this.productService = new ProductService();
+        this.orderItemService = new OrderItemService();
+        this.orderService = new OrderService();
+    }
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String action = req.getParameter("action");
@@ -34,8 +42,10 @@ public class SalesManagementServlet extends HttpServlet {
 
         List<Product> products = getProducts();
         List<OrderItem> orderItems = orderItemService.getAll();
+        List<Order> orders = orderService.getAll();
 
-        loadDashboardMetrics(req, products);
+        // Load metrics from real data
+        loadDashboardMetrics(req, products, orders);
 
         switch (action) {
             case "deleteProduct" -> {
@@ -44,9 +54,32 @@ public class SalesManagementServlet extends HttpServlet {
             }
             case "confirmOrder" -> {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
-                System.out.println("\n\n\n" + orderId);
-                handleConfirmOrder(orderItems, orderId);
+                boolean success = handleConfirmOrder(orderId);
+                // Redirect to keep on orders tab with success message
+                if (success) {
+                    resp.sendRedirect(req.getContextPath() + "/admin/sales-management?tab=orders&success=Xác nhận đơn hàng thành công!");
+                } else {
+                    resp.sendRedirect(req.getContextPath() + "/admin/sales-management?tab=orders&error=Không tìm thấy đơn hàng!");
+                }
+                return;
             }
+        }
+
+        // Set active tab from request parameter
+        String activeTab = req.getParameter("tab");
+        if (activeTab == null || activeTab.isEmpty()) {
+            activeTab = "products";
+        }
+        req.setAttribute("activeTab", activeTab);
+        
+        // Get messages from request parameters (for redirect messages)
+        String success = req.getParameter("success");
+        String error = req.getParameter("error");
+        if (success != null && !success.isEmpty()) {
+            req.setAttribute("success", success);
+        }
+        if (error != null && !error.isEmpty()) {
+            req.setAttribute("error", error);
         }
 
         req.setAttribute("orderItems", orderItems);
@@ -75,7 +108,12 @@ public class SalesManagementServlet extends HttpServlet {
             }
         }
 
-        resp.sendRedirect(req.getContextPath() + "/admin/sales-management");
+        // Redirect with active tab parameter
+        String activeTab = req.getParameter("activeTab");
+        if (activeTab == null || activeTab.isEmpty()) {
+            activeTab = "products";
+        }
+        resp.sendRedirect(req.getContextPath() + "/admin/sales-management?tab=" + activeTab);
     }
 
     private void handleEditProduct(HttpServletRequest req, HttpServletResponse resp) {
@@ -96,16 +134,46 @@ public class SalesManagementServlet extends HttpServlet {
         productService.update(product);
     }
 
-    private int getMonthlyOrderCount(List<Product> products) {
-        return 666;
+    /**
+     * Tính số đơn hàng trong tháng hiện tại
+     */
+    private int getMonthlyOrderCount(List<Order> orders) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfMonth = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        
+        return (int) orders.stream()
+                .filter(order -> order.getCreatedAt() != null && 
+                        !order.getCreatedAt().isBefore(startOfMonth) &&
+                        !order.getCreatedAt().isAfter(now))
+                .count();
     }
 
-    private double getMonthlyRevenue(List<Product> products) {
-        return 666d;
+    /**
+     * Tính doanh thu trong tháng hiện tại từ các đơn hàng đã hoàn thành
+     */
+    private double getMonthlyRevenue(List<Order> orders) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfMonth = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        
+        BigDecimal revenue = orders.stream()
+                .filter(order -> order.getCreatedAt() != null && 
+                        !order.getCreatedAt().isBefore(startOfMonth) &&
+                        !order.getCreatedAt().isAfter(now) &&
+                        order.getOrderStatus() == OrderStatus.COMPLETED &&
+                        order.getTotalAmount() != null)
+                .map(Order::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        return revenue.doubleValue();
     }
 
+    /**
+     * Đếm số sản phẩm sắp hết hàng (stock < 10)
+     */
     private int getLowStockCount(List<Product> products) {
-        return 666;
+        return (int) products.stream()
+                .filter(p -> p.getStockQuantity() != null && p.getStockQuantity() < 10)
+                .count();
     }
 
     private void handleAddProduct(HttpServletRequest req, HttpServletResponse resp) {
@@ -132,10 +200,13 @@ public class SalesManagementServlet extends HttpServlet {
         return products;
     }
 
-    private void loadDashboardMetrics(HttpServletRequest req, List<Product> products) {
-        int productCount = products.size(); // Số lượng sản phẩm
-        int monthlyOrderCount = getMonthlyOrderCount(products); // Số đơn hàng tháng này
-        double monthlyRevenue = getMonthlyRevenue(products); // Doanh thu tháng này
+    /**
+     * Load dashboard metrics từ dữ liệu thật
+     */
+    private void loadDashboardMetrics(HttpServletRequest req, List<Product> products, List<Order> orders) {
+        int productCount = products.size();
+        int monthlyOrderCount = getMonthlyOrderCount(orders);
+        double monthlyRevenue = getMonthlyRevenue(orders);
         int lowStockCount = getLowStockCount(products);
 
         req.setAttribute("productCount", productCount);
@@ -150,14 +221,18 @@ public class SalesManagementServlet extends HttpServlet {
         return products;
     }
 
-    private void handleConfirmOrder(List<OrderItem> orderItems, int orderId) {
-        for (OrderItem o : orderItems) {
-            if (o.getOrder().getOrderId() == orderId) {
-                o.getOrder().setOrderStatus(OrderStatus.COMPLETED);
-                System.out.println("OD status : " + o.getOrder().getOrderStatus());
-                new OrderService().update(o.getOrder());
-                break;
-            }
+    /**
+     * Xác nhận đơn hàng - cập nhật trạng thái thành COMPLETED
+     * @return true nếu thành công, false nếu không tìm thấy đơn hàng
+     */
+    private boolean handleConfirmOrder(int orderId) {
+        Order order = orderService.getOrderById(orderId);
+        if (order != null) {
+            order.setOrderStatus(OrderStatus.COMPLETED);
+            orderService.update(order);
+            return true;
         }
+        return false;
     }
 }
+
