@@ -3,13 +3,27 @@
   <persistence-unit name="gymPU" transaction-type="RESOURCE_LOCAL">
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <class>model.Package</class>
-    <class>model.Orders</class>
+    <class>model.shop.Order</class>
+    <class>model.shop.OrderItem</class>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <class>model.Member</class>
     <class>model.Membership</class>
     <class>model.Admin</class>
     <class>model.Trainer</class>
     <class>model.User</class>
+    <class>model.Product</class>
+    <class>model.shop.CartItem</class>
+    <class>model.Payment</class>
+    <class>model.Food</class>
+    <class>model.NutritionGoal</class>
+    <class>model.UserMeal</class>
+    <class>model.schedule.PTBooking</class>
+    <class>model.schedule.TrainerSchedule</class>
+    <class>model.schedule.TrainerException</class>
+    <class>model.schedule.TimeSlot</class>
+    <class>model.AdvisoryRequest</class>
+    <class>model.PasswordResetToken</class>
+    <class>model.GymInfo</class>
     <properties>
       <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://gym-fitness-project.cbsayms8ae98.ap-southeast-2.rds.amazonaws.com:3306/gym_management?useSSL=false&amp;serverTimezone=UTC&amp;characterEncoding=UTF-8"/>
       <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>

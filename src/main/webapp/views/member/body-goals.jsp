@@ -452,12 +452,12 @@
                                    class="form-control" 
                                    id="weight" 
                                    name="weight" 
-                                   value="${profileData.weight != null ? profileData.weight : ''}"
+                                   value="${member.weight != null ? member.weight : ''}"
                                    min="20" 
                                    max="300" 
                                    step="0.1"
                                    placeholder="Nhập cân nặng (kg)"
-                                   onchange="calculateBMI()">
+                                   onchange="calculateBMI(); updateCaloriesPreview()">
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -469,21 +469,21 @@
                                    class="form-control" 
                                    id="height" 
                                    name="height" 
-                                   value="${profileData.height != null ? profileData.height : ''}"
+                                   value="${member.height != null ? member.height : ''}"
                                    min="100" 
                                    max="250" 
                                    step="0.1"
                                    placeholder="Nhập chiều cao (cm)"
-                                   onchange="calculateBMI()">
+                                   onchange="calculateBMI(); updateCaloriesPreview()">
                         </div>
                     </div>
                 </div>
 
                 <!-- BMI Display -->
-                <div class="bmi-display" id="bmiDisplay" style="display: ${profileData.bmi != null ? 'block' : 'none'};">
+                <div class="bmi-display" id="bmiDisplay" style="display: ${member.bmi != null ? 'block' : 'none'};">
                     <div class="bmi-value" id="bmiValue">
-                        <c:if test="${profileData.bmi != null}">
-                            <fmt:formatNumber value="${profileData.bmi}" maxFractionDigits="1" />
+                        <c:if test="${member.bmi != null}">
+                            <fmt:formatNumber value="${member.bmi}" maxFractionDigits="1" />
                         </c:if>
                     </div>
                     <div style="color: var(--text-light); margin-bottom: 10px; font-weight: 600;">Chỉ số BMI</div>
@@ -507,29 +507,29 @@
                         <i class="fas fa-target"></i>Mục tiêu chính của bạn
                     </label>
                     <div class="goal-options">
-                        <div class="goal-option ${fitnessGoal == 'lose_weight' ? 'selected' : ''}" onclick="selectGoal('goal_lose_weight')">
+                        <div class="goal-option ${member.goal == 'lose_weight' ? 'selected' : ''}" onclick="selectGoal('goal_lose_weight')">
                             <input type="radio" id="goal_lose_weight" name="fitnessGoal" value="lose_weight" 
-                                   ${fitnessGoal == 'lose_weight' ? 'checked' : ''}>
+                                   ${member.goal == 'lose_weight' ? 'checked' : ''}>
                             <label for="goal_lose_weight">Giảm cân</label>
                         </div>
-                        <div class="goal-option ${fitnessGoal == 'gain_muscle' ? 'selected' : ''}" onclick="selectGoal('goal_gain_muscle')">
+                        <div class="goal-option ${member.goal == 'gain_muscle' ? 'selected' : ''}" onclick="selectGoal('goal_gain_muscle')">
                             <input type="radio" id="goal_gain_muscle" name="fitnessGoal" value="gain_muscle" 
-                                   ${fitnessGoal == 'gain_muscle' ? 'checked' : ''}>
+                                   ${member.goal == 'gain_muscle' ? 'checked' : ''}>
                             <label for="goal_gain_muscle">Tăng cơ bắp</label>
                         </div>
-                        <div class="goal-option ${fitnessGoal == 'maintain' ? 'selected' : ''}" onclick="selectGoal('goal_maintain')">
+                        <div class="goal-option ${member.goal == 'maintain' ? 'selected' : ''}" onclick="selectGoal('goal_maintain')">
                             <input type="radio" id="goal_maintain" name="fitnessGoal" value="maintain" 
-                                   ${fitnessGoal == 'maintain' ? 'checked' : ''}>
+                                   ${member.goal == 'maintain' ? 'checked' : ''}>
                             <label for="goal_maintain">Duy trì sức khỏe</label>
                         </div>
-                        <div class="goal-option ${fitnessGoal == 'improve_health' ? 'selected' : ''}" onclick="selectGoal('goal_improve_health')">
+                        <div class="goal-option ${member.goal == 'improve_health' ? 'selected' : ''}" onclick="selectGoal('goal_improve_health')">
                             <input type="radio" id="goal_improve_health" name="fitnessGoal" value="improve_health" 
-                                   ${fitnessGoal == 'improve_health' ? 'checked' : ''}>
+                                   ${member.goal == 'improve_health' ? 'checked' : ''}>
                             <label for="goal_improve_health">Cải thiện sức khỏe</label>
                         </div>
-                        <div class="goal-option ${fitnessGoal == 'athletic_performance' ? 'selected' : ''}" onclick="selectGoal('goal_athletic_performance')">
+                        <div class="goal-option ${member.goal == 'athletic_performance' ? 'selected' : ''}" onclick="selectGoal('goal_athletic_performance')">
                             <input type="radio" id="goal_athletic_performance" name="fitnessGoal" value="athletic_performance" 
-                                   ${fitnessGoal == 'athletic_performance' ? 'checked' : ''}>
+                                   ${member.goal == 'athletic_performance' ? 'checked' : ''}>
                             <label for="goal_athletic_performance">Nâng cao thể lực</label>
                         </div>
                     </div>
@@ -549,13 +549,13 @@
                             <label for="activityLevel" class="form-label">
                                 <i class="fas fa-running"></i>Mức độ hoạt động hiện tại
                             </label>
-                            <select class="form-control" id="activityLevel" name="activityLevel">
+                            <select class="form-control" id="activityLevel" name="activityLevel" onchange="updateCaloriesPreview()">
                                 <option value="">Chọn mức độ hoạt động</option>
-                                <option value="sedentary" ${activityLevel == 'sedentary' ? 'selected' : ''}>Ít vận động</option>
-                                <option value="light" ${activityLevel == 'light' ? 'selected' : ''}>Vận động nhẹ</option>
-                                <option value="moderate" ${activityLevel == 'moderate' ? 'selected' : ''}>Vận động vừa phải</option>
-                                <option value="active" ${activityLevel == 'active' ? 'selected' : ''}>Vận động nhiều</option>
-                                <option value="very_active" ${activityLevel == 'very_active' ? 'selected' : ''}>Rất năng động</option>
+                                <option value="sedentary" <c:if test="${currentActivityLevel == 'sedentary'}">selected</c:if>>Ít vận động</option>
+                                <option value="light" <c:if test="${currentActivityLevel == 'light'}">selected</c:if>>Vận động nhẹ</option>
+                                <option value="moderate" <c:if test="${currentActivityLevel == 'moderate'}">selected</c:if>>Vận động vừa phải</option>
+                                <option value="active" <c:if test="${currentActivityLevel == 'active'}">selected</c:if>>Vận động nhiều</option>
+                                <option value="very_active" <c:if test="${currentActivityLevel == 'very_active'}">selected</c:if>>Rất năng động</option>
                             </select>
                             <small class="text-muted" style="font-size: 0.85rem; display: block; margin-top: 5px;">
                                 <i class="fas fa-info-circle"></i> Mức độ hoạt động này sẽ được sử dụng để tính toán calories mục tiêu
@@ -576,10 +576,32 @@
                     <h6>Mục tiêu của bạn:</h6>
                     <p id="previewGoal">Chưa chọn mục tiêu</p>
                     <p id="previewActivity">Mức độ hoạt động: Chưa chọn</p>
-                    <c:if test="${not empty nutritionGoal}">
+                    
+                    <!-- Calculated Nutrition Goals -->
+                    <div id="nutritionPreview" style="display: none;">
                         <hr style="margin: 15px 0; border-color: #e9ecef;">
                         <h6 style="color: var(--accent); margin-top: 15px;">
                             <i class="fas fa-fire"></i> Mục tiêu dinh dưỡng đã tính toán:
+                        </h6>
+                        <p style="margin-bottom: 8px;">
+                            <strong>Calories mục tiêu:</strong> 
+                            <span id="previewCalories" style="color: var(--accent); font-size: 1.1rem; font-weight: 700;">
+                                -- kcal/ngày
+                            </span>
+                        </p>
+                        <p style="margin-bottom: 8px;">
+                            <strong>Protein mục tiêu:</strong> 
+                            <span id="previewProtein" style="color: var(--accent); font-size: 1.1rem; font-weight: 700;">
+                                -- g/ngày
+                            </span>
+                        </p>
+                    </div>
+                    
+                    <!-- Existing Nutrition Goal (if saved) -->
+                    <c:if test="${not empty nutritionGoal}">
+                        <hr style="margin: 15px 0; border-color: #e9ecef;">
+                        <h6 style="color: var(--accent); margin-top: 15px;">
+                            <i class="fas fa-check-circle"></i> Mục tiêu dinh dưỡng hiện tại:
                         </h6>
                         <p style="margin-bottom: 8px;">
                             <strong>Calories mục tiêu:</strong> 
@@ -595,9 +617,8 @@
                         </p>
                         <p style="margin-bottom: 0; font-size: 0.9rem; color: var(--text-light);">
                             <i class="fas fa-info-circle"></i> Cập nhật lần cuối: 
-                            <c:if test="${not empty nutritionGoal.updatedAt}">
-                                <c:set var="updatedAtStr" value="${nutritionGoal.updatedAt}" />
-                                ${updatedAtStr}
+                            <c:if test="${not empty nutritionGoal.updatedAtAsDate}">
+                                <fmt:formatDate value="${nutritionGoal.updatedAtAsDate}" pattern="dd/MM/yyyy HH:mm" type="both" />
                             </c:if>
                         </p>
                     </c:if>
@@ -696,6 +717,62 @@
         
         document.getElementById('previewActivity').textContent = 
             activityLevel ? `Mức độ hoạt động: ${activityTexts[activityLevel] || activityLevel}` : 'Mức độ hoạt động: Chưa chọn';
+        
+        updateCaloriesPreview();
+    }
+    
+    // Calculate and update calories preview
+    function updateCaloriesPreview() {
+        const weight = parseFloat(document.getElementById('weight').value);
+        const height = parseFloat(document.getElementById('height').value);
+        const selectedGoal = document.querySelector('input[name="fitnessGoal"]:checked');
+        const activityLevel = document.getElementById('activityLevel').value;
+        const nutritionPreview = document.getElementById('nutritionPreview');
+        
+        if (weight > 0 && height > 0 && selectedGoal && activityLevel) {
+            // Calculate BMR (Mifflin-St Jeor Equation)
+            // BMR = 10 * weight(kg) + 6.25 * height(cm) - 5 * age + s
+            // For preview, use default age 30 and gender M
+            const age = 30; // Default for preview
+            const gender = 'M'; // Default for preview
+            let bmr = (10 * weight) + (6.25 * height) - (5 * age);
+            bmr += (gender === 'M' ? 5 : -161);
+            
+            // Activity factors
+            const activityFactors = {
+                'sedentary': 1.2,
+                'light': 1.375,
+                'moderate': 1.55,
+                'active': 1.725,
+                'very_active': 1.9
+            };
+            
+            const activityFactor = activityFactors[activityLevel] || 1.55;
+            let tdee = bmr * activityFactor;
+            
+            // Adjust for goal
+            if (selectedGoal.value === 'lose_weight') {
+                tdee -= 500; // Deficit
+            } else if (selectedGoal.value === 'gain_muscle') {
+                tdee += 400; // Surplus
+            }
+            
+            // Calculate protein (g per kg body weight)
+            let proteinPerKg = 1.6;
+            if (selectedGoal.value === 'lose_weight') {
+                proteinPerKg = 2.0;
+            } else if (selectedGoal.value === 'gain_muscle') {
+                proteinPerKg = 2.2;
+            }
+            const protein = weight * proteinPerKg;
+            
+            // Update preview
+            document.getElementById('previewCalories').textContent = Math.round(tdee) + ' kcal/ngày';
+            document.getElementById('previewProtein').textContent = protein.toFixed(1) + ' g/ngày';
+            nutritionPreview.style.display = 'block';
+        } else {
+            nutritionPreview.style.display = 'none';
+        }
     }
 
     // Initialize on page load
@@ -720,7 +797,10 @@
         // Add event listener for activity level
         const activityLevelSelect = document.getElementById('activityLevel');
         if (activityLevelSelect) {
-            activityLevelSelect.addEventListener('change', updateGoalPreview);
+            activityLevelSelect.addEventListener('change', function() {
+                updateGoalPreview();
+                updateCaloriesPreview();
+            });
         }
         
         // Ensure selected state is set on page load

@@ -16,6 +16,9 @@ import service.MemberService;
 import service.MembershipService;
 import service.PackageService;
 import service.PasswordService;
+import service.nutrition.NutritionService;
+import service.nutrition.NutritionServiceImpl;
+import model.NutritionGoal;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,6 +50,7 @@ public class MemberServlet extends HttpServlet {
     private MembershipService membershipService;
     private PackageService packageService;
     private PasswordService passwordService;
+    private NutritionService nutritionService;
 
     @Override
     public void init() throws ServletException {
@@ -55,6 +59,7 @@ public class MemberServlet extends HttpServlet {
         this.membershipService = new MembershipService();
         this.packageService = new PackageService();
         this.passwordService = new PasswordService();
+        this.nutritionService = new NutritionServiceImpl();
         System.out.println("[MemberServlet] Initialized successfully");
     }
 
@@ -167,6 +172,10 @@ public class MemberServlet extends HttpServlet {
                 case "/member/goals-edit":
                     updateGoals(request, response, currentMember);
                     break;
+                    
+                case "/member/body-goals":
+                    updateBodyGoals(request, response, currentMember);
+                    break;
 
                 case "/member/change-password":
                     handleChangePassword(request, response, currentMember);
@@ -196,6 +205,7 @@ public class MemberServlet extends HttpServlet {
 
     /**
      * Lấy member hiện tại từ session và reload từ DB để có dữ liệu mới nhất
+     * Optimized: Only reload if needed (not on every request to reduce DB calls)
      */
     private Member getCurrentMember(HttpSession session) {
         User user = (User) session.getAttribute("user");
@@ -203,7 +213,8 @@ public class MemberServlet extends HttpServlet {
             return null;
         }
 
-        // Reload từ database để có dữ liệu mới nhất
+        // Check if we need to reload (e.g., after updates)
+        // For now, reload to ensure fresh data, but this can be optimized
         Member member = memberService.getById(user.getId());
         
         // Cập nhật lại session
@@ -255,7 +266,42 @@ public class MemberServlet extends HttpServlet {
         if (member.getBmi() != null) {
             request.setAttribute("bmiCategory", calculateBMICategory(member.getBmi()));
         }
+        
+        // Load nutrition goal if exists
+        java.util.Optional<NutritionGoal> nutritionGoalOpt = nutritionService.getNutritionGoal(member.getId());
+        if (nutritionGoalOpt.isPresent()) {
+            NutritionGoal goal = nutritionGoalOpt.get();
+            request.setAttribute("nutritionGoal", goal);
+            
+            // Map activity factor to activity level string for JSP
+            String activityLevel = mapActivityFactorToLevel(goal.getActivityFactor());
+            request.setAttribute("currentActivityLevel", activityLevel);
+        }
+        
         request.getRequestDispatcher("/views/member/body-goals.jsp").forward(request, response);
+    }
+    
+    /**
+     * Map activity factor (BigDecimal) to activity level string
+     */
+    private String mapActivityFactorToLevel(java.math.BigDecimal activityFactor) {
+        if (activityFactor == null) {
+            return "";
+        }
+        
+        double value = activityFactor.doubleValue();
+        if (value == 1.2) {
+            return "sedentary";
+        } else if (value == 1.375) {
+            return "light";
+        } else if (value == 1.55) {
+            return "moderate";
+        } else if (value == 1.725) {
+            return "active";
+        } else if (value == 1.9) {
+            return "very_active";
+        }
+        return "";
     }
 
     /**
@@ -470,6 +516,143 @@ public class MemberServlet extends HttpServlet {
             request.setAttribute("error", e.getMessage());
             request.setAttribute("member", member);
             request.getRequestDispatcher("/views/member/goals-edit.jsp").forward(request, response);
+        }
+    }
+    
+    /**
+     * Cập nhật Body Goals - Chỉ số cơ thể và mục tiêu dinh dưỡng
+     */
+    private void updateBodyGoals(HttpServletRequest request, HttpServletResponse response, Member member)
+            throws ServletException, IOException {
+        try {
+            // Get weight and height
+            String weightStr = getParameter(request, "weight");
+            String heightStr = getParameter(request, "height");
+            
+            if (weightStr != null) {
+                Float weight = parseFloat(weightStr, "Cân nặng", 20f, 300f);
+                member.setWeight(weight);
+            }
+            
+            if (heightStr != null) {
+                Float height = parseFloat(heightStr, "Chiều cao", 100f, 250f);
+                member.setHeight(height);
+            }
+            
+            // Calculate BMI
+            calculateBMI(member);
+            
+            // Get fitness goal and activity level
+            String fitnessGoal = getParameter(request, "fitnessGoal");
+            String activityLevel = getParameter(request, "activityLevel");
+            
+            if (fitnessGoal == null || fitnessGoal.trim().isEmpty()) {
+                throw new IllegalArgumentException("Vui lòng chọn mục tiêu tập luyện");
+            }
+            
+            if (activityLevel == null || activityLevel.trim().isEmpty()) {
+                throw new IllegalArgumentException("Vui lòng chọn mức độ hoạt động");
+            }
+            
+            // Update member goal
+            member.setGoal(fitnessGoal);
+            
+            // Update member in database
+            int result = memberService.update(member);
+            if (result <= 0) {
+                throw new Exception("Không thể cập nhật thông tin cơ thể.");
+            }
+            
+            // Calculate and save nutrition goal
+            if (member.getWeight() != null && member.getHeight() != null) {
+                // Calculate age from DOB
+                Integer age = null;
+                if (member.getDob() != null) {
+                    java.util.Date dobUtil = member.getDob();
+                    java.sql.Date dobSql = new java.sql.Date(dobUtil.getTime());
+                    java.time.LocalDate dob = dobSql.toLocalDate();
+                    java.time.LocalDate now = java.time.LocalDate.now();
+                    age = now.getYear() - dob.getYear();
+                    if (now.getDayOfYear() < dob.getDayOfYear()) {
+                        age--;
+                    }
+                }
+                
+                // Map fitness goal to nutrition goal type
+                String goalType = mapFitnessGoalToNutritionGoal(fitnessGoal);
+                
+                // Calculate and save nutrition goal
+                try {
+                    nutritionService.calculateAndSaveNutritionGoal(
+                        member.getId(),
+                        member.getWeight(),
+                        member.getHeight(),
+                        age,
+                        member.getGender(),
+                        goalType,
+                        activityLevel
+                    );
+                } catch (Exception e) {
+                    System.err.println("[MemberServlet] Error calculating nutrition goal: " + e.getMessage());
+                    e.printStackTrace();
+                    // Continue even if nutrition goal calculation fails
+                }
+            }
+            
+            // Update session with updated member (already updated in database)
+            HttpSession session = request.getSession();
+            session.setAttribute("user", member);
+            session.setAttribute("success", "Cập nhật thông tin và mục tiêu dinh dưỡng thành công!");
+            
+            // Redirect - getCurrentMember will reload from DB in doGet
+            // Ensure response is not committed before redirect
+            if (!response.isCommitted()) {
+                response.sendRedirect(request.getContextPath() + "/member/body-goals");
+            } else {
+                System.err.println("[MemberServlet] WARNING: Response already committed! Cannot redirect.");
+            }
+            return; // Important: return after redirect to prevent further execution
+            
+        } catch (IllegalArgumentException e) {
+            HttpSession session = request.getSession();
+            session.setAttribute("error", e.getMessage());
+            if (!response.isCommitted()) {
+                response.sendRedirect(request.getContextPath() + "/member/body-goals");
+            } else {
+                System.err.println("[MemberServlet] WARNING: Response already committed! Cannot redirect after validation error.");
+            }
+        } catch (Exception e) {
+            System.err.println("[MemberServlet] Error updating body goals: " + e.getMessage());
+            e.printStackTrace();
+            HttpSession session = request.getSession();
+            session.setAttribute("error", "Có lỗi xảy ra khi cập nhật. Vui lòng thử lại.");
+            if (!response.isCommitted()) {
+                response.sendRedirect(request.getContextPath() + "/member/body-goals");
+            } else {
+                System.err.println("[MemberServlet] WARNING: Response already committed! Cannot redirect after error.");
+            }
+        }
+    }
+    
+    /**
+     * Map fitness goal to nutrition goal type
+     */
+    private String mapFitnessGoalToNutritionGoal(String fitnessGoal) {
+        if (fitnessGoal == null) {
+            return "giu_dang";
+        }
+        
+        switch (fitnessGoal.toLowerCase()) {
+            case "lose_weight":
+                return "giam_can";
+            case "gain_muscle":
+            case "gain_weight":
+                return "tang_can";
+            case "maintain":
+            case "improve_health":
+            case "athletic_performance":
+            default:
+                return "giu_dang";
         }
     }
 

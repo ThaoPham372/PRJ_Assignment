@@ -189,9 +189,9 @@ public class NutritionServlet extends HttpServlet {
                     BigDecimal currentCalories = totals.getCaloriesKcal();
                     if (currentCalories != null) {
                         BigDecimal caloriesPercent = currentCalories
-                            .divide(targetCalories, 2, RoundingMode.HALF_UP)
-                            .multiply(new BigDecimal("100"));
-                        request.setAttribute("caloriesPercent", caloriesPercent);
+                        .divide(targetCalories, 2, RoundingMode.HALF_UP)
+                        .multiply(new BigDecimal("100"));
+                    request.setAttribute("caloriesPercent", caloriesPercent);
                     } else {
                         request.setAttribute("caloriesPercent", BigDecimal.ZERO);
                     }
@@ -203,9 +203,9 @@ public class NutritionServlet extends HttpServlet {
                     BigDecimal currentProtein = totals.getProteinG();
                     if (currentProtein != null) {
                         BigDecimal proteinPercent = currentProtein
-                            .divide(targetProtein, 2, RoundingMode.HALF_UP)
-                            .multiply(new BigDecimal("100"));
-                        request.setAttribute("proteinPercent", proteinPercent);
+                        .divide(targetProtein, 2, RoundingMode.HALF_UP)
+                        .multiply(new BigDecimal("100"));
+                    request.setAttribute("proteinPercent", proteinPercent);
                     } else {
                         request.setAttribute("proteinPercent", BigDecimal.ZERO);
                     }

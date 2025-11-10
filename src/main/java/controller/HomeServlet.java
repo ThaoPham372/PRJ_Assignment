@@ -3,9 +3,9 @@ package controller;
 import java.io.IOException;
 
 import model.User;
-//import com.gym.model.shop.Product;
+//import model.shop.Product;
 //import service.shop.ProductService;
-//import cservice.shop.ProductServiceImpl;
+//import service.shop.ProductServiceImpl;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

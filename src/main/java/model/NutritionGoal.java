@@ -86,6 +86,17 @@ public class NutritionGoal {
     }
     
     /**
+     * Get updatedAt as java.util.Date for JSP fmt:formatDate compatibility
+     * Similar to Order.getOrderDateAsDate() pattern
+     */
+    public java.util.Date getUpdatedAtAsDate() {
+        if (updatedAt == null) {
+            return null;
+        }
+        return java.util.Date.from(updatedAt.atZone(java.time.ZoneId.systemDefault()).toInstant());
+    }
+    
+    /**
      * Pre-persist callback: Initialize default values and set updatedAt
      * Follows JPA best practices - lifecycle callbacks handle initialization
      */

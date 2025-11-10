@@ -95,5 +95,18 @@ public interface NutritionService {
      * @return daily intake totals
      */
     DailyIntakeDTO getDailyTotalsByDate(long userId, java.time.LocalDate date);
+    
+    /**
+     * Calculate and save nutrition goal based on user's body metrics and goals
+     * @param userId user ID
+     * @param weight current weight in kg
+     * @param height height in cm
+     * @param age age in years
+     * @param gender gender (M/F)
+     * @param goalType weight goal type (giam_can, tang_can, giu_dang)
+     * @param activityLevel activity level (sedentary, light, moderate, active, very_active)
+     * @return NutritionGoal with calculated targets
+     */
+    model.NutritionGoal calculateAndSaveNutritionGoal(long userId, Float weight, Float height, Integer age, String gender, String goalType, String activityLevel);
 }
 
