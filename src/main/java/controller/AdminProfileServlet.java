@@ -1,5 +1,8 @@
 package controller;
 
+import java.io.IOException;
+
+import Utils.FormUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -8,10 +11,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import model.Admin;
 import service.AdminService;
 import service.PasswordService;
-
-import java.io.IOException;
-
-import Utils.FormUtils;
 
 /*
     Note: 

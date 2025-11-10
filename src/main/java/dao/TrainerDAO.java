@@ -1,6 +1,7 @@
 package dao;
 
 import java.util.List;
+
 import model.Trainer;
 
 /*
@@ -70,7 +71,7 @@ public class TrainerDAO {
         Trainer trainer = genericDAO.findByField("email", email);
         System.out.println("Result: " + trainer);
         System.out.println("-------------------------------");
-        return trainer != null ? trainer.getId(): -1;
+        return trainer != null ? trainer.getId() : -1;
     }
 
     public Trainer findByNameOrEmail(String nameOrEmail) {

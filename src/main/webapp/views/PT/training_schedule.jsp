@@ -1,5 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%@ taglib
+uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %> <%@ taglib
+uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -12,428 +14,423 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
       rel="stylesheet"
     />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-
     <style>
       :root {
         --primary: #141a49;
         --accent: #ec8b5a;
         --success: #28a745;
-        --warning: #ffc107;
         --danger: #dc3545;
+        --warning: #ffc107;
         --info: #17a2b8;
-        --text: #2c3e50;
-        --text-light: #5a6c7d;
         --card: #ffffff;
         --shadow: rgba(0, 0, 0, 0.1);
-        --gradient-primary: linear-gradient(135deg, #141a49 0%, #1e2a5c 100%);
-        --gradient-accent: linear-gradient(135deg, #ec8b5a 0%, #d67a4f 100%);
+        --border: #e0e0e0;
+        --text-muted: #6c757d;
       }
-
       * {
         box-sizing: border-box;
         margin: 0;
         padding: 0;
       }
-
       body {
         font-family: 'Inter', sans-serif;
-        background: #f9f9f9;
-        color: var(--text);
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        color: #2c3e50;
+        padding: 30px 20px;
+        min-height: 100vh;
       }
-
       .container {
         max-width: 1400px;
         margin: 0 auto;
-        padding: 40px 20px;
       }
-
       .page-header {
-        background: var(--gradient-primary);
+        background: linear-gradient(135deg, var(--primary), #1f2961);
         color: #fff;
         padding: 30px 40px;
-        border-radius: 15px;
-        margin-bottom: 40px;
-        box-shadow: 0 8px 30px var(--shadow);
+        border-radius: 20px;
+        margin-bottom: 30px;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
       }
-
-      .page-header-content h1 {
-        font-size: 2.5rem;
-        margin-bottom: 10px;
-      }
-
-      .breadcrumb {
+      .page-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
         display: flex;
-        gap: 10px;
-        font-size: 0.9rem;
-        opacity: 0.9;
+        align-items: center;
+        gap: 15px;
       }
-
-      .breadcrumb a {
-        color: #fff;
-        text-decoration: none;
-      }
-
-      .breadcrumb a:hover {
-        color: var(--accent);
-      }
-
       .btn {
-        background: var(--gradient-accent);
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        padding: 12px 24px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s;
         display: inline-flex;
         align-items: center;
         gap: 8px;
+        background: var(--accent);
+        color: #fff;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
         text-decoration: none;
+        font-size: 0.95rem;
       }
-
       .btn:hover {
+        background: #d87548;
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(236, 139, 90, 0.4);
+        box-shadow: 0 5px 15px rgba(236, 139, 90, 0.4);
       }
-
-      .btn-back {
-        background: #6c757d;
-        margin-bottom: 20px;
+      .btn-danger {
+        background: var(--danger);
       }
-
+      .btn-danger:hover {
+        background: #c82333;
+      }
       .btn-sm {
         padding: 8px 16px;
         font-size: 0.85rem;
       }
-
-      .btn-success {
-        background: var(--success);
-      }
-
-      .btn-danger {
-        background: var(--danger);
-      }
-
-      .btn-info {
-        background: var(--info);
-      }
-
-      .calendar-controls {
+      .card {
         background: var(--card);
-        border-radius: 15px;
-        padding: 25px;
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px var(--shadow);
         margin-bottom: 30px;
-        box-shadow: 0 4px 20px var(--shadow);
+        transition: transform 0.3s ease;
+      }
+      .card:hover {
+        transform: translateY(-2px);
+      }
+      .section-title {
+        color: var(--primary);
+        font-weight: 700;
+        margin-bottom: 25px;
+        font-size: 1.4rem;
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        flex-wrap: wrap;
+        gap: 12px;
+        padding-bottom: 15px;
+        border-bottom: 3px solid var(--accent);
+      }
+      .section-title i {
+        color: var(--accent);
+      }
+      /* Form Styles */
+      .exception-form {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        padding: 30px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        border: 2px solid var(--border);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+      }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+      .form-group label {
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: var(--primary);
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .form-group label i {
+        color: var(--accent);
+        font-size: 1rem;
+      }
+      .form-group input,
+      .form-group select {
+        padding: 14px 18px;
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: #fff;
+        font-family: 'Inter', sans-serif;
+      }
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px rgba(236, 139, 90, 0.15);
+        transform: translateY(-2px);
+      }
+      .form-group input::placeholder {
+        color: #adb5bd;
+      }
+      .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        padding-top: 20px;
+        border-top: 2px solid var(--border);
+      }
+      .form-actions .btn {
+        padding: 14px 30px;
+        font-size: 1rem;
+        font-weight: 700;
+        box-shadow: 0 4px 15px rgba(236, 139, 90, 0.3);
+      }
+      .form-actions .btn:hover {
+        box-shadow: 0 6px 20px rgba(236, 139, 90, 0.4);
+      }
+      /* Calendar View */
+      .calendar-container {
+        margin-top: 25px;
+      }
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         gap: 20px;
       }
-
-      .calendar-nav {
+      .calendar-list {
         display: flex;
-        align-items: center;
-        gap: 20px;
+        flex-direction: column;
+        gap: 15px;
       }
-
-      .calendar-nav button,
-      .calendar-nav a.calendar-nav-btn {
-        background: var(--primary);
-        color: #fff;
+      .calendar-list .calendar-day {
+        display: grid;
+        grid-template-columns: 140px 200px 1fr auto;
+        gap: 15px;
+        align-items: center;
+        padding: 12px 18px;
+        min-height: 70px;
+      }
+      .calendar-list .day-header {
+        margin: 0;
+        padding: 0;
         border: none;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        cursor: pointer;
-        transition: all 0.3s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
       }
-
-      .calendar-nav button:hover,
-      .calendar-nav a.calendar-nav-btn:hover {
-        background: var(--accent);
-        transform: scale(1.1);
-      }
-
-      .current-month {
-        font-size: 1.5rem;
+      .calendar-list .day-date {
+        font-size: 0.9rem;
         font-weight: 700;
         color: var(--primary);
-        min-width: 250px;
-        text-align: center;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
-
-      .view-options {
+      .calendar-list .day-date i {
+        font-size: 0.85rem;
+      }
+      .calendar-list .day-exceptions {
+        display: contents;
+      }
+      .calendar-list .exception-item {
+        display: contents;
+        background: transparent;
+        padding: 0;
+        border: none;
+        border-radius: 0;
+      }
+      .calendar-list .exception-item:hover {
+        transform: none;
+        box-shadow: none;
+      }
+      .calendar-list .exception-info {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .calendar-list .exception-slot {
+        font-weight: 600;
+        color: var(--primary);
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+      }
+      .calendar-list .exception-slot i {
+        font-size: 0.8rem;
+      }
+      .calendar-list .exception-type {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        width: 70px;
+        text-align: center;
+        box-sizing: border-box;
+      }
+      .calendar-list .exception-reason {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-top: 3px;
+      }
+      .calendar-list .exception-reason i {
+        font-size: 0.75rem;
+      }
+      .calendar-list .exception-actions {
+        justify-self: end;
+      }
+      .view-toggle {
         display: flex;
         gap: 10px;
       }
-
       .view-btn {
         padding: 10px 20px;
-        background: #e9ecef;
-        border: 2px solid transparent;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s;
+        border: 2px solid var(--border);
+        border-radius: 10px;
+        background: #fff;
+        color: var(--primary);
         font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
       }
-
+      .view-btn:hover {
+        border-color: var(--accent);
+        background: #fff5f0;
+      }
       .view-btn.active {
         background: var(--accent);
         color: #fff;
         border-color: var(--accent);
       }
-
-      .calendar-grid {
-        background: var(--card);
-        border-radius: 15px;
-        padding: 30px;
-        box-shadow: 0 8px 30px var(--shadow);
-      }
-
-      .calendar-header {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 10px;
-        margin-bottom: 15px;
-      }
-
-      .calendar-day-name {
-        text-align: center;
-        font-weight: 700;
-        color: var(--primary);
-        padding: 15px;
-        background: #f8f9fa;
-        border-radius: 8px;
-      }
-
-      .calendar-days {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 10px;
-      }
-
       .calendar-day {
-        min-height: 120px;
-        padding: 10px;
-        border: 2px solid #e9ecef;
-        border-radius: 10px;
         background: #fff;
-        transition: all 0.3s;
-        cursor: pointer;
+        border: 2px solid var(--border);
+        border-radius: 15px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        height: 200px;
+        display: flex;
+        flex-direction: column;
       }
-
       .calendar-day:hover {
         border-color: var(--accent);
-        box-shadow: 0 4px 15px var(--shadow);
-        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
       }
-
-      .calendar-day.other-month {
-        background: #f8f9fa;
-        opacity: 0.5;
-      }
-
-      .calendar-day.today {
-        border-color: var(--accent);
-        background: linear-gradient(
-          135deg,
-          rgba(236, 139, 90, 0.1),
-          rgba(236, 139, 90, 0.05)
-        );
-      }
-
-      .day-number {
-        font-weight: 700;
-        font-size: 1.1rem;
-        color: var(--primary);
-        margin-bottom: 8px;
-      }
-
-      .session-item {
-        background: var(--accent);
-        color: #fff;
-        padding: 6px 8px;
-        border-radius: 5px;
-        font-size: 0.75rem;
-        margin-bottom: 4px;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-
-      .session-item:hover {
-        transform: scale(1.05);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-      }
-
-      .session-item.pending {
-        background: var(--warning);
-        color: #000;
-      }
-
-      .session-item.completed {
-        background: var(--success);
-      }
-
-      .session-item.cancelled {
-        background: var(--danger);
-      }
-
-      /* Monthly calendar schedule chips */
-      .schedule-chip { color: #fff; padding: 6px 8px; border-radius: 5px; font-size: 0.75rem; margin-bottom: 4px; display: inline-block; }
-      .schedule-pending { background-color: #fbc02d; color: #000; }
-      .schedule-confirmed { background-color: #ff9800; }
-      .schedule-completed { background-color: #4caf50; }
-      .schedule-cancelled { background-color: #f44336; }
-      
-      /* Highlight user's sessions on calendar */
-      .schedule-chip.highlight-user {
-        border: 3px solid #141a49;
-        box-shadow: 0 0 8px rgba(20, 26, 73, 0.6);
-        font-weight: 700;
-        transform: scale(1.05);
-      }
-
-      .session-list {
-        background: var(--card);
-        border-radius: 15px;
-        padding: 30px;
-        box-shadow: 0 8px 30px var(--shadow);
-      }
-
-      .session-list h3 {
-        color: var(--primary);
-        margin-bottom: 20px;
-        font-size: 1.5rem;
-      }
-
-      .session-card {
-        background: #f8f9fa;
-        border-left: 4px solid var(--accent);
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 15px;
-        transition: all 0.3s;
-      }
-
-      .session-card:hover {
-        box-shadow: 0 4px 15px var(--shadow);
-        transform: translateX(5px);
-      }
-
-      .session-header {
+      .day-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--border);
+        flex-shrink: 0;
       }
-
-      .session-title {
+      .day-date {
         font-weight: 700;
-        font-size: 1.1rem;
+        font-size: 0.95rem;
         color: var(--primary);
       }
-
-      .session-time {
-        color: var(--accent);
+      .day-exceptions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        flex: 1;
+      }
+      .exception-item {
+        background: linear-gradient(135deg, #fff5f0 0%, #ffe8d6 100%);
+        padding: 12px 15px;
+        border-radius: 10px;
+        border-left: 4px solid var(--accent);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        transition: all 0.3s ease;
+        height: 120px;
+        box-sizing: border-box;
+      }
+      .exception-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+      }
+      .exception-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .exception-slot {
         font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 6px;
+        font-size: 0.85rem;
       }
-
-      .session-info {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
-        margin: 15px 0;
+      .exception-type {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-right: 8px;
+        width: 80px;
+        text-align: center;
+        box-sizing: border-box;
       }
-
-      .info-item {
+      .exception-type.OFF {
+        background: var(--danger);
+        color: #fff;
+      }
+      .exception-type.BUSY {
+        background: var(--warning);
+        color: #000;
+      }
+      .exception-type.SPECIAL {
+        background: var(--info);
+        color: #fff;
+      }
+      .exception-reason {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 4px;
+        line-height: 1.3;
+        max-height: 32px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+      .exception-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .btn-icon {
+        padding: 8px 10px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 0.9rem;
-        color: var(--text-light);
+        justify-content: center;
       }
-
-      .info-item i {
-        color: var(--accent);
+      .btn-icon-danger {
+        background: var(--danger);
+        color: #fff;
       }
-
-      .session-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 15px;
+      .btn-icon-danger:hover {
+        background: #c82333;
+        transform: scale(1.1);
       }
-
-      .status-badge {
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
+      .calendar-list .btn-icon {
+        padding: 6px 8px;
+        font-size: 0.85rem;
       }
-
-      .status-badge.pending {
-        background: #fff3cd;
-        color: #856404;
-      }
-
-      .status-badge.confirmed {
-        background: #d1ecf1;
-        color: #0c5460;
-      }
-
-      .status-badge.completed {
-        background: #d4edda;
-        color: #155724;
-      }
-
-      .status-badge.cancelled {
-        background: #f8d7da;
-        color: #721c24;
-      }
-
-      /* Unified status styles for list view */
-      .status-confirmed {
-        background-color: #ff9800;
-        color: #ffffff;
-        border-radius: 10px;
-        padding: 5px 10px;
-        font-size: 0.8rem;
-        font-weight: 600;
-      }
-      .status-rejected {
-        background-color: #f44336;
-        color: #ffffff;
-        border-radius: 10px;
-        padding: 5px 10px;
-        font-size: 0.8rem;
-        font-weight: 600;
-      }
-
-      /* Inline error message below submit button */
-      .error-message {
-        margin-top: 8px;
-        color: #dc3545;
-        font-size: 0.9rem;
-        font-weight: 600;
-        text-align: left;
-        opacity: 1;
-        transition: opacity 0.3s ease;
-      }
-      .error-message.fade-out { opacity: 0; }
-
-      /* Modal */
-      .modal {
+      /* Custom Modal */
+      .modal-overlay {
         display: none;
         position: fixed;
         top: 0;
@@ -444,395 +441,1361 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         z-index: 1000;
         align-items: center;
         justify-content: center;
+        animation: fadeIn 0.3s ease;
       }
-
-      .modal.active {
+      .modal-overlay.show {
         display: flex;
       }
-
-      .modal-content {
-        background: var(--card);
-        border-radius: 20px;
-        padding: 40px;
-        max-width: 600px;
-        width: 90%;
-        max-height: 90vh;
-        overflow-y: auto;
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
       }
-
+      .modal-dialog {
+        background: #fff;
+        border-radius: 20px;
+        padding: 0;
+        max-width: 450px;
+        width: 90%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s ease;
+        overflow: hidden;
+      }
+      @keyframes slideUp {
+        from {
+          transform: translateY(50px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
       .modal-header {
+        background: linear-gradient(135deg, var(--danger), #c82333);
+        color: #fff;
+        padding: 20px 25px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .modal-header i {
+        font-size: 1.5rem;
+      }
+      .modal-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 700;
+      }
+      .modal-body {
+        padding: 25px;
+        color: var(--primary);
+        font-size: 1rem;
+        line-height: 1.6;
+      }
+      .modal-footer {
+        padding: 20px 25px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        border-top: 1px solid var(--border);
+        background: #f8f9fa;
+      }
+      .modal-btn {
+        padding: 10px 24px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+      }
+      .modal-btn-cancel {
+        background: #6c757d;
+        color: #fff;
+      }
+      .modal-btn-cancel:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+      }
+      .modal-btn-confirm {
+        background: var(--danger);
+        color: #fff;
+      }
+      .modal-btn-confirm:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+      }
+      /* Toast Notification */
+      .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 2000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .toast {
+        background: #fff;
+        border-radius: 12px;
+        padding: 16px 20px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 300px;
+        max-width: 400px;
+        animation: slideInRight 0.4s ease, fadeOut 0.4s ease 2.6s;
+        animation-fill-mode: forwards;
+        border-left: 4px solid #28a745;
+      }
+      @keyframes slideInRight {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      @keyframes fadeOut {
+        to {
+          opacity: 0;
+          transform: translateX(400px);
+        }
+      }
+      .toast-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #28a745;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+      }
+      .toast-content {
+        flex: 1;
+      }
+      .toast-title {
+        font-weight: 700;
+        color: var(--primary);
+        font-size: 1rem;
+        margin-bottom: 4px;
+      }
+      .toast-message {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+      .toast-close {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 1.2rem;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.3s ease;
+      }
+      .toast-close:hover {
+        color: var(--primary);
+      }
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-muted);
+      }
+      .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        opacity: 0.3;
+      }
+      .empty-state p {
+        font-size: 1.1rem;
+      }
+      /* Bookings Grid */
+      .bookings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+      /* Bookings List View */
+      .bookings-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 20px;
+      }
+      .bookings-list .booking-card {
+        display: grid;
+        grid-template-columns: 120px 180px 120px 180px 1fr 220px;
+        gap: 15px;
+        align-items: center;
+        padding: 12px 18px;
+        min-height: 70px;
+      }
+      .bookings-list .booking-header {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin: 0;
+        padding: 0;
+        border: none;
+        justify-content: center;
+      }
+      .bookings-list .booking-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .bookings-list .status-badge {
+        font-size: 0.75rem;
+        padding: 5px 12px;
+        width: fit-content;
+      }
+      .bookings-list .booking-body {
+        display: contents;
+        margin: 0;
+      }
+      .bookings-list .booking-info-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+      }
+      .bookings-list .booking-info-row i {
+        font-size: 0.85rem;
+        color: var(--primary);
+        width: 18px;
+        text-align: center;
+      }
+      .bookings-list .info-content {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        flex: 1;
+      }
+      .bookings-list .info-label {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+      .bookings-list .info-value {
+        font-size: 0.9rem;
+        color: var(--primary);
+        font-weight: 500;
+        line-height: 1.3;
+        word-break: break-word;
+      }
+      .bookings-list .booking-footer {
+        justify-self: end;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+      }
+      .bookings-list .status-update-form {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
+        justify-content: flex-end;
+      }
+      .bookings-list .status-select {
+        padding: 7px 10px;
+        font-size: 0.85rem;
+        min-width: 130px;
+        border-radius: 8px;
+      }
+      .bookings-list .btn-sm {
+        padding: 7px 14px;
+        font-size: 0.85rem;
+        white-space: nowrap;
+      }
+      .booking-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border: 2px solid var(--border);
+        border-radius: 15px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      }
+      .booking-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        border-color: var(--accent);
+      }
+      .booking-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--border);
+      }
+      .booking-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      /* Filter Container */
+      .filter-container {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 20px;
+        border-radius: 15px;
         margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
       }
-
-      .modal-header h2 {
+      .filter-label {
+        font-weight: 600;
         color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.95rem;
       }
-
-      .close-btn {
-        background: none;
-        border: none;
-        font-size: 2rem;
+      .filter-label i {
+        color: var(--accent);
+      }
+      .filter-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .filter-btn {
+        padding: 10px 20px;
+        border: 2px solid transparent;
+        border-radius: 10px;
+        background: #fff;
+        color: var(--primary);
+        font-weight: 600;
         cursor: pointer;
-        color: var(--text-light);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
       }
-
-      .form-group {
+      .filter-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      }
+      .filter-btn.active {
+        color: #fff;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+      .filter-btn.active:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+      }
+      .filter-btn i {
+        font-size: 0.85rem;
+      }
+      /* All button */
+      .filter-btn[data-status='all'] {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+      }
+      .filter-btn[data-status='all']:hover {
+        background: #1f2961;
+        border-color: #1f2961;
+      }
+      .filter-btn[data-status='all'].active {
+        background: var(--primary);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(20, 26, 73, 0.3);
+      }
+      /* Pending button */
+      .filter-btn[data-status='pending'] {
+        background: var(--warning);
+        border-color: var(--warning);
+        color: #000;
+      }
+      .filter-btn[data-status='pending']:hover {
+        background: #e0a800;
+        border-color: #e0a800;
+      }
+      .filter-btn[data-status='pending'].active {
+        background: var(--warning);
+        border-color: var(--warning);
+        color: #000;
+        box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.4);
+      }
+      /* Confirmed button */
+      .filter-btn[data-status='confirmed'] {
+        background: var(--info);
+        border-color: var(--info);
+        color: #fff;
+      }
+      .filter-btn[data-status='confirmed']:hover {
+        background: #138496;
+        border-color: #138496;
+      }
+      .filter-btn[data-status='confirmed'].active {
+        background: var(--info);
+        border-color: var(--info);
+        box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.4);
+      }
+      /* Completed button */
+      .filter-btn[data-status='completed'] {
+        background: var(--success);
+        border-color: var(--success);
+        color: #fff;
+      }
+      .filter-btn[data-status='completed']:hover {
+        background: #218838;
+        border-color: #218838;
+      }
+      .filter-btn[data-status='completed'].active {
+        background: var(--success);
+        border-color: var(--success);
+        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.4);
+      }
+      /* Cancelled button */
+      .filter-btn[data-status='cancelled'] {
+        background: var(--danger);
+        border-color: var(--danger);
+        color: #fff;
+      }
+      .filter-btn[data-status='cancelled']:hover {
+        background: #c82333;
+        border-color: #c82333;
+      }
+      .filter-btn[data-status='cancelled'].active {
+        background: var(--danger);
+        border-color: var(--danger);
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.4);
+      }
+      .booking-body {
         margin-bottom: 20px;
       }
-
-      .form-group label {
-        display: block;
+      .booking-info-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 15px;
+      }
+      .booking-info-row:last-child {
+        margin-bottom: 0;
+      }
+      .booking-info-row i {
+        color: var(--accent);
+        font-size: 1.1rem;
+        margin-top: 3px;
+        min-width: 20px;
+      }
+      .info-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .info-label {
+        font-size: 0.8rem;
+        color: var(--text-muted);
         font-weight: 600;
-        margin-bottom: 8px;
-        color: var(--text);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
-
-      .form-group input,
-      .form-group select,
-      .form-group textarea {
-        width: 100%;
-        padding: 12px 15px;
-        border: 2px solid #e0e0e0;
+      .info-value {
+        font-size: 0.95rem;
+        color: var(--primary);
+        font-weight: 500;
+      }
+      .notes-text {
+        font-style: italic;
+        color: #555;
+        line-height: 1.5;
+      }
+      .booking-footer {
+        padding-top: 15px;
+        border-top: 2px solid var(--border);
+      }
+      .status-update-form {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .status-select {
+        flex: 1;
+        padding: 10px 12px;
+        border: 2px solid var(--border);
         border-radius: 8px;
-        font-size: 1rem;
-        transition: all 0.3s;
+        font-size: 0.9rem;
+        background: #fff;
+        transition: all 0.3s ease;
       }
-
-      .form-group input:focus,
-      .form-group select:focus,
-      .form-group textarea:focus {
+      .status-select:focus {
         outline: none;
         border-color: var(--accent);
         box-shadow: 0 0 0 3px rgba(236, 139, 90, 0.1);
       }
-
-      @media (max-width: 968px) {
-        .calendar-days {
+      /* Table Styles */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+      th {
+        background: var(--primary);
+        color: #fff;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+      }
+      tr:hover {
+        background: #f8f9fa;
+      }
+      .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #fff;
+      }
+      .status-badge.pending {
+        background: var(--warning);
+        color: #000;
+      }
+      .status-badge.confirmed {
+        background: var(--info);
+      }
+      .status-badge.completed {
+        background: var(--success);
+      }
+      .status-badge.cancelled {
+        background: var(--danger);
+      }
+      .form-inline {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .form-inline select {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 2px solid var(--border);
+      }
+      /* Week Calendar Styles */
+      .week-cal {
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        margin-top: 20px;
+      }
+      .week-head,
+      .week-row {
+        display: grid;
+        grid-template-columns: 180px repeat(7, 1fr);
+      }
+      .week-head div {
+        background: #141a49;
+        color: #fff;
+        font-weight: 700;
+        padding: 12px;
+        text-align: center;
+      }
+      .slot-cell {
+        border: 1px solid #eee;
+        padding: 10px;
+        min-height: 74px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .slot-time {
+        background: #f6f7fb;
+        color: #141a49;
+        font-weight: 700;
+        padding: 10px 12px;
+        border-right: 1px solid #eaeaf0;
+      }
+      .legend {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        margin: 14px 0 4px;
+      }
+      .tag {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        font-size: 0.85rem;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .st-available {
+        background: #28a745;
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        display: inline-block;
+      }
+      .st-off {
+        background: #f44336;
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        display: inline-block;
+      }
+      .st-full {
+        background: #ec8b5a;
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        display: inline-block;
+      }
+      .count-chip {
+        background: #141a49;
+        color: #fff;
+        border-radius: 999px;
+        padding: 2px 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+      .small-note {
+        color: #6a7890;
+        font-size: 0.82rem;
+      }
+      @media (max-width: 768px) {
+        .form-grid {
           grid-template-columns: 1fr;
         }
-
-        .calendar-header {
-          display: none;
-        }
-
-        .session-info {
+        .calendar-grid {
           grid-template-columns: 1fr;
+        }
+        .calendar-list .calendar-day {
+          grid-template-columns: 1fr;
+          gap: 15px;
+        }
+        .view-toggle {
+          width: 100%;
+          justify-content: center;
+          margin-top: 15px;
+        }
+        .bookings-grid {
+          grid-template-columns: 1fr;
+        }
+        .status-update-form {
+          flex-direction: column;
+        }
+        .status-select {
+          width: 100%;
+        }
+        .week-head,
+        .week-row {
+          grid-template-columns: 120px repeat(7, 1fr);
+          font-size: 0.85rem;
+        }
+        .slot-time {
+          padding: 8px;
+          font-size: 0.8rem;
+        }
+        .slot-cell {
+          padding: 8px;
+          min-height: 60px;
         }
       }
     </style>
   </head>
   <body>
-    <!-- Optional header include removed to avoid missing file error -->
-
     <div class="container">
-      <c:if test="${not empty error}">
-        <div style="margin-bottom:16px;padding:12px 16px;border-radius:8px;background:#f8d7da;color:#721c24;">
-          <i class="fas fa-exclamation-triangle"></i>
-          ${error}
-        </div>
-      </c:if>
-      <a
-        href="${pageContext.request.contextPath}/views/PT/homePT.jsp"
-        class="btn btn-back"
-      >
-        <i class="fas fa-arrow-left"></i> Quay lại
-      </a>
-
       <div class="page-header">
-        <div class="page-header-content">
-          <h1><i class="fas fa-calendar-alt"></i> Lịch huấn luyện</h1>
-          <div class="breadcrumb">
-            <a href="${pageContext.request.contextPath}/views/PT/homePT.jsp"
-              >Home</a
+        <h1><i class="fas fa-calendar-alt"></i> Lịch huấn luyện của bạn</h1>
+        <a href="${pageContext.request.contextPath}/pt/home" class="btn">
+          <i class="fas fa-home"></i> Trang chính
+        </a>
+      </div>
+
+      <!-- DANH SÁCH BUỔI TẬP -->
+      <div class="card">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          "
+        >
+          <div class="section-title" style="margin: 0">
+            <i class="fas fa-dumbbell"></i> Danh sách buổi tập
+          </div>
+          <div class="view-toggle">
+            <button
+              class="view-btn active"
+              onclick="switchBookingView('grid')"
+              id="bookingGridViewBtn"
+              title="Xem dạng lưới"
             >
-            <span>/</span>
-            <span>Lịch huấn luyện</span>
+              <i class="fas fa-th"></i> Lưới
+            </button>
+            <button
+              class="view-btn"
+              onclick="switchBookingView('list')"
+              id="bookingListViewBtn"
+              title="Xem dạng danh sách"
+            >
+              <i class="fas fa-list"></i> Danh sách
+            </button>
           </div>
         </div>
-        <button class="btn" onclick="openModal()">
-          <i class="fas fa-plus"></i> Tạo buổi tập mới
-        </button>
-      </div>
-
-      <!-- Calendar Controls -->
-      <div class="calendar-controls">
-        <div class="calendar-nav">
-          <c:set var="navParams" value="&month=${prev_month}&year=${prev_year}"/>
-          <c:if test="${not empty defaultView}">
-            <c:set var="navParams" value="${navParams}&view=${defaultView}"/>
-          </c:if>
-          <c:if test="${not empty highlightUserId}">
-            <c:set var="navParams" value="${navParams}&user=${highlightUserId}"/>
-          </c:if>
-          <a href="ScheduleServlet?action=list${navParams}" class="calendar-nav-btn">
-            <i class="fas fa-chevron-left"></i>
-          </a>
-          <div class="current-month" id="currentMonth">
-            Tháng ${calendar_month}, ${calendar_year}
+        <c:if test="${empty bookings}">
+          <div class="empty-state">
+            <i class="fas fa-clipboard-list"></i>
+            <p>Không có buổi tập nào.</p>
           </div>
-          <c:set var="navParamsNext" value="&month=${next_month}&year=${next_year}"/>
-          <c:if test="${not empty defaultView}">
-            <c:set var="navParamsNext" value="${navParamsNext}&view=${defaultView}"/>
-          </c:if>
-          <c:if test="${not empty highlightUserId}">
-            <c:set var="navParamsNext" value="${navParamsNext}&user=${highlightUserId}"/>
-          </c:if>
-          <a href="ScheduleServlet?action=list${navParamsNext}" class="calendar-nav-btn">
-            <i class="fas fa-chevron-right"></i>
-          </a>
+        </c:if>
+        <c:if test="${not empty bookings}">
+          <!-- Filter Buttons -->
+          <div class="filter-container">
+            <div class="filter-label">
+              <i class="fas fa-filter"></i> Lọc theo trạng thái:
+            </div>
+            <div class="filter-buttons">
+              <button
+                class="filter-btn active"
+                data-status="all"
+                onclick="filterBookings('all')"
+              >
+                <i class="fas fa-list"></i> Tất cả
+              </button>
+              <button
+                class="filter-btn"
+                data-status="pending"
+                onclick="filterBookings('pending')"
+              >
+                <i class="fas fa-clock"></i> Chờ xác nhận
+              </button>
+              <button
+                class="filter-btn"
+                data-status="confirmed"
+                onclick="filterBookings('confirmed')"
+              >
+                <i class="fas fa-check-circle"></i> Đã xác nhận
+              </button>
+              <button
+                class="filter-btn"
+                data-status="completed"
+                onclick="filterBookings('completed')"
+              >
+                <i class="fas fa-check-double"></i> Hoàn thành
+              </button>
+              <button
+                class="filter-btn"
+                data-status="cancelled"
+                onclick="filterBookings('cancelled')"
+              >
+                <i class="fas fa-times-circle"></i> Đã hủy
+              </button>
+            </div>
+          </div>
+          <div class="bookings-grid" id="bookingsView">
+            <c:forEach var="b" items="${bookings}">
+              <div
+                class="booking-card"
+                data-status="${fn:toLowerCase(b.bookingStatus.name())}"
+              >
+                <div class="booking-header">
+                  <div class="booking-label">Trạng thái:</div>
+                  <span
+                    class="status-badge ${fn:toLowerCase(b.bookingStatus.name())}"
+                  >
+                    ${b.bookingStatus.displayName}
+                  </span>
+                </div>
+                <div class="booking-body">
+                  <div class="booking-info-row">
+                    <i class="fas fa-user"></i>
+                    <div class="info-content">
+                      <span class="info-label">Thành viên:</span>
+                      <span class="info-value">
+                        <c:choose>
+                          <c:when test="${not empty b.member}">
+                            ${b.member.name != null ? b.member.name :
+                            b.member.username}
+                          </c:when>
+                          <c:otherwise>N/A</c:otherwise>
+                        </c:choose>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="booking-info-row">
+                    <i class="fas fa-calendar"></i>
+                    <div class="info-content">
+                      <span class="info-label">Ngày:</span>
+                      <span class="info-value">${b.bookingDate}</span>
+                    </div>
+                  </div>
+                  <div class="booking-info-row">
+                    <i class="fas fa-clock"></i>
+                    <div class="info-content">
+                      <span class="info-label">Slot:</span>
+                      <span class="info-value">
+                        <c:choose>
+                          <c:when test="${not empty b.timeSlot}">
+                            ${b.timeSlot.slotName} (${b.timeSlot.startTime} -
+                            ${b.timeSlot.endTime})
+                          </c:when>
+                          <c:otherwise> Slot ${b.slotId} </c:otherwise>
+                        </c:choose>
+                      </span>
+                    </div>
+                  </div>
+                  <c:if test="${not empty b.notes}">
+                    <div class="booking-info-row">
+                      <i class="fas fa-sticky-note"></i>
+                      <div class="info-content">
+                        <span class="info-label">Ghi chú:</span>
+                        <span class="info-value notes-text">${b.notes}</span>
+                      </div>
+                    </div>
+                  </c:if>
+                </div>
+                <div class="booking-footer">
+                  <form
+                    class="status-update-form"
+                    action="${pageContext.request.contextPath}/pt/update-booking"
+                    method="post"
+                  >
+                    <input type="hidden" name="action" value="update" />
+                    <input
+                      type="hidden"
+                      name="bookingId"
+                      value="${b.bookingId}"
+                    />
+                    <select name="status" class="status-select" required>
+                      <option value="">-- Chọn trạng thái --</option>
+                      <option value="CONFIRMED">Xác nhận</option>
+                      <option value="COMPLETED">Hoàn thành</option>
+                      <option value="CANCELLED">Hủy</option>
+                    </select>
+                    <button type="submit" class="btn btn-sm">
+                      <i class="fas fa-sync"></i> Cập nhật
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </c:forEach>
+          </div>
+        </c:if>
+      </div>
+
+      <!-- ĐĂNG KÝ NGÀY NGHỈ / BẬN -->
+      <div class="card">
+        <div class="section-title">
+          <i class="fas fa-bed"></i> Đăng ký ngày nghỉ/bận
         </div>
-        <div class="view-options">
-          <button class="view-btn active" onclick="switchView('calendar')">
-            <i class="fas fa-calendar"></i> Lịch
-          </button>
-          <button class="view-btn" onclick="switchView('list')">
-            <i class="fas fa-list"></i> Danh sách
-          </button>
+        <div class="exception-form">
+          <form
+            action="${pageContext.request.contextPath}/pt/add-exception"
+            method="post"
+          >
+            <input type="hidden" name="action" value="exception" />
+            <input
+              type="hidden"
+              name="trainerId"
+              value="${sessionScope.user.id}"
+            />
+            <div class="form-grid">
+              <div class="form-group">
+                <label><i class="fas fa-calendar"></i> Ngày</label>
+                <input type="date" name="date" id="exceptionDate" required />
+              </div>
+              <div class="form-group">
+                <label><i class="fas fa-clock"></i> Slot</label>
+                <select name="slotId" required>
+                  <option value="">-- Chọn slot --</option>
+                  <c:forEach var="slot" items="${timeSlots}">
+                    <option value="${slot.slotId}">
+                      ${slot.slotName} (${slot.startTime} - ${slot.endTime})
+                    </option>
+                  </c:forEach>
+                </select>
+              </div>
+              <div class="form-group">
+                <label><i class="fas fa-tag"></i> Loại</label>
+                <select name="type" required>
+                  <option value="OFF">Nghỉ (OFF)</option>
+                  <option value="BUSY">Bận (BUSY)</option>
+                  <option value="SPECIAL">Đặc biệt (SPECIAL)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label><i class="fas fa-comment"></i> Lý do</label>
+                <input
+                  type="text"
+                  name="reason"
+                  placeholder="Nhập lý do (tùy chọn)"
+                />
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn">
+                <i class="fas fa-calendar-plus"></i> Đăng ký ngày nghỉ
+              </button>
+            </div>
+          </form>
         </div>
       </div>
 
-     <!-- Calendar View (rendered from DB via JS) -->
-     <div id="calendarView" class="calendar-grid">
-       <c:if test="${not empty highlightUserName}">
-         <div style="margin-bottom: 20px; padding: 12px 20px; background: linear-gradient(135deg, #141a49 0%, #1e2a5c 100%); color: #fff; border-radius: 10px; font-weight: 600; display: flex; align-items: center; gap: 10px;">
-           <i class="fas fa-user-circle"></i>
-           <span>Đang xem lịch của học viên: <strong>${highlightUserName}</strong></span>
-         </div>
-       </c:if>
-       <div class="calendar-header">
-         <div class="calendar-day-name">Thứ 2</div>
-         <div class="calendar-day-name">Thứ 3</div>
-         <div class="calendar-day-name">Thứ 4</div>
-         <div class="calendar-day-name">Thứ 5</div>
-         <div class="calendar-day-name">Thứ 6</div>
-         <div class="calendar-day-name">Thứ 7</div>
-         <div class="calendar-day-name">Chủ nhật</div>
-       </div>
-       <div class="calendar-days" id="calendarDays">
-         <!-- Leading blank cells to align the first day (Mon=1..Sun=7) -->
-         <c:if test="${not empty calendar_firstIso and calendar_firstIso gt 1}">
-           <c:forEach var="i" begin="1" end="${calendar_firstIso - 1}">
-             <div class="calendar-day other-month"></div>
-           </c:forEach>
-         </c:if>
-         <!-- Real days -->
-         <c:forEach var="d" begin="1" end="${calendar_days}">
-           <c:set var="monthStr" value="${calendar_month}"/>
-           <c:if test="${calendar_month lt 10}"><c:set var="monthStr" value="0${calendar_month}"/></c:if>
-           <c:set var="dayStr" value="${d}"/>
-           <c:if test="${d lt 10}"><c:set var="dayStr" value="0${d}"/></c:if>
-           <c:set var="dateKey" value="${calendar_year}-${monthStr}-${dayStr}" />
-           <div class="calendar-day">
-             <div class="day-number">${d}</div>
-             <c:forEach var="item" items="${scheduleMap[dateKey]}">
-               <c:set var="chipClass" value="schedule-chip schedule-${item.status}"/>
-               <c:if test="${not empty highlightUserId and item.userId == highlightUserId}">
-                 <c:set var="chipClass" value="${chipClass} highlight-user"/>
-               </c:if>
-               <div class="${chipClass}">${item.time} - ${item.userName}</div>
-             </c:forEach>
-           </div>
-         </c:forEach>
-       </div>
-     </div>
+      <!-- LỊCH NGHỈ / BẬN ĐÃ ĐĂNG KÝ -->
+      <div class="card" id="exceptionsSection">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          "
+        >
+          <div class="section-title" style="margin: 0">
+            <i class="fas fa-calendar-times"></i> Ngày nghỉ/bận đã đăng ký
+          </div>
+          <div class="view-toggle">
+            <button
+              class="view-btn active"
+              onclick="switchView('grid')"
+              id="gridViewBtn"
+              title="Xem dạng lưới"
+            >
+              <i class="fas fa-th"></i> Lưới
+            </button>
+            <button
+              class="view-btn"
+              onclick="switchView('list')"
+              id="listViewBtn"
+              title="Xem dạng danh sách"
+            >
+              <i class="fas fa-list"></i> Danh sách
+            </button>
+          </div>
+        </div>
+        <c:if test="${empty exceptions}">
+          <div class="empty-state">
+            <i class="fas fa-calendar-check"></i>
+            <p>Chưa có ngày nghỉ/bận nào được đăng ký.</p>
+          </div>
+        </c:if>
+        <c:if test="${not empty exceptions}">
+          <div class="calendar-container">
+            <div class="calendar-grid" id="calendarView">
+              <c:forEach var="exception" items="${exceptions}">
+                <div class="calendar-day">
+                  <div class="day-header">
+                    <div class="day-date">
+                      <i class="fas fa-calendar-day"></i>
+                      ${exception.exceptionDate}
+                    </div>
+                  </div>
+                  <div class="day-exceptions">
+                    <div class="exception-item">
+                      <div class="exception-info">
+                        <div class="exception-slot">
+                          <i class="fas fa-clock"></i>
+                          <c:forEach var="slot" items="${timeSlots}">
+                            <c:if test="${slot.slotId == exception.slotId}">
+                              ${slot.slotName} (${slot.startTime} -
+                              ${slot.endTime})
+                            </c:if>
+                          </c:forEach>
+                          <c:if test="${empty exception.slotId}">
+                            Tất cả các slot
+                          </c:if>
+                        </div>
+                        <div>
+                          <span
+                            class="exception-type ${exception.exceptionType}"
+                          >
+                            ${exception.exceptionType}
+                          </span>
+                        </div>
+                        <c:if test="${not empty exception.reason}">
+                          <div class="exception-reason">
+                            <i class="fas fa-comment"></i> ${exception.reason}
+                          </div>
+                        </c:if>
+                      </div>
+                      <div class="exception-actions">
+                        <form
+                          action="${pageContext.request.contextPath}/pt/delete-exception"
+                          method="post"
+                          style="display: inline"
+                        >
+                          <input
+                            type="hidden"
+                            name="action"
+                            value="delete-exception"
+                          />
+                          <input
+                            type="hidden"
+                            name="exceptionId"
+                            value="${exception.exceptionId}"
+                          />
+                          <button
+                            type="button"
+                            class="btn-icon btn-icon-danger"
+                            onclick="showDeleteModal('${exception.exceptionId}')"
+                          >
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </c:forEach>
+            </div>
+          </div>
+        </c:if>
+      </div>
 
-      <!-- List View -->
-       <div id="listView" class="session-list" style="display: none">
-         <h3>Danh sách buổi tập</h3>
-         <c:if test="${empty schedules}"><i>Không có buổi tập nào.</i></c:if>
-         <c:forEach var="s" items="${schedules}">
-           <div class="session-card">
-             <div class="session-header">
-               <div class="session-title">Buổi tập với 
-                 <b>
-                   <c:forEach var="u" items="${users}"><c:if test="${u.id == s.userId}">${u.username}</c:if></c:forEach>
-                 </b>
-               </div>
-               <c:choose>
-                 <c:when test="${s.status == 'confirmed'}">
-                   <span class="status-confirmed">Đã xác nhận</span>
-                 </c:when>
-                 <c:when test="${s.status == 'rejected'}">
-                   <span class="status-rejected">Từ chối</span>
-                 </c:when>
-                 <c:otherwise>
-                   <span class="status-badge ${s.status}">
-                     <c:choose>
-                       <c:when test="${s.status == 'pending'}">Chờ xác nhận</c:when>
-                       <c:when test="${s.status == 'completed'}">Hoàn thành</c:when>
-                       <c:when test="${s.status == 'cancelled'}">Đã hủy</c:when>
-                       <c:otherwise>${s.status}</c:otherwise>
-                     </c:choose>
-                   </span>
-                 </c:otherwise>
-               </c:choose>
-             </div>
-             <div class="session-time">
-               <i class="fas fa-clock"></i> ${s.trainingDate} - ${s.startTime} ~ ${s.endTime}
-             </div>
-             <div class="session-info">
-               <div class="info-item"><i class="fas fa-user"></i>
-                 <c:forEach var="u" items="${users}"><c:if test="${u.id == s.userId}">${u.username}</c:if></c:forEach>
-               </div>
-               <div class="info-item"><i class="fas fa-dumbbell"></i> ${s.trainingType}</div>
-               <div class="info-item"><i class="fas fa-map-marker-alt"></i> ${s.location}</div>
-             </div>
-             <div class="session-actions">
-               <c:set var="monthYearParams2" value=""/>
-               <c:if test="${not empty calendar_month and not empty calendar_year}">
-                 <c:set var="monthYearParams2" value="&month=${calendar_month}&year=${calendar_year}"/>
-               </c:if>
-               <c:if test="${s.status == 'pending'}">
-                 <a href="ScheduleServlet?action=confirm&id=${s.id}${monthYearParams2}" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Xác nhận</a>
-                 <a href="ScheduleServlet?action=reject&id=${s.id}${monthYearParams2}" class="btn btn-danger btn-sm"><i class="fas fa-times"></i> Từ chối</a>
-               </c:if>
-               <c:if test="${s.status == 'confirmed'}">
-                 <a href="ScheduleServlet?action=complete&id=${s.id}${monthYearParams2}" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Hoàn thành</a>
-                 <a href="ScheduleServlet?action=cancel&id=${s.id}${monthYearParams2}" class="btn btn-danger btn-sm"><i class="fas fa-times"></i> Huỷ</a>
-               </c:if>
-               <a href="ScheduleServlet?action=edit&id=${s.id}${monthYearParams2}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Chỉnh sửa</a>
-               <a href="ScheduleServlet?action=delete&id=${s.id}${monthYearParams2}" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Xóa</a>
-             </div>
-           </div>
-         </c:forEach>
-       </div>
+      <!-- LỊCH CỐ ĐỊNH HÀNG TUẦN -->
+      <div class="card">
+        <div class="section-title">
+          <i class="fas fa-clock"></i> Lịch làm việc cố định
+        </div>
+        <c:if test="${empty schedules}">
+          <div class="empty-state">
+            <i class="fas fa-calendar-alt"></i>
+            <p>Chưa thiết lập lịch cố định.</p>
+          </div>
+        </c:if>
+        <c:if test="${not empty schedules}">
+          <table>
+            <thead>
+              <tr>
+                <th>Thứ</th>
+                <th>Slot</th>
+                <th>Rảnh</th>
+                <th>Ghi chú</th>
+              </tr>
+            </thead>
+            <tbody>
+              <c:forEach var="s" items="${schedules}">
+                <tr>
+                  <td>${s.dayOfWeek}</td>
+                  <td>${s.slotId}</td>
+                  <td>
+                    <c:choose>
+                      <c:when test="${s.isAvailable == true}">
+                        <span class="status-badge completed">Có mặt</span>
+                      </c:when>
+                      <c:otherwise>
+                        <span class="status-badge cancelled">Nghỉ</span>
+                      </c:otherwise>
+                    </c:choose>
+                  </td>
+                  <td>${s.notes}</td>
+                </tr>
+              </c:forEach>
+            </tbody>
+          </table>
+        </c:if>
+      </div>
     </div>
 
-    <!-- Modal tạo buổi tập -->
-     <div id="sessionModal" class="modal${(not empty editSchedule or showCreateModal) ? ' active' : ''}">
-      <div class="modal-content">
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Custom Delete Modal -->
+    <div class="modal-overlay" id="deleteModal">
+      <div class="modal-dialog">
         <div class="modal-header">
-          <h2><i class="fas fa-plus-circle"></i> 
-            <c:choose>
-              <c:when test="${not empty editSchedule}">Chỉnh sửa buổi tập</c:when>
-              <c:otherwise>Tạo buổi tập mới</c:otherwise>
-            </c:choose>
-          </h2>
-          <button class="close-btn" onclick="closeModal()">&times;</button>
+          <i class="fas fa-exclamation-triangle"></i>
+          <h3>Xác nhận xóa</h3>
         </div>
-        <form method="post" action="${pageContext.request.contextPath}/ScheduleServlet" >
-          <input type="hidden" name="action" value="${not empty editSchedule ? 'update' : 'create'}"/>
-          <c:if test="${not empty editSchedule}">
-            <input type="hidden" name="id" value="${editSchedule.id}"/>
-          </c:if>
-      <c:set var="selectedUserName" value=""/>
-      <c:if test="${not empty editSchedule}">
-        <c:forEach var="u" items="${users}">
-          <c:if test="${u.id == editSchedule.userId}">
-            <c:set var="selectedUserName" value="${u.username}"/>
-          </c:if>
-        </c:forEach>
-      </c:if>
-      <div class="form-group">
-        <label>Học viên</label>
-         <input id="studentNameInput" type="text" name="user_name" list="usersDataList" placeholder="Nhập tên học viên" value="${not empty form_user_name ? form_user_name : selectedUserName}" required />
-        <datalist id="usersDataList">
-          <c:forEach var="u" items="${users}">
-            <option value="${u.username}"></option>
-          </c:forEach>
-        </datalist>
-      </div>
-          <div class="form-group">
-            <label>Ngày tập</label>
-             <input type="date" name="training_date" value="${not empty form_training_date ? form_training_date : editSchedule.trainingDate}" required/>
-          </div>
-          <div class="form-group">
-            <label>Giờ bắt đầu</label>
-             <input type="time" name="start_time" value="${not empty form_start_time ? form_start_time : editSchedule.startTime}" required/>
-          </div>
-          <div class="form-group">
-            <label>Giờ kết thúc</label>
-             <input type="time" name="end_time" value="${not empty form_end_time ? form_end_time : editSchedule.endTime}" required/>
-          </div>
-          <div class="form-group">
-            <label>Loại tập</label>
-             <select name="training_type" required>
-              <option value="">Chọn loại tập</option>
-               <c:set var="typeValue" value="${not empty form_training_type ? form_training_type : editSchedule.trainingType}"/>
-               <option value="Cardio" ${typeValue == 'Cardio' ? 'selected' : ''}>Cardio</option>
-               <option value="Strength Training" ${typeValue == 'Strength Training' ? 'selected' : ''}>Strength Training</option>
-               <option value="Yoga" ${typeValue == 'Yoga' ? 'selected' : ''}>Yoga</option>
-               <option value="Weight Loss" ${typeValue == 'Weight Loss' ? 'selected' : ''}>Weight Loss</option>
-               <option value="Bodybuilding" ${typeValue == 'Bodybuilding' ? 'selected' : ''}>Bodybuilding</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Địa điểm</label>
-             <input type="text" name="location" placeholder="Nhập phòng tập" value="${not empty form_location ? form_location : editSchedule.location}" required/>
-          </div>
-          <div class="form-group">
-            <label>Ghi chú</label>
-             <textarea name="note" rows="3" placeholder="Nhập ghi chú (không bắt buộc)">${not empty form_note ? form_note : editSchedule.note}</textarea>
-          </div>
-           <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center;">
-            <button type="button" class="btn" style="background: #6c757d" onclick="closeModal()">Hủy</button>
-            <button type="submit" class="btn"><i class="fas fa-save"></i> <c:choose><c:when test="${not empty editSchedule}">Lưu</c:when><c:otherwise>Tạo buổi tập</c:otherwise></c:choose></button>
-          </div>
-           <c:if test="${not empty error}">
-             <div id="error-message" class="error-message">${error}</div>
-           </c:if>
-         </form>
+        <div class="modal-body">
+          <p>
+            Bạn có chắc chắn muốn xóa ngày nghỉ/bận này? Hành động này không thể
+            hoàn tác.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="modal-btn modal-btn-cancel"
+            onclick="closeDeleteModal()"
+          >
+            <i class="fas fa-times"></i> Hủy
+          </button>
+          <form id="deleteForm" method="post" style="display: inline">
+            <input type="hidden" name="action" value="delete-exception" />
+            <input type="hidden" name="exceptionId" id="deleteExceptionId" />
+            <button type="submit" class="modal-btn modal-btn-confirm">
+              <i class="fas fa-trash"></i> Xóa
+            </button>
+          </form>
+        </div>
       </div>
     </div>
+
     <script>
-      // Tự động chuyển view dựa trên defaultView parameter từ server
-      (function() {
-        const defaultView = '${defaultView}';
-        if (defaultView === 'calendar') {
-          switchView('calendar');
-        } else if (defaultView === 'list') {
-          switchView('list');
+      // Set min date to today
+      document.addEventListener('DOMContentLoaded', function () {
+        const dateInput = document.getElementById('exceptionDate');
+        if (dateInput) {
+          const today = new Date().toISOString().split('T')[0];
+          dateInput.setAttribute('min', today);
         }
-      })();
 
-      function switchView(view) {
+        // Check for success messages (add or delete)
+        var addSuccessMessage = '<c:out value="${sessionScope.addSuccess}" />';
+        var deleteSuccessMessage =
+          '<c:out value="${sessionScope.deleteSuccess}" />';
+
+        console.log('Add success message:', addSuccessMessage);
+        console.log('Delete success message:', deleteSuccessMessage);
+
+        // Handle add success message
+        if (
+          addSuccessMessage &&
+          addSuccessMessage.trim() !== '' &&
+          addSuccessMessage !== 'null'
+        ) {
+          console.log('Showing toast and scrolling for add success...');
+          showToast(addSuccessMessage);
+          // Scroll to exceptions section after a short delay
+          setTimeout(function () {
+            const exceptionsSection =
+              document.getElementById('exceptionsSection');
+            console.log('Exceptions section:', exceptionsSection);
+            if (exceptionsSection) {
+              exceptionsSection.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+              });
+            }
+          }, 500);
+
+          // Remove message from session after displaying
+          fetch('${pageContext.request.contextPath}/pt/clear-message', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'action=clear-add-success',
+          }).catch(function (err) {
+            console.log('Error clearing message:', err);
+          });
+        }
+
+        // Handle delete success message
+        if (
+          deleteSuccessMessage &&
+          deleteSuccessMessage.trim() !== '' &&
+          deleteSuccessMessage !== 'null'
+        ) {
+          console.log('Showing toast and scrolling for delete success...');
+          showToast(deleteSuccessMessage);
+          // Scroll to exceptions section after a short delay
+          setTimeout(function () {
+            const exceptionsSection =
+              document.getElementById('exceptionsSection');
+            console.log('Exceptions section:', exceptionsSection);
+            if (exceptionsSection) {
+              exceptionsSection.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+              });
+            }
+          }, 500);
+
+          // Remove message from session after displaying
+          fetch('${pageContext.request.contextPath}/pt/clear-message', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'action=clear-delete-success',
+          }).catch(function (err) {
+            console.log('Error clearing message:', err);
+          });
+        }
+      });
+
+      // Toast notification function
+      function showToast(message) {
+        console.log('showToast called with message:', message);
+        const toastContainer = document.getElementById('toastContainer');
+        if (!toastContainer) {
+          console.error('Toast container not found!');
+          return;
+        }
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `
+          <div class="toast-icon">
+            <i class="fas fa-check"></i>
+          </div>
+          <div class="toast-content">
+            <div class="toast-title">Thành công!</div>
+            <div class="toast-message">${message}</div>
+          </div>
+          <button class="toast-close" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+        toastContainer.appendChild(toast);
+
+        // Auto remove after 3 seconds
+        setTimeout(function () {
+          if (toast.parentElement) {
+            toast.style.animation = 'fadeOut 0.4s ease';
+            setTimeout(function () {
+              toast.remove();
+            }, 400);
+          }
+        }, 3000);
+      }
+
+      // Switch between grid and list view for exceptions
+      function switchView(viewType) {
         const calendarView = document.getElementById('calendarView');
-        const listView = document.getElementById('listView');
-        const viewBtns = document.querySelectorAll('.view-btn');
+        const gridBtn = document.getElementById('gridViewBtn');
+        const listBtn = document.getElementById('listViewBtn');
 
-        viewBtns.forEach((btn) => btn.classList.remove('active'));
-
-        if (view === 'calendar') {
-          calendarView.style.display = 'block';
-          listView.style.display = 'none';
-          viewBtns[0].classList.add('active');
+        if (viewType === 'grid') {
+          calendarView.className = 'calendar-grid';
+          gridBtn.classList.add('active');
+          listBtn.classList.remove('active');
         } else {
-          calendarView.style.display = 'none';
-          listView.style.display = 'block';
-          viewBtns[1].classList.add('active');
+          calendarView.className = 'calendar-list';
+          listBtn.classList.add('active');
+          gridBtn.classList.remove('active');
         }
       }
 
-      function openModal() {
-        document.getElementById('sessionModal').classList.add('active');
-      }
+      // Switch between grid and list view for bookings
+      function switchBookingView(viewType) {
+        const bookingsView = document.getElementById('bookingsView');
+        const gridBtn = document.getElementById('bookingGridViewBtn');
+        const listBtn = document.getElementById('bookingListViewBtn');
 
-      function closeModal() {
-        document.getElementById('sessionModal').classList.remove('active');
-        window.location = 'ScheduleServlet?action=list';
-      }
-
-      // Auto-hide error and focus back to student input
-      (function (){
-        const err = document.getElementById('error-message');
-        if (err) {
-          // Scroll mượt tới thông báo lỗi
-          try { err.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
-          // Tự ẩn sau 3 giây rồi focus vào ô nhập tên học viên
-          setTimeout(()=>{
-            err.classList.add('fade-out');
-            setTimeout(()=>{
-              if (err) err.style.display = 'none';
-              const input = document.getElementById('studentNameInput');
-              if (input) input.focus();
-            }, 300);
-          }, 3000);
+        if (viewType === 'grid') {
+          bookingsView.className = 'bookings-grid';
+          gridBtn.classList.add('active');
+          listBtn.classList.remove('active');
+        } else {
+          bookingsView.className = 'bookings-list';
+          listBtn.classList.add('active');
+          gridBtn.classList.remove('active');
         }
-      })();
+      }
+
+      // Delete Modal Functions
+      function showDeleteModal(exceptionId) {
+        document.getElementById('deleteExceptionId').value = exceptionId;
+        document.getElementById('deleteForm').action =
+          '${pageContext.request.contextPath}/pt/delete-exception';
+        document.getElementById('deleteModal').classList.add('show');
+      }
+
+      function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('show');
+      }
+
+      // Close modal when clicking outside
+      document
+        .getElementById('deleteModal')
+        .addEventListener('click', function (e) {
+          if (e.target === this) {
+            closeDeleteModal();
+          }
+        });
+
+      // Close modal with Escape key
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          closeDeleteModal();
+        }
+      });
+
+      function filterBookings(status) {
+        // Update active button
+        document.querySelectorAll('.filter-btn').forEach((btn) => {
+          btn.classList.remove('active');
+          if (btn.getAttribute('data-status') === status) {
+            btn.classList.add('active');
+          }
+        });
+
+        // Filter cards
+        const cards = document.querySelectorAll('.booking-card');
+        let visibleCount = 0;
+        cards.forEach((card) => {
+          if (status === 'all') {
+            card.style.display = 'block';
+            visibleCount++;
+          } else {
+            const cardStatus = card.getAttribute('data-status');
+            if (cardStatus === status) {
+              card.style.display = 'block';
+              visibleCount++;
+            } else {
+              card.style.display = 'none';
+            }
+          }
+        });
+
+        // Show message if no results
+        let messageEl = document.getElementById('noResultsMessage');
+        if (visibleCount === 0 && status !== 'all') {
+          if (!messageEl) {
+            messageEl = document.createElement('div');
+            messageEl.id = 'noResultsMessage';
+            messageEl.className = 'empty-state';
+            messageEl.innerHTML =
+              '<i class="fas fa-inbox"></i><p>Không có buổi tập nào với trạng thái này.</p>';
+            document.getElementById('bookingsGrid').appendChild(messageEl);
+          }
+          messageEl.style.display = 'block';
+        } else {
+          if (messageEl) {
+            messageEl.style.display = 'none';
+          }
+        }
+      }
     </script>
   </body>
 </html>
-
