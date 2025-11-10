@@ -476,27 +476,11 @@ file="/views/common/header.jsp" %>
     </div>
   </c:if>
 
-  <c:if test="${not empty sessionScope.success}">
-    <div class="alert alert-success">
-      <i class="fas fa-check-circle"></i>
-      <span>${sessionScope.success}</span>
-    </div>
-    <c:remove var="success" scope="session" />
-  </c:if>
-
   <c:if test="${not empty error}">
     <div class="alert alert-danger">
       <i class="fas fa-exclamation-circle"></i>
       <span>${error}</span>
     </div>
-  </c:if>
-
-  <c:if test="${not empty sessionScope.error}">
-    <div class="alert alert-danger">
-      <i class="fas fa-exclamation-circle"></i>
-      <span>${sessionScope.error}</span>
-    </div>
-    <c:remove var="error" scope="session" />
   </c:if>
 
   <!-- Profile Hero Section -->

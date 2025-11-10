@@ -161,6 +161,9 @@ public class EditProfileServlet extends BaseMemberServlet {
      */
     private void showProfile(HttpServletRequest request, HttpServletResponse response, Member member)
             throws ServletException, IOException {
+        // Handle session messages (success/error)
+        handleSessionMessages(request);
+        
         // Set BMI category nếu có BMI
         if (member.getBmi() != null) {
             request.setAttribute("bmiCategory", calculateBMICategory(member.getBmi()));
@@ -173,6 +176,9 @@ public class EditProfileServlet extends BaseMemberServlet {
      */
     private void showProfileEdit(HttpServletRequest request, HttpServletResponse response, Member member)
             throws ServletException, IOException {
+        // Handle session messages (success/error)
+        handleSessionMessages(request);
+        
         request.getRequestDispatcher("/views/member/profile-edit.jsp").forward(request, response);
     }
 
@@ -181,6 +187,9 @@ public class EditProfileServlet extends BaseMemberServlet {
      */
     private void showBodyGoals(HttpServletRequest request, HttpServletResponse response, Member member)
             throws ServletException, IOException {
+        // Handle session messages (success/error)
+        handleSessionMessages(request);
+        
         if (member.getBmi() != null) {
             request.setAttribute("bmiCategory", calculateBMICategory(member.getBmi()));
         }
@@ -227,6 +236,9 @@ public class EditProfileServlet extends BaseMemberServlet {
      */
     private void showBodyMetricsEdit(HttpServletRequest request, HttpServletResponse response, Member member)
             throws ServletException, IOException {
+        // Handle session messages (success/error)
+        handleSessionMessages(request);
+        
         request.getRequestDispatcher("/views/member/body-metrics-edit.jsp").forward(request, response);
     }
 
@@ -235,6 +247,9 @@ public class EditProfileServlet extends BaseMemberServlet {
      */
     private void showGoalsEdit(HttpServletRequest request, HttpServletResponse response, Member member)
             throws ServletException, IOException {
+        // Handle session messages (success/error)
+        handleSessionMessages(request);
+        
         request.getRequestDispatcher("/views/member/goals-edit.jsp").forward(request, response);
     }
 
@@ -637,6 +652,29 @@ public class EditProfileServlet extends BaseMemberServlet {
             HttpSession session = request.getSession();
             session.setAttribute("error", "Có lỗi xảy ra. Vui lòng thử lại sau.");
             response.sendRedirect(request.getContextPath() + "/member/profile");
+        }
+    }
+
+    /**
+     * Handle messages from session
+     * Moves session messages (success/error) to request attributes for JSP display
+     * Similar to CartServlet and ProductServlet
+     */
+    private void handleSessionMessages(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            String success = (String) session.getAttribute("success");
+            String error = (String) session.getAttribute("error");
+            
+            if (success != null) {
+                request.setAttribute("success", success);
+                session.removeAttribute("success");
+            }
+            
+            if (error != null) {
+                request.setAttribute("error", error);
+                session.removeAttribute("error");
+            }
         }
     }
 }
