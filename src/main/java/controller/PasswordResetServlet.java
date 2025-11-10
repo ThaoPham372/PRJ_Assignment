@@ -9,16 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
-/**
- * Unified Servlet for Password Reset Flow
- * Handles both forgot password and reset password in one servlet
- * 
- * URLs:
- * - GET  /auth/forgot-password -> Show forgot password form
- * - POST /auth/forgot-password -> Send verification code
- * - GET  /auth/reset-password  -> Show reset password form (with token)
- * - POST /auth/reset-password  -> Reset password with token
- */
+
 @WebServlet(name = "PasswordResetServlet", urlPatterns = {
     "/auth/forgot-password",
     "/auth/reset-password"
@@ -41,10 +32,10 @@ public class PasswordResetServlet extends HttpServlet {
         String path = request.getServletPath();
         
         if ("/auth/forgot-password".equals(path)) {
-            // Show forgot password form
+        
             showForgotPasswordForm(request, response);
         } else if ("/auth/reset-password".equals(path)) {
-            // Show reset password form
+
             showResetPasswordForm(request, response);
         }
     }
@@ -56,10 +47,10 @@ public class PasswordResetServlet extends HttpServlet {
         String path = request.getServletPath();
         
         if ("/auth/forgot-password".equals(path)) {
-            // Handle forgot password request
+           
             handleForgotPassword(request, response);
         } else if ("/auth/reset-password".equals(path)) {
-            // Handle reset password
+        
             handleResetPassword(request, response);
         }
     }
@@ -72,7 +63,7 @@ public class PasswordResetServlet extends HttpServlet {
      */
     private void showForgotPasswordForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Get email from parameter (if coming from admin profile)
+       
         String emailParam = request.getParameter("email");
         if (emailParam != null && !emailParam.trim().isEmpty()) {
             request.setAttribute("email", emailParam.trim());
@@ -94,14 +85,10 @@ public class PasswordResetServlet extends HttpServlet {
             return;
         }
         
-        // Normalize email: trim + lowercase
+     
         email = email.trim().toLowerCase();
         
-        System.out.println("========================================");
-        System.out.println("[PasswordResetServlet] ===== FORGOT PASSWORD REQUEST =====");
-        System.out.println("[PasswordResetServlet] Original input: '" + request.getParameter("email") + "'");
-        System.out.println("[PasswordResetServlet] Normalized email: '" + email + "'");
-        
+      
         // ✅ Check rate limiting - chỉ 30 giây thay vì 15 phút
         boolean hasPending = passwordService.hasPendingResetRequest(email);
         System.out.println("[PasswordResetServlet] Has pending request: " + hasPending);
@@ -119,15 +106,14 @@ public class PasswordResetServlet extends HttpServlet {
         String verificationCode = passwordService.requestPasswordReset(email);
         
         if (verificationCode == null) {
-            System.out.println("[PasswordResetServlet] ❌ requestPasswordReset returned null");
+         
             request.setAttribute("error", "Email không tồn tại trong hệ thống hoặc có lỗi khi gửi email. Vui lòng kiểm tra lại email và thử lại.");
             request.setAttribute("email", email);
             request.getRequestDispatcher("/views/auth/forgot-password.jsp").forward(request, response);
             return;
         }
         
-        System.out.println("[PasswordResetServlet] ✅ Verification code generated: " + verificationCode);
-        System.out.println("========================================");
+
         
         // Success - store email in session and redirect to reset form
         HttpSession session = request.getSession();

@@ -116,19 +116,50 @@ public class RegistrationService {
     }
 
     private int createAccount(RegisterRequest request) {
-        String passwordHash = passwordService.hashPassword(request.getPassword());
+        try {
+            System.out.println("[RegistrationService] Creating account for username: " + request.getUsername());
+            
+            String passwordHash = passwordService.hashPassword(request.getPassword());
+            System.out.println("[RegistrationService] Password hashed successfully");
 
-        Member member = new Member();
-        member.setUsername(request.getUsername());
-        member.setEmail(request.getEmail());
-        member.setRole("MEMBER");
-        member.setPassword(passwordHash);
-        member.setStatus("ACTIVE");
-        member.setCreatedDate(new Date());
-        
-        int memberId = memberDAO.save(member);
-        
-        return memberId;
+            Member member = new Member();
+            member.setUsername(request.getUsername());
+            member.setEmail(request.getEmail());
+            member.setRole("MEMBER");
+            member.setPassword(passwordHash);
+            member.setStatus("ACTIVE");
+            member.setCreatedDate(new Date());
+            
+            // Set name nếu có trong request (từ form đăng ký)
+            if (request.getName() != null && !request.getName().trim().isEmpty()) {
+                member.setName(request.getName().trim());
+                System.out.println("[RegistrationService] Name set: " + request.getName().trim());
+            } else {
+                // Nếu không có name, dùng username làm name mặc định
+                member.setName(request.getUsername());
+                System.out.println("[RegistrationService] Name set to username: " + request.getUsername());
+            }
+            
+            int memberId = memberDAO.save(member);
+            System.out.println("[RegistrationService] Account created successfully! Member ID: " + memberId);
+            
+            // Verify member was saved correctly
+            if (memberId > 0) {
+                Member savedMember = memberDAO.findById(memberId);
+                if (savedMember != null) {
+                    System.out.println("[RegistrationService] Verified saved member - Username: " + savedMember.getUsername() + 
+                                     ", Email: " + savedMember.getEmail() + ", Status: " + savedMember.getStatus());
+                } else {
+                    System.err.println("[RegistrationService] WARNING: Member not found after save! ID: " + memberId);
+                }
+            }
+            
+            return memberId;
+        } catch (Exception e) {
+            System.err.println("[RegistrationService] ERROR creating account: " + e.getMessage());
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     /**
@@ -137,6 +168,7 @@ public class RegistrationService {
     public static class RegisterRequest {
 
         private String username;
+        private String name;
         private String email;
         private String password;
         private String confirmPassword;
@@ -155,6 +187,14 @@ public class RegistrationService {
             this.confirmPassword = confirmPassword;
         }
 
+        public RegisterRequest(String username, String name, String email, String password, String confirmPassword) {
+            this.username = username;
+            this.name = name;
+            this.email = email;
+            this.password = password;
+            this.confirmPassword = confirmPassword;
+        }
+
         // Getters and Setters
         public String getUsername() {
             return username;
@@ -162,6 +202,14 @@ public class RegistrationService {
 
         public void setUsername(String username) {
             this.username = username;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
 
         public String getEmail() {

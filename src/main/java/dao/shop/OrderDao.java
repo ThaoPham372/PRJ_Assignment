@@ -131,6 +131,52 @@ public class OrderDao extends GenericDAO<Order> {
     }
 
     /**
+     * Cancel order - reuses GenericDAO.update()
+     * Only allows cancellation if order status is PENDING and belongs to user
+     * @param orderId Order ID to cancel
+     * @param userId User ID requesting cancellation
+     * @param cancellationReason Reason for cancellation
+     * @return true if cancelled successfully, false otherwise
+     */
+    public boolean cancelOrder(Long orderId, Long userId, String cancellationReason) {
+        try {
+            Order order = findById(orderId.intValue());
+            if (order == null) {
+                LOGGER.log(Level.WARNING, "Order not found: " + orderId);
+                return false;
+            }
+            
+            // Check if order belongs to user
+            if (!order.getMemberId().equals(userId.intValue())) {
+                LOGGER.log(Level.WARNING, "User " + userId + " attempted to cancel order " + orderId + " belonging to user " + order.getMemberId());
+                return false;
+            }
+            
+            // Only allow cancellation if order is PENDING
+            if (order.getOrderStatus() != OrderStatus.PENDING) {
+                LOGGER.log(Level.WARNING, "Cannot cancel order with status: " + order.getOrderStatus());
+                return false;
+            }
+            
+            // Update order status to CANCELLED
+            order.setOrderStatus(OrderStatus.CANCELLED);
+            if (cancellationReason != null && !cancellationReason.trim().isEmpty()) {
+                order.setNotes(order.getNotes() != null ? 
+                    order.getNotes() + "\nLý do hủy: " + cancellationReason : 
+                    "Lý do hủy: " + cancellationReason);
+            }
+            
+            update(order);
+            
+            LOGGER.info("Order " + orderId + " cancelled successfully by user " + userId);
+            return true;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error cancelling order: " + orderId, e);
+            return false;
+        }
+    }
+    
+    /**
      * Helper method to set delivery name from user if needed
      */
     private void setDeliveryNameIfNeeded(Order order) {

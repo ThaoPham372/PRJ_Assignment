@@ -1,9 +1,10 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %> 
 <%@ include file="/views/common/header.jsp" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-
+<link href="${pageContext.request.contextPath}/css/home.css" rel="stylesheet" type="text/css"/>
 <main>
-  <style>
+    <style>
+        
     :root {
       --primary: #141a46;
       --primary-light: #1e2a5c;
@@ -499,39 +500,6 @@
       }
     }
     
-    /* Thêm khối CSS cho nút TƯ VẤN (floating-btn.tu-van) */
-.floating-btn {
-    background: #ffde59;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 15px 25px;
-    border: none;
-    border-radius: 50px;
-    font-size: 1.1rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-    text-decoration: none;
-    color: var(--primary); /* Màu chữ đậm từ trang chủ */
-}
-
-.floating-btn.tu-van {
-    background: var(--chat); /* Màu vàng #ffde59 */
-    box-shadow: 0 8px 15px rgba(255, 222, 89, 0.4);
-}
-
-.floating-btn.tu-van:hover {
-    background: #f0c84c;
-    transform: translateY(-2px);
-    box-shadow: 0 12px 35px rgba(255, 222, 89, 0.5);
-}
-
-.floating-btn i {
-    font-size: 1.2rem;
-    color: var(--primary);
-}
 
     @media (max-width: 480px) {
       .hero h1 {
@@ -556,8 +524,9 @@
         padding: 30px 20px;
       }
     }
-  </style>
 
+
+    </style>
   <!-- HERO -->
   <section class="hero">
     <h1>Chào mừng đến với GymFit</h1>
@@ -756,11 +725,96 @@
       z-index: 10000 !important;
       visibility: visible !important;
       opacity: 1 !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
-    .floating-btn, #chatToggleButton {
+    
+    .floating-btn,
+    #chatToggleButton {
       display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 12px !important;
+      padding: 18px 32px !important;
+      border-radius: 50px !important;
+      font-weight: 700 !important;
+      font-size: 1.1rem !important;
+      letter-spacing: 0.5px !important;
+      cursor: pointer !important;
+      transition: all 0.3s ease !important;
+      border: none !important;
+      text-decoration: none !important;
+      min-width: 180px !important;
+      margin: 0 !important;
       visibility: visible !important;
       opacity: 1 !important;
+      position: relative !important;
+    }
+    
+    .floating-btn.tu-van {
+      background: #ffde59 !important;
+      color: #141a49 !important;
+      box-shadow: 0 8px 15px rgba(255, 222, 89, 0.4) !important;
+    }
+    
+    .floating-btn.tu-van:hover {
+      background: #f0c84c !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 12px 35px rgba(255, 222, 89, 0.5) !important;
+    }
+    
+    .floating-btn.tu-van i {
+      color: #141a49 !important;
+      font-size: 1.2rem !important;
+    }
+    
+    .floating-btn.chat-bot,
+    #chatToggleButton {
+      background: #ffde59 !important;
+      color: #141a49 !important;
+      box-shadow: 0 8px 15px rgba(255, 222, 89, 0.4) !important;
+      z-index: 9998 !important;
+    }
+    
+    .floating-btn.chat-bot:hover,
+    #chatToggleButton:hover {
+      background: #f0c84c !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 12px 35px rgba(255, 222, 89, 0.5) !important;
+    }
+    
+    .floating-btn.chat-bot i,
+    #chatToggleButton i {
+      color: #141a49 !important;
+      font-size: 1.2rem !important;
+    }
+    
+    @media (max-width: 768px) {
+      .floating-buttons {
+        bottom: 20px !important;
+        right: 20px !important;
+        gap: 15px !important;
+      }
+      .floating-btn,
+      #chatToggleButton {
+        padding: 16px 28px !important;
+        font-size: 1rem !important;
+        min-width: 160px !important;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .floating-buttons {
+        bottom: 15px !important;
+        right: 15px !important;
+        gap: 12px !important;
+      }
+      .floating-btn,
+      #chatToggleButton {
+        padding: 14px 24px !important;
+        font-size: 0.95rem !important;
+        min-width: 140px !important;
+      }
     }
   </style>
   <div class="floating-buttons">

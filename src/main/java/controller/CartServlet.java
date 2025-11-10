@@ -1,0 +1,296 @@
+package controller;
+
+import service.shop.CartService;
+import service.shop.CartServiceImpl;
+import Utils.SessionUtil;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import dto.CartItemDTO;
+import java.math.BigDecimal;
+import java.util.List;
+import java.io.IOException;
+
+/**
+ * Servlet for cart operations
+ * Follows MVC pattern - Controller layer
+ * Handles cart view, add, update, remove operations
+ */
+@WebServlet(name = "CartServlet", urlPatterns = {"/cart/*"})
+public class CartServlet extends HttpServlet {
+    private CartService cartService;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        this.cartService = new CartServiceImpl();
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        if (!SessionUtil.isLoggedIn(request)) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
+
+        Integer userIdInt = SessionUtil.getUserId(request);
+        if (userIdInt == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
+        Long userId = userIdInt.longValue();
+
+        String pathInfo = request.getPathInfo();
+        String action = pathInfo == null || pathInfo.equals("/") ? "view" : pathInfo.substring(1);
+
+        switch (action) {
+            case "view":
+                viewCart(request, response, userId);
+                break;
+            default:
+                response.sendRedirect(request.getContextPath() + "/cart");
+                break;
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        System.out.println("[CartServlet] POST request received");
+        System.out.println("[CartServlet] Request URI: " + request.getRequestURI());
+        System.out.println("[CartServlet] Path Info: " + request.getPathInfo());
+        
+        if (!SessionUtil.isLoggedIn(request)) {
+            System.out.println("[CartServlet] User not logged in, redirecting to login");
+            String referer = request.getHeader("Referer");
+            if (referer != null) {
+                request.getSession().setAttribute("redirectAfterLogin", referer);
+            }
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
+
+        Integer userIdInt = SessionUtil.getUserId(request);
+        if (userIdInt == null) {
+            System.out.println("[CartServlet] User ID is null, redirecting to login");
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
+        Long userId = userIdInt.longValue();
+
+        System.out.println("[CartServlet] User ID: " + userId);
+        String pathInfo = request.getPathInfo();
+        String action = pathInfo == null || pathInfo.equals("/") ? "add" : pathInfo.substring(1);
+        System.out.println("[CartServlet] Action: '" + action + "'");
+        System.out.println("[CartServlet] PathInfo: '" + pathInfo + "'");
+
+        switch (action) {
+            case "add":
+                System.out.println("[CartServlet] Calling addToCart");
+                addToCart(request, response, userId);
+                break;
+            case "update":
+                System.out.println("[CartServlet] Calling updateCart");
+                updateCart(request, response, userId);
+                break;
+            case "remove":
+                System.out.println("[CartServlet] Calling removeFromCart");
+                removeFromCart(request, response, userId);
+                break;
+            case "clear":
+                System.out.println("[CartServlet] Calling clearCart");
+                clearCart(request, response, userId);
+                break;
+            default:
+                System.out.println("[CartServlet] Unknown action: '" + action + "', redirecting to cart");
+                response.sendRedirect(request.getContextPath() + "/cart");
+                break;
+        }
+    }
+
+    private void viewCart(HttpServletRequest request, HttpServletResponse response, Long userId)
+            throws ServletException, IOException {
+        List<CartItemDTO> cartItems = cartService.view(userId);
+        BigDecimal total = cartService.calculateTotal(cartItems);
+
+        // Debug logging
+        System.out.println("[CartServlet] ========== VIEW CART DEBUG ==========");
+        System.out.println("[CartServlet] User ID: " + userId);
+        System.out.println("[CartServlet] Cart items count: " + (cartItems != null ? cartItems.size() : "NULL"));
+        if (cartItems != null && !cartItems.isEmpty()) {
+            for (CartItemDTO item : cartItems) {
+                System.out.println("[CartServlet] Item: " + item.getProductName() + 
+                                 " | Price: " + item.getPrice() + 
+                                 " | Qty: " + item.getQuantity() + 
+                                 " | Subtotal: " + item.getSubtotal());
+            }
+        }
+        System.out.println("[CartServlet] Total calculated: " + total);
+        System.out.println("[CartServlet] ==========================================");
+
+        request.setAttribute("cart", cartItems);
+        request.setAttribute("total", total);
+
+        // Handle session messages (success/error)
+        handleSessionMessages(request);
+
+        // Check for error messages from request parameters
+        String error = request.getParameter("error");
+        if (error != null) {
+            if ("empty".equals(error)) {
+                request.setAttribute("error", "Giỏ hàng trống. Vui lòng thêm sản phẩm trước khi thanh toán.");
+            } else if ("stock".equals(error)) {
+                request.setAttribute("error", "Sản phẩm không đủ tồn kho. Vui lòng kiểm tra lại giỏ hàng.");
+            }
+        }
+
+        request.getRequestDispatcher("/views/cart/cart.jsp").forward(request, response);
+    }
+
+    /**
+     * Handle messages from session (similar to ProductServlet)
+     * Moves session messages to request attributes for JSP display
+     */
+    private void handleSessionMessages(HttpServletRequest request) {
+        jakarta.servlet.http.HttpSession session = request.getSession(false);
+        if (session != null) {
+            String message = (String) session.getAttribute("message");
+            String error = (String) session.getAttribute("error");
+            
+            if (message != null) {
+                request.setAttribute("message", message);
+                session.removeAttribute("message");
+            }
+            
+            if (error != null) {
+                request.setAttribute("error", error);
+                session.removeAttribute("error");
+            }
+        }
+    }
+
+    private void addToCart(HttpServletRequest request, HttpServletResponse response, Long userId)
+            throws ServletException, IOException {
+        // Set character encoding for reading parameters
+        request.setCharacterEncoding("UTF-8");
+        
+        // Get referer to redirect back to product page
+        String referer = request.getHeader("Referer");
+        String redirectUrl = (referer != null && referer.contains("/products")) 
+                ? referer 
+                : request.getContextPath() + "/products";
+        
+        try {
+            // Try to get parameters
+            String productIdStr = request.getParameter("productId");
+            String quantityStr = request.getParameter("quantity");
+            
+            System.out.println("[CartServlet] addToCart - productId: " + productIdStr + ", quantity: " + quantityStr);
+            
+            if (productIdStr == null || quantityStr == null) {
+                System.err.println("[CartServlet] Missing parameters: productId or quantity");
+                request.getSession().setAttribute("error", "Thông tin sản phẩm không hợp lệ");
+                if (!response.isCommitted()) {
+                    response.sendRedirect(redirectUrl);
+                }
+                return;
+            }
+            
+            Long productId = Long.parseLong(productIdStr);
+            Integer quantity = Integer.parseInt(quantityStr);
+
+            System.out.println("[CartServlet] Adding product " + productId + " with quantity " + quantity + " to cart for user " + userId);
+            cartService.add(userId, productId, quantity);
+
+            String successMessage = "Đã thêm sản phẩm vào giỏ hàng thành công!";
+            System.out.println("[CartServlet] Product added successfully");
+            
+            // Set success message in session and redirect back to product page
+            request.getSession().setAttribute("message", successMessage);
+            if (!response.isCommitted()) {
+                response.sendRedirect(redirectUrl);
+            }
+        } catch (NumberFormatException e) {
+            System.err.println("[CartServlet] NumberFormatException: " + e.getMessage());
+            e.printStackTrace();
+            request.getSession().setAttribute("error", "Dữ liệu không hợp lệ");
+            if (!response.isCommitted()) {
+                response.sendRedirect(redirectUrl);
+            }
+        } catch (IllegalArgumentException e) {
+            System.err.println("[CartServlet] IllegalArgumentException: " + e.getMessage());
+            e.printStackTrace();
+            request.getSession().setAttribute("error", e.getMessage());
+            if (!response.isCommitted()) {
+                response.sendRedirect(redirectUrl);
+            }
+        } catch (Exception e) {
+            System.err.println("[CartServlet] Exception adding to cart: " + e.getMessage());
+            e.printStackTrace();
+            request.getSession().setAttribute("error", "Không thể thêm sản phẩm: " + e.getMessage());
+            if (!response.isCommitted()) {
+                response.sendRedirect(redirectUrl);
+            }
+        }
+    }
+
+    private void updateCart(HttpServletRequest request, HttpServletResponse response, Long userId)
+            throws ServletException, IOException {
+        try {
+            Long productId = Long.parseLong(request.getParameter("productId"));
+            Integer quantity = Integer.parseInt(request.getParameter("quantity"));
+
+            cartService.setQuantity(userId, productId, quantity);
+
+            request.getSession().setAttribute("message", "Đã cập nhật giỏ hàng");
+        } catch (NumberFormatException e) {
+            request.getSession().setAttribute("error", "Dữ liệu không hợp lệ");
+        } catch (Exception e) {
+            request.getSession().setAttribute("error", "Không thể cập nhật: " + e.getMessage());
+        }
+
+        response.sendRedirect(request.getContextPath() + "/cart");
+    }
+
+    private void removeFromCart(HttpServletRequest request, HttpServletResponse response, Long userId)
+            throws ServletException, IOException {
+        try {
+            Long productId = Long.parseLong(request.getParameter("productId"));
+            cartService.remove(userId, productId);
+
+            request.getSession().setAttribute("message", "Đã xóa sản phẩm khỏi giỏ hàng");
+        } catch (NumberFormatException e) {
+            request.getSession().setAttribute("error", "Dữ liệu không hợp lệ");
+        } catch (Exception e) {
+            request.getSession().setAttribute("error", "Không thể xóa: " + e.getMessage());
+        }
+
+        response.sendRedirect(request.getContextPath() + "/cart");
+    }
+
+    /**
+     * Clear all items from cart
+     * Follows MVC pattern - Controller delegates to Service layer
+     */
+    private void clearCart(HttpServletRequest request, HttpServletResponse response, Long userId)
+            throws ServletException, IOException {
+        try {
+            System.out.println("[CartServlet] Clearing cart for user: " + userId);
+            cartService.clear(userId);
+
+            request.getSession().setAttribute("message", "Đã xóa tất cả sản phẩm khỏi giỏ hàng");
+            System.out.println("[CartServlet] Cart cleared successfully");
+        } catch (Exception e) {
+            System.err.println("[CartServlet] Exception clearing cart: " + e.getMessage());
+            e.printStackTrace();
+            request.getSession().setAttribute("error", "Không thể xóa giỏ hàng: " + e.getMessage());
+        }
+
+        response.sendRedirect(request.getContextPath() + "/cart");
+    }
+}
+
+

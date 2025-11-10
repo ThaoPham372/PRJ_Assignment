@@ -89,17 +89,23 @@
 
     .order-status-badges {
         display: flex;
-        flex-direction: column;
-        gap: 8px;
-        align-items: flex-end;
+        align-items: center;
+        justify-content: flex-end;
     }
 
     .status-badge {
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.85rem;
+        padding: 8px 16px;
+        border-radius: 25px;
+        font-size: 0.9rem;
         font-weight: 600;
         white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .status-badge i {
+        font-size: 0.95rem;
     }
 
     .status-pending {
@@ -127,9 +133,26 @@
         color: #155724;
     }
 
-    .status-cancelled {
+    .status-cancelled,
+    .status-CANCELLED {
         background: #f8d7da;
         color: #721c24;
+    }
+    
+    .status-completed,
+    .status-COMPLETED {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-PENDING {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-PROCESSING {
+        background: #cfe2ff;
+        color: #084298;
     }
 
     .order-items {
@@ -237,6 +260,11 @@
         background: var(--primary);
         color: white;
     }
+    
+    .btn-outline[style*="border-color: #dc3545"]:hover {
+        background: #dc3545 !important;
+        color: white !important;
+    }
 
     .empty-state {
         text-align: center;
@@ -269,20 +297,92 @@
         color: var(--text-light);
         font-size: 0.9rem;
     }
+    
+    .header-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .orders-header {
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .header-actions {
+            width: 100%;
+            flex-direction: column;
+        }
+        
+        .header-actions .btn {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+        }
+        
+        .order-header {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .order-status-badges {
+            justify-content: flex-start;
+        }
+        
+        .order-actions {
+            flex-direction: column;
+        }
+        
+        .order-actions .btn {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+        }
+    }
 </style>
 
 <div class="orders-container">
+    <!-- Success/Error Messages -->
+    <c:if test="${not empty sessionScope.success}">
+        <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #28a745;">
+            <i class="fas fa-check-circle"></i> ${sessionScope.success}
+        </div>
+        <c:remove var="success" scope="session" />
+    </c:if>
+    
+    <c:if test="${not empty sessionScope.error}">
+        <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #dc3545;">
+            <i class="fas fa-exclamation-circle"></i> ${sessionScope.error}
+        </div>
+        <c:remove var="error" scope="session" />
+    </c:if>
+
     <div class="orders-header">
-        <h1><i class="fas fa-receipt"></i> Danh sách đơn hàng</h1>
-        <a href="${pageContext.request.contextPath}/services" class="btn btn-outline" style="color: white; border-color: white;">
-            <i class="fas fa-shopping-bag"></i> Tiếp tục mua sắm
-        </a>
+        <div>
+            <h1><i class="fas fa-receipt"></i> Danh sách đơn hàng</h1>
+            <c:if test="${not empty orders}">
+                <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 0.95rem;">
+                    Tổng cộng: <strong>${fn:length(orders)}</strong> đơn hàng
+                </p>
+            </c:if>
+        </div>
+        <div class="header-actions">
+            <a href="${pageContext.request.contextPath}/member/dashboard" class="btn btn-outline" style="color: white; border-color: white;">
+                <i class="fas fa-arrow-left"></i> Quay lại Dashboard
+            </a>
+            <a href="${pageContext.request.contextPath}/services" class="btn btn-outline" style="color: white; border-color: white;">
+                <i class="fas fa-shopping-bag"></i> Tiếp tục mua sắm
+            </a>
+        </div>
     </div>
 
     <c:choose>
         <c:when test="${not empty orders and fn:length(orders) > 0}">
+            <!-- Debug: Total orders = ${fn:length(orders)} -->
             <div class="orders-list">
-                <c:forEach var="order" items="${orders}">
+                <c:forEach var="order" items="${orders}" varStatus="status">
+                    <!-- Debug: Rendering order ${status.index + 1} - ${order.orderNumber} -->
                     <div class="order-card">
                         <div class="order-header">
                             <div class="order-info-left">
@@ -293,7 +393,12 @@
                                     <i class="far fa-calendar"></i> 
                                     <c:choose>
                                         <c:when test="${order.orderDate != null}">
-                                            <fmt:formatDate value="${order.orderDateAsDate}" pattern="dd/MM/yyyy HH:mm" />
+                                            <c:catch var="dateError">
+                                                <fmt:formatDate value="${order.orderDateAsDate}" pattern="dd/MM/yyyy HH:mm" />
+                                            </c:catch>
+                                            <c:if test="${not empty dateError}">
+                                                ${order.orderDate}
+                                            </c:if>
                                         </c:when>
                                         <c:otherwise>
                                             N/A
@@ -316,51 +421,85 @@
                                 </div>
                             </div>
                             <div class="order-status-badges">
-                                <c:set var="orderPayments" value="${paymentsMap[order.orderId]}" />
+                                <!-- Unified Status Badge - Show only ONE badge -->
                                 <c:choose>
-                                    <c:when test="${not empty orderPayments}">
-                                        <c:set var="hasPaid" value="false" />
-                                        <c:forEach items="${orderPayments}" var="payment">
-                                            <c:if test="${payment.status.code == 'paid'}">
-                                                <c:set var="hasPaid" value="true" />
-                                            </c:if>
-                                        </c:forEach>
-                                        <span class="status-badge status-${hasPaid ? 'paid' : 'pending'}">
-                                            <i class="fas fa-${hasPaid ? 'check-circle' : 'clock'}"></i>
-                                            ${hasPaid ? 'Đã thanh toán' : 'Chờ thanh toán'}
+                                    <%-- Priority 1: If order is CANCELLED, show Cancelled badge --%>
+                                    <c:when test="${order.orderStatus.code == 'CANCELLED' or order.orderStatus.code == 'cancelled'}">
+                                        <span class="status-badge status-CANCELLED">
+                                            <i class="fas fa-ban"></i>
+                                            ${order.orderStatus.displayName}
                                         </span>
                                     </c:when>
-                                    <c:otherwise>
-                                        <span class="status-badge status-pending">
-                                            <i class="fas fa-clock"></i>
-                                            Chờ thanh toán
+                                    
+                                    <%-- Priority 2: If order is COMPLETED, show Completed badge --%>
+                                    <c:when test="${order.orderStatus.code == 'COMPLETED' or order.orderStatus.code == 'completed' or order.orderStatus.code == 'DELIVERED' or order.orderStatus.code == 'delivered'}">
+                                        <span class="status-badge status-COMPLETED">
+                                            <i class="fas fa-check-circle"></i>
+                                            ${order.orderStatus.displayName}
                                         </span>
+                                    </c:when>
+                                    
+                                    <%-- Priority 3: Check payment status for PENDING/PROCESSING orders --%>
+                                    <c:otherwise>
+                                        <c:set var="orderPayments" value="${paymentsMap[order.orderId]}" />
+                                        <c:set var="hasPaid" value="false" />
+                                        <c:if test="${not empty orderPayments}">
+                                            <c:forEach items="${orderPayments}" var="payment">
+                                                <c:if test="${payment.status.code == 'paid'}">
+                                                    <c:set var="hasPaid" value="true" />
+                                                </c:if>
+                                            </c:forEach>
+                                        </c:if>
+                                        
+                                        <c:choose>
+                                            <%-- If NOT paid yet, show "Chờ thanh toán" --%>
+                                            <c:when test="${!hasPaid}">
+                                                <span class="status-badge status-pending">
+                                                    <i class="fas fa-clock"></i>
+                                                    Chờ thanh toán
+                                                </span>
+                                            </c:when>
+                                            
+                                            <%-- If paid, show Order Status (PENDING/PROCESSING) --%>
+                                            <c:otherwise>
+                                                <span class="status-badge status-${order.orderStatus.code}">
+                                                    <i class="fas fa-${order.orderStatus.code == 'PROCESSING' || order.orderStatus.code == 'processing' ? 'spinner' : order.orderStatus.code == 'shipped' ? 'truck' : 'clock'}"></i>
+                                                    ${order.orderStatus.displayName}
+                                                </span>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </c:otherwise>
                                 </c:choose>
-                                <span class="status-badge status-${order.orderStatus.code}">
-                                    <i class="fas fa-${order.orderStatus.code == 'delivered' ? 'check-double' : order.orderStatus.code == 'processing' ? 'spinner' : order.orderStatus.code == 'shipped' ? 'truck' : 'ban'}"></i>
-                                    ${order.orderStatus.displayName}
-                                </span>
                             </div>
                         </div>
 
                         <c:if test="${not empty order.items}">
                             <div class="order-items">
-                                <c:forEach var="item" items="${order.items}">
-                                    <div class="order-item">
-                                        <div class="item-info">
-                                            <span class="item-name">
-                                                ${fn:escapeXml(item.productName != null ? item.productName : 'Gói thành viên')}
-                                            </span>
-                                            <span class="item-quantity">
-                                                x ${item.quantity}
-                                            </span>
+                                <c:catch var="itemsError">
+                                    <c:forEach var="item" items="${order.items}">
+                                        <div class="order-item">
+                                            <div class="item-info">
+                                                <span class="item-name">
+                                                    ${fn:escapeXml(item.productName != null ? item.productName : 'Gói thành viên')}
+                                                </span>
+                                                <span class="item-quantity">
+                                                    x ${item.quantity}
+                                                </span>
+                                            </div>
+                                            <div class="item-price">
+                                                <c:catch var="priceError">
+                                                    <fmt:formatNumber value="${item.subtotal}" type="currency" currencySymbol="đ" maxFractionDigits="0"/>
+                                                </c:catch>
+                                                <c:if test="${not empty priceError}">
+                                                    ${item.subtotal}đ
+                                                </c:if>
+                                            </div>
                                         </div>
-                                        <div class="item-price">
-                                            <fmt:formatNumber value="${item.subtotal}" type="currency" currencySymbol="đ" maxFractionDigits="0"/>
-                                        </div>
-                                    </div>
-                                </c:forEach>
+                                    </c:forEach>
+                                </c:catch>
+                                <c:if test="${not empty itemsError}">
+                                    <p style="color: #dc3545; font-size: 0.9rem;">Lỗi load sản phẩm</p>
+                                </c:if>
                             </div>
                         </c:if>
 
@@ -382,13 +521,30 @@
                             <div class="summary-row total-amount">
                                 <span class="summary-label">Thành tiền:</span>
                                 <span class="summary-value">
-                                    <fmt:formatNumber value="${order.finalAmount != null ? order.finalAmount : order.totalAmount}" type="currency" currencySymbol="đ" maxFractionDigits="0"/>
+                                    <fmt:formatNumber value="${order.finalAmount}" type="currency" currencySymbol="đ" maxFractionDigits="0"/>
                                 </span>
                             </div>
                         </div>
 
                         <div class="order-actions">
-                            <a href="${pageContext.request.contextPath}/order/detail?orderId=${order.orderId}" class="btn btn-outline">
+                            <c:if test="${order.orderStatus.code == 'PENDING' || order.orderStatus.code == 'pending'}">
+                                <button type="button" 
+                                        onclick="if(confirm('Bạn có chắc muốn hủy đơn hàng #${fn:escapeXml(order.orderNumber)}?')) { 
+                                            document.getElementById('cancelForm${order.orderId}').submit(); 
+                                        }"
+                                        class="btn btn-outline" 
+                                        style="border-color: #dc3545; color: #dc3545;">
+                                    <i class="fas fa-times-circle"></i> Hủy đơn
+                                </button>
+                                <form id="cancelForm${order.orderId}" 
+                                      action="${pageContext.request.contextPath}/order/cancel" 
+                                      method="post" 
+                                      style="display: none;">
+                                    <input type="hidden" name="orderId" value="${order.orderId}">
+                                </form>
+                            </c:if>
+                            <a href="${pageContext.request.contextPath}/order/detail?orderId=${order.orderId}" 
+                               class="btn btn-primary">
                                 <i class="fas fa-eye"></i> Xem chi tiết
                             </a>
                         </div>
@@ -413,4 +569,28 @@
 
 <%@ include file="/views/common/footer.jsp" %>
 
+<script>
+// Debug: Check how many order cards are rendered
+document.addEventListener('DOMContentLoaded', function() {
+    const orderCards = document.querySelectorAll('.order-card');
+    console.log('========================================');
+    console.log('🔍 ORDER LIST DEBUG INFO:');
+    console.log('Total order cards in DOM:', orderCards.length);
+    console.log('Expected orders: ${fn:length(orders)}');
+    
+    if (orderCards.length < ${fn:length(orders)}) {
+        console.error('❌ MISMATCH: Expected ${fn:length(orders)} orders but only ' + orderCards.length + ' cards rendered!');
+        console.error('This indicates a JSP rendering issue or exception during loop');
+    } else {
+        console.log('✅ All orders rendered successfully');
+    }
+    
+    // Log each order card
+    orderCards.forEach((card, index) => {
+        const orderNumber = card.querySelector('.order-number');
+        console.log(`Order ${index + 1}:`, orderNumber ? orderNumber.textContent.trim() : 'Unknown');
+    });
+    console.log('========================================');
+});
+</script>
 

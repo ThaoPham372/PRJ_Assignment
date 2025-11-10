@@ -385,10 +385,10 @@
                             </label>
                         </div>
                         <div class="payment-option">
-                            <input type="radio" id="momo" name="paymentMethod" value="momo">
-                            <label for="momo">
-                                <i class="fas fa-mobile-alt"></i> Chuyển khoản bằng MoMo
-                                <small style="display: block; color: #666; margin-top: 5px;">Thanh toán nhanh và an toàn</small>
+                            <input type="radio" id="vnpay" name="paymentMethod" value="vnpay">
+                            <label for="vnpay">
+                                <i class="fas fa-credit-card"></i> Thanh toán qua VNPay
+                                <small style="display: block; color: #666; margin-top: 5px;">Thanh toán nhanh và an toàn qua VNPay</small>
                             </label>
                         </div>
                     </div>

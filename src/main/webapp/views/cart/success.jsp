@@ -518,7 +518,7 @@
                             <div class="total-row">
                                 <span class="total-label">Thành Tiền</span>
                                 <span class="total-value" style="color: var(--accent); font-size: 1.5rem;">
-                                    <fmt:formatNumber value="${order.finalAmount != null ? order.finalAmount : (order.totalAmount - (order.discountAmount != null ? order.discountAmount : 0))}" type="number" maxFractionDigits="0" />đ
+                                    <fmt:formatNumber value="${order.finalAmount}" type="number" maxFractionDigits="0" />đ
                                 </span>
                             </div>
                         </div>

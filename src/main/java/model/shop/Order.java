@@ -19,7 +19,7 @@ public class Order {
     private Integer orderId;
     
     @Column(name = "member_id")
-    private Integer memberId;
+    private Integer memberId; //Member member; member.getId()
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", insertable = false, updatable = false)
@@ -154,6 +154,18 @@ public class Order {
 
     public void setDiscountAmount(BigDecimal discountAmount) {
         this.discountAmount = discountAmount;
+    }
+    
+    /**
+     * Calculate final amount after discount
+     * @return totalAmount - discountAmount
+     */
+    public BigDecimal getFinalAmount() {
+        if (totalAmount == null) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal discount = getDiscountAmount(); // Uses getDiscountAmount() which handles null
+        return totalAmount.subtract(discount);
     }
 
     public PaymentMethod getPaymentMethod() {

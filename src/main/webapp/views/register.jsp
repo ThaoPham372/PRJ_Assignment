@@ -544,7 +544,7 @@
                 <form
                     id="registerForm"
                     method="post"
-                    action="${pageContext.request.contextPath}/auth?action=register"
+                    action="${pageContext.request.contextPath}/register"
                     >
                     <div class="form-group">
                         <input

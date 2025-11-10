@@ -19,26 +19,67 @@
         --gradient-accent: linear-gradient(135deg, #ec8b5e 0%, #d67a4f 100%);
     }
 
-    .body-goals-page {
+    .goals-page {
         background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
         min-height: 100vh;
         padding: 30px 0;
     }
 
-    .body-goals-container {
+    .goals-container {
         max-width: 1200px;
         margin: 0 auto;
         padding: 0 20px;
+    }
+
+    .hero-section {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 35px;
+        margin-bottom: 25px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: -30%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(236, 139, 94, 0.2) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-section h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .hero-section p {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin: 0;
     }
 
     .form-card {
         background: var(--card);
         border-radius: 20px;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-        margin-bottom: 20px;
+        margin-bottom: 25px;
+        overflow: hidden;
         transition: all 0.3s ease;
         border: 1px solid rgba(0, 0, 0, 0.05);
-        overflow: hidden;
     }
 
     .form-card:hover {
@@ -48,7 +89,7 @@
 
     .form-card-header {
         background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
-        padding: 20px 25px;
+        padding: 25px 30px;
         border-bottom: none;
         color: white;
     }
@@ -59,19 +100,20 @@
         margin: 0;
         display: flex;
         align-items: center;
-        gap: 10px;
-        font-size: 1.1rem;
+        gap: 12px;
+        font-size: 1.2rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-    
+
     .form-card-header h5 i {
-        font-size: 1.2rem;
+        font-size: 1.3rem;
         opacity: 0.9;
     }
 
     .form-card-body {
-        padding: 25px;
+        padding: 30px;
+        background: linear-gradient(to bottom, #ffffff 0%, #fafafa 100%);
     }
 
     .form-group {
@@ -81,7 +123,7 @@
     .form-label {
         font-weight: 700;
         color: var(--primary);
-        margin-bottom: 10px;
+        margin-bottom: 12px;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -89,7 +131,7 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-    
+
     .form-label i {
         color: var(--accent);
         font-size: 1.1rem;
@@ -98,141 +140,136 @@
     .form-control {
         border: 2px solid #e9ecef;
         border-radius: 12px;
-        padding: 15px 20px;
+        padding: 14px 18px;
         font-size: 1rem;
         transition: all 0.3s ease;
         background: white;
         font-weight: 500;
-        width: 100%;
-        min-width: 200px;
     }
 
     .form-control:focus {
         border-color: var(--accent);
         box-shadow: 0 0 0 0.3rem rgba(236, 139, 94, 0.2);
-        background: #fff;
         outline: none;
     }
-    
+
     .form-control:hover {
         border-color: #d0d7de;
     }
 
-    .form-control:readonly {
-        background-color: var(--muted);
-        color: var(--text-light);
-    }
-
-    .btn-nutrition {
+    .btn-primary {
         background: var(--gradient-accent);
         color: white;
         border: none;
-        border-radius: 25px;
-        padding: 14px 30px;
+        border-radius: 12px;
+        padding: 14px 35px;
         font-weight: 700;
         font-size: 1rem;
         transition: all 0.3s ease;
-        text-decoration: none;
+        box-shadow: 0 5px 15px rgba(236, 139, 94, 0.3);
+        cursor: pointer;
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        cursor: pointer;
-        box-shadow: 0 5px 15px rgba(236, 139, 94, 0.3);
     }
 
-    .btn-nutrition:hover {
+    .btn-primary:hover {
         transform: translateY(-3px);
         box-shadow: 0 8px 25px rgba(236, 139, 94, 0.4);
         color: white;
     }
 
-    .btn-nutrition:active {
+    .btn-primary:active {
         transform: translateY(-1px);
     }
 
-    .btn-secondary-nutrition {
+    .btn-secondary {
         background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
         color: white;
         border: none;
-        border-radius: 25px;
-        padding: 14px 30px;
+        border-radius: 12px;
+        padding: 14px 35px;
         font-weight: 700;
         font-size: 1rem;
         transition: all 0.3s ease;
-        text-decoration: none;
+        box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+        cursor: pointer;
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        cursor: pointer;
-        box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
     }
 
-    .btn-secondary-nutrition:hover {
+    .btn-secondary:hover {
         background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
         transform: translateY(-3px);
         box-shadow: 0 8px 25px rgba(108, 117, 125, 0.4);
         color: white;
     }
 
-
-    .bmi-display {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 15px;
-        padding: 30px;
-        text-align: center;
-        margin-top: 25px;
-        border: 2px solid var(--accent);
-        box-shadow: 0 4px 15px rgba(236, 139, 94, 0.2);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .bmi-display::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: var(--gradient-accent);
+    .btn-outline-secondary {
+        border: 2px solid #6c757d;
+        color: #6c757d;
+        border-radius: 12px;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: white;
     }
 
-    .bmi-value {
-        font-size: 3rem;
-        font-weight: 900;
-        color: var(--accent);
+    .btn-outline-secondary:hover {
+        background: #6c757d;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+    }
+
+    .alert {
+        border-radius: 10px;
+        border: none;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+    }
+
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .goal-preview {
+        background: var(--muted);
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 15px;
+    }
+
+    .goal-preview h6 {
+        color: var(--primary);
+        font-weight: 600;
         margin-bottom: 10px;
-        text-shadow: 0 2px 10px rgba(236, 139, 94, 0.3);
     }
 
-    .bmi-category {
-        font-size: 1.3rem;
-        font-weight: 700;
-        margin-top: 10px;
-        padding: 8px 20px;
-        border-radius: 25px;
-        display: inline-block;
+    .goal-preview p {
+        margin-bottom: 5px;
+        color: var(--text-light);
     }
 
-    .bmi-category.underweight { 
-        color: #17a2b8; 
-        background: rgba(23, 162, 184, 0.1);
-        border: 2px solid #17a2b8;
-    }
-    .bmi-category.normal { 
-        color: #28a745; 
-        background: rgba(40, 167, 69, 0.1);
-        border: 2px solid #28a745;
-    }
-    .bmi-category.overweight { 
-        color: #ffc107; 
-        background: rgba(255, 193, 7, 0.1);
-        border: 2px solid #ffc107;
-    }
-    .bmi-category.obese { 
-        color: #dc3545; 
-        background: rgba(220, 53, 69, 0.1);
-        border: 2px solid #dc3545;
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 35px;
+        flex-wrap: wrap;
+        padding-top: 25px;
+        border-top: 1px solid #e9ecef;
     }
 
     .goal-options {
@@ -246,7 +283,7 @@
         background: white;
         border: 2px solid #e9ecef;
         border-radius: 12px;
-        padding: 18px 20px;
+        padding: 20px;
         transition: all 0.3s ease;
         cursor: pointer;
         position: relative;
@@ -290,110 +327,169 @@
         color: var(--accent);
     }
 
-    .calories-display {
-        background: linear-gradient(135deg, #fff5f0 0%, #ffe8e0 100%);
+    .bmi-display {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
         border-radius: 15px;
-        padding: 25px;
+        padding: 30px;
         margin-top: 20px;
-        border: 2px solid rgba(236, 139, 94, 0.3);
         text-align: center;
+        border: 2px solid var(--accent);
+        box-shadow: 0 4px 15px rgba(236, 139, 94, 0.15);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
     }
 
-    .calories-display-label {
+    .bmi-display::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-accent);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.5s ease;
+    }
+
+    .bmi-display.has-value::before {
+        transform: scaleX(1);
+    }
+
+    .bmi-display:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(236, 139, 94, 0.2);
+    }
+
+    .bmi-label {
+        color: var(--text-light);
         font-size: 0.9rem;
-        color: var(--text-light);
+        font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 10px;
-        font-weight: 600;
-    }
-
-    .calories-display-value {
-        font-size: 2.5rem;
-        font-weight: 900;
-        color: var(--accent);
-        margin-bottom: 5px;
-    }
-
-    .calories-display-unit {
-        font-size: 1rem;
-        color: var(--text-light);
-        font-weight: 600;
-    }
-
-    .protein-display {
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 1px solid rgba(236, 139, 94, 0.2);
-    }
-
-    .protein-display-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--primary);
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 15px;
-        justify-content: center;
-        margin-top: 25px;
-        flex-wrap: wrap;
-        padding-top: 25px;
-        border-top: 1px solid #e9ecef;
-    }
-
-    .alert {
-        border-radius: 12px;
-        border: none;
-        padding: 18px 25px;
-        margin-bottom: 25px;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
         display: flex;
         align-items: center;
-        gap: 12px;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .bmi-label i {
+        color: var(--accent);
+        font-size: 1.1rem;
+    }
+
+    .bmi-value {
+        font-size: 3rem;
+        font-weight: 900;
+        color: var(--accent);
+        margin-bottom: 15px;
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        line-height: 1;
+    }
+
+    .bmi-value.empty {
+        font-size: 2rem;
+        color: var(--text-light);
+        font-weight: 500;
+        font-style: italic;
+    }
+
+    .bmi-category {
+        font-size: 1.1rem;
         font-weight: 600;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        animation: slideIn 0.3s ease;
+        color: var(--text);
+        padding: 10px 20px;
+        border-radius: 25px;
+        display: inline-block;
+        background: rgba(236, 139, 94, 0.1);
+        transition: all 0.3s ease;
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        to {
+    .bmi-category.empty {
+        background: rgba(108, 117, 125, 0.1);
+        color: var(--text-light);
+        font-style: italic;
+        font-weight: 500;
+    }
+
+    .bmi-category.underweight {
+        background: rgba(23, 162, 184, 0.15);
+        color: #17a2b8;
+        border: 2px solid rgba(23, 162, 184, 0.3);
+    }
+
+    .bmi-category.normal {
+        background: rgba(40, 167, 69, 0.15);
+        color: #28a745;
+        border: 2px solid rgba(40, 167, 69, 0.3);
+    }
+
+    .bmi-category.overweight {
+        background: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
+        border: 2px solid rgba(255, 193, 7, 0.3);
+    }
+
+    .bmi-category.obese {
+        background: rgba(220, 53, 69, 0.15);
+        color: #dc3545;
+        border: 2px solid rgba(220, 53, 69, 0.3);
+    }
+
+    .bmi-info {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        font-size: 0.85rem;
+        color: var(--text-light);
+        line-height: 1.6;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
             opacity: 1;
-            transform: translateY(0);
+        }
+        50% {
+            opacity: 0.6;
         }
     }
 
-    .alert-success {
-        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-        border-left: 5px solid #28a745;
-        color: #155724;
+    .bmi-value.empty {
+        animation: pulse 2s ease-in-out infinite;
     }
 
-    .alert-danger {
-        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-        border-left: 5px solid #dc3545;
-        color: #721c24;
-    }
-    
     @media (max-width: 768px) {
-        .body-goals-container {
+        .goals-container {
             padding: 0 15px;
+        }
+
+        .hero-section {
+            padding: 25px;
+        }
+
+        .hero-section h1 {
+            font-size: 1.6rem;
         }
 
         .form-card-body {
             padding: 20px;
         }
-
+        
         .action-buttons {
             flex-direction: column;
         }
         
-        .action-buttons .btn-nutrition,
-        .action-buttons .btn-secondary-nutrition {
+        .action-buttons .btn {
             width: 100%;
             justify-content: center;
         }
@@ -401,27 +497,30 @@
         .goal-options {
             grid-template-columns: 1fr;
         }
-    }
 
-    @media (max-width: 480px) {
-        .goal-options {
-            grid-template-columns: 1fr;
+        .btn-outline-secondary {
+            width: 100%;
+            justify-content: center;
         }
     }
 </style>
 
-<div class="body-goals-page">
-    <div class="body-goals-container">
+<div class="goals-page">
+    <div class="goals-container">
         <!-- Page Header -->
-        <div class="form-card text-center" style="background: var(--gradient-primary); color: white; padding: 25px; position: relative;">
-            <h1 class="mb-2" style="color: white; font-weight: 900; font-size: 2rem;">📊 Chỉ số & Mục tiêu</h1>
-            <p style="font-size: 1rem; opacity: 0.9; margin: 0;">Cập nhật chỉ số cơ thể và thiết lập mục tiêu tập luyện của bạn</p>
-            <a href="${pageContext.request.contextPath}/member/dashboard" 
-               class="btn-nutrition" 
-               style="position: absolute; top: 20px; right: 20px; padding: 10px 20px; font-size: 0.9rem; z-index: 10;">
-                <i class="fas fa-arrow-left"></i>
-                <span>Quay lại</span>
-            </a>
+        <div class="hero-section">
+            <div class="hero-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <h1><i class="fas fa-chart-line me-2"></i>Chỉ số & Mục tiêu</h1>
+                        <p>Cập nhật chỉ số cơ thể và thiết lập mục tiêu tập luyện của bạn</p>
+                    </div>
+                    <a href="${pageContext.request.contextPath}/member/dashboard" class="btn-outline-secondary" style="color: white; border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.1);">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Quay lại</span>
+                    </a>
+                </div>
+            </div>
         </div>
     <!-- Success/Error Messages -->
     <c:if test="${not empty success}">
@@ -437,7 +536,7 @@
         </div>
     </c:if>
 
-    <form action="${pageContext.request.contextPath}/member/body-goals/update" method="post" id="bodyGoalsForm">
+    <form action="${pageContext.request.contextPath}/member/body-goals" method="post" id="bodyGoalsForm">
         <!-- Body Metrics Card -->
         <div class="form-card">
             <div class="form-card-header">
@@ -447,23 +546,6 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="height" class="form-label">
-                                <i class="fas fa-ruler-vertical"></i>Chiều cao (cm)
-                            </label>
-                            <input type="number" 
-                                   class="form-control" 
-                                   id="height" 
-                                   name="height" 
-                                   value="${profileData.height != null ? profileData.height : ''}"
-                                   min="100" 
-                                   max="250" 
-                                   step="0.1"
-                                   placeholder="Nhập chiều cao (cm)"
-                                   onchange="calculateBMI()">
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
                             <label for="weight" class="form-label">
                                 <i class="fas fa-weight"></i>Cân nặng (kg)
                             </label>
@@ -471,37 +553,73 @@
                                    class="form-control" 
                                    id="weight" 
                                    name="weight" 
-                                   value="${profileData.weight != null ? profileData.weight : ''}"
+                                   value="${member.weight != null ? member.weight : ''}"
                                    min="20" 
                                    max="300" 
                                    step="0.1"
                                    placeholder="Nhập cân nặng (kg)"
-                                   onchange="calculateBMI()">
+                                   oninput="calculateBMI(); updateCaloriesPreview()" 
+                                   onchange="calculateBMI(); updateCaloriesPreview()">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="height" class="form-label">
+                                <i class="fas fa-ruler-vertical"></i>Chiều cao (cm)
+                            </label>
+                            <input type="number" 
+                                   class="form-control" 
+                                   id="height" 
+                                   name="height" 
+                                   value="${member.height != null ? member.height : ''}"
+                                   min="100" 
+                                   max="250" 
+                                   step="0.1"
+                                   placeholder="Nhập chiều cao (cm)"
+                                   oninput="calculateBMI(); updateCaloriesPreview()" 
+                                   onchange="calculateBMI(); updateCaloriesPreview()">
                         </div>
                     </div>
                 </div>
 
-                <!-- BMI Display -->
-                <div class="bmi-display" id="bmiDisplay" style="display: ${profileData.bmi != null ? 'block' : 'none'};">
-                    <div class="bmi-value" id="bmiValue">
-                        <c:if test="${profileData.bmi != null}">
-                            <fmt:formatNumber value="${profileData.bmi}" maxFractionDigits="1" />
-                        </c:if>
+                <!-- BMI Display - Always Visible -->
+                <div class="bmi-display" id="bmiDisplay">
+                    <div class="bmi-label">
+                        <i class="fas fa-heartbeat"></i>
+                        <span>Chỉ số BMI</span>
                     </div>
-                    <div style="color: var(--text-light); margin-bottom: 10px;">Chỉ số BMI</div>
-                    <div class="bmi-category" id="bmiCategory">
-                        <c:if test="${not empty profileData.bmiCategory}">
-                            ${profileData.bmiCategory}
-                        </c:if>
+                    <div class="bmi-value ${member.bmi == null ? 'empty' : ''}" id="bmiValue">
+                        <c:choose>
+                            <c:when test="${member.bmi != null}">
+                                <fmt:formatNumber value="${member.bmi}" maxFractionDigits="1" />
+                            </c:when>
+                            <c:otherwise>
+                                <span>--</span>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                    <div class="bmi-category ${empty bmiCategory ? 'empty' : ''}" id="bmiCategory">
+                        <c:choose>
+                            <c:when test="${not empty bmiCategory}">
+                                ${bmiCategory}
+                            </c:when>
+                            <c:otherwise>
+                                <span>Nhập chiều cao và cân nặng để tính BMI</span>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                    <div class="bmi-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span>BMI = Cân nặng (kg) / [Chiều cao (m)]²</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Goals Card -->
+        <!-- Fitness Goals Card -->
         <div class="form-card">
             <div class="form-card-header">
-                <h5><i class="fas fa-bullseye"></i>Mục tiêu tập luyện</h5>
+                <h5><i class="fas fa-dumbbell"></i>Mục tiêu tập luyện</h5>
             </div>
             <div class="form-card-body">
                 <div class="form-group">
@@ -509,73 +627,139 @@
                         <i class="fas fa-target"></i>Mục tiêu chính của bạn
                     </label>
                     <div class="goal-options">
-                        <div class="goal-option ${nutritionGoal.goalType == 'giu dang' || empty nutritionGoal.goalType ? 'selected' : ''}" onclick="selectGoal('goal_giu_dang')">
-                            <input type="radio" id="goal_giu_dang" name="goalType" value="giu dang" 
-                                   ${nutritionGoal.goalType == 'giu dang' || empty nutritionGoal.goalType ? 'checked' : ''}
-                                   onchange="updateCaloriesPreview()">
-                            <label for="goal_giu_dang">Giữ dáng</label>
+                        <div class="goal-option ${member.goal == 'lose_weight' ? 'selected' : ''}" onclick="selectGoal('goal_lose_weight')">
+                            <input type="radio" id="goal_lose_weight" name="fitnessGoal" value="lose_weight" 
+                                   ${member.goal == 'lose_weight' ? 'checked' : ''}>
+                            <label for="goal_lose_weight">Giảm cân</label>
                         </div>
-                        <div class="goal-option ${nutritionGoal.goalType == 'giam can' ? 'selected' : ''}" onclick="selectGoal('goal_giam_can')">
-                            <input type="radio" id="goal_giam_can" name="goalType" value="giam can" 
-                                   ${nutritionGoal.goalType == 'giam can' ? 'checked' : ''}
-                                   onchange="updateCaloriesPreview()">
-                            <label for="goal_giam_can">Giảm cân</label>
+                        <div class="goal-option ${member.goal == 'gain_muscle' ? 'selected' : ''}" onclick="selectGoal('goal_gain_muscle')">
+                            <input type="radio" id="goal_gain_muscle" name="fitnessGoal" value="gain_muscle" 
+                                   ${member.goal == 'gain_muscle' ? 'checked' : ''}>
+                            <label for="goal_gain_muscle">Tăng cơ bắp</label>
                         </div>
-                        <div class="goal-option ${nutritionGoal.goalType == 'tang can' ? 'selected' : ''}" onclick="selectGoal('goal_tang_can')">
-                            <input type="radio" id="goal_tang_can" name="goalType" value="tang can" 
-                                   ${nutritionGoal.goalType == 'tang can' ? 'checked' : ''}
-                                   onchange="updateCaloriesPreview()">
-                            <label for="goal_tang_can">Tăng cân</label>
+                        <div class="goal-option ${member.goal == 'maintain' ? 'selected' : ''}" onclick="selectGoal('goal_maintain')">
+                            <input type="radio" id="goal_maintain" name="fitnessGoal" value="maintain" 
+                                   ${member.goal == 'maintain' ? 'checked' : ''}>
+                            <label for="goal_maintain">Duy trì sức khỏe</label>
                         </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="activityFactor" class="form-label">
-                        <i class="fas fa-running"></i>Hệ số hoạt động
-                    </label>
-                    <select class="form-control" id="activityFactor" name="activityFactor" onchange="updateCaloriesPreview()">
-                        <c:set var="af" value="${nutritionGoal.activityFactor != null ? nutritionGoal.activityFactor : 1.55}" />
-                        <option value="1.2" ${af == 1.2 ? 'selected' : ''}>Ít vận động (1.2)</option>
-                        <option value="1.375" ${af == 1.375 ? 'selected' : ''}>Vận động nhẹ (1.375)</option>
-                        <option value="1.55" ${af == 1.55 ? 'selected' : ''}>Vận động vừa (1.55)</option>
-                        <option value="1.725" ${af == 1.725 ? 'selected' : ''}>Vận động nhiều (1.725)</option>
-                        <option value="1.9" ${af == 1.9 ? 'selected' : ''}>Vận động rất nhiều (1.9)</option>
-                    </select>
-                    <small class="text-muted">Hệ số này phản ánh mức độ hoạt động hàng ngày của bạn</small>
-                </div>
-
-                <!-- Calories Preview -->
-                <div class="calories-display" id="caloriesDisplay" style="display: ${nutritionGoal.dailyCaloriesTarget != null ? 'block' : 'none'};">
-                    <div class="calories-display-label">Calories mục tiêu mỗi ngày</div>
-                    <div class="calories-display-value" id="caloriesValue">
-                        <c:if test="${nutritionGoal.dailyCaloriesTarget != null}">
-                            <fmt:formatNumber value="${nutritionGoal.dailyCaloriesTarget}" maxFractionDigits="0" />
-                        </c:if>
-                    </div>
-                    <div class="calories-display-unit">kcal</div>
-                    <div class="protein-display">
-                        <div class="calories-display-label">Protein mục tiêu</div>
-                        <div class="protein-display-value" id="proteinValue">
-                            <c:if test="${nutritionGoal.dailyProteinTarget != null}">
-                                <fmt:formatNumber value="${nutritionGoal.dailyProteinTarget}" maxFractionDigits="1" />g
-                            </c:if>
+                        <div class="goal-option ${member.goal == 'improve_health' ? 'selected' : ''}" onclick="selectGoal('goal_improve_health')">
+                            <input type="radio" id="goal_improve_health" name="fitnessGoal" value="improve_health" 
+                                   ${member.goal == 'improve_health' ? 'checked' : ''}>
+                            <label for="goal_improve_health">Cải thiện sức khỏe</label>
+                        </div>
+                        <div class="goal-option ${member.goal == 'athletic_performance' ? 'selected' : ''}" onclick="selectGoal('goal_athletic_performance')">
+                            <input type="radio" id="goal_athletic_performance" name="fitnessGoal" value="athletic_performance" 
+                                   ${member.goal == 'athletic_performance' ? 'checked' : ''}>
+                            <label for="goal_athletic_performance">Nâng cao thể lực</label>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Training Preferences Card -->
+        <div class="form-card">
+            <div class="form-card-header">
+                <h5><i class="fas fa-clock"></i>Mức độ hoạt động</h5>
+            </div>
+            <div class="form-card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="activityLevel" class="form-label">
+                                <i class="fas fa-running"></i>Mức độ hoạt động hiện tại
+                            </label>
+                            <select class="form-control" id="activityLevel" name="activityLevel" onchange="updateCaloriesPreview()">
+                                <option value="">Chọn mức độ hoạt động</option>
+                                <option value="sedentary" <c:if test="${currentActivityLevel == 'sedentary'}">selected</c:if>>Ít vận động</option>
+                                <option value="light" <c:if test="${currentActivityLevel == 'light'}">selected</c:if>>Vận động nhẹ</option>
+                                <option value="moderate" <c:if test="${currentActivityLevel == 'moderate'}">selected</c:if>>Vận động vừa phải</option>
+                                <option value="active" <c:if test="${currentActivityLevel == 'active'}">selected</c:if>>Vận động nhiều</option>
+                                <option value="very_active" <c:if test="${currentActivityLevel == 'very_active'}">selected</c:if>>Rất năng động</option>
+                            </select>
+                            <small class="text-muted" style="font-size: 0.85rem; display: block; margin-top: 5px;">
+                                <i class="fas fa-info-circle"></i> Mức độ hoạt động này sẽ được sử dụng để tính toán calories mục tiêu
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Goal Preview Card -->
+        <div class="form-card">
+            <div class="form-card-header">
+                <h5><i class="fas fa-eye"></i>Xem trước mục tiêu</h5>
+            </div>
+            <div class="form-card-body">
+                <div class="goal-preview" id="goalPreview">
+                    <h6>Mục tiêu của bạn:</h6>
+                    <p id="previewGoal">Chưa chọn mục tiêu</p>
+                    <p id="previewActivity">Mức độ hoạt động: Chưa chọn</p>
+                    
+                    <!-- Calculated Nutrition Goals -->
+                    <div id="nutritionPreview" style="display: none;">
+                        <hr style="margin: 15px 0; border-color: #e9ecef;">
+                        <h6 style="color: var(--accent); margin-top: 15px;">
+                            <i class="fas fa-fire"></i> Mục tiêu dinh dưỡng đã tính toán:
+                        </h6>
+                        <p style="margin-bottom: 8px;">
+                            <strong>Calories mục tiêu:</strong> 
+                            <span id="previewCalories" style="color: var(--accent); font-size: 1.1rem; font-weight: 700;">
+                                -- kcal/ngày
+                            </span>
+                        </p>
+                        <p style="margin-bottom: 8px;">
+                            <strong>Protein mục tiêu:</strong> 
+                            <span id="previewProtein" style="color: var(--accent); font-size: 1.1rem; font-weight: 700;">
+                                -- g/ngày
+                            </span>
+                        </p>
+                    </div>
+                    
+                    <!-- Existing Nutrition Goal (if saved) -->
+                    <c:if test="${not empty nutritionGoal}">
+                        <hr style="margin: 15px 0; border-color: #e9ecef;">
+                        <h6 style="color: var(--accent); margin-top: 15px;">
+                            <i class="fas fa-check-circle"></i> Mục tiêu dinh dưỡng hiện tại:
+                        </h6>
+                        <p style="margin-bottom: 8px;">
+                            <strong>Calories mục tiêu:</strong> 
+                            <span style="color: var(--accent); font-size: 1.1rem; font-weight: 700;">
+                                <fmt:formatNumber value="${nutritionGoal.dailyCaloriesTarget}" maxFractionDigits="0" /> kcal/ngày
+                            </span>
+                        </p>
+                        <p style="margin-bottom: 8px;">
+                            <strong>Protein mục tiêu:</strong> 
+                            <span style="color: var(--accent); font-size: 1.1rem; font-weight: 700;">
+                                <fmt:formatNumber value="${nutritionGoal.dailyProteinTarget}" maxFractionDigits="1" /> g/ngày
+                            </span>
+                        </p>
+                        <p style="margin-bottom: 0; font-size: 0.9rem; color: var(--text-light);">
+                            <i class="fas fa-info-circle"></i> Cập nhật lần cuối: 
+                            <c:if test="${not empty nutritionGoal.updatedAtAsDate}">
+                                <fmt:formatDate value="${nutritionGoal.updatedAtAsDate}" pattern="dd/MM/yyyy HH:mm" type="both" />
+                            </c:if>
+                        </p>
+                    </c:if>
+                </div>
+            </div>
+        </div>
+
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <button type="submit" class="btn-nutrition">
+            <button type="button" class="btn-secondary" onclick="resetForm()">
+                <i class="fas fa-undo"></i>
+                <span>Đặt lại</span>
+            </button>
+            <a href="${pageContext.request.contextPath}/member/dashboard" class="btn-outline-secondary">
+                <i class="fas fa-times"></i>
+                <span>Hủy bỏ</span>
+            </a>
+            <button type="submit" class="btn-primary">
                 <i class="fas fa-save"></i>
                 <span>Lưu thay đổi</span>
             </button>
-            <a href="${pageContext.request.contextPath}/member/dashboard" class="btn-secondary-nutrition">
-                <i class="fas fa-times"></i>
-                <span>Hủy</span>
-            </a>
         </div>
     </form>
     </div>
@@ -592,7 +776,7 @@
                 opt.classList.remove('selected');
             });
             radio.closest('.goal-option').classList.add('selected');
-            updateCaloriesPreview();
+            updateGoalPreview();
         }
     }
 
@@ -607,8 +791,12 @@
         if (height > 0 && weight > 0) {
             const heightM = height / 100; // Convert cm to meters
             const bmi = weight / (heightM * heightM);
-            bmiValue.textContent = bmi.toFixed(1);
             
+            // Update BMI value
+            bmiValue.textContent = bmi.toFixed(1);
+            bmiValue.classList.remove('empty');
+            
+            // Determine category and styling
             let category = '';
             let categoryClass = '';
             if (bmi < 18.5) {
@@ -625,122 +813,228 @@
                 categoryClass = 'obese';
             }
             
+            // Update category
             bmiCategory.textContent = category;
             bmiCategory.className = 'bmi-category ' + categoryClass;
-            bmiDisplay.style.display = 'block';
+            bmiCategory.classList.remove('empty');
             
-            // Trigger calories preview update
-            updateCaloriesPreview();
+            // Add has-value class for animation
+            bmiDisplay.classList.add('has-value');
+            
+            // Update value color based on category
+            const categoryColors = {
+                'underweight': '#17a2b8',
+                'normal': '#28a745',
+                'overweight': '#ffc107',
+                'obese': '#dc3545'
+            };
+            bmiValue.style.color = categoryColors[categoryClass] || '#ec8b5e';
         } else {
-            bmiDisplay.style.display = 'none';
+            // Reset to empty state
+            bmiValue.innerHTML = '<span>--</span>';
+            bmiValue.classList.add('empty');
+            bmiValue.style.color = '';
+            
+            bmiCategory.innerHTML = '<span>Nhập chiều cao và cân nặng để tính BMI</span>';
+            bmiCategory.className = 'bmi-category empty';
+            
+            bmiDisplay.classList.remove('has-value');
         }
     }
 
-    // Update calories preview (client-side calculation using same formula as server-side)
+    // Goal preview update function
+    function updateGoalPreview() {
+        const selectedGoal = document.querySelector('input[name="fitnessGoal"]:checked');
+        const activityLevel = document.getElementById('activityLevel').value;
+
+        const goalTexts = {
+            'lose_weight': 'Giảm cân',
+            'gain_muscle': 'Tăng cơ bắp',
+            'maintain': 'Duy trì sức khỏe',
+            'improve_health': 'Cải thiện sức khỏe',
+            'athletic_performance': 'Nâng cao thể lực'
+        };
+
+        const activityTexts = {
+            'sedentary': 'Ít vận động',
+            'light': 'Vận động nhẹ',
+            'moderate': 'Vận động vừa phải',
+            'active': 'Vận động nhiều',
+            'very_active': 'Rất năng động'
+        };
+
+        document.getElementById('previewGoal').textContent = 
+            selectedGoal ? goalTexts[selectedGoal.value] || 'Mục tiêu khác' : 'Chưa chọn mục tiêu';
+        
+        document.getElementById('previewActivity').textContent = 
+            activityLevel ? `Mức độ hoạt động: ${activityTexts[activityLevel] || activityLevel}` : 'Mức độ hoạt động: Chưa chọn';
+        
+        updateCaloriesPreview();
+    }
+    
+    // Calculate and update calories preview
     function updateCaloriesPreview() {
-        const height = parseFloat(document.getElementById('height').value);
         const weight = parseFloat(document.getElementById('weight').value);
-        const goalType = document.querySelector('input[name="goalType"]:checked')?.value || 'giu dang';
-        const activityFactorInput = document.getElementById('activityFactor');
-        const activityFactor = activityFactorInput ? parseFloat(activityFactorInput.value) : 1.55;
-        const caloriesDisplay = document.getElementById('caloriesDisplay');
-        const caloriesValue = document.getElementById('caloriesValue');
-        const proteinValue = document.getElementById('proteinValue');
+        const height = parseFloat(document.getElementById('height').value);
+        const selectedGoal = document.querySelector('input[name="fitnessGoal"]:checked');
+        const activityLevel = document.getElementById('activityLevel').value;
+        const nutritionPreview = document.getElementById('nutritionPreview');
         
-        // Hide if no height/weight
-        if (!height || !weight || isNaN(height) || isNaN(weight)) {
-            if (caloriesDisplay) {
-                // Only hide if there's no saved value from DB
-                const savedCalories = caloriesValue ? caloriesValue.textContent.trim() : '';
-                if (!savedCalories || savedCalories === '') {
-                    caloriesDisplay.style.display = 'none';
-                }
+        if (weight > 0 && height > 0 && selectedGoal && activityLevel) {
+            // Calculate BMR (Mifflin-St Jeor Equation)
+            // BMR = 10 * weight(kg) + 6.25 * height(cm) - 5 * age + s
+            // For preview, use default age 30 and gender M
+            const age = 30; // Default for preview
+            const gender = 'M'; // Default for preview
+            let bmr = (10 * weight) + (6.25 * height) - (5 * age);
+            bmr += (gender === 'M' ? 5 : -161);
+            
+            // Activity factors
+            const activityFactors = {
+                'sedentary': 1.2,
+                'light': 1.375,
+                'moderate': 1.55,
+                'active': 1.725,
+                'very_active': 1.9
+            };
+            
+            const activityFactor = activityFactors[activityLevel] || 1.55;
+            let tdee = bmr * activityFactor;
+            
+            // Adjust for goal
+            if (selectedGoal.value === 'lose_weight') {
+                tdee -= 500; // Deficit
+            } else if (selectedGoal.value === 'gain_muscle') {
+                tdee += 400; // Surplus
             }
-            return;
-        }
-        
-        // Validate activity factor
-        if (!activityFactor || isNaN(activityFactor) || activityFactor <= 0) {
-            if (caloriesDisplay) {
-                const savedCalories = caloriesValue ? caloriesValue.textContent.trim() : '';
-                if (!savedCalories || savedCalories === '') {
-                    caloriesDisplay.style.display = 'none';
-                }
+            
+            // Calculate protein (g per kg body weight)
+            let proteinPerKg = 1.6;
+            if (selectedGoal.value === 'lose_weight') {
+                proteinPerKg = 2.0;
+            } else if (selectedGoal.value === 'gain_muscle') {
+                proteinPerKg = 2.2;
             }
-            return;
-        }
-        
-        // BMR calculation using Harris-Benedict equation (same as server-side)
-        // Male: BMR = 88.362 + (13.397 × weight) + (4.799 × height) - (5.677 × age)
-        // Female: BMR = 447.593 + (9.247 × weight) + (3.098 × height) - (4.330 × age)
-        // Using 25 as default age (same as server-side)
-        const age = 25;
-        const gender = '${profileData.gender}';
-        let bmr;
-        if (gender === 'Nam' || gender === 'Male') {
-            // Male: BMR = 88.362 + (13.397 × weight) + (4.799 × height) - (5.677 × age)
-            bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+            const protein = weight * proteinPerKg;
+            
+            // Update preview
+            document.getElementById('previewCalories').textContent = Math.round(tdee) + ' kcal/ngày';
+            document.getElementById('previewProtein').textContent = protein.toFixed(1) + ' g/ngày';
+            nutritionPreview.style.display = 'block';
         } else {
-            // Female: BMR = 447.593 + (9.247 × weight) + (3.098 × height) - (4.330 × age)
-            bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+            nutritionPreview.style.display = 'none';
         }
-        
-        // Calculate TDEE (Total Daily Energy Expenditure) = BMR × Activity Factor
-        let tdee = bmr * activityFactor;
-        
-        // Apply goal adjustments (same as server-side)
-        let caloriesTarget;
-        if (goalType === 'giam can') {
-            // Deficit: TDEE - 500 kcal
-            caloriesTarget = tdee - 500;
-        } else if (goalType === 'tang can') {
-            // Surplus: TDEE + 500 kcal
-            caloriesTarget = tdee + 500;
-        } else {
-            // "giu dang" (maintain): TDEE
-            caloriesTarget = tdee;
-        }
-        
-        // Ensure minimum calories (don't go below 1200) - same as server-side
-        if (caloriesTarget < 1200) {
-            caloriesTarget = 1200;
-        }
-        
-        // Protein: 1.8g per kg (same as server-side)
-        const protein = weight * 1.8;
-        
-        // Round to 2 decimal places for consistency, then format for display
-        caloriesTarget = Math.round(caloriesTarget);
-        caloriesValue.textContent = caloriesTarget.toLocaleString();
-        proteinValue.textContent = protein.toFixed(1) + 'g';
-        caloriesDisplay.style.display = 'block';
     }
 
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
-        calculateBMI();
-        // Don't override DB values on initial load - only update when user changes values
-        // The updateCaloriesPreview() will be called by event listeners when user edits
+        // Set initial BMI display state if values exist
+        const height = parseFloat(document.getElementById('height').value);
+        const weight = parseFloat(document.getElementById('weight').value);
+        const bmiDisplay = document.getElementById('bmiDisplay');
+        const bmiValue = document.getElementById('bmiValue');
+        const bmiCategory = document.getElementById('bmiCategory');
         
-        // Add event listeners for radio buttons to update selected state
-        document.querySelectorAll('.goal-option input[type="radio"]').forEach(radio => {
+        // If BMI exists from server, add has-value class
+        if (bmiValue && !bmiValue.classList.contains('empty')) {
+            bmiDisplay.classList.add('has-value');
+            
+            // Set category color based on existing category
+            const categoryText = bmiCategory.textContent.trim();
+            if (categoryText.includes('Thiếu cân')) {
+                bmiValue.style.color = '#17a2b8';
+                bmiCategory.className = 'bmi-category underweight';
+            } else if (categoryText.includes('Bình thường')) {
+                bmiValue.style.color = '#28a745';
+                bmiCategory.className = 'bmi-category normal';
+            } else if (categoryText.includes('Thừa cân')) {
+                bmiValue.style.color = '#ffc107';
+                bmiCategory.className = 'bmi-category overweight';
+            } else if (categoryText.includes('Béo phì')) {
+                bmiValue.style.color = '#dc3545';
+                bmiCategory.className = 'bmi-category obese';
+            }
+        }
+        
+        // Calculate BMI on load (will update if values exist)
+        calculateBMI();
+        
+        // Add event listeners for goal radio buttons to update selected state
+        document.querySelectorAll('input[name="fitnessGoal"]').forEach(radio => {
             radio.addEventListener('change', function() {
+                // Update selected state
                 document.querySelectorAll('.goal-option').forEach(opt => {
                     opt.classList.remove('selected');
                 });
                 if (this.checked) {
                     this.closest('.goal-option').classList.add('selected');
                 }
-                updateCaloriesPreview();
+                updateGoalPreview();
             });
         });
-
+        
+        // Add event listener for activity level
+        const activityLevelSelect = document.getElementById('activityLevel');
+        if (activityLevelSelect) {
+            activityLevelSelect.addEventListener('change', function() {
+                updateGoalPreview();
+                updateCaloriesPreview();
+            });
+        }
+        
         // Ensure selected state is set on page load
-        document.querySelectorAll('input[name="goalType"]:checked').forEach(radio => {
+        document.querySelectorAll('input[name="fitnessGoal"]:checked').forEach(radio => {
             radio.closest('.goal-option').classList.add('selected');
         });
+        
+        // Initial preview update
+        updateGoalPreview();
+    });
+
+    // Form reset function
+    function resetForm() {
+        if (confirm('Bạn có chắc chắn muốn đặt lại tất cả các thay đổi?')) {
+            document.getElementById('bodyGoalsForm').reset();
+            // Reset selected state
+            document.querySelectorAll('.goal-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            calculateBMI();
+            updateGoalPreview();
+        }
+    }
+
+    // Form validation
+    document.getElementById('bodyGoalsForm').addEventListener('submit', function(e) {
+        const fitnessGoal = document.querySelector('input[name="fitnessGoal"]:checked');
+        const activityLevel = document.getElementById('activityLevel').value;
+        const weight = parseFloat(document.getElementById('weight').value);
+        const height = parseFloat(document.getElementById('height').value);
+        
+        if (!weight || weight < 20 || weight > 300) {
+            alert('Vui lòng nhập cân nặng hợp lệ (20-300 kg)');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (!height || height < 100 || height > 250) {
+            alert('Vui lòng nhập chiều cao hợp lệ (100-250 cm)');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (!fitnessGoal) {
+            alert('Vui lòng chọn mục tiêu tập luyện');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (!activityLevel || activityLevel.trim() === '') {
+            alert('Vui lòng chọn mức độ hoạt động');
+            e.preventDefault();
+            return false;
+        }
     });
 </script>
 
 <%@ include file="/views/common/footer.jsp" %>
-
