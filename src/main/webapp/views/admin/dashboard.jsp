@@ -7,7 +7,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard - GymFit</title>
-
+    
     <!-- Font Awesome Icons -->
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
@@ -21,9 +21,10 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
-
+    
     <style>
-      :root {
+         
+:root {
         --primary: #141a49;
         --primary-light: #1e2a5c;
         --accent: #ec8b5a;
@@ -393,6 +394,8 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         }
       }
     </style>
+
+
   </head>
   <body>
     <div class="admin-container">
@@ -400,11 +403,11 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
       <aside class="sidebar">
         <div class="sidebar-header">
           <a
-            href="${pageContext.request.contextPath}/views/admin/admin_home.jsp"
+            href="${pageContext.request.contextPath}/views/admin/dashboard.jsp"
             class="sidebar-brand"
           >
             <i class="fas fa-dumbbell"></i>
-            <span>FITZ GYM</span>
+            <span>GYMFIT</span>
           </a>
 
           <div class="sidebar-user">

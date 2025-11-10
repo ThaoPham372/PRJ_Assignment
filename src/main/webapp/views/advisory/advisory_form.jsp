@@ -10,7 +10,6 @@ file="/views/common/header.jsp" %>
     --input-bg: #f5f5dc;
   }
 
-  /* Body styling với background ảnh chiếm toàn màn hình */
   body {
     background-image: url('${pageContext.request.contextPath}/images/home/backrough.jpg');
     background-size: cover;
@@ -351,7 +350,6 @@ file="/views/common/header.jsp" %>
           src="${pageContext.request.contextPath}/images/logo/logo.png"
           alt="GymFit Logo"
         />
-        <h1>GYMFIT</h1>
       </div>
     </div>
 

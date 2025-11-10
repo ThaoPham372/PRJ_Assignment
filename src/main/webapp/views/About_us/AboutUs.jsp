@@ -567,10 +567,7 @@ file="/views/common/header.jsp" %>
       hiện đại và đội ngũ huấn luyện viên chuyên nghiệp."
     </div>
 
-    <a href="#mission" class="scroll-down">
-      <span>Khám phá thêm</span>
-      <i class="fas fa-chevron-down"></i>
-    </a>
+
   </div>
 </section>
 
@@ -739,36 +736,13 @@ file="/views/common/header.jsp" %>
   </div>
 </section>
 
-<!-- CTA Section -->
-<section class="cta-section">
-  <div class="cta-title">Đăng ký tập thử miễn phí ngay!</div>
-
-  <div class="cta-buttons">
-    <div class="cta-main">TƯ VẤN & CHAT BOT</div>
-
-    <div class="support-buttons">
-      <a href="${pageContext.request.contextPath}/advisory" class="support-btn">
-        <i class="fas fa-user-tie"></i>
-        TƯ VẤN
-      </a>
-      <button
-        class="support-btn"
-        onclick="alert('Chat Bot đang được phát triển!')"
-      >
-        <i class="fas fa-comments"></i>
-        CHAT BOT
-      </button>
-    </div>
-  </div>
-
-  <a
-    href="${pageContext.request.contextPath}/views/register.jsp"
-    class="register-btn"
-  >
-    ĐĂNG KÝ NGAY
-  </a>
+<section>
+    <h2 class="section-title">
+    MAPS
+    </h2>
 </section>
-
+    
+      
 <!-- Google Map Section -->
 <section class="map-section">
   <iframe
@@ -780,8 +754,6 @@ file="/views/common/header.jsp" %>
   >
   </iframe>
 </section>
-
-<%@ include file="/views/common/footer.jsp" %>
 
 <!-- Floating Buttons -->
 <style>

@@ -407,7 +407,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
             class="sidebar-brand"
           >
             <i class="fas fa-dumbbell"></i>
-            <span>FITZ GYM</span>
+            <span>GYMFIT</span>
           </a>
 
           <div class="sidebar-user">

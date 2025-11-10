@@ -1,5 +1,5 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %> 
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -7,7 +7,6 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Báo cáo & Thống kê - GymFit</title>
-
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
       rel="stylesheet"
@@ -16,6 +15,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
       :root {
@@ -37,13 +37,10 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         color: var(--text);
         background: #f6f6f8;
       }
-
       .admin-container {
         display: flex;
         min-height: 100vh;
       }
-
-      /* Sidebar */
       .sidebar {
         width: 280px;
         background: var(--gradient-primary);
@@ -54,12 +51,10 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
         z-index: 100;
       }
-
       .sidebar-header {
         padding: 30px 25px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       }
-
       .sidebar-brand {
         font-size: 1.8rem;
         font-weight: 900;
@@ -69,7 +64,6 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         color: #fff;
         text-decoration: none;
       }
-
       .sidebar-user {
         margin-top: 15px;
         padding: 15px;
@@ -79,7 +73,6 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         align-items: center;
         gap: 12px;
       }
-
       .sidebar-user-avatar {
         width: 45px;
         height: 45px;
@@ -90,7 +83,6 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         justify-content: center;
         font-size: 1.2rem;
       }
-
       .sidebar-user-info h4 {
         font-size: 0.95rem;
         margin-bottom: 3px;
@@ -99,14 +91,12 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         font-size: 0.75rem;
         opacity: 0.8;
       }
-
       .sidebar-menu {
         padding: 20px 0;
       }
       .sidebar-menu-item {
         list-style: none;
       }
-
       .sidebar-menu-link {
         display: flex;
         align-items: center;
@@ -119,25 +109,21 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         transition: all 0.3s ease;
         border-left: 3px solid transparent;
       }
-
       .sidebar-menu-link:hover,
       .sidebar-menu-link.active {
         background: rgba(255, 255, 255, 0.1);
         border-left-color: var(--accent);
         color: var(--accent);
       }
-
       .sidebar-menu-link i {
         font-size: 1.1rem;
         width: 20px;
       }
-
       .main-content {
         flex: 1;
         margin-left: 280px;
         background: #f6f6f8;
       }
-
       .top-bar {
         background: #fff;
         padding: 20px 40px;
@@ -149,7 +135,6 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         top: 0;
         z-index: 90;
       }
-
       .top-bar h1 {
         font-size: 1.8rem;
         font-weight: 700;
@@ -159,7 +144,6 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         display: flex;
         gap: 15px;
       }
-
       .btn {
         background: var(--gradient-accent);
         color: #fff;
@@ -176,28 +160,22 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         align-items: center;
         gap: 8px;
       }
-
       .btn:hover {
         transform: translateY(-2px);
       }
-
       .btn-outline {
         background: transparent;
         border: 2px solid var(--primary);
         color: var(--primary);
         box-shadow: none;
       }
-
       .btn-outline:hover {
         background: var(--primary);
         color: #fff;
       }
-
       .content-area {
         padding: 30px 40px;
       }
-
-      /* Filter Bar */
       .filter-bar {
         background: #fff;
         padding: 20px;
@@ -209,7 +187,6 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         flex-wrap: wrap;
         align-items: center;
       }
-
       .filter-select {
         padding: 10px 15px;
         border: 2px solid #e0e0e0;
@@ -217,35 +194,31 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         font-size: 0.9rem;
         cursor: pointer;
       }
-
-      /* Report Cards Grid */
       .reports-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 25px;
         margin-bottom: 30px;
       }
-
       .report-card {
         background: #fff;
         border-radius: 15px;
         padding: 25px;
         box-shadow: 0 4px 15px var(--shadow);
+        display: flex;
+        flex-direction: column;
       }
-
       .report-card-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         margin-bottom: 20px;
       }
-
       .report-card-title {
         font-size: 1.1rem;
         font-weight: 700;
         color: var(--primary);
       }
-
       .report-card-icon {
         width: 45px;
         height: 45px;
@@ -256,42 +229,32 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         font-size: 1.3rem;
         color: #fff;
       }
-
-      .report-chart-placeholder {
-        height: 200px;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #5a6c7d;
+      .report-chart-container {
+        flex: 1;
+        min-height: 200px;
+        position: relative;
         margin-bottom: 15px;
       }
-
       .report-summary {
         display: flex;
         justify-content: space-between;
         padding-top: 15px;
         border-top: 2px solid #f0f0f0;
       }
-
       .summary-item {
         text-align: center;
+        flex: 1;
       }
-
       .summary-label {
         font-size: 0.8rem;
         color: #5a6c7d;
         margin-bottom: 5px;
       }
-
       .summary-value {
         font-size: 1.3rem;
         font-weight: 700;
         color: var(--primary);
       }
-
-      /* Large Chart Container */
       .large-chart {
         background: #fff;
         border-radius: 15px;
@@ -299,29 +262,20 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         box-shadow: 0 4px 15px var(--shadow);
         margin-bottom: 25px;
       }
-
       .large-chart-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
       }
-
       .large-chart-title {
         font-size: 1.3rem;
         font-weight: 700;
         color: var(--primary);
       }
-
-      .large-chart-placeholder {
+      .large-chart-container {
         height: 400px;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #5a6c7d;
-        font-size: 1.1rem;
+        position: relative;
       }
 
       @media (max-width: 768px) {
@@ -341,23 +295,21 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         }
         .filter-bar {
           flex-direction: column;
+          align-items: stretch;
         }
       }
     </style>
   </head>
   <body>
     <div class="admin-container">
-      <!-- Sidebar -->
       <aside class="sidebar">
         <div class="sidebar-header">
           <a
-            href="${pageContext.request.contextPath}/admin/admin-home"
+            href="${pageContext.request.contextPath}/admin/home"
             class="sidebar-brand"
           >
-            <i class="fas fa-dumbbell"></i>
-            <span>FITZ GYM</span>
+            <i class="fas fa-dumbbell"></i><span>GYMFIT</span>
           </a>
-
           <div class="sidebar-user">
             <div class="sidebar-user-avatar">
               <i class="fas fa-user-shield"></i>
@@ -368,7 +320,6 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
             </div>
           </div>
         </div>
-
         <ul class="sidebar-menu">
           <li class="sidebar-menu-item">
             <a
@@ -420,7 +371,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/admin/sales-management"
+              href="${pageContext.request.contextPath}/admin/order-management"
               class="sidebar-menu-link"
             >
               <i class="fas fa-box"></i><span>Quản lý đơn hàng</span>
@@ -446,12 +397,11 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         </ul>
       </aside>
 
-      <!-- Main Content -->
       <main class="main-content">
         <div class="top-bar">
           <h1><i class="fas fa-chart-line"></i> Báo cáo & Thống kê</h1>
           <div class="top-bar-actions">
-            <button class="btn">
+            <button class="btn" onclick="window.print()">
               <i class="fas fa-download"></i> Xuất báo cáo
             </button>
             <a
@@ -464,33 +414,39 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         </div>
 
         <div class="content-area">
-          <!-- Filter Bar -->
           <div class="filter-bar">
             <label style="font-weight: 600">Chọn khoảng thời gian:</label>
-            <select class="filter-select">
-              <option>7 ngày qua</option>
-              <option>30 ngày qua</option>
-              <option>3 tháng qua</option>
-              <option>6 tháng qua</option>
-              <option selected>12 tháng qua</option>
-              <option>Tùy chỉnh</option>
+            <select
+              id="timeRangeSelect"
+              class="filter-select"
+              onchange="toggleCustomDate()"
+            >
+              <option value="7days">7 ngày qua</option>
+              <option value="30days">30 ngày qua</option>
+              <option value="3months">3 tháng qua</option>
+              <option value="6months">6 tháng qua</option>
+              <option value="12months" selected>12 tháng qua</option>
+              <option value="custom">Tùy chỉnh...</option>
             </select>
 
-            <input type="date" class="filter-select" />
-            <span>đến</span>
-            <input type="date" class="filter-select" />
+            <div
+              id="customDateRange"
+              style="display: none; gap: 10px; align-items: center"
+            >
+              <input type="date" id="startDate" class="filter-select" />
+              <span>đến</span>
+              <input type="date" id="endDate" class="filter-select" />
+            </div>
 
-            <button class="btn"><i class="fas fa-filter"></i> Áp dụng</button>
+            <button class="btn" onclick="applyFilter()">
+              <i class="fas fa-filter"></i> Áp dụng
+            </button>
           </div>
 
-          <!-- Report Cards -->
           <div class="reports-grid">
-            <!-- Members Report -->
             <div class="report-card">
               <div class="report-card-header">
-                <h3 class="report-card-title">
-                  Số lượng hội viên theo thời gian
-                </h3>
+                <h3 class="report-card-title">Hội viên</h3>
                 <div
                   class="report-card-icon"
                   style="
@@ -504,33 +460,44 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                   <i class="fas fa-users"></i>
                 </div>
               </div>
-
-              <div class="report-chart-placeholder">
-                <i class="fas fa-chart-line"></i>
+              <div class="report-chart-container">
+                <canvas id="memberGrowthChart"></canvas>
               </div>
-
               <div class="report-summary">
                 <div class="summary-item">
                   <div class="summary-label">Tổng HV</div>
-                  <div class="summary-value">1,245</div>
+                  <div class="summary-value">
+                    <fmt:formatNumber
+                      value="${summary.totalMembers}"
+                      type="number"
+                    />
+                  </div>
                 </div>
                 <div class="summary-item">
-                  <div class="summary-label">HV mới</div>
-                  <div class="summary-value">+125</div>
+                  <div class="summary-label">HV mới (tháng này)</div>
+                  <div class="summary-value">
+                    +<fmt:formatNumber
+                      value="${summary.newMembersThisMonth}"
+                      type="number"
+                    />
+                  </div>
                 </div>
                 <div class="summary-item">
                   <div class="summary-label">Tăng trưởng</div>
-                  <div class="summary-value">+18%</div>
+                  <div
+                    class="summary-value"
+                    style="color: ${summary.memberGrowthRate >= 0 ? '#38ef7d' : '#ff5b5b'}"
+                  >
+                    ${summary.memberGrowthRate > 0 ? '+' :
+                    ''}${summary.memberGrowthRate}%
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Revenue Report -->
             <div class="report-card">
               <div class="report-card-header">
-                <h3 class="report-card-title">
-                  Doanh thu theo dịch vụ/gói tập
-                </h3>
+                <h3 class="report-card-title">Doanh thu theo gói</h3>
                 <div
                   class="report-card-icon"
                   style="
@@ -544,28 +511,34 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                   <i class="fas fa-dollar-sign"></i>
                 </div>
               </div>
-
-              <div class="report-chart-placeholder">
-                <i class="fas fa-chart-pie"></i>
+              <div class="report-chart-container">
+                <canvas id="packagePieChart"></canvas>
               </div>
-
               <div class="report-summary">
                 <div class="summary-item">
-                  <div class="summary-label">Basic</div>
-                  <div class="summary-value">25%</div>
+                  <div class="summary-label">Tháng này</div>
+                  <div class="summary-value">
+                    <fmt:setLocale value="vi_VN" />
+                    <fmt:formatNumber
+                      value="${summary.revenueThisMonth}"
+                      type="currency"
+                      currencySymbol="₫"
+                    />
+                  </div>
                 </div>
                 <div class="summary-item">
-                  <div class="summary-label">Standard</div>
-                  <div class="summary-value">35%</div>
-                </div>
-                <div class="summary-item">
-                  <div class="summary-label">Premium</div>
-                  <div class="summary-value">40%</div>
+                  <div class="summary-label">Tăng trưởng</div>
+                  <div
+                    class="summary-value"
+                    style="color: ${summary.revenueGrowthRate >= 0 ? '#38ef7d' : '#ff5b5b'}"
+                  >
+                    ${summary.revenueGrowthRate > 0 ? '+' :
+                    ''}${summary.revenueGrowthRate}%
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Check-in Report -->
             <div class="report-card">
               <div class="report-card-header">
                 <h3 class="report-card-title">Tần suất check-in</h3>
@@ -576,63 +549,213 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                   <i class="fas fa-calendar-check"></i>
                 </div>
               </div>
-
-              <div class="report-chart-placeholder">
-                <i class="fas fa-chart-bar"></i>
+              <div class="report-chart-container">
+                <canvas id="checkinBarChart"></canvas>
               </div>
-
               <div class="report-summary">
                 <div class="summary-item">
                   <div class="summary-label">Hôm nay</div>
-                  <div class="summary-value">892</div>
+                  <div class="summary-value">${summary.checkInsToday}</div>
                 </div>
                 <div class="summary-item">
-                  <div class="summary-label">Trung bình</div>
-                  <div class="summary-value">745</div>
-                </div>
-                <div class="summary-item">
-                  <div class="summary-label">Cao nhất</div>
-                  <div class="summary-value">1,024</div>
+                  <div class="summary-label">Trung bình/ngày</div>
+                  <div class="summary-value">${summary.avgCheckIns}</div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Large Revenue Chart -->
           <div class="large-chart">
             <div class="large-chart-header">
-              <h3 class="large-chart-title">
-                Biểu đồ doanh thu và chi phí 12 tháng
-              </h3>
-              <select class="filter-select">
-                <option>2025</option>
-                <option>2024</option>
-                <option>2023</option>
-              </select>
+              <h3 class="large-chart-title">Biểu đồ doanh thu 12 tháng qua</h3>
             </div>
-            <div class="large-chart-placeholder">
-              <i class="fas fa-chart-area"></i> &nbsp; Biểu đồ chi tiết sẽ hiển
-              thị ở đây (Doanh thu & Chi phí)
-            </div>
-          </div>
-
-          <!-- Additional Stats Large Chart -->
-          <div class="large-chart">
-            <div class="large-chart-header">
-              <h3 class="large-chart-title">
-                Thống kê lớp training & PT sessions
-              </h3>
-              <button class="btn btn-outline">
-                <i class="fas fa-sliders-h"></i> Tùy chỉnh
-              </button>
-            </div>
-            <div class="large-chart-placeholder">
-              <i class="fas fa-chart-column"></i> &nbsp; Biểu đồ lớp training và
-              PT sessions
+            <div class="large-chart-container">
+              <canvas id="revenueLineChart"></canvas>
             </div>
           </div>
         </div>
       </main>
     </div>
+
+    <script>
+      // --- HÀM HỖ TRỢ ---
+      const formatCurrency = (amount) =>
+        new Intl.NumberFormat('vi-VN', {
+          style: 'currency',
+          currency: 'VND',
+        }).format(amount)
+      function toggleCustomDate() {
+        const select = document.getElementById('timeRangeSelect')
+        document.getElementById('customDateRange').style.display =
+          select.value === 'custom' ? 'flex' : 'none'
+      }
+      function applyFilter() {
+        // Chức năng này sẽ cần gọi về Servlet với tham số lọc
+        alert('Chức năng lọc đang được phát triển!')
+      }
+
+      // --- LẤY DỮ LIỆU TỪ SERVER ---
+      const revenueDataRaw = '${revenueChartJson}'
+      const packageDataRaw = '${packageChartJson}'
+      let revenueData = [],
+        packageData = []
+
+      try {
+        if (revenueDataRaw) revenueData = JSON.parse(revenueDataRaw)
+        if (packageDataRaw) packageData = JSON.parse(packageDataRaw)
+      } catch (e) {
+        console.error('Lỗi parse JSON:', e)
+      }
+
+      // --- 1. BIỂU ĐỒ HỘI VIÊN (Dữ liệu giả lập) ---
+      const memberCtx = document
+        .getElementById('memberGrowthChart')
+        .getContext('2d')
+      const memberGradient = memberCtx.createLinearGradient(0, 0, 0, 200)
+      memberGradient.addColorStop(0, 'rgba(102, 126, 234, 0.5)')
+      memberGradient.addColorStop(1, 'rgba(118, 75, 162, 0.0)')
+
+      new Chart(memberCtx, {
+        type: 'line',
+        data: {
+          labels: ['T6', 'T7', 'T8', 'T9', 'T10', 'T11'],
+          datasets: [
+            {
+              label: 'Hội viên mới',
+              data: [5, 8, 12, 7, 15, 17], // Dummy data
+              borderColor: '#667eea',
+              backgroundColor: memberGradient,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 0, // Ẩn điểm cho gọn
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { enabled: true } },
+          scales: { x: { display: false }, y: { display: false } }, // Ẩn trục cho biểu đồ nhỏ
+        },
+      })
+
+      // --- 2. BIỂU ĐỒ TRÒN (DOANH THU THEO GÓI) ---
+      // Nếu không có dữ liệu thật, dùng dữ liệu giả để test hiển thị
+      if (packageData.length === 0) {
+        packageData = [{ label: 'Chưa có dữ liệu', value: 1 }] // Dummy để hiện vòng tròn trống
+      }
+
+      const packageCtx = document
+        .getElementById('packagePieChart')
+        .getContext('2d')
+      new Chart(packageCtx, {
+        type: 'doughnut',
+        data: {
+          labels: packageData.map((item) => item.label),
+          datasets: [
+            {
+              data: packageData.map((item) => item.value),
+              backgroundColor: [
+                '#11998e',
+                '#38ef7d',
+                '#0575E6',
+                '#ff9966',
+                '#ec8b5a',
+                '#e0e0e0',
+              ],
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { boxWidth: 12, font: { size: 11 } },
+            },
+          },
+        },
+      })
+
+      // --- 3. BIỂU ĐỒ CỘT (CHECK-IN - Dữ liệu giả lập) ---
+      const checkinCtx = document
+        .getElementById('checkinBarChart')
+        .getContext('2d')
+      new Chart(checkinCtx, {
+        type: 'bar',
+        data: {
+          labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+          datasets: [
+            {
+              label: 'Check-in',
+              data: [650, 720, 892, 810, 750, 980, 1024],
+              backgroundColor: '#ec8b5a',
+              borderRadius: 4,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { x: { grid: { display: false } }, y: { display: false } },
+          plugins: { legend: { display: false } },
+        },
+      })
+
+      // --- 4. BIỂU ĐỒ ĐƯỜNG LỚN (DOANH THU 12 THÁNG) ---
+      const revenueCtx = document
+        .getElementById('revenueLineChart')
+        .getContext('2d')
+      const revenueGradient = revenueCtx.createLinearGradient(0, 0, 0, 400)
+      revenueGradient.addColorStop(0, 'rgba(20, 26, 73, 0.5)')
+      revenueGradient.addColorStop(1, 'rgba(20, 26, 73, 0.0)')
+
+      new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+          labels: revenueData.map((item) => item.label),
+          datasets: [
+            {
+              label: 'Doanh thu',
+              data: revenueData.map((item) => item.value),
+              borderColor: '#141a49',
+              backgroundColor: revenueGradient,
+              fill: true,
+              tension: 0.4,
+              pointBackgroundColor: '#ec8b5a',
+              pointBorderColor: '#fff',
+              pointHoverRadius: 6,
+              pointRadius: 4,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function (value) {
+                  return formatCurrency(value).replace('₫', '') + 'đ'
+                },
+              },
+              grid: { color: '#f0f0f0' },
+            },
+            x: { grid: { display: false } },
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => 'Doanh thu: ' + formatCurrency(ctx.parsed.y),
+              },
+            },
+          },
+        },
+      })
+    </script>
   </body>
 </html>

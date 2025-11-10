@@ -2,7 +2,7 @@
 
 <style>
     :root {
-        --primary-dark-cb: #141a46; /* Đổi tên biến để tránh xung đột với trang chính */
+        --primary-dark-cb: #141a46; 
         --primary-accent-cb: #ec8b5a;
         --bot-bg-cb: #e5e7eb;
         --container-bg-cb: #ffffff;
@@ -10,29 +10,39 @@
         --text-dark-cb: #1f2937;
     }
 
-    /* ======= Nút Chat Nổi ======= */
-    /* Đảm bảo z-index đủ cao để đè lên các thành phần khác của about-us */
+    #chatToggleButton {
+
+    background: #ffde59; 
+    color: var(--primary-dark-cb); 
+    font-weight: 700;
+    font-size: 1.1rem;
+    border-radius: 50px;
+    padding: 15px 25px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    border: none;
+    transition: all 0.3s ease;
+    gap: 10px;
+    
+
+    z-index: 9998; 
+    position: relative;
+
+}
+
+#chatToggleButton:hover {
+    background: #f0c84c; 
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(255, 222, 89, 0.5);
+}
+
+#chatToggleButton i {
+    color: var(--primary-dark-cb);
+    font-size: 1.2rem;
+}
+
     #chatToggleButton {
         z-index: 9998 !important;
         position: relative !important;
-    }
-    
-    /* Màu cam cho nút chatbot */
-    .floating-btn.chat-bot,
-    #chatToggleButton {
-        background: linear-gradient(135deg, #ec8b5a 0%, #d67a4f 100%) !important;
-        color: #ffffff !important;
-    }
-    
-    .floating-btn.chat-bot:hover,
-    #chatToggleButton:hover {
-        background: linear-gradient(135deg, #d67a4f 0%, #c46944 100%) !important;
-        box-shadow: 0 12px 35px rgba(236, 139, 90, 0.5) !important;
-    }
-    
-    .floating-btn.chat-bot i,
-    #chatToggleButton i {
-        color: #ffffff !important;
     }
 
     .chat-popup {
@@ -40,7 +50,7 @@
         position: fixed;
         bottom: 100px;
         right: 30px;
-        z-index: 9999 !important; /* Tăng z-index cao hơn header/footer */
+        z-index: 9999 !important;
         opacity: 0;
         transform: translateY(20px);
         transition: opacity 0.3s ease, transform 0.3s ease;
@@ -63,7 +73,7 @@
         flex-direction: column;
         overflow: hidden;
         border: 1px solid #e5e7eb;
-        font-family: 'Inter', sans-serif; /* Đảm bảo font chữ đồng bộ */
+        font-family: 'Inter', sans-serif;
     }
 
     .header {
@@ -98,7 +108,6 @@
         flex-direction: column;
         gap: 10px;
     }
-    /* Custom Scrollbar cho chatbox */
     .chat-box::-webkit-scrollbar { width: 6px; }
     .chat-box::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 
@@ -209,7 +218,6 @@
     </div>
 </div>
 
-<!-- Add floating buttons CSS -->
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/floating-buttons.css">
 
 <script>
@@ -223,9 +231,7 @@
 
         if (!chatPopup || !chatToggleButton || !closeChatBtn || !userInput || !chatBox || !sendBtn) return;
 
-        // =========================================
-        // 1. QUẢN LÝ LỊCH SỬ CHAT (SESSION STORAGE)
-        // =========================================
+  
         let chatHistory = JSON.parse(sessionStorage.getItem("gymfit_chat_history")) || [];
 
         function saveHistory() {
@@ -234,13 +240,11 @@
 
         function loadHistory() {
             if (chatHistory.length > 0) {
-                // Nếu đã có lịch sử, xóa nội dung mặc định và render lại từ đầu
                 chatBox.innerHTML = '';
                 chatHistory.forEach(msg => {
                     appendMessage(msg.type, msg.text, false, false); // false cuối cùng = không lưu trùng
                 });
             } else {
-                // Nếu chưa có lịch sử (lần đầu vào), lưu tin nhắn chào mừng mặc định vào storage
                 const defaultWelcome = chatBox.querySelector('.message.bot');
                 if (defaultWelcome) {
                     chatHistory.push({ type: 'bot', text: defaultWelcome.innerHTML });
@@ -249,16 +253,10 @@
             }
         }
 
-        // Gọi hàm load ngay khi script chạy
-        loadHistory();
-
-        // =========================================
-        // 2. CÁC SỰ KIỆN & LOGIC GỬI TIN
-        // =========================================
         chatToggleButton.addEventListener("click", () => {
             chatPopup.classList.toggle("show");
             if (chatPopup.classList.contains("show")) {
-                 // Tự động focus vào ô nhập khi mở chat
+
                 setTimeout(() => userInput.focus(), 300);
             }
         });
@@ -268,9 +266,9 @@
             const message = userInput.value.trim();
             if (!message) return;
 
-            appendMessage("user", message); // Tự động lưu vào lịch sử
+            appendMessage("user", message);
             userInput.value = "";
-            appendMessage("bot", "...", true); // true = isTyping (không lưu cái này)
+            appendMessage("bot", "...", true);
 
             try {
                 const res = await fetch("${pageContext.request.contextPath}/ChatAIServlet", {
@@ -294,10 +292,6 @@
         });
         sendBtn.addEventListener("click", sendMessage);
 
-        // =========================================
-        // 3. HÀM RENDER TIN NHẮN (CÓ CẬP NHẬT)
-        // =========================================
-        // Thêm tham số `save = true` để kiểm soát việc lưu vào storage
         function appendMessage(type, text, isTyping = false, save = true) {
             const div = document.createElement("div");
             div.classList.add("message");
@@ -315,7 +309,6 @@
             chatBox.appendChild(div);
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Chỉ lưu vào lịch sử nếu không phải là typing indicator VÀ cờ save = true
             if (!isTyping && save) {
                 chatHistory.push({ type, text });
                 saveHistory();
@@ -330,7 +323,6 @@
                 typingIndicator.innerHTML = text.replace(/\n/g, '<br>');
                 chatBox.scrollTop = chatBox.scrollHeight;
 
-                // QUAN TRỌNG: Lưu tin nhắn phản hồi cuối cùng của bot vào lịch sử
                 chatHistory.push({ type: 'bot', text: text });
                 saveHistory();
             } else if (!isError) {
