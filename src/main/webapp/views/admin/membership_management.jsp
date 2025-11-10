@@ -486,7 +486,7 @@
                         class="sidebar-brand"
                         >
                         <i class="fas fa-dumbbell"></i>
-                        <span>FITZ GYM</span>
+                        <span>GYMFIT</span>
                     </a>
 
                     <div class="sidebar-user">

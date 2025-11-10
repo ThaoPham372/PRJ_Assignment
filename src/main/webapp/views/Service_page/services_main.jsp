@@ -159,8 +159,8 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
-    align-items: center;
-    justify-content: center;
+    align-items: stretch;
+    
   }
 
   .product-item {
@@ -354,6 +354,41 @@
       gap: 15px;
     }
   }
+  
+  /* Thêm khối CSS cho nút TƯ VẤN (floating-btn.tu-van) */
+.floating-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 25px;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    text-decoration: none;
+    color: var(--primary); /* Màu chữ đậm từ trang chủ */
+}
+
+.floating-btn.tu-van {
+    background: var(--chat); /* Màu vàng #ffde59 */
+    box-shadow: 0 8px 15px rgba(255, 222, 89, 0.4);
+}
+
+.floating-btn.tu-van:hover {
+    background: #f0c84c;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(255, 222, 89, 0.5);
+}
+
+.floating-btn i {
+    font-size: 1.2rem;
+    color: var(--primary);
+}
+  
+  
 </style>
 
 <!-- SERVICES SECTION -->
@@ -401,7 +436,6 @@
 <section class="product-section">
   <div class="product-container">
     <h2 class="product-title">PRODUCT</h2>
-
     <div class="product-carousel">
       <button class="carousel-nav" id="prevBtn" onclick="changeProduct(-1)">
         <i class="fas fa-chevron-left"></i>

@@ -527,7 +527,7 @@
                             class="sidebar-brand"
                             >
                             <i class="fas fa-dumbbell"></i>
-                            <span>FITZ GYM</span>
+                            <span>GYMFIT</span>
                         </a>
 
                         <div class="sidebar-user">
@@ -877,8 +877,6 @@
                     console.log(query);
                     window.location.href = `${contextPath}/admin/account-management` + query;
                 }
-
-                // Close modal when clicking outside
                 window.onclick = function (event) {
                     if (event.target.classList.contains('modal')) {
                         event.target.classList.remove('active');

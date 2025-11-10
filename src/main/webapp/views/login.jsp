@@ -92,41 +92,9 @@
         position: relative;
         animation: fadeInUp 0.6s ease-out;
         overflow: hidden;
+        
       }
 
-      .login-card::before,
-      .login-card::after {
-        content: '';
-        position: absolute;
-        width: 300px;
-        height: 300px;
-        border-radius: 50%;
-        background: var(--accent);
-        opacity: 0.05;
-        z-index: 0;
-      }
-
-      .login-card::before {
-        top: -100px;
-        left: -100px;
-        animation: floatBubble 8s ease-in-out infinite;
-      }
-
-      .login-card::after {
-        bottom: -100px;
-        right: -100px;
-        animation: floatBubble 12s ease-in-out infinite reverse;
-      }
-
-      @keyframes floatBubble {
-        0%,
-        100% {
-          transform: translate(0, 0);
-        }
-        50% {
-          transform: translate(20px, -20px);
-        }
-      }
 
       @keyframes borderGradient {
         0% {
@@ -399,7 +367,7 @@
       .register-section {
         text-align: center;
         padding-top: 20px;
-        border-top: 1px solid var(--accent);
+        
       }
 
       .register-text {
@@ -684,9 +652,9 @@
           <div class="register-text">BẠN CHƯA CÓ TÀI KHOẢN?</div>
           <a
             href="${pageContext.request.contextPath}/register"
-            class="register-btn"
-            style="display: inline-block; text-align: center"
-          >
+            class="register-btn" 
+            style="display: inline-block; text-align: center; text-decoration: none;"
+          > 
             ĐĂNG KÝ
           </a>
         </div>
