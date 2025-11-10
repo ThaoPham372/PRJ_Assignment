@@ -589,7 +589,7 @@
         <form
           id="loginForm"
           method="post"
-          action="${pageContext.request.contextPath}/auth?action=login"
+          action="${pageContext.request.contextPath}/login"
         >
           <!-- Username -->
           <div class="form-group">

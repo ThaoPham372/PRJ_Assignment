@@ -574,7 +574,7 @@
 
 <!-- Floating Buttons -->
 <style>
-  .floating-buttons {
+  .floating-buttons1 {
     position: fixed !important;
     bottom: 30px !important;
     right: 30px !important;
@@ -591,15 +591,15 @@
     opacity: 1 !important;
   }
 </style>
-<div class="floating-buttons">
-  <button
-    class="floating-btn tu-van"
-    onclick="window.location.href='${pageContext.request.contextPath}/advisory'"
-  >
-    <i class="fas fa-user-tie"></i> TƯ VẤN
-  </button>
-  <%@ include file="/views/common/chatbot.jsp" %>
-</div>
+ <div class="floating-buttons1">
+    <button
+      class="floating-btn tu-van"
+      onclick="window.location.href='${pageContext.request.contextPath}/advisory'"
+    >
+      <i class="fas fa-user-tie"></i> TƯ VẤN
+    </button>
+    <%@ include file="/views/common/chatbot.jsp" %>
+  </div>
 
 <!-- SCRIPT -->
 <script>

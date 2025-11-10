@@ -75,18 +75,20 @@ public class RegisterServlet extends BaseAuthServlet {
         String password = request.getParameter("password");
         String confirmPassword = request.getParameter("confirmPassword");
 
-        // Tạo RegisterRequest
-        RegisterRequest registerRequest = new RegisterRequest(username, email, password, confirmPassword);
+        // Tạo RegisterRequest với name
+        RegisterRequest registerRequest = new RegisterRequest(username, name, email, password, confirmPassword);
         
         // Set thông tin tracking (tái sử dụng method từ BaseAuthServlet)
         registerRequest.setIpAddress(getClientIpAddress(request));
         registerRequest.setUserAgent(request.getHeader("User-Agent"));
 
         // Thực hiện đăng ký
+        System.out.println("[RegisterServlet] Starting registration for username: " + username + ", email: " + email);
         RegisterResult result = registrationService.register(registerRequest);
         
         if (result.isSuccess()) {
             // Đăng ký thành công
+            System.out.println("[RegisterServlet] Registration successful! User ID: " + result.getUserId());
             request.setAttribute("registerSuccess", true);
             request.setAttribute("successMessage", result.getMessage());
             
@@ -96,6 +98,7 @@ public class RegisterServlet extends BaseAuthServlet {
             request.setAttribute("email", "");
         } else {
             // Đăng ký thất bại - hiển thị lỗi
+            System.err.println("[RegisterServlet] Registration failed. Errors: " + result.getErrors());
             request.setAttribute("registerSuccess", false);
             request.setAttribute("errors", result.getErrors());
             

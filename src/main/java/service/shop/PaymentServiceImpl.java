@@ -15,7 +15,6 @@ import service.MembershipService;
 import service.PackageService;
 
 import java.math.BigDecimal;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -203,137 +202,88 @@ public class PaymentServiceImpl implements PaymentService {
     /**
      * Activate membership from order if order contains package
      * Reusable method following DRY principle
+     * Sử dụng MembershipService.createOrExtendMembership() để tận dụng validation và logic đã có
      * 
      * @param orderId Order ID
      * @param memberId Member ID
      */
     private void activateMembershipFromOrder(Integer orderId, Integer memberId) {
         try {
+            LOGGER.info("🔍 [activateMembershipFromOrder] Starting for orderId: " + orderId + ", memberId: " + memberId);
+            
             // Get order items to check for package
             List<OrderItem> orderItems = orderItemDao.findByOrderId(orderId);
             if (orderItems == null || orderItems.isEmpty()) {
+                LOGGER.warning("⚠️ [activateMembershipFromOrder] No order items found for orderId: " + orderId);
                 return;
             }
+            
+            LOGGER.info("📦 [activateMembershipFromOrder] Found " + orderItems.size() + " order items");
             
             // Find package in order items
             Integer packageId = null;
             for (OrderItem item : orderItems) {
                 if (item != null && item.getPackageId() != null) {
                     packageId = item.getPackageId();
+                    LOGGER.info("📦 [activateMembershipFromOrder] Found packageId: " + packageId + " in order item");
                     break;
                 }
             }
             
             if (packageId == null) {
                 // Order doesn't contain package, nothing to do
+                LOGGER.info("ℹ️ [activateMembershipFromOrder] Order does not contain package - skipping membership creation");
                 return;
             }
             
             // Get package details
             Package pkg = packageService.getById(packageId);
             if (pkg == null) {
-                LOGGER.warning("Package not found: " + packageId);
+                LOGGER.warning("⚠️ [activateMembershipFromOrder] Package not found: " + packageId);
                 return;
             }
+            
+            LOGGER.info("📦 [activateMembershipFromOrder] Package found: " + pkg.getName() + " (ID: " + packageId + ")");
             
             // Get member
             service.MemberService memberService = new service.MemberService();
             Member member = memberService.getById(memberId);
             if (member == null) {
-                LOGGER.warning("Member not found: " + memberId);
+                LOGGER.warning("⚠️ [activateMembershipFromOrder] Member not found: " + memberId);
                 return;
             }
             
-            // Check if member already has active membership for this package
-            Membership existingMembership = findActiveMembershipForPackage(member, packageId);
+            LOGGER.info("👤 [activateMembershipFromOrder] Member found: " + member.getName() + " (ID: " + memberId + ")");
             
-            if (existingMembership != null) {
-                // Extend existing membership
-                extendMembership(existingMembership, pkg);
-                membershipService.update(existingMembership);
-                LOGGER.info("✅ [PAID] Extended membership: membershipId=" + existingMembership.getId() + 
-                           ", newEndDate=" + existingMembership.getEndDate());
-            } else {
-                // Create new membership
-                Membership newMembership = createMembershipFromPackage(member, pkg);
-                membershipService.add(newMembership);
-                LOGGER.info("✅ [PAID] Created new membership: membershipId=" + newMembership.getId() + 
-                           ", endDate=" + newMembership.getEndDate());
-            }
-            
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error activating membership from order: " + orderId, e);
-        }
-    }
-    
-    /**
-     * Find active membership for member and package
-     * Reusable method
-     */
-    private Membership findActiveMembershipForPackage(Member member, Integer packageId) {
-        try {
-            List<Membership> allMemberships = membershipService.getAll();
-            Date now = new Date();
-            
-            for (Membership m : allMemberships) {
-                if (m.getMember() != null && 
-                    m.getMember().getId().equals(member.getId()) &&
-                    m.getPackageO() != null &&
-                    m.getPackageO().getId().equals(packageId) &&
-                    "ACTIVE".equalsIgnoreCase(m.getStatus()) &&
-                    m.getEndDate() != null &&
-                    m.getEndDate().after(now)) {
-                    return m;
+            // Sử dụng MembershipService.createOrExtendMembership() để tận dụng validation và logic đã có
+            // Method này sẽ tự động:
+            // - Validate trước khi tạo
+            // - Cộng thời gian nếu đã có gói cùng loại
+            // - Tạo mới nếu chưa có
+            try {
+                Membership resultMembership = membershipService.createOrExtendMembership(memberId, pkg);
+                
+                if (resultMembership != null && resultMembership.getId() != null) {
+                    LOGGER.info("✅ [activateMembershipFromOrder] SUCCESS - Membership ID: " + resultMembership.getId() + 
+                               ", Status: " + resultMembership.getStatus() + 
+                               ", EndDate: " + resultMembership.getEndDate());
+                } else {
+                    LOGGER.warning("⚠️ [activateMembershipFromOrder] Membership created but ID is null");
                 }
+            } catch (IllegalArgumentException e) {
+                // Validation error từ MembershipService
+                LOGGER.warning("⚠️ [activateMembershipFromOrder] Validation failed: " + e.getMessage());
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "❌ [activateMembershipFromOrder] Error creating/extending membership", e);
+                throw e; // Re-throw để catch bên ngoài xử lý
             }
-            return null;
+            
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error finding active membership", e);
-            return null;
+            LOGGER.log(Level.SEVERE, "❌ [activateMembershipFromOrder] Fatal error activating membership from order: " + orderId, e);
+            e.printStackTrace(); // In full stack trace để debug
         }
     }
     
-    /**
-     * Extend existing membership by adding duration months
-     * Reusable method
-     */
-    private void extendMembership(Membership membership, Package pkg) {
-        Date currentEndDate = membership.getEndDate();
-        if (currentEndDate == null) {
-            currentEndDate = new Date();
-        }
-        
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(currentEndDate);
-        cal.add(Calendar.MONTH, pkg.getDurationMonths());
-        membership.setEndDate(cal.getTime());
-        membership.setUpdatedDate(new Date());
-    }
-    
-    /**
-     * Create new membership from package
-     * Calculates endDate based on createdDate + durationMonths
-     * Follows OOP principles - encapsulates membership creation logic
-     */
-    private Membership createMembershipFromPackage(Member member, Package pkg) {
-        Membership membership = new Membership();
-        membership.setMember(member);
-        membership.setPackageO(pkg);
-        
-        Date now = new Date();
-        membership.setCreatedDate(now);
-        membership.setStartDate(now);
-        membership.setActivatedAt(now);
-        membership.setStatus("ACTIVE");
-        
-        // Calculate endDate based on createdDate + durationMonths
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(now);
-        cal.add(Calendar.MONTH, pkg.getDurationMonths());
-        membership.setEndDate(cal.getTime());
-        
-        return membership;
-    }
     
     /**
      * Handle logic when payment is refunded or charged back
