@@ -784,6 +784,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
 
           <!-- Orders Tab -->
           <div id="orders" class="tab-content">
+            adfasf
             <div class="table-container">
               <table class="table">
                 <thead>
@@ -985,6 +986,17 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
       }
       function closeModal(modalId) {
         document.getElementById(modalId).classList.remove('active')
+      }
+      
+      function switchTab(tabName) {
+        const tabs = document.querySelectorAll('.tab-content');
+        tabs.forEach((tab) => tab.classList.remove('active'));
+
+        const tabButtons = document.querySelectorAll('.tab');
+        tabButtons.forEach((btn) => btn.classList.remove('active'));
+
+        document.getElementById(tabName).classList.add('active');
+        event.target.closest('.tab').classList.add('active');
       }
     </script>
   </body>
