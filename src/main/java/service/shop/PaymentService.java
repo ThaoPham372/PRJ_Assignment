@@ -52,6 +52,15 @@ public interface PaymentService {
     boolean updatePaymentStatus(Integer paymentId, PaymentStatus newStatus);
     
     /**
+     * Update payment status with reference ID (for payment gateway callbacks)
+     * @param paymentId Payment ID
+     * @param newStatus New payment status
+     * @param referenceId Reference ID from payment gateway
+     * @return true if successful
+     */
+    boolean updatePaymentStatus(Integer paymentId, PaymentStatus newStatus, String referenceId);
+    
+    /**
      * Find payments by order ID
      */
     List<Payment> findPaymentsByOrder(Long orderId);

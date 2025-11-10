@@ -48,5 +48,16 @@ public interface CheckoutService {
      * @return MoMo payment URL
      */
     String processMoMoPayment(Integer orderId, String baseUrl);
+    
+    /**
+     * Process VNPay payment for order
+     * @param orderId Order ID
+     * @param amount Payment amount (in VND)
+     * @param orderInfo Order description
+     * @param ipAddress Client IP address
+     * @param baseUrl Base URL (scheme + host + port + contextPath) for building return URL
+     * @return VNPay payment URL
+     */
+    String processVNPayPayment(Integer orderId, Long amount, String orderInfo, String ipAddress, String baseUrl);
 }
 

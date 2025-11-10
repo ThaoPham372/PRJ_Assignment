@@ -201,6 +201,23 @@ public class CheckoutServiceImpl implements CheckoutService {
         return null;
     }
     
+    @Override
+    public String processVNPayPayment(Integer orderId, Long amount, String orderInfo, String ipAddress, String baseUrl) {
+        LOGGER.info("Processing VNPay payment for order: " + orderId + ", amount: " + amount);
+        
+        try {
+            VNPayService vnPayService = new VNPayService();
+            // Build return URL dynamically from baseUrl
+            String returnUrl = baseUrl + "/vnpay-return";
+            String paymentUrl = vnPayService.buildPaymentUrl(orderId, amount, orderInfo, ipAddress, returnUrl);
+            LOGGER.info("VNPay payment URL generated successfully");
+            return paymentUrl;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error processing VNPay payment", e);
+            throw new RuntimeException("Không thể tạo URL thanh toán VNPay: " + e.getMessage(), e);
+        }
+    }
+    
     /**
      * Validate stock availability for all cart items
      */

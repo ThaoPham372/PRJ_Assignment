@@ -174,6 +174,80 @@ public class CheckoutServlet extends HttpServlet {
             
             System.out.println("[CheckoutServlet] Order created successfully with ID: " + order.getOrderId());
             
+            // If payment method is VNPay, redirect to VNPay payment gateway
+            if (paymentMethod == PaymentMethod.VNPAY) {
+                try {
+                    // Get client IP address
+                    String ipAddress = getClientIpAddress(request);
+                    
+                    // Get order amount in VND (convert from BigDecimal to Long)
+                    Long amount = order.getTotalAmount().longValue();
+                    
+                    // Build order info
+                    String orderInfo = "Thanh toan don hang #" + order.getOrderId();
+                    
+                    // Build base URL dynamically from request (includes context path)
+                    // IMPORTANT: VNPay requires public URL (not localhost)
+                    // Get ngrok URL from configuration
+                    String ngrokBaseUrl = getNgrokBaseUrl(request);
+                    String baseUrl;
+                    
+                    if (ngrokBaseUrl != null && !ngrokBaseUrl.isEmpty()) {
+                        // Use ngrok URL from config (already includes context path if configured)
+                        // Example: https://xxx.ngrok-free.dev/Gym_Management_Systems
+                        baseUrl = ngrokBaseUrl;
+                        System.out.println("[CheckoutServlet] Using ngrok URL from config: " + baseUrl);
+                    } else {
+                        // Fallback: Try to detect if running through ngrok by checking headers
+                        String forwardedHost = request.getHeader("X-Forwarded-Host");
+                        if (forwardedHost != null && !forwardedHost.isEmpty() && forwardedHost.contains("ngrok")) {
+                            // Running through ngrok but not configured - use forwarded host
+                            String scheme = request.getHeader("X-Forwarded-Proto");
+                            if (scheme == null) scheme = "https";
+                            String contextPath = request.getContextPath();
+                            baseUrl = scheme + "://" + forwardedHost + contextPath;
+                            System.out.println("[CheckoutServlet] Using ngrok URL from headers: " + baseUrl);
+                        } else {
+                            // Not using ngrok - this will fail with VNPay!
+                            String contextPath = request.getContextPath();
+                            baseUrl = request.getScheme() + "://" + request.getServerName() +
+                                (request.getServerPort() != 80 && request.getServerPort() != 443 ? 
+                                 ":" + request.getServerPort() : "") +
+                                contextPath;
+                            System.err.println("[CheckoutServlet] WARNING: Using localhost URL - VNPay will reject this!");
+                            System.err.println("[CheckoutServlet] Please configure vnp_ReturnUrl in email.properties with ngrok URL");
+                        }
+                    }
+                    
+                    System.out.println("[CheckoutServlet] Base URL: " + baseUrl);
+                    System.out.println("[CheckoutServlet] Context Path: " + request.getContextPath());
+                    
+                    String vnpayPaymentUrl = checkoutService.processVNPayPayment(
+                        order.getOrderId(), amount, orderInfo, ipAddress, baseUrl);
+                    
+                    if (vnpayPaymentUrl != null && !vnpayPaymentUrl.trim().isEmpty()) {
+                        System.out.println("[CheckoutServlet] Redirecting to VNPay payment URL");
+                        response.sendRedirect(vnpayPaymentUrl);
+                        return;
+                    } else {
+                        System.err.println("[CheckoutServlet] Warning: VNPay payment URL creation failed");
+                        request.getSession().setAttribute("error", "Không thể kết nối đến VNPay. Vui lòng thử lại sau.");
+                        if (!response.isCommitted()) {
+                            response.sendRedirect(request.getContextPath() + "/checkout");
+                        }
+                        return;
+                    }
+                } catch (Exception e) {
+                    System.err.println("[CheckoutServlet] Error processing VNPay payment: " + e.getMessage());
+                    e.printStackTrace();
+                    request.getSession().setAttribute("error", "Không thể kết nối đến VNPay. Vui lòng thử lại sau.");
+                    if (!response.isCommitted()) {
+                        response.sendRedirect(request.getContextPath() + "/checkout");
+                    }
+                    return;
+                }
+            }
+            
             // If payment method is MoMo, redirect to MoMo payment gateway
             if (paymentMethod == PaymentMethod.MOMO) {
                 try {
@@ -361,6 +435,59 @@ public class CheckoutServlet extends HttpServlet {
         request.setAttribute("selectedPackage", selectedPackage); // Changed from "membership" to "selectedPackage"
         request.setAttribute("isMembershipCheckout", isPackageOnly); // Keep name for backward compatibility
         request.getRequestDispatcher("/views/cart/checkout.jsp").forward(request, response);
+    }
+    
+    /**
+     * Get ngrok base URL from configuration or request
+     * @param request HttpServletRequest
+     * @return Ngrok base URL or null
+     */
+    private String getNgrokBaseUrl(HttpServletRequest request) {
+        // Try to get from ConfigManager first
+        try {
+            Utils.ConfigManager config = Utils.ConfigManager.getInstance();
+            String returnUrl = config.getProperty("vnp_ReturnUrl");
+            if (returnUrl != null && !returnUrl.trim().isEmpty()) {
+                // Extract base URL from return URL
+                // Example: https://xxx.ngrok-free.dev/Gym_Management_Systems/vnpay-return
+                // Extract: https://xxx.ngrok-free.dev/Gym_Management_Systems
+                int vnpayIndex = returnUrl.indexOf("/vnpay-return");
+                if (vnpayIndex > 0) {
+                    String fullPath = returnUrl.substring(0, vnpayIndex);
+                    // fullPath now contains: https://xxx.ngrok-free.dev/Gym_Management_Systems
+                    // We want to return the full path including context path
+                    return fullPath;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[CheckoutServlet] Error getting ngrok URL from config: " + e.getMessage());
+        }
+        return null;
+    }
+    
+    /**
+     * Get client IP address from request
+     * @param request HttpServletRequest
+     * @return IP address
+     */
+    private String getClientIpAddress(HttpServletRequest request) {
+        String ipAddress = request.getHeader("X-Forwarded-For");
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("Proxy-Client-IP");
+        }
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("HTTP_CLIENT_IP");
+        }
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("HTTP_X_FORWARDED_FOR");
+        }
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getRemoteAddr();
+        }
+        return ipAddress;
     }
 }
 
