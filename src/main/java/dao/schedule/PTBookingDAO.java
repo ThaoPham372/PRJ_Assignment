@@ -1,16 +1,18 @@
 package dao.schedule;
 
-import dao.GenericDAO;
-import model.schedule.PTBooking;
-import model.schedule.BookingStatus;
-import model.schedule.CancelledBy;
-import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import dao.GenericDAO;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.TypedQuery;
+import model.schedule.BookingStatus;
+import model.schedule.CancelledBy;
+import model.schedule.PTBooking;
 
 /**
  * DAO for PTBooking entity - extends GenericDAO for CRUD operations
@@ -26,20 +28,21 @@ public class PTBookingDAO extends GenericDAO<PTBooking> {
     /**
      * Find booking by trainer, gym, date and slot
      */
-    public Optional<PTBooking> findByTrainerGymDateSlot(Integer trainerId, Integer gymId, LocalDate bookingDate, Integer slotId) {
+    public Optional<PTBooking> findByTrainerGymDateSlot(Integer trainerId, Integer gymId, LocalDate bookingDate,
+            Integer slotId) {
         try {
             String jpql = "SELECT b FROM PTBooking b " +
-                         "WHERE b.trainerId = :trainerId " +
-                         "AND b.gymId = :gymId " +
-                         "AND b.bookingDate = :bookingDate " +
-                         "AND b.slotId = :slotId";
-            
+                    "WHERE b.trainerId = :trainerId " +
+                    "AND b.gymId = :gymId " +
+                    "AND b.bookingDate = :bookingDate " +
+                    "AND b.slotId = :slotId";
+
             TypedQuery<PTBooking> query = em.createQuery(jpql, PTBooking.class);
             query.setParameter("trainerId", trainerId);
             query.setParameter("gymId", gymId);
             query.setParameter("bookingDate", bookingDate);
             query.setParameter("slotId", slotId);
-            
+
             try {
                 return Optional.of(query.getSingleResult());
             } catch (NoResultException e) {
@@ -57,14 +60,14 @@ public class PTBookingDAO extends GenericDAO<PTBooking> {
     public List<PTBooking> findByMember(Integer memberId) {
         try {
             String jpql = "SELECT b FROM PTBooking b " +
-                         "LEFT JOIN FETCH b.trainer " +
-                         "LEFT JOIN FETCH b.timeSlot " +
-                         "WHERE b.memberId = :memberId " +
-                         "ORDER BY b.bookingDate DESC, b.slotId";
-            
+                    "LEFT JOIN FETCH b.trainer " +
+                    "LEFT JOIN FETCH b.timeSlot " +
+                    "WHERE b.memberId = :memberId " +
+                    "ORDER BY b.bookingDate DESC, b.slotId";
+
             TypedQuery<PTBooking> query = em.createQuery(jpql, PTBooking.class);
             query.setParameter("memberId", memberId);
-            
+
             return query.getResultList();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error finding bookings by member", e);
@@ -78,14 +81,14 @@ public class PTBookingDAO extends GenericDAO<PTBooking> {
     public List<PTBooking> findByTrainer(Integer trainerId) {
         try {
             String jpql = "SELECT b FROM PTBooking b " +
-                         "LEFT JOIN FETCH b.member " +
-                         "LEFT JOIN FETCH b.timeSlot " +
-                         "WHERE b.trainerId = :trainerId " +
-                         "ORDER BY b.bookingDate DESC, b.slotId";
-            
+                    "LEFT JOIN FETCH b.member " +
+                    "LEFT JOIN FETCH b.timeSlot " +
+                    "WHERE b.trainerId = :trainerId " +
+                    "ORDER BY b.bookingDate DESC, b.slotId";
+
             TypedQuery<PTBooking> query = em.createQuery(jpql, PTBooking.class);
             query.setParameter("trainerId", trainerId);
-            
+
             return query.getResultList();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error finding bookings by trainer", e);
@@ -99,15 +102,15 @@ public class PTBookingDAO extends GenericDAO<PTBooking> {
     public List<PTBooking> findByStatus(BookingStatus status) {
         try {
             String jpql = "SELECT b FROM PTBooking b " +
-                         "LEFT JOIN FETCH b.member " +
-                         "LEFT JOIN FETCH b.trainer " +
-                         "LEFT JOIN FETCH b.timeSlot " +
-                         "WHERE b.bookingStatus = :status " +
-                         "ORDER BY b.bookingDate, b.slotId";
-            
+                    "LEFT JOIN FETCH b.member " +
+                    "LEFT JOIN FETCH b.trainer " +
+                    "LEFT JOIN FETCH b.timeSlot " +
+                    "WHERE b.bookingStatus = :status " +
+                    "ORDER BY b.bookingDate, b.slotId";
+
             TypedQuery<PTBooking> query = em.createQuery(jpql, PTBooking.class);
             query.setParameter("status", status);
-            
+
             return query.getResultList();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error finding bookings by status", e);
@@ -121,17 +124,17 @@ public class PTBookingDAO extends GenericDAO<PTBooking> {
     public List<PTBooking> findByDateRange(LocalDate startDate, LocalDate endDate) {
         try {
             String jpql = "SELECT b FROM PTBooking b " +
-                         "LEFT JOIN FETCH b.member " +
-                         "LEFT JOIN FETCH b.trainer " +
-                         "LEFT JOIN FETCH b.timeSlot " +
-                         "WHERE b.bookingDate >= :startDate " +
-                         "AND b.bookingDate <= :endDate " +
-                         "ORDER BY b.bookingDate, b.slotId";
-            
+                    "LEFT JOIN FETCH b.member " +
+                    "LEFT JOIN FETCH b.trainer " +
+                    "LEFT JOIN FETCH b.timeSlot " +
+                    "WHERE b.bookingDate >= :startDate " +
+                    "AND b.bookingDate <= :endDate " +
+                    "ORDER BY b.bookingDate, b.slotId";
+
             TypedQuery<PTBooking> query = em.createQuery(jpql, PTBooking.class);
             query.setParameter("startDate", startDate);
             query.setParameter("endDate", endDate);
-            
+
             return query.getResultList();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error finding bookings by date range", e);
@@ -148,9 +151,9 @@ public class PTBookingDAO extends GenericDAO<PTBooking> {
             if (booking == null) {
                 throw new RuntimeException("Booking not found: " + bookingId);
             }
-            
+
             booking.setBookingStatus(status);
-            
+
             // Update timestamps based on status
             LocalDate now = LocalDate.now();
             switch (status) {
@@ -167,7 +170,7 @@ public class PTBookingDAO extends GenericDAO<PTBooking> {
                     // PENDING status doesn't require timestamp update
                     break;
             }
-            
+
             update(booking);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error updating booking status", e);
@@ -184,12 +187,12 @@ public class PTBookingDAO extends GenericDAO<PTBooking> {
             if (booking == null) {
                 throw new RuntimeException("Booking not found: " + bookingId);
             }
-            
+
             booking.setBookingStatus(BookingStatus.CANCELLED);
             booking.setCancelledReason(reason);
             booking.setCancelledBy(cancelledBy);
             booking.setCancelledAt(LocalDate.now());
-            
+
             update(booking);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error cancelling booking", e);
@@ -197,4 +200,3 @@ public class PTBookingDAO extends GenericDAO<PTBooking> {
         }
     }
 }
-
