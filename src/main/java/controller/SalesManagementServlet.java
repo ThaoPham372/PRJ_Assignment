@@ -10,6 +10,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import model.Product;
 import model.ProductType;
+import model.shop.OrderItem;
+import model.shop.OrderStatus;
+import service.OrderItemService;
 import service.OrderService;
 import service.ProductService;
 
@@ -20,34 +23,33 @@ import service.ProductService;
 public class SalesManagementServlet extends HttpServlet {
 
     ProductService productService = new ProductService();
-    OrderService orderService = new OrderService();
+    OrderItemService orderItemService = new OrderItemService();
 
+    // TODO: Tách products và orderItems
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String action = req.getParameter("action");
         if (action == null)
             action = "";
 
-        List<Product> products = productService.getAll();
+        List<Product> products = getProducts();
+        List<OrderItem> orderItems = orderItemService.getAll();
 
-        int productCount = products.size(); // Số lượng sản phẩm
-        int monthlyOrderCount = getMonthlyOrderCount(products); // Số đơn hàng tháng này
-        double monthlyRevenue = getMonthlyRevenue(products); // Doanh thu tháng này
-        int lowStockCount = getLowStockCount(products);
+        loadDashboardMetrics(req, products);
 
         switch (action) {
             case "deleteProduct" -> {
-                int id = Integer.parseInt(req.getParameter("productId"));
-                handleDeleteProduct(products, id);
+                int productId = Integer.parseInt(req.getParameter("productId"));
+                handleDeleteProduct(products, productId);
+            }
+            case "confirmOrder" -> {
+                int orderId = Integer.parseInt(req.getParameter("orderId"));
+                System.out.println("\n\n\n" + orderId);
+                handleConfirmOrder(orderItems, orderId);
             }
         }
 
-        products = getProductsActive(products);
-
-        req.setAttribute("productCount", productCount);
-        req.setAttribute("monthlyOrderCount", monthlyOrderCount);
-        req.setAttribute("monthlyRevenue", monthlyRevenue);
-        req.setAttribute("lowStockCount", lowStockCount);
+        req.setAttribute("orderItems", orderItems);
         req.setAttribute("products", products);
 
         req.getRequestDispatcher("/views/admin/sales_management.jsp").forward(req, resp);
@@ -130,4 +132,32 @@ public class SalesManagementServlet extends HttpServlet {
         return products;
     }
 
+    private void loadDashboardMetrics(HttpServletRequest req, List<Product> products) {
+        int productCount = products.size(); // Số lượng sản phẩm
+        int monthlyOrderCount = getMonthlyOrderCount(products); // Số đơn hàng tháng này
+        double monthlyRevenue = getMonthlyRevenue(products); // Doanh thu tháng này
+        int lowStockCount = getLowStockCount(products);
+
+        req.setAttribute("productCount", productCount);
+        req.setAttribute("monthlyOrderCount", monthlyOrderCount);
+        req.setAttribute("monthlyRevenue", monthlyRevenue);
+        req.setAttribute("lowStockCount", lowStockCount);
+    }
+
+    private List<Product> getProducts() {
+        List<Product> products = productService.getAll();
+        products = getProductsActive(products);
+        return products;
+    }
+
+    private void handleConfirmOrder(List<OrderItem> orderItems, int orderId) {
+        for (OrderItem o : orderItems) {
+            if (o.getOrder().getOrderId() == orderId) {
+                o.getOrder().setOrderStatus(OrderStatus.COMPLETED);
+                System.out.println("OD status : " + o.getOrder().getOrderStatus());
+                new OrderService().update(o.getOrder());
+                break;
+            }
+        }
+    }
 }

@@ -807,7 +807,7 @@
                     document.getElementById('modalTitle').textContent =
                             'Thêm tài khoản mới';
                     const form = document.querySelector('#accountForm');
-                    form.action = `${contextPath}/admin/account-management`; 
+                    form.action = `${pageContext.request.contextPath}/admin/account-management`; 
                     form.method = 'post';
                     form.querySelector('input[name="action"]').value = 'addAccount';
                 }
@@ -817,7 +817,7 @@
                     .then(response => response.json())
                     .then(user => {
                         const form = document.querySelector('#accountForm');
-                        form.action = `${contextPath}/admin/account-management?id=` + id; 
+                        form.action = `${pageContext.request.contextPath}/admin/account-management?id=` + id; 
                         form.method = 'post';
                         form.querySelector('input[name="action"]').value = 'updateAccount';
                         
@@ -875,7 +875,7 @@
                         query = query.slice(0, -1);
                     }
                     console.log(query);
-                    window.location.href = `${contextPath}/admin/account-management` + query;
+                    window.location.href = `${pageContext.request.contextPath}/admin/account-management` + query;
                 }
                 window.onclick = function (event) {
                     if (event.target.classList.contains('modal')) {

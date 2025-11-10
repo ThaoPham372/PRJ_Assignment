@@ -41,11 +41,11 @@ public class AdminProfileServlet extends HttpServlet {
 
     private void updateAdmin(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        AdminService adminService = new AdminService();
+        
         int id = Integer.parseInt(request.getParameter("id"));
+        AdminService adminService = new AdminService();
         Admin admin = adminService.getAdminById(id);
 
-        System.out.println("\nID: " + id + " - Admin found: " + admin);
 
         FormUtils.getFormValue(request, admin);
         adminService.update(admin);
