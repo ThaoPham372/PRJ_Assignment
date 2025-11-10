@@ -16,10 +16,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 
-/**
- * ChatAIServlet - Controller cho Chat AI
- * Tuân thủ mô hình MVC và nguyên tắc OOP
- */
 @WebServlet(name = "ChatAIServlet", urlPatterns = {"/chat-ai", "/ChatAIServlet"})
 public class ChatAIServlet extends HttpServlet {
 
@@ -58,9 +54,6 @@ public class ChatAIServlet extends HttpServlet {
         }
     }
     
-    /**
-     * Trích xuất message từ request body
-     */
     private String extractUserMessage(HttpServletRequest request) {
         try (Reader reader = new InputStreamReader(request.getInputStream(), StandardCharsets.UTF_8)) {
             RequestPayload payload = gson.fromJson(reader, RequestPayload.class);
@@ -70,4 +63,5 @@ public class ChatAIServlet extends HttpServlet {
             return null;
         }
     }
+    
 }

@@ -14,10 +14,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 
-/**
- * ChatAIService - Service layer cho Chat AI
- * Tuân thủ mô hình MVC và nguyên tắc OOP
- */
 public class ChatAIService {
 
     private static final String API_KEY = ConfigManager.getInstance().getProperty("GEMINI_API_KEY");
@@ -34,9 +30,6 @@ public class ChatAIService {
         this.gymInfoDAO = new GymInfoDAO();
     }
 
-    /**
-     * Lấy phản hồi từ AI
-     */
     public AIResponse getAIResponse(String userMessage) throws Exception {
         String requestBody = buildGeminiPayload(userMessage);
         HttpRequest httpRequest = buildHttpRequest(requestBody);
@@ -50,9 +43,7 @@ public class ChatAIService {
         }
     }
 
-    /**
-     * Tạo HTTP request
-     */
+
     private HttpRequest buildHttpRequest(String requestBody) {
         return HttpRequest.newBuilder()
                 .uri(URI.create(API_URL))
@@ -61,9 +52,7 @@ public class ChatAIService {
                 .build();
     }
 
-    /**
-     * Xây dựng payload cho Gemini API
-     */
+
     private String buildGeminiPayload(String userMessage) {
         String gymInfo = gymInfoDAO.loadGymInfo();
         String systemPrompt = buildSystemPrompt(gymInfo, userMessage);
@@ -75,9 +64,6 @@ public class ChatAIService {
         return gson.toJson(geminiRequest);
     }
 
-    /**
-     * Xây dựng system prompt
-     */
     private String buildSystemPrompt(String gymInfo, String userMessage) {
         return "Bạn là GymFit AI, trợ lý ảo của phòng tập GymFit. "
                 + "Hãy sử dụng thông tin dưới đây về phòng gym khi trả lời các câu hỏi liên quan.\n\n"
@@ -91,9 +77,7 @@ public class ChatAIService {
                 + "Câu hỏi của khách: " + userMessage;
     }
 
-    /**
-     * Parse response từ Gemini API
-     */
+
     private String parseGeminiResponse(String body) {
         try {
             GeminiResponse res = gson.fromJson(body, GeminiResponse.class);

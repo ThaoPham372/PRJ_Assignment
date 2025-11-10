@@ -7,18 +7,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-/**
- * AdminDashboardServlet - Servlet để điều hướng các trang admin Đây là servlet
- * giả để test hiển thị dashboard admin
- */
 @WebServlet(name = "AdminDashboardServlet", urlPatterns = {
         "/admin/home",
         "/admin/dashboard",
         "/admin/service-schedule",
         "/admin/trainer-management",
         "/admin/order-management",
-        "/admin/payment-finance",
-        "/admin/reports"
+        "/admin/payment-finance"
 })
 public class AdminDashboardServlet extends HttpServlet {
 
@@ -46,8 +41,8 @@ public class AdminDashboardServlet extends HttpServlet {
                 jspPath = "/views/admin/order_management.jsp";
             case "/admin/payment-finance" ->
                 jspPath = "/views/admin/payment_finance.jsp";
-            case "/admin/reports" ->
-                jspPath = "/views/admin/reports.jsp";
+//            case "/admin/reports" ->
+//                jspPath = "/views/admin/reports.jsp";
             default ->
                 jspPath = "/views/admin/admin_home.jsp";
         }
