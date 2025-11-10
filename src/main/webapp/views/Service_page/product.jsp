@@ -361,21 +361,19 @@
   </div>
 
   <!-- Success Messages -->
-  <c:if test="${not empty sessionScope.message}">
+  <c:if test="${not empty message}">
     <div class="success-message">
       <i class="fas fa-check-circle"></i>
-      <span>${sessionScope.message}</span>
+      <span>${message}</span>
     </div>
-    <c:remove var="message" scope="session" />
   </c:if>
 
   <!-- Error Messages -->
-  <c:if test="${not empty sessionScope.error}">
+  <c:if test="${not empty error}">
     <div class="error-message">
       <i class="fas fa-exclamation-circle"></i>
-      <span>${sessionScope.error}</span>
+      <span>${error}</span>
     </div>
-    <c:remove var="error" scope="session" />
   </c:if>
 
   <div class="products-grid">

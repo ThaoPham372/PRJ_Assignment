@@ -96,20 +96,24 @@ public class ProductServlet extends HttpServlet {
     
     /**
      * Xử lý messages từ session
+     * Moves session messages to request attributes for JSP display
+     * Similar to CartServlet.handleSessionMessages()
      */
     private void handleSessionMessages(HttpServletRequest request) {
-        HttpSession session = request.getSession();
-        String message = (String) session.getAttribute("message");
-        String error = (String) session.getAttribute("error");
-        
-        if (message != null) {
-            request.setAttribute("message", message);
-            session.removeAttribute("message");
-        }
-        
-        if (error != null) {
-            request.setAttribute("error", error);
-            session.removeAttribute("error");
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            String message = (String) session.getAttribute("message");
+            String error = (String) session.getAttribute("error");
+            
+            if (message != null) {
+                request.setAttribute("message", message);
+                session.removeAttribute("message");
+            }
+            
+            if (error != null) {
+                request.setAttribute("error", error);
+                session.removeAttribute("error");
+            }
         }
     }
 }
