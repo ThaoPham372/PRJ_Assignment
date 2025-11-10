@@ -15,6 +15,7 @@ import model.User;
 import service.MemberService;
 import service.MembershipService;
 import service.PackageService;
+import service.PasswordService;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,13 +38,15 @@ import java.util.stream.Collectors;
     "/member/goals-edit",
     "/member/membership",
     "/member/schedule",
-    "/member/support"
+    "/member/support",
+    "/member/change-password"
 })
 public class MemberServlet extends HttpServlet {
 
     private MemberService memberService;
     private MembershipService membershipService;
     private PackageService packageService;
+    private PasswordService passwordService;
 
     @Override
     public void init() throws ServletException {
@@ -51,6 +54,7 @@ public class MemberServlet extends HttpServlet {
         this.memberService = new MemberService();
         this.membershipService = new MembershipService();
         this.packageService = new PackageService();
+        this.passwordService = new PasswordService();
         System.out.println("[MemberServlet] Initialized successfully");
     }
 
@@ -114,6 +118,11 @@ public class MemberServlet extends HttpServlet {
                     request.getRequestDispatcher("/views" + path + ".jsp").forward(request, response);
                     break;
 
+                case "/member/change-password":
+                    // GET request không được phép - redirect về profile
+                    response.sendRedirect(request.getContextPath() + "/member/profile");
+                    break;
+
                 default:
                     response.sendRedirect(request.getContextPath() + "/member/dashboard");
                     break;
@@ -157,6 +166,10 @@ public class MemberServlet extends HttpServlet {
 
                 case "/member/goals-edit":
                     updateGoals(request, response, currentMember);
+                    break;
+
+                case "/member/change-password":
+                    handleChangePassword(request, response, currentMember);
                     break;
 
                 default:
@@ -539,6 +552,72 @@ public class MemberServlet extends HttpServlet {
             return "Thừa cân";
         } else {
             return "Béo phì";
+        }
+    }
+
+    // ==================== PASSWORD CHANGE HANDLER ====================
+
+    /**
+     * Xử lý yêu cầu đổi mật khẩu từ profile
+     * Tạo password reset token và chuyển hướng sang trang reset password
+     */
+    private void handleChangePassword(HttpServletRequest request, HttpServletResponse response, Member member)
+            throws ServletException, IOException {
+        System.out.println("[MemberServlet] ===== CHANGE PASSWORD REQUEST =====");
+        System.out.println("[MemberServlet] Method: " + request.getMethod());
+        System.out.println("[MemberServlet] Path: " + request.getServletPath());
+        System.out.println("[MemberServlet] Member ID: " + (member != null ? member.getId() : "NULL"));
+        
+        try {
+            // Lấy email của member
+            String email = member.getEmail();
+            HttpSession session = request.getSession();
+            System.out.println("[MemberServlet] Member email: " + email);
+            
+            if (email == null || email.trim().isEmpty()) {
+                session.setAttribute("error", "Không tìm thấy email. Vui lòng liên hệ quản trị viên.");
+                response.sendRedirect(request.getContextPath() + "/member/profile");
+                return;
+            }
+
+            // Normalize email
+            email = email.trim().toLowerCase();
+
+            // Kiểm tra rate limiting (30 giây)
+            boolean hasPending = passwordService.hasPendingResetRequest(email);
+            if (hasPending) {
+                session.setAttribute("error", "Bạn đã yêu cầu đổi mật khẩu gần đây. Vui lòng đợi 30 giây trước khi gửi lại.");
+                response.sendRedirect(request.getContextPath() + "/member/profile");
+                return;
+            }
+
+            // Tạo password reset token và gửi email
+            System.out.println("[MemberServlet] Calling passwordService.requestPasswordReset()...");
+            String verificationCode = passwordService.requestPasswordReset(email);
+            
+            if (verificationCode == null) {
+                System.err.println("[MemberServlet] ❌ Failed to generate verification code");
+                session.setAttribute("error", "Có lỗi xảy ra khi gửi email. Vui lòng thử lại sau.");
+                response.sendRedirect(request.getContextPath() + "/member/profile");
+                return;
+            }
+
+            System.out.println("[MemberServlet] ✅ Verification code generated: " + verificationCode);
+            
+            // Lưu email vào session và chuyển hướng sang trang reset password
+            session.setAttribute("resetEmail", email);
+            session.setAttribute("successMessage", "Mã xác nhận đã được gửi đến email: " + email);
+            
+            String redirectUrl = request.getContextPath() + "/auth/reset-password";
+            System.out.println("[MemberServlet] Redirecting to: " + redirectUrl);
+            response.sendRedirect(redirectUrl);
+            
+        } catch (Exception e) {
+            System.err.println("[MemberServlet] Error handling change password: " + e.getMessage());
+            e.printStackTrace();
+            HttpSession session = request.getSession();
+            session.setAttribute("error", "Có lỗi xảy ra. Vui lòng thử lại sau.");
+            response.sendRedirect(request.getContextPath() + "/member/profile");
         }
     }
 

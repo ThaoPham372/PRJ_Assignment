@@ -516,13 +516,13 @@
                     <div class="daily-stats">
                         <div class="daily-stat-item calories">
                             <div class="daily-stat-value">
-                                <fmt:formatNumber value="${totals != null && totals.caloriesKcal != null ? totals.caloriesKcal : 0}" maxFractionDigits="0" />
+                                <fmt:formatNumber value="${totals.caloriesKcal}" maxFractionDigits="0" />
                             </div>
                             <div class="daily-stat-label">Calories</div>
                         </div>
                         <div class="daily-stat-item protein">
                             <div class="daily-stat-value">
-                                <fmt:formatNumber value="${totals != null && totals.proteinG != null ? totals.proteinG : 0}" maxFractionDigits="1" />
+                                <fmt:formatNumber value="${totals.proteinG}" maxFractionDigits="1" />
                             </div>
                             <div class="daily-stat-label">Protein (g)</div>
                         </div>

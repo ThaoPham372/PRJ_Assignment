@@ -167,32 +167,8 @@ public class NutritionServlet extends HttpServlet {
             List<model.UserMeal> todayMeals = nutritionService.todayMeals(userId);
             request.setAttribute("todayMeals", todayMeals);
             
-            // Load today's totals - ensure it's never null
+            // Load today's totals
             model.DailyIntakeDTO totals = nutritionService.todayTotals(userId);
-            if (totals == null) {
-                totals = new model.DailyIntakeDTO();
-            }
-            
-            // Ensure totals values are never null
-            if (totals.getCaloriesKcal() == null) {
-                totals.setCaloriesKcal(BigDecimal.ZERO);
-            }
-            if (totals.getProteinG() == null) {
-                totals.setProteinG(BigDecimal.ZERO);
-            }
-            if (totals.getCarbsG() == null) {
-                totals.setCarbsG(BigDecimal.ZERO);
-            }
-            if (totals.getFatG() == null) {
-                totals.setFatG(BigDecimal.ZERO);
-            }
-            
-            // Debug logging
-            System.out.println("[NutritionServlet] Today totals - Calories: " + totals.getCaloriesKcal() + 
-                             ", Protein: " + totals.getProteinG() + 
-                             ", Carbs: " + totals.getCarbsG() + 
-                             ", Fat: " + totals.getFatG());
-            
             request.setAttribute("totals", totals);
             
             // Load nutrition goals for progress calculation
@@ -205,9 +181,8 @@ public class NutritionServlet extends HttpServlet {
                 
                 if (targetCalories != null && targetCalories.compareTo(BigDecimal.ZERO) > 0) {
                     request.setAttribute("targetCalories", targetCalories);
-                    // Calculate progress percentage - ensure totals is not null
-                    BigDecimal currentCalories = totals.getCaloriesKcal() != null ? totals.getCaloriesKcal() : BigDecimal.ZERO;
-                    BigDecimal caloriesPercent = currentCalories
+                    // Calculate progress percentage
+                    BigDecimal caloriesPercent = totals.getCaloriesKcal()
                         .divide(targetCalories, 2, RoundingMode.HALF_UP)
                         .multiply(new BigDecimal("100"));
                     request.setAttribute("caloriesPercent", caloriesPercent);
@@ -215,9 +190,8 @@ public class NutritionServlet extends HttpServlet {
                 
                 if (targetProtein != null && targetProtein.compareTo(BigDecimal.ZERO) > 0) {
                     request.setAttribute("targetProtein", targetProtein);
-                    // Calculate progress percentage - ensure totals is not null
-                    BigDecimal currentProtein = totals.getProteinG() != null ? totals.getProteinG() : BigDecimal.ZERO;
-                    BigDecimal proteinPercent = currentProtein
+                    // Calculate progress percentage
+                    BigDecimal proteinPercent = totals.getProteinG()
                         .divide(targetProtein, 2, RoundingMode.HALF_UP)
                         .multiply(new BigDecimal("100"));
                     request.setAttribute("proteinPercent", proteinPercent);
@@ -272,33 +246,8 @@ public class NutritionServlet extends HttpServlet {
             List<model.UserMeal> meals = nutritionService.getMealsByDate(userId, selectedDate);
             request.setAttribute("meals", meals);
             
-            // Load totals for selected date - ensure it's never null
+            // Load totals for selected date
             model.DailyIntakeDTO totals = nutritionService.getDailyTotalsByDate(userId, selectedDate);
-            if (totals == null) {
-                totals = new model.DailyIntakeDTO();
-            }
-            
-            // Ensure totals values are never null
-            if (totals.getCaloriesKcal() == null) {
-                totals.setCaloriesKcal(BigDecimal.ZERO);
-            }
-            if (totals.getProteinG() == null) {
-                totals.setProteinG(BigDecimal.ZERO);
-            }
-            if (totals.getCarbsG() == null) {
-                totals.setCarbsG(BigDecimal.ZERO);
-            }
-            if (totals.getFatG() == null) {
-                totals.setFatG(BigDecimal.ZERO);
-            }
-            
-            // Debug logging
-            System.out.println("[NutritionServlet] History totals for " + selectedDateStr + 
-                             " - Calories: " + totals.getCaloriesKcal() + 
-                             ", Protein: " + totals.getProteinG() + 
-                             ", Carbs: " + totals.getCarbsG() + 
-                             ", Fat: " + totals.getFatG());
-            
             request.setAttribute("totals", totals);
             
             // Forward to nutrition-history.jsp

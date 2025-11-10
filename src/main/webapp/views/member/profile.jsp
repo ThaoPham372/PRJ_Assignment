@@ -150,6 +150,27 @@ file="/views/common/header.jsp" %>
     color: white;
   }
 
+  .btn-change-password {
+    background: var(--warning);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 12px 30px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 10px;
+  }
+
+  .btn-change-password:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
+    color: white;
+  }
+
   .btn-back-top {
     background: var(--gradient-primary);
     color: white;
@@ -455,11 +476,27 @@ file="/views/common/header.jsp" %>
     </div>
   </c:if>
 
+  <c:if test="${not empty sessionScope.success}">
+    <div class="alert alert-success">
+      <i class="fas fa-check-circle"></i>
+      <span>${sessionScope.success}</span>
+    </div>
+    <c:remove var="success" scope="session" />
+  </c:if>
+
   <c:if test="${not empty error}">
     <div class="alert alert-danger">
       <i class="fas fa-exclamation-circle"></i>
       <span>${error}</span>
     </div>
+  </c:if>
+
+  <c:if test="${not empty sessionScope.error}">
+    <div class="alert alert-danger">
+      <i class="fas fa-exclamation-circle"></i>
+      <span>${sessionScope.error}</span>
+    </div>
+    <c:remove var="error" scope="session" />
   </c:if>
 
   <!-- Profile Hero Section -->
@@ -523,6 +560,18 @@ file="/views/common/header.jsp" %>
             <i class="fas fa-edit"></i>
             Chỉnh sửa thông tin
           </a>
+          <!-- Form đổi mật khẩu -->
+          <form
+            method="POST"
+            action="${pageContext.request.contextPath}/member/change-password"
+            style="display: inline-block; margin-left: 10px;"
+            onsubmit="return confirm('Bạn có chắc chắn muốn đổi mật khẩu? Mã xác nhận sẽ được gửi đến email của bạn.');"
+          >
+            <button type="submit" class="btn-change-password">
+              <i class="fas fa-key"></i>
+              Đổi mật khẩu
+            </button>
+          </form>
         </div>
       </div>
     </div>
@@ -821,5 +870,6 @@ file="/views/common/header.jsp" %>
     </div>
   </div>
 </div>
+
 
 <%@ include file="/views/common/footer.jsp" %>

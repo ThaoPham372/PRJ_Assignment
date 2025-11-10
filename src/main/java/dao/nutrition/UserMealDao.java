@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -171,14 +172,12 @@ public class UserMealDao extends GenericDAO<UserMeal> {
     /**
      * Sum total calories and protein for a specific day
      * Uses native SQL query for performance (aggregation)
-     * Follows Single Responsibility Principle - handles aggregation logic
      * @param userId user ID
      * @param localDateVN date in Vietnam timezone
      * @return DailyIntakeDTO with totals
      */
     public DailyIntakeDTO sumOfDay(Long userId, LocalDate localDateVN) {
         if (userId == null || localDateVN == null) {
-            System.out.println("[UserMealDao] sumOfDay - Invalid parameters: userId=" + userId + ", date=" + localDateVN);
             return new DailyIntakeDTO();
         }
         
@@ -188,19 +187,12 @@ public class UserMealDao extends GenericDAO<UserMeal> {
             LocalDateTime startUTC = utcRange[0];
             LocalDateTime endUTC = utcRange[1];
             
-            System.out.println("[UserMealDao] sumOfDay - Querying for userId=" + userId + 
-                             ", dateVN=" + localDateVN + 
-                             ", UTC range: " + startUTC + " to " + endUTC);
-            
             // Native SQL query for aggregation
-            // Calculate totals directly from servings * snap values
-            // This ensures we get correct values even if GENERATED columns are NULL
-            // Follows DRY principle - calculation logic in one place
             String sql = "SELECT " +
-                        "COALESCE(SUM(servings * snap_calories), 0) as total_calories, " +
-                        "COALESCE(SUM(servings * snap_protein_g), 0) as total_protein_g, " +
-                        "COALESCE(SUM(servings * snap_carbs_g), 0) as total_carbs_g, " +
-                        "COALESCE(SUM(servings * snap_fat_g), 0) as total_fat_g " +
+                        "SUM(total_calories) as total_calories, " +
+                        "SUM(total_protein_g) as total_protein_g, " +
+                        "SUM(total_carbs_g) as total_carbs_g, " +
+                        "SUM(total_fat_g) as total_fat_g " +
                         "FROM user_meals " +
                         "WHERE user_id = ? " +
                         "AND eaten_at >= ? " +
@@ -211,63 +203,25 @@ public class UserMealDao extends GenericDAO<UserMeal> {
             query.setParameter(2, Timestamp.valueOf(startUTC));
             query.setParameter(3, Timestamp.valueOf(endUTC));
             
-            Object result = query.getSingleResult();
-            
-            if (result != null) {
-                Object[] resultArray = (Object[]) result;
+            try {
+                Object[] result = (Object[]) query.getSingleResult();
                 
-                if (resultArray != null && resultArray.length >= 4) {
-                    // Handle different numeric types that might be returned
-                    BigDecimal totalCalories = convertToBigDecimal(resultArray[0]);
-                    BigDecimal totalProtein = convertToBigDecimal(resultArray[1]);
-                    BigDecimal totalCarbs = convertToBigDecimal(resultArray[2]);
-                    BigDecimal totalFat = convertToBigDecimal(resultArray[3]);
-                    
-                    System.out.println("[UserMealDao] sumOfDay - Results: Calories=" + totalCalories + 
-                                     ", Protein=" + totalProtein + 
-                                     ", Carbs=" + totalCarbs + 
-                                     ", Fat=" + totalFat);
+                if (result != null && result.length >= 4) {
+                    BigDecimal totalCalories = result[0] != null ? (BigDecimal) result[0] : BigDecimal.ZERO;
+                    BigDecimal totalProtein = result[1] != null ? (BigDecimal) result[1] : BigDecimal.ZERO;
+                    BigDecimal totalCarbs = result[2] != null ? (BigDecimal) result[2] : BigDecimal.ZERO;
+                    BigDecimal totalFat = result[3] != null ? (BigDecimal) result[3] : BigDecimal.ZERO;
                     
                     return new DailyIntakeDTO(totalCalories, totalProtein, totalCarbs, totalFat);
                 }
+            } catch (jakarta.persistence.NoResultException e) {
+                // No meals found for this day
             }
-            
-            System.out.println("[UserMealDao] sumOfDay - No result or invalid result array");
-        } catch (jakarta.persistence.NoResultException e) {
-            System.out.println("[UserMealDao] sumOfDay - NoResultException: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("[UserMealDao] Error summing day totals: " + e.getMessage());
-            e.printStackTrace();
         }
         
-        System.out.println("[UserMealDao] sumOfDay - Returning zero totals");
         return new DailyIntakeDTO(); // Return zero totals
-    }
-    
-    /**
-     * Helper method to convert various numeric types to BigDecimal
-     * Reusable method following DRY principle
-     * @param value Object to convert
-     * @return BigDecimal value or ZERO if null/invalid
-     */
-    private BigDecimal convertToBigDecimal(Object value) {
-        if (value == null) {
-            return BigDecimal.ZERO;
-        }
-        
-        if (value instanceof BigDecimal) {
-            return (BigDecimal) value;
-        } else if (value instanceof Number) {
-            return BigDecimal.valueOf(((Number) value).doubleValue());
-        } else if (value instanceof String) {
-            try {
-                return new BigDecimal((String) value);
-            } catch (NumberFormatException e) {
-                return BigDecimal.ZERO;
-            }
-        }
-        
-        return BigDecimal.ZERO;
     }
 
     /**
