@@ -212,4 +212,62 @@ public class TrainerScheduleDAO extends BaseDAO {
         String jpql = "SELECT t.slotId, t.startTime, t.endTime FROM TimeSlot t ORDER BY t.slotId";
         return em.createQuery(jpql, Object[].class).getResultList();
     }
+
+    // CRUD operations for TrainerSchedule
+    public void saveSchedule(TrainerSchedule schedule) {
+        try {
+            beginTransaction();
+            em.persist(schedule);
+            commitTransaction();
+        } catch (Exception e) {
+            rollbackTransaction();
+            System.err.println("Error saving schedule: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to save schedule", e);
+        }
+    }
+
+    public TrainerSchedule getScheduleById(int scheduleId) {
+        try {
+            return em.find(TrainerSchedule.class, scheduleId);
+        } catch (Exception e) {
+            System.err.println("Error getting schedule by ID: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public void updateSchedule(TrainerSchedule schedule) {
+        try {
+            beginTransaction();
+            em.merge(schedule);
+            commitTransaction();
+        } catch (Exception e) {
+            rollbackTransaction();
+            System.err.println("Error updating schedule: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to update schedule", e);
+        }
+    }
+
+    public void deleteSchedule(TrainerSchedule schedule) {
+        try {
+            beginTransaction();
+            TrainerSchedule s = em.find(TrainerSchedule.class, schedule.getScheduleId());
+            if (s != null) {
+                em.remove(s);
+            }
+            commitTransaction();
+        } catch (Exception e) {
+            rollbackTransaction();
+            System.err.println("Error deleting schedule: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to delete schedule", e);
+        }
+    }
+
+    // Get available schedules by trainer (alias for getWeeklySchedule)
+    public List<TrainerSchedule> getAvailableSchedulesByTrainer(int trainerId) {
+        return getWeeklySchedule(trainerId);
+    }
 }

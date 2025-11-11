@@ -671,28 +671,51 @@
                             </div>
                         </div>
 
+                        <!-- Messages -->
+                        <c:if test="${not empty success}">
+                            <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
+                                <i class="fas fa-check-circle"></i> ${success}
+                            </div>
+                        </c:if>
+                        <c:if test="${not empty error}">
+                            <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+                                <i class="fas fa-exclamation-circle"></i> ${error}
+                            </div>
+                        </c:if>
+
                         <!-- Tabs -->
                         <div class="tabs">
-                            <button class="tab active" onclick="switchTab('products')">
+                            <button class="tab ${activeTab == 'products' || empty activeTab ? 'active' : ''}" onclick="switchTab('products')">
                                 <i class="fas fa-box"></i> Quản lý sản phẩm
                             </button>
-                            <button class="tab" onclick="switchTab('orders')">
+                            <button class="tab ${activeTab == 'orders' ? 'active' : ''}" onclick="switchTab('orders')">
                                 <i class="fas fa-shopping-cart"></i> Đơn hàng
                             </button>
                         </div>
 
                         <!-- Products Tab -->
-                        <div id="products" class="tab-content active">
+                        <div id="products" class="tab-content ${activeTab == 'products' || empty activeTab ? 'active' : ''}">
                             <div style="margin-bottom: 15px">
                                 <button class="btn" id="btn-addProduct">
                                     <i class="fas fa-plus"></i> Thêm sản phẩm mới
                                 </button>
                             </div>
 
+                            <c:if test="${empty products}">
+                                <div style="text-align: center; padding: 40px; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px var(--shadow);">
+                                    <i class="fas fa-box" style="font-size: 3rem; color: #ccc; margin-bottom: 15px;"></i>
+                                    <p style="color: #5a6c7d; font-size: 1.1rem;">Chưa có sản phẩm nào</p>
+                                    <button class="btn" onclick="document.getElementById('btn-addProduct').click()" style="margin-top: 15px;">
+                                        <i class="fas fa-plus"></i> Thêm sản phẩm đầu tiên
+                                    </button>
+                                </div>
+                            </c:if>
+                            <c:if test="${not empty products}">
                             <div class="products-grid">
 
                                 <c:forEach var="product" items="${products}">
-                                    <div class="product-card">
+                                    <c:set var="isInactive" value="${product.active == false or empty product.active}" />
+                                    <div class="product-card" style="<c:if test='${isInactive}'>opacity: 0.7; border: 2px dashed #ccc;</c:if>">
 
                                         <!-- IMAGE BOX -->
                                         <div class="product-image"
@@ -738,7 +761,12 @@
 
                                         <!-- BODY -->
                                         <div class="product-body">
-                                            <div class="product-name">${product.productName}</div>
+                                            <div class="product-name">
+                                                ${product.productName}
+                                                <c:if test="${isInactive}">
+                                                    <span style="background: #e74c3c; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; margin-left: 8px;">INACTIVE</span>
+                                                </c:if>
+                                            </div>
 
                                             <div class="product-price">
                                                 <fmt:formatNumber value="${product.price}" pattern="#,###" />đ
@@ -768,28 +796,45 @@
                                                     <i class="fas fa-edit"></i> Sửa
                                                 </button>
 
-                                                <button class="btn btn-small" style="background:#e74c3c"
-                                                        onclick="handleDeleteProduct('${product.productId}')">
-                                                    <i class="fas fa-trash"></i> Xóa
-                                                </button>
+                                                <c:choose>
+                                                    <c:when test="${isInactive}">
+                                                        <button class="btn btn-small" style="background:#27ae60"
+                                                                onclick="handleActivateProduct('${product.productId}')">
+                                                            <i class="fas fa-check-circle"></i> Kích hoạt
+                                                        </button>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <button class="btn btn-small" style="background:#e74c3c"
+                                                                onclick="handleDeleteProduct('${product.productId}')">
+                                                            <i class="fas fa-trash"></i> Vô hiệu hóa
+                                                        </button>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </div>
                                         </div>
                                     </div>
                                 </c:forEach>
 
                             </div>
+                            </c:if>
                         </div>
 
                         <!-- Orders Tab -->
-                        <div id="orders" class="tab-content">
+                        <div id="orders" class="tab-content ${activeTab == 'orders' ? 'active' : ''}">
+                            <c:if test="${empty orders}">
+                                <div style="text-align: center; padding: 40px; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px var(--shadow);">
+                                    <i class="fas fa-shopping-cart" style="font-size: 3rem; color: #ccc; margin-bottom: 15px;"></i>
+                                    <p style="color: #5a6c7d; font-size: 1.1rem;">Chưa có đơn hàng nào</p>
+                                </div>
+                            </c:if>
+                            <c:if test="${not empty orders}">
                             <div class="table-container">
                                 <table class="table">
                                     <thead>
                                         <tr>
                                             <th>Mã ĐH</th>
                                             <th>Khách hàng</th>
-                                            <th>Sản phẩm</th>
-                                            <th>Số lượng</th>
+                                            <th>Số sản phẩm</th>
                                             <th>Tổng tiền</th>
                                             <th>Ngày đặt</th>
                                             <th>Trạng thái</th>
@@ -797,37 +842,105 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <c:forEach var="orderItem" items="${orderItems}">
+                                        <c:forEach var="order" items="${orders}">
                                             <tr>
-                                                <td>${orderItem.orderItemId}</td>
-                                                <td>${orderItem.order.user.name}</td>
-                                                <td>${orderItem.productName}</td>
-                                                <td>${orderItem.quantity}</td>
-                                                <td>${orderItem.subtotal}</td>
-                                                <td>${orderItem.order.createdAt}</td>
+                                                <td>
+                                                    <strong>
+                                                        <c:choose>
+                                                            <c:when test="${order.orderNumber != null && !order.orderNumber.isEmpty()}">
+                                                                ${order.orderNumber}
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                #${order.orderId}
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </strong>
+                                                </td>
                                                 <td>
                                                     <c:choose>
-                                                        <c:when test="${orderItem.order.orderStatus.toString() == 'PENDING'}">
-                                                            <span class="badge badge-danger">Chờ xác nhận</span>
-                                                        </c:when>
-                                                        <c:when test="${orderItem.order.orderStatus.toString() == 'COMPLETED'}">
-                                                            <span class="badge badge-success">Hoàn thành</span>
+                                                        <c:when test="${order.user != null && order.user.name != null}">
+                                                            ${order.user.name}
                                                         </c:when>
                                                         <c:otherwise>
-                                                            <span class="badge badge-warning">Đang giao</span>
+                                                            Khách hàng #${order.memberId}
                                                         </c:otherwise>
                                                     </c:choose>
                                                 </td>
                                                 <td>
-                                                    <button class="btn btn-small" style="background: #FFF">
-                                                        <a style="text-decoration: none;" href="${pageContext.request.contextPath}/admin/sales-management?action=confirmOrder&orderId=${orderItem.order.orderId}">Xác nhận</a>
-                                                    </button>
+                                                    <c:choose>
+                                                        <c:when test="${order.items != null && !order.items.isEmpty()}">
+                                                            ${order.items.size()} sản phẩm
+                                                        </c:when>
+                                                        <c:otherwise>0 sản phẩm</c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                                <td>
+                                                    <strong style="color: var(--accent);">
+                                                        <c:choose>
+                                                            <c:when test="${order.totalAmount != null}">
+                                                                <fmt:formatNumber value="${order.totalAmount}" pattern="#,###" /> đ
+                                                            </c:when>
+                                                            <c:otherwise>0 đ</c:otherwise>
+                                                        </c:choose>
+                                                    </strong>
+                                                </td>
+                                                <td>
+                                                    <c:choose>
+                                                        <c:when test="${order.createdAtAsDate != null}">
+                                                            <fmt:formatDate value="${order.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm" />
+                                                        </c:when>
+                                                        <c:otherwise>N/A</c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                                <td id="order-status-${order.orderId}">
+                                                    <c:choose>
+                                                        <c:when test="${order.orderStatus.toString() == 'PENDING'}">
+                                                            <span class="badge badge-danger">Chờ xác nhận</span>
+                                                        </c:when>
+                                                        <c:when test="${order.orderStatus.toString() == 'COMPLETED'}">
+                                                            <span class="badge badge-success">Hoàn thành</span>
+                                                        </c:when>
+                                                        <c:when test="${order.orderStatus.toString() == 'CONFIRMED'}">
+                                                            <span class="badge badge-warning">Đã xác nhận</span>
+                                                        </c:when>
+                                                        <c:when test="${order.orderStatus.toString() == 'SHIPPING'}">
+                                                            <span class="badge badge-warning">Đang giao</span>
+                                                        </c:when>
+                                                        <c:when test="${order.orderStatus.toString() == 'CANCELLED'}">
+                                                            <span class="badge" style="background: #95a5a6; color: #fff;">Đã hủy</span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="badge badge-warning">${order.orderStatus}</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                                <td id="order-action-${order.orderId}">
+                                                    <c:if test="${order.orderStatus.toString() != 'COMPLETED' && order.orderStatus.toString() != 'CANCELLED'}">
+                                                        <button type="button"
+                                                                class="btn btn-small confirm-order-btn" 
+                                                                style="background: #27ae60; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; border: none; cursor: pointer;"
+                                                                data-order-id="${order.orderId}"
+                                                                onclick="confirmOrder(${order.orderId}, this)">
+                                                            <i class="fas fa-check"></i> Hoàn thành
+                                                        </button>
+                                                    </c:if>
+                                                    <c:if test="${order.orderStatus.toString() == 'COMPLETED'}">
+                                                        <span style="color: #27ae60; font-weight: 600;">
+                                                            <i class="fas fa-check-circle"></i> Đã hoàn thành
+                                                        </span>
+                                                    </c:if>
+                                                    <c:if test="${order.orderStatus.toString() == 'CANCELLED'}">
+                                                        <span style="color: #95a5a6; font-weight: 600;">
+                                                            <i class="fas fa-times-circle"></i> Đã hủy
+                                                        </span>
+                                                    </c:if>
                                                 </td>
                                             </tr>
                                         </c:forEach>
                                     </tbody>
                                 </table>
                             </div>
+                            </c:if>
                         </div>
                     </div>
                 </main>
@@ -888,6 +1001,9 @@
                     </form>
                 </div>
                 <script>
+                    // Store context path in JavaScript variable
+                    const contextPath = '${pageContext.request.contextPath}';
+                    
                     const handleEditProduct = (
                             productId,
                             productName,
@@ -900,7 +1016,7 @@
                         document.getElementById('addProductModal').classList.add('active')
                         const form = document.getElementById('productForm')
                         form.action =
-                                `${pageContext.request.contextPath}` +
+                                contextPath +
                                 `/admin/sales-management?action=editProduct&productId=` +
                                 productId
                         form.method = 'post'
@@ -913,10 +1029,19 @@
                     }
 
                     const handleDeleteProduct = (productId) => {
-                        if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')) {
+                        if (confirm('Bạn có chắc chắn muốn vô hiệu hóa sản phẩm này không?')) {
                             window.location.href =
-                                    `${pageContext.request.contextPath}` +
-                                    `/admin/sales-management?action=deleteProduct&productId=` +
+                                    contextPath +
+                                    '/admin/sales-management?action=deleteProduct&productId=' +
+                                    productId
+                        }
+                    }
+                    
+                    const handleActivateProduct = (productId) => {
+                        if (confirm('Bạn có chắc chắn muốn kích hoạt lại sản phẩm này không?')) {
+                            window.location.href =
+                                    contextPath +
+                                    '/admin/sales-management?action=activateProduct&productId=' +
                                     productId
                         }
                     }
@@ -932,20 +1057,6 @@
                             })
 
                     function switchTab(tabName) {
-                        const tabs = document.querySelectorAll('.tab-content')
-                        tabs.forEach((tab) => tab.classList.remove('active'))
-
-                        const tabButtons = document.querySelectorAll('.tab')
-                        tabButtons.forEach((btn) => btn.classList.remove('active'))
-
-                        document.getElementById(tabName).classList.add('active')
-                        event.target.closest('.tab').classList.add('active')
-                    }
-                    function closeModal(modalId) {
-                        document.getElementById(modalId).classList.remove('active')
-                    }
-
-                    function switchTab(tabName) {
                         const tabs = document.querySelectorAll('.tab-content');
                         tabs.forEach((tab) => tab.classList.remove('active'));
 
@@ -953,7 +1064,146 @@
                         tabButtons.forEach((btn) => btn.classList.remove('active'));
 
                         document.getElementById(tabName).classList.add('active');
-                        event.target.closest('.tab').classList.add('active');
+                        if (event && event.target) {
+                            event.target.closest('.tab').classList.add('active');
+                        }
+                        
+                        // Update URL without reloading page
+                        const url = new URL(window.location);
+                        url.searchParams.set('tab', tabName);
+                        window.history.pushState({}, '', url);
+                    }
+                    
+                    function closeModal(modalId) {
+                        document.getElementById(modalId).classList.remove('active');
+                    }
+                    
+                    // Initialize tab on page load
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const tab = urlParams.get('tab');
+                        if (tab) {
+                            switchTab(tab);
+                        }
+                    });
+                    
+                    // Function to confirm order via AJAX
+                    function confirmOrder(orderId, buttonElement) {
+                        if (!confirm('Bạn có chắc chắn muốn hoàn thành đơn hàng này?')) {
+                            return;
+                        }
+                        
+                        // Disable button and show loading
+                        buttonElement.disabled = true;
+                        const originalText = buttonElement.innerHTML;
+                        buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+                        
+                        // Make AJAX request
+                        const url = contextPath + '/admin/sales-management?action=confirmOrder&orderId=' + orderId + '&ajax=true';
+                        
+                        console.log('Sending AJAX request to:', url);
+                        
+                        fetch(url, {
+                            method: 'GET'
+                        })
+                        .then(response => {
+                            console.log('Response status:', response.status);
+                            if (!response.ok) {
+                                throw new Error('HTTP error! status: ' + response.status);
+                            }
+                            return response.text();
+                        })
+                        .then(text => {
+                            console.log('Response text:', text);
+                            try {
+                                const data = JSON.parse(text);
+                                if (data.success) {
+                                    // Update status badge
+                                    const statusCell = document.getElementById('order-status-' + orderId);
+                                    if (statusCell) {
+                                        statusCell.innerHTML = '<span class="badge badge-success">Hoàn thành</span>';
+                                    }
+                                    
+                                    // Update action cell
+                                    const actionCell = document.getElementById('order-action-' + orderId);
+                                    if (actionCell) {
+                                        actionCell.innerHTML = '<span style="color: #27ae60; font-weight: 600;"><i class="fas fa-check-circle"></i> Đã hoàn thành</span>';
+                                    }
+                                    
+                                    // Show success message
+                                    showMessage('success', data.message);
+                                } else {
+                                    // Show error message
+                                    showMessage('error', data.message);
+                                    // Re-enable button
+                                    buttonElement.disabled = false;
+                                    buttonElement.innerHTML = originalText;
+                                }
+                            } catch (e) {
+                                console.error('Error parsing JSON:', e);
+                                console.error('Response text was:', text);
+                                throw new Error('Invalid JSON response');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            showMessage('error', 'Lỗi khi xử lý yêu cầu. Vui lòng thử lại!');
+                            // Re-enable button
+                            buttonElement.disabled = false;
+                            buttonElement.innerHTML = originalText;
+                        });
+                    }
+                    
+                    // Function to show messages
+                    function showMessage(type, message) {
+                        // Remove existing messages
+                        const existingMessages = document.querySelectorAll('.message-alert');
+                        existingMessages.forEach(msg => msg.remove());
+                        
+                        // Create message element
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = 'message-alert';
+                        messageDiv.style.cssText = type === 'success' 
+                            ? 'background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c3e6cb;'
+                            : 'background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c6cb;';
+                        messageDiv.innerHTML = '<i class="fas ' + (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle') + '"></i> ' + message;
+                        
+                        // Insert message in the messages section or after stats grid
+                        const contentArea = document.querySelector('.content-area');
+                        if (!contentArea) {
+                            console.error('Content area not found');
+                            return;
+                        }
+                        
+                        // Try to find messages section (after stats-grid, before tabs)
+                        const statsGrid = document.querySelector('.stats-grid');
+                        const tabs = document.querySelector('.tabs');
+                        
+                        if (tabs && tabs.parentNode === contentArea) {
+                            // Insert before tabs
+                            contentArea.insertBefore(messageDiv, tabs);
+                        } else if (statsGrid && statsGrid.parentNode === contentArea) {
+                            // Insert after stats grid
+                            if (statsGrid.nextSibling) {
+                                contentArea.insertBefore(messageDiv, statsGrid.nextSibling);
+                            } else {
+                                contentArea.appendChild(messageDiv);
+                            }
+                        } else {
+                            // Fallback: insert at the beginning of content area
+                            if (contentArea.firstChild) {
+                                contentArea.insertBefore(messageDiv, contentArea.firstChild);
+                            } else {
+                                contentArea.appendChild(messageDiv);
+                            }
+                        }
+                        
+                        // Auto remove after 5 seconds
+                        setTimeout(() => {
+                            if (messageDiv && messageDiv.parentNode) {
+                                messageDiv.remove();
+                            }
+                        }, 5000);
                     }
                 </script>
         </body>

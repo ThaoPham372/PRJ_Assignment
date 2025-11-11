@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %> 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -278,6 +279,67 @@
         position: relative;
       }
 
+      /* Revenue Cards */
+      .revenue-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .revenue-card {
+        background: #fff;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px var(--shadow);
+      }
+
+      .revenue-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+      }
+
+      .revenue-card-title {
+        font-size: 0.95rem;
+        color: #5a6c7d;
+        font-weight: 600;
+      }
+
+      .revenue-card-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        color: #fff;
+      }
+
+      .revenue-amount {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 10px;
+      }
+
+      .revenue-change {
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .revenue-change.up {
+        color: #27ae60;
+      }
+
+      .revenue-change.down {
+        color: #e74c3c;
+      }
+
       @media (max-width: 768px) {
         .sidebar {
           width: 70px;
@@ -443,6 +505,78 @@
             </button>
           </div>
 
+          <!-- Revenue Cards -->
+          <div class="revenue-grid">
+            <div class="revenue-card">
+              <div class="revenue-card-header">
+                <span class="revenue-card-title">Doanh thu hôm nay</span>
+                <div
+                  class="revenue-card-icon"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #667eea 0%,
+                      #764ba2 100%
+                    );
+                  "
+                >
+                  <i class="fas fa-dollar-sign"></i>
+                </div>
+              </div>
+              <div class="revenue-amount">
+                <fmt:formatNumber value="${revenueToday}" type="number" maxFractionDigits="0" /> đ
+              </div>
+              <div class="revenue-change <c:choose><c:when test="${todayGrowthRate >= 0}">up</c:when><c:otherwise>down</c:otherwise></c:choose>">
+                <i class="fas fa-arrow-<c:choose><c:when test="${todayGrowthRate >= 0}">up</c:when><c:otherwise>down</c:otherwise></c:choose>"></i>
+                <span><c:if test="${todayGrowthRate >= 0}">+</c:if><fmt:formatNumber value="${todayGrowthRate}" type="number" maxFractionDigits="1" />% so với hôm qua</span>
+              </div>
+            </div>
+
+            <div class="revenue-card">
+              <div class="revenue-card-header">
+                <span class="revenue-card-title">Doanh thu tháng này</span>
+                <div
+                  class="revenue-card-icon"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #11998e 0%,
+                      #38ef7d 100%
+                    );
+                  "
+                >
+                  <i class="fas fa-chart-line"></i>
+                </div>
+              </div>
+              <div class="revenue-amount">
+                <fmt:formatNumber value="${revenueThisMonth}" type="number" maxFractionDigits="0" /> đ
+              </div>
+              <div class="revenue-change <c:choose><c:when test="${monthGrowthRate >= 0}">up</c:when><c:otherwise>down</c:otherwise></c:choose>">
+                <i class="fas fa-arrow-<c:choose><c:when test="${monthGrowthRate >= 0}">up</c:when><c:otherwise>down</c:otherwise></c:choose>"></i>
+                <span><c:if test="${monthGrowthRate >= 0}">+</c:if><fmt:formatNumber value="${monthGrowthRate}" type="number" maxFractionDigits="1" />% so với tháng trước</span>
+              </div>
+            </div>
+
+            <div class="revenue-card">
+              <div class="revenue-card-header">
+                <span class="revenue-card-title">Doanh thu năm nay</span>
+                <div
+                  class="revenue-card-icon"
+                  style="background: var(--gradient-accent)"
+                >
+                  <i class="fas fa-coins"></i>
+                </div>
+              </div>
+              <div class="revenue-amount">
+                <fmt:formatNumber value="${revenueThisYear}" type="number" maxFractionDigits="0" /> đ
+              </div>
+              <div class="revenue-change <c:choose><c:when test="${yearGrowthRate >= 0}">up</c:when><c:otherwise>down</c:otherwise></c:choose>">
+                <i class="fas fa-arrow-<c:choose><c:when test="${yearGrowthRate >= 0}">up</c:when><c:otherwise>down</c:otherwise></c:choose>"></i>
+                <span><c:if test="${yearGrowthRate >= 0}">+</c:if><fmt:formatNumber value="${yearGrowthRate}" type="number" maxFractionDigits="1" />% so với năm trước</span>
+              </div>
+            </div>
+          </div>
+
           <div class="reports-grid">
             <div class="report-card">
               <div class="report-card-header">
@@ -538,31 +672,6 @@
                 </div>
               </div>
             </div>
-
-            <div class="report-card">
-              <div class="report-card-header">
-                <h3 class="report-card-title">Tần suất check-in</h3>
-                <div
-                  class="report-card-icon"
-                  style="background: var(--gradient-accent)"
-                >
-                  <i class="fas fa-calendar-check"></i>
-                </div>
-              </div>
-              <div class="report-chart-container">
-                <canvas id="checkinBarChart"></canvas>
-              </div>
-              <div class="report-summary">
-                <div class="summary-item">
-                  <div class="summary-label">Hôm nay</div>
-                  <div class="summary-value">${summary.checkInsToday}</div>
-                </div>
-                <div class="summary-item">
-                  <div class="summary-label">Trung bình/ngày</div>
-                  <div class="summary-value">${summary.avgCheckIns}</div>
-                </div>
-              </div>
-            </div>
           </div>
 
           <div class="large-chart">
@@ -594,67 +703,159 @@
         alert('Chức năng lọc đang được phát triển!')
       }
 
+      // --- HÀM HỖ TRỢ FORMAT ---
+      function formatMonthLabel(monthStr) {
+        // monthStr format: "YYYY-MM"
+        const months = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12']
+        const parts = monthStr.split('-')
+        if (parts.length === 2) {
+          const monthIndex = parseInt(parts[1]) - 1
+          return months[monthIndex] || monthStr
+        }
+        return monthStr
+      }
+
+      function formatMonthLabelFull(monthStr) {
+        // monthStr format: "YYYY-MM" -> "Tháng X/YYYY"
+        const months = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+        const parts = monthStr.split('-')
+        if (parts.length === 2) {
+          return 'Tháng ' + months[parseInt(parts[1]) - 1] + '/' + parts[0]
+        }
+        return monthStr
+      }
+
       // --- LẤY DỮ LIỆU TỪ SERVER ---
       const revenueDataRaw = '${revenueChartJson}'
       const packageDataRaw = '${packageChartJson}'
+      const memberDataRaw = '${memberChartJson}'
       let revenueData = [],
-        packageData = []
+        packageData = [],
+        memberData = []
 
       try {
-        if (revenueDataRaw) revenueData = JSON.parse(revenueDataRaw)
-        if (packageDataRaw) packageData = JSON.parse(packageDataRaw)
+        if (revenueDataRaw && revenueDataRaw !== '' && revenueDataRaw !== 'null') {
+          revenueData = JSON.parse(revenueDataRaw)
+        }
+        if (packageDataRaw && packageDataRaw !== '' && packageDataRaw !== 'null') {
+          packageData = JSON.parse(packageDataRaw)
+        }
+        if (memberDataRaw && memberDataRaw !== '' && memberDataRaw !== 'null') {
+          memberData = JSON.parse(memberDataRaw)
+        }
       } catch (e) {
         console.error('Lỗi parse JSON:', e)
+        console.error('revenueDataRaw:', revenueDataRaw)
+        console.error('packageDataRaw:', packageDataRaw)
+        console.error('memberDataRaw:', memberDataRaw)
       }
 
-      // --- 1. BIỂU ĐỒ HỘI VIÊN (Dữ liệu giả lập) ---
+      // --- 1. BIỂU ĐỒ HỘI VIÊN (Bar Chart - Dữ liệu thật) ---
       const memberCtx = document
         .getElementById('memberGrowthChart')
         .getContext('2d')
-      const memberGradient = memberCtx.createLinearGradient(0, 0, 0, 200)
-      memberGradient.addColorStop(0, 'rgba(102, 126, 234, 0.5)')
-      memberGradient.addColorStop(1, 'rgba(118, 75, 162, 0.0)')
+
+      // Xử lý dữ liệu member: convert value từ BigDecimal sang number và format label
+      let memberLabels = []
+      let memberValues = []
+      
+      if (memberData && memberData.length > 0) {
+        memberLabels = memberData.map(item => {
+          if (item && item.label) {
+            return formatMonthLabel(item.label)
+          }
+          return ''
+        }).filter(label => label !== '')
+        
+        memberValues = memberData.map(item => {
+          if (item && item.value !== undefined && item.value !== null) {
+            return Number(item.value)
+          }
+          return 0
+        })
+      } else {
+        // Fallback data nếu không có dữ liệu
+        memberLabels = ['T6', 'T7', 'T8', 'T9', 'T10', 'T11']
+        memberValues = [0, 0, 0, 0, 0, 0]
+      }
 
       new Chart(memberCtx, {
-        type: 'line',
+        type: 'bar',
         data: {
-          labels: ['T6', 'T7', 'T8', 'T9', 'T10', 'T11'],
+          labels: memberLabels,
           datasets: [
             {
               label: 'Hội viên mới',
-              data: [5, 8, 12, 7, 15, 17], // Dummy data
+              data: memberValues,
+              backgroundColor: 'rgba(102, 126, 234, 0.8)',
               borderColor: '#667eea',
-              backgroundColor: memberGradient,
-              fill: true,
-              tension: 0.4,
-              pointRadius: 0, // Ẩn điểm cho gọn
+              borderWidth: 2,
+              borderRadius: 4,
             },
           ],
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { enabled: true } },
-          scales: { x: { display: false }, y: { display: false } }, // Ẩn trục cho biểu đồ nhỏ
+          plugins: { 
+            legend: { display: false }, 
+            tooltip: { 
+              enabled: true,
+              callbacks: {
+                label: (ctx) => 'Hội viên mới: ' + ctx.parsed.y
+              }
+            } 
+          },
+          scales: { 
+            x: { 
+              display: true,
+              grid: { display: false }
+            }, 
+            y: { 
+              display: true,
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1,
+                precision: 0
+              },
+              grid: { color: '#f0f0f0' }
+            } 
+          },
         },
       })
 
       // --- 2. BIỂU ĐỒ TRÒN (DOANH THU THEO GÓI) ---
-      // Nếu không có dữ liệu thật, dùng dữ liệu giả để test hiển thị
-      if (packageData.length === 0) {
-        packageData = [{ label: 'Chưa có dữ liệu', value: 1 }] // Dummy để hiện vòng tròn trống
-      }
-
       const packageCtx = document
         .getElementById('packagePieChart')
         .getContext('2d')
+
+      // Xử lý dữ liệu package
+      let packageLabels = []
+      let packageValues = []
+      
+      if (packageData && packageData.length > 0) {
+        packageLabels = packageData.map((item) => {
+          return item && item.label ? item.label : 'Không xác định'
+        })
+        packageValues = packageData.map((item) => {
+          if (item && item.value !== undefined && item.value !== null) {
+            return Number(item.value)
+          }
+          return 0
+        })
+      } else {
+        // Nếu không có dữ liệu, hiển thị thông báo
+        packageLabels = ['Chưa có dữ liệu']
+        packageValues = [1]
+      }
+
       new Chart(packageCtx, {
-        type: 'doughnut',
+        type: 'pie',
         data: {
-          labels: packageData.map((item) => item.label),
+          labels: packageLabels,
           datasets: [
             {
-              data: packageData.map((item) => item.value),
+              data: packageValues,
               backgroundColor: [
                 '#11998e',
                 '#38ef7d',
@@ -662,8 +863,11 @@
                 '#ff9966',
                 '#ec8b5a',
                 '#e0e0e0',
+                '#9b59b6',
+                '#3498db',
               ],
-              borderWidth: 1,
+              borderWidth: 2,
+              borderColor: '#fff',
             },
           ],
         },
@@ -673,38 +877,27 @@
           plugins: {
             legend: {
               position: 'bottom',
-              labels: { boxWidth: 12, font: { size: 11 } },
+              labels: { 
+                boxWidth: 12, 
+                font: { size: 11 },
+                padding: 10
+              },
+            },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const label = ctx.label || ''
+                  const value = ctx.parsed !== undefined ? formatCurrency(ctx.parsed) : formatCurrency(ctx.raw)
+                  const percentage = ((ctx.parsed !== undefined ? ctx.parsed : ctx.raw) / packageValues.reduce((a, b) => a + b, 0) * 100).toFixed(1)
+                  return label + ': ' + value + ' (' + percentage + '%)'
+                },
+              },
             },
           },
         },
       })
 
-      // --- 3. BIỂU ĐỒ CỘT (CHECK-IN - Dữ liệu giả lập) ---
-      const checkinCtx = document
-        .getElementById('checkinBarChart')
-        .getContext('2d')
-      new Chart(checkinCtx, {
-        type: 'bar',
-        data: {
-          labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
-          datasets: [
-            {
-              label: 'Check-in',
-              data: [650, 720, 892, 810, 750, 980, 1024],
-              backgroundColor: '#ec8b5a',
-              borderRadius: 4,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: { x: { grid: { display: false } }, y: { display: false } },
-          plugins: { legend: { display: false } },
-        },
-      })
-
-      // --- 4. BIỂU ĐỒ ĐƯỜNG LỚN (DOANH THU 12 THÁNG) ---
+      // --- 3. BIỂU ĐỒ ĐƯỜNG LỚN (DOANH THU 12 THÁNG) ---
       const revenueCtx = document
         .getElementById('revenueLineChart')
         .getContext('2d')
@@ -712,14 +905,40 @@
       revenueGradient.addColorStop(0, 'rgba(20, 26, 73, 0.5)')
       revenueGradient.addColorStop(1, 'rgba(20, 26, 73, 0.0)')
 
+      // Xử lý dữ liệu revenue: format label và convert value
+      let revenueLabels = []
+      let revenueValues = []
+      
+      if (revenueData && revenueData.length > 0) {
+        revenueLabels = revenueData.map((item) => {
+          if (item && item.label) {
+            return formatMonthLabelFull(item.label)
+          }
+          return ''
+        }).filter(label => label !== '')
+        
+        revenueValues = revenueData.map((item) => {
+          if (item && item.value !== undefined && item.value !== null) {
+            return Number(item.value)
+          }
+          return 0
+        })
+      }
+
+      // Nếu không có dữ liệu, tạo mảng rỗng để chart không bị lỗi
+      if (revenueLabels.length === 0) {
+        revenueLabels = []
+        revenueValues = []
+      }
+
       new Chart(revenueCtx, {
         type: 'line',
         data: {
-          labels: revenueData.map((item) => item.label),
+          labels: revenueLabels,
           datasets: [
             {
               label: 'Doanh thu',
-              data: revenueData.map((item) => item.value),
+              data: revenueValues,
               borderColor: '#141a49',
               backgroundColor: revenueGradient,
               fill: true,
@@ -728,12 +947,17 @@
               pointBorderColor: '#fff',
               pointHoverRadius: 6,
               pointRadius: 4,
+              pointHoverBackgroundColor: '#ec8b5a',
             },
           ],
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          },
           scales: {
             y: {
               beginAtZero: true,
@@ -744,13 +968,24 @@
               },
               grid: { color: '#f0f0f0' },
             },
-            x: { grid: { display: false } },
+            x: { 
+              grid: { display: false },
+              ticks: {
+                maxRotation: 45,
+                minRotation: 45
+              }
+            },
           },
           plugins: {
             legend: { display: false },
             tooltip: {
               callbacks: {
-                label: (ctx) => 'Doanh thu: ' + formatCurrency(ctx.parsed.y),
+                label: (ctx) => {
+                  if (ctx.parsed.y !== null && ctx.parsed.y !== undefined) {
+                    return 'Doanh thu: ' + formatCurrency(ctx.parsed.y)
+                  }
+                  return 'Doanh thu: 0 đ'
+                },
               },
             },
           },

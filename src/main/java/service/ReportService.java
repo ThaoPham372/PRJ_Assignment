@@ -80,6 +80,19 @@ public class ReportService {
         }
     }
 
+    /**
+     * Get member growth chart data for the last 6 months
+     */
+    public List<ChartData> getMemberGrowthChartData() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            AdminReportsDAO dao = new AdminReportsDAO(em);
+            return dao.getMonthlyMemberGrowth(6);
+        } finally {
+            em.close();
+        }
+    }
+
     // --- Helpers ---
     private double calculateGrowth(double current, double previous) {
         if (previous == 0) return current > 0 ? 100.0 : 0.0;

@@ -66,4 +66,24 @@ public class TrainerScheduleService {
         return dao.getTimeSlotsBasic();
     }
 
+    // CRUD operations for TrainerSchedule
+    public void createSchedule(TrainerSchedule schedule) {
+        dao.saveSchedule(schedule);
+    }
+
+    public TrainerSchedule getScheduleById(int scheduleId) {
+        return dao.getScheduleById(scheduleId);
+    }
+
+    public void updateSchedule(TrainerSchedule schedule) {
+        dao.updateSchedule(schedule);
+    }
+
+    public void deleteSchedule(TrainerSchedule schedule) {
+        dao.deleteSchedule(schedule);
+    }
+
+    public List<TrainerSchedule> getAvailableSchedulesByTrainer(int trainerId) {
+        return dao.getAvailableSchedulesByTrainer(trainerId);
+    }
 }
