@@ -139,6 +139,16 @@ public class Order {
         }
         return java.util.Date.from(orderDate.atZone(java.time.ZoneId.systemDefault()).toInstant());
     }
+    
+    /**
+     * Get createdAt as java.util.Date for JSP fmt:formatDate compatibility
+     */
+    public java.util.Date getCreatedAtAsDate() {
+        if (createdAt == null) {
+            return null;
+        }
+        return java.util.Date.from(createdAt.atZone(java.time.ZoneId.systemDefault()).toInstant());
+    }
 
     public BigDecimal getTotalAmount() {
         return totalAmount;

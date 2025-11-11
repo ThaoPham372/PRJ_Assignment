@@ -104,4 +104,35 @@ public List<ChartData> getMonthlyRevenueNative(String startDateStr) {
     }
     return chartData;
 }
+
+    /**
+     * Get monthly member growth data for the last 6 months
+     * Returns list of ChartData with month label and count of new members
+     */
+    @SuppressWarnings("unchecked")
+    public List<ChartData> getMonthlyMemberGrowth(int months) {
+        try {
+            // Use native SQL to group by month
+            String sql = "SELECT DATE_FORMAT(created_date, '%Y-%m') as month_year, COUNT(*) as member_count " +
+                        "FROM user " +
+                        "WHERE DTYPE = 'Member' " +
+                        "AND created_date >= DATE_SUB(CURDATE(), INTERVAL ?1 MONTH) " +
+                        "GROUP BY month_year " +
+                        "ORDER BY month_year ASC";
+            
+            Query query = em.createNativeQuery(sql);
+            query.setParameter(1, months);
+            
+            List<Object[]> results = query.getResultList();
+            List<ChartData> chartData = new ArrayList<>();
+            for (Object[] row : results) {
+                // Convert count to BigDecimal for consistency with ChartData
+                Long count = ((Number) row[1]).longValue();
+                chartData.add(new ChartData(row[0].toString(), BigDecimal.valueOf(count)));
+            }
+            return chartData;
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
 }

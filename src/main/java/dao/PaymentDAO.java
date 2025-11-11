@@ -105,4 +105,142 @@ public class PaymentDAO extends GenericDAO<Payment> {
             return BigDecimal.ZERO;
         }
     }
+
+    /**
+     * Get total revenue for today (payments with status = PAID)
+     * @return Total revenue as BigDecimal
+     */
+    public BigDecimal getRevenueToday() {
+        try {
+            java.time.LocalDate today = java.time.LocalDate.now();
+            java.time.LocalDateTime startOfDay = today.atStartOfDay();
+            java.time.LocalDateTime endOfDay = today.atTime(23, 59, 59);
+            
+            String jpql = "SELECT SUM(p.amount) FROM Payment p " +
+                         "WHERE p.status = :status " +
+                         "AND p.paymentDate >= :startOfDay " +
+                         "AND p.paymentDate <= :endOfDay";
+            
+            TypedQuery<BigDecimal> query = em.createQuery(jpql, BigDecimal.class);
+            query.setParameter("status", PaymentStatus.PAID);
+            query.setParameter("startOfDay", startOfDay);
+            query.setParameter("endOfDay", endOfDay);
+            
+            BigDecimal result = query.getSingleResult();
+            return result != null ? result : BigDecimal.ZERO;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error getting revenue today", e);
+            return BigDecimal.ZERO;
+        }
+    }
+
+    /**
+     * Get total revenue for yesterday (payments with status = PAID)
+     * @return Total revenue as BigDecimal
+     */
+    public BigDecimal getRevenueYesterday() {
+        try {
+            java.time.LocalDate yesterday = java.time.LocalDate.now().minusDays(1);
+            java.time.LocalDateTime startOfDay = yesterday.atStartOfDay();
+            java.time.LocalDateTime endOfDay = yesterday.atTime(23, 59, 59);
+            
+            String jpql = "SELECT SUM(p.amount) FROM Payment p " +
+                         "WHERE p.status = :status " +
+                         "AND p.paymentDate >= :startOfDay " +
+                         "AND p.paymentDate <= :endOfDay";
+            
+            TypedQuery<BigDecimal> query = em.createQuery(jpql, BigDecimal.class);
+            query.setParameter("status", PaymentStatus.PAID);
+            query.setParameter("startOfDay", startOfDay);
+            query.setParameter("endOfDay", endOfDay);
+            
+            BigDecimal result = query.getSingleResult();
+            return result != null ? result : BigDecimal.ZERO;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error getting revenue yesterday", e);
+            return BigDecimal.ZERO;
+        }
+    }
+
+    /**
+     * Get total revenue for last month (payments with status = PAID)
+     * @return Total revenue as BigDecimal
+     */
+    public BigDecimal getRevenueLastMonth() {
+        try {
+            java.time.LocalDate firstDayOfLastMonth = java.time.LocalDate.now().minusMonths(1).withDayOfMonth(1);
+            java.time.LocalDateTime startOfLastMonth = firstDayOfLastMonth.atStartOfDay();
+            java.time.LocalDateTime startOfThisMonth = java.time.LocalDate.now().withDayOfMonth(1).atStartOfDay();
+            
+            String jpql = "SELECT SUM(p.amount) FROM Payment p " +
+                         "WHERE p.status = :status " +
+                         "AND p.paymentDate >= :startOfLastMonth " +
+                         "AND p.paymentDate < :startOfThisMonth";
+            
+            TypedQuery<BigDecimal> query = em.createQuery(jpql, BigDecimal.class);
+            query.setParameter("status", PaymentStatus.PAID);
+            query.setParameter("startOfLastMonth", startOfLastMonth);
+            query.setParameter("startOfThisMonth", startOfThisMonth);
+            
+            BigDecimal result = query.getSingleResult();
+            return result != null ? result : BigDecimal.ZERO;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error getting revenue last month", e);
+            return BigDecimal.ZERO;
+        }
+    }
+
+    /**
+     * Get total revenue for current year (payments with status = PAID)
+     * @return Total revenue as BigDecimal
+     */
+    public BigDecimal getRevenueThisYear() {
+        try {
+            java.time.LocalDate firstDayOfYear = java.time.LocalDate.now().withDayOfYear(1);
+            java.time.LocalDateTime startOfYear = firstDayOfYear.atStartOfDay();
+            
+            String jpql = "SELECT SUM(p.amount) FROM Payment p " +
+                         "WHERE p.status = :status " +
+                         "AND p.paymentDate >= :startOfYear";
+            
+            TypedQuery<BigDecimal> query = em.createQuery(jpql, BigDecimal.class);
+            query.setParameter("status", PaymentStatus.PAID);
+            query.setParameter("startOfYear", startOfYear);
+            
+            BigDecimal result = query.getSingleResult();
+            return result != null ? result : BigDecimal.ZERO;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error getting revenue this year", e);
+            return BigDecimal.ZERO;
+        }
+    }
+
+    /**
+     * Get total revenue for last year (payments with status = PAID)
+     * @return Total revenue as BigDecimal
+     */
+    public BigDecimal getRevenueLastYear() {
+        try {
+            java.time.LocalDate firstDayOfLastYear = java.time.LocalDate.now().minusYears(1).withDayOfYear(1);
+            java.time.LocalDateTime startOfLastYear = firstDayOfLastYear.atStartOfDay();
+            java.time.LocalDate firstDayOfThisYear = java.time.LocalDate.now().withDayOfYear(1);
+            java.time.LocalDateTime startOfThisYear = firstDayOfThisYear.atStartOfDay();
+            
+            String jpql = "SELECT SUM(p.amount) FROM Payment p " +
+                         "WHERE p.status = :status " +
+                         "AND p.paymentDate >= :startOfLastYear " +
+                         "AND p.paymentDate < :startOfThisYear";
+            
+            TypedQuery<BigDecimal> query = em.createQuery(jpql, BigDecimal.class);
+            query.setParameter("status", PaymentStatus.PAID);
+            query.setParameter("startOfLastYear", startOfLastYear);
+            query.setParameter("startOfThisYear", startOfThisYear);
+            
+            BigDecimal result = query.getSingleResult();
+            return result != null ? result : BigDecimal.ZERO;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error getting revenue last year", e);
+            return BigDecimal.ZERO;
+        }
+    }
 }
