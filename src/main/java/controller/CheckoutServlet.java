@@ -99,7 +99,7 @@ public class CheckoutServlet extends HttpServlet {
             deliveryPhone == null || deliveryPhone.trim().isEmpty() ||
             deliveryMethodStr == null || deliveryMethodStr.trim().isEmpty() ||
             paymentMethodStr == null || paymentMethodStr.trim().isEmpty()) {
-            request.getSession().setAttribute("error", "Vui lòng điền đầy đủ thông tin");
+            request.getSession().setAttribute("errorMessage", "Vui lòng điền đầy đủ thông tin");
             response.sendRedirect(request.getContextPath() + "/checkout");
             return;
         }
@@ -109,7 +109,7 @@ public class CheckoutServlet extends HttpServlet {
         // If delivery method is DELIVERY, address is required
         if (deliveryMethod == DeliveryMethod.DELIVERY && 
             (deliveryAddress == null || deliveryAddress.trim().isEmpty())) {
-            request.getSession().setAttribute("error", "Vui lòng nhập địa chỉ giao hàng");
+            request.getSession().setAttribute("errorMessage", "Vui lòng nhập địa chỉ giao hàng");
             response.sendRedirect(request.getContextPath() + "/checkout");
             return;
         }
@@ -188,15 +188,20 @@ public class CheckoutServlet extends HttpServlet {
                     
                     // Build base URL dynamically from request (includes context path)
                     // IMPORTANT: VNPay requires public URL (not localhost)
-                    // Get ngrok URL from configuration
-                    String ngrokBaseUrl = getNgrokBaseUrl(request);
+                    // Priority: 1) Use ngrok URL from config, 2) Detect from request headers, 3) Fallback to config
                     String baseUrl;
+                    String contextPath = request.getContextPath(); // Get actual context path from request
                     
-                    if (ngrokBaseUrl != null && !ngrokBaseUrl.isEmpty()) {
-                        // Use ngrok URL from config (already includes context path if configured)
-                        // Example: https://xxx.ngrok-free.dev/Gym_Management_Systems
-                        baseUrl = ngrokBaseUrl;
-                        System.out.println("[CheckoutServlet] Using ngrok URL from config: " + baseUrl);
+                    // Try to get ngrok domain from config
+                    String ngrokDomain = getNgrokDomainFromConfig();
+                    
+                    if (ngrokDomain != null && !ngrokDomain.isEmpty()) {
+                        // Use ngrok domain from config + actual context path from request
+                        // This ensures context path matches what the app is actually running on
+                        baseUrl = ngrokDomain + contextPath;
+                        System.out.println("[CheckoutServlet] Using ngrok domain from config: " + ngrokDomain);
+                        System.out.println("[CheckoutServlet] Using context path from request: " + contextPath);
+                        System.out.println("[CheckoutServlet] Final base URL: " + baseUrl);
                     } else {
                         // Fallback: Try to detect if running through ngrok by checking headers
                         String forwardedHost = request.getHeader("X-Forwarded-Host");
@@ -204,12 +209,10 @@ public class CheckoutServlet extends HttpServlet {
                             // Running through ngrok but not configured - use forwarded host
                             String scheme = request.getHeader("X-Forwarded-Proto");
                             if (scheme == null) scheme = "https";
-                            String contextPath = request.getContextPath();
                             baseUrl = scheme + "://" + forwardedHost + contextPath;
                             System.out.println("[CheckoutServlet] Using ngrok URL from headers: " + baseUrl);
                         } else {
                             // Not using ngrok - this will fail with VNPay!
-                            String contextPath = request.getContextPath();
                             baseUrl = request.getScheme() + "://" + request.getServerName() +
                                 (request.getServerPort() != 80 && request.getServerPort() != 443 ? 
                                  ":" + request.getServerPort() : "") +
@@ -219,12 +222,15 @@ public class CheckoutServlet extends HttpServlet {
                         }
                     }
                     
+                    System.out.println("[CheckoutServlet] ========================================");
+                    System.out.println("[CheckoutServlet] Context Path (from request): " + contextPath);
                     System.out.println("[CheckoutServlet] Base URL: " + baseUrl);
-                    System.out.println("[CheckoutServlet] Context Path: " + request.getContextPath());
+                    System.out.println("[CheckoutServlet] ========================================");
                     
                     // Build return URL explicitly to ensure it's correct
                     String returnUrl = baseUrl + "/vnpay-return";
                     System.out.println("[CheckoutServlet] VNPay Return URL: " + returnUrl);
+                    System.out.println("[CheckoutServlet] IMPORTANT: This URL must match the URL registered in VNPay merchant portal!");
                     
                     String vnpayPaymentUrl = checkoutService.processVNPayPayment(
                         order.getOrderId(), amount, orderInfo, ipAddress, returnUrl);
@@ -235,7 +241,7 @@ public class CheckoutServlet extends HttpServlet {
                         return;
                     } else {
                         System.err.println("[CheckoutServlet] Warning: VNPay payment URL creation failed");
-                        request.getSession().setAttribute("error", "Không thể kết nối đến VNPay. Vui lòng thử lại sau.");
+                        request.getSession().setAttribute("errorMessage", "Không thể kết nối đến VNPay. Vui lòng thử lại sau.");
                         if (!response.isCommitted()) {
                             response.sendRedirect(request.getContextPath() + "/checkout");
                         }
@@ -244,7 +250,7 @@ public class CheckoutServlet extends HttpServlet {
                 } catch (Exception e) {
                     System.err.println("[CheckoutServlet] Error processing VNPay payment: " + e.getMessage());
                     e.printStackTrace();
-                    request.getSession().setAttribute("error", "Không thể kết nối đến VNPay. Vui lòng thử lại sau.");
+                    request.getSession().setAttribute("errorMessage", "Không thể kết nối đến VNPay. Vui lòng thử lại sau.");
                     if (!response.isCommitted()) {
                         response.sendRedirect(request.getContextPath() + "/checkout");
                     }
@@ -286,7 +292,7 @@ public class CheckoutServlet extends HttpServlet {
                             response.sendRedirect(successUrl);
                         }
                     } else {
-                        request.getSession().setAttribute("error", "Không thể kết nối đến MoMo. Vui lòng thử lại sau.");
+                        request.getSession().setAttribute("errorMessage", "Không thể kết nối đến MoMo. Vui lòng thử lại sau.");
                         if (!response.isCommitted()) {
                             response.sendRedirect(request.getContextPath() + "/checkout");
                         }
@@ -307,6 +313,27 @@ public class CheckoutServlet extends HttpServlet {
                 System.err.println("[CheckoutServlet] ERROR: Cannot redirect - response already committed!");
             }
             
+        } catch (IllegalArgumentException e) {
+            // Validation error (e.g., membership validation failed)
+            System.err.println("[CheckoutServlet] IllegalArgumentException: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Set error message in session
+            // Use "errorMessage" to match header.jsp display logic
+            request.getSession().setAttribute("errorMessage", e.getMessage());
+            
+            // Redirect based on checkout type
+            if (packageId != null) {
+                // Package checkout - redirect to membership page
+                if (!response.isCommitted()) {
+                    response.sendRedirect(request.getContextPath() + "/member/membership");
+                }
+            } else {
+                // Cart checkout - redirect to cart
+                if (!response.isCommitted()) {
+                    response.sendRedirect(request.getContextPath() + "/cart");
+                }
+            }
         } catch (EmptyCartException e) {
             System.err.println("[CheckoutServlet] EmptyCartException: " + e.getMessage());
             if (!response.isCommitted()) {
@@ -330,9 +357,20 @@ public class CheckoutServlet extends HttpServlet {
                 }
             } else {
                 // Order was not created, show error
-                request.getSession().setAttribute("error", "Thanh toán thất bại: " + e.getMessage());
-                if (!response.isCommitted()) {
-                    response.sendRedirect(request.getContextPath() + "/cart");
+                String errorMessage = "Thanh toán thất bại: " + e.getMessage();
+                request.getSession().setAttribute("errorMessage", errorMessage);
+                
+                // Redirect based on checkout type
+                if (packageId != null) {
+                    // Package checkout - redirect to membership page
+                    if (!response.isCommitted()) {
+                        response.sendRedirect(request.getContextPath() + "/member/membership");
+                    }
+                } else {
+                    // Cart checkout - redirect to cart
+                    if (!response.isCommitted()) {
+                        response.sendRedirect(request.getContextPath() + "/cart");
+                    }
                 }
             }
         }
@@ -399,12 +437,40 @@ public class CheckoutServlet extends HttpServlet {
                     model.Package pkg = packageDao.findById(packageId.intValue());
                     
                     if (pkg != null) {
+                        // VALIDATE MEMBERSHIP PURCHASE BEFORE SHOWING CHECKOUT PAGE
+                        // Kiểm tra xem user đã có membership với package khác chưa
+                        // Nếu có → Không cho phép mua package mới, chỉ cho phép gia hạn package hiện có
+                        service.MembershipService membershipService = new service.MembershipService();
+                        service.MembershipService.ValidationResult validation = membershipService.validateNewMembership(
+                            userId.intValue(), pkg);
+                        
+                        if (!validation.isValid()) {
+                            // Validation failed - user đã có membership với package khác
+                            String errorMessage = String.join(", ", validation.getErrors());
+                            System.out.println("[CheckoutServlet] Membership validation failed for user " + userId + 
+                                ", package " + packageId + ": " + errorMessage);
+                            
+                            // Clear session
+                            request.getSession().removeAttribute("packageId");
+                            request.getSession().removeAttribute("membershipId");
+                            
+                            // Set error message and redirect to membership page
+                            // Use "errorMessage" to match header.jsp display logic
+                            request.getSession().setAttribute("errorMessage", errorMessage);
+                            response.sendRedirect(request.getContextPath() + "/member/membership");
+                            return;
+                        }
+                        
+                        // Validation passed - allow showing checkout page
                         selectedPackage = pkg;
                         total = selectedPackage.getPrice();
+                        System.out.println("[CheckoutServlet] Membership validation passed for user " + userId + 
+                            ", package " + packageId + ". Showing checkout page.");
                     } else {
                         // Package not found, clear session and redirect
                         request.getSession().removeAttribute("packageId");
                         request.getSession().removeAttribute("membershipId");
+                        request.getSession().setAttribute("errorMessage", "Không tìm thấy gói thành viên");
                         response.sendRedirect(request.getContextPath() + "/member/membership");
                         return;
                     }
@@ -442,29 +508,46 @@ public class CheckoutServlet extends HttpServlet {
     }
     
     /**
-     * Get ngrok base URL from configuration or request
-     * @param request HttpServletRequest
-     * @return Ngrok base URL or null
+     * Get ngrok domain (without context path) from configuration
+     * Extracts domain from vnp_ReturnUrl config
+     * @return Ngrok domain (e.g., https://xxx.ngrok-free.dev) or null
      */
-    private String getNgrokBaseUrl(HttpServletRequest request) {
-        // Try to get from ConfigManager first
+    private String getNgrokDomainFromConfig() {
         try {
             Utils.ConfigManager config = Utils.ConfigManager.getInstance();
             String returnUrl = config.getProperty("vnp_ReturnUrl");
             if (returnUrl != null && !returnUrl.trim().isEmpty()) {
-                // Extract base URL from return URL
+                // Extract domain from return URL
                 // Example: https://xxx.ngrok-free.dev/Gym_Management_Systems/vnpay-return
-                // Extract: https://xxx.ngrok-free.dev/Gym_Management_Systems
-                int vnpayIndex = returnUrl.indexOf("/vnpay-return");
-                if (vnpayIndex > 0) {
-                    String fullPath = returnUrl.substring(0, vnpayIndex);
-                    // fullPath now contains: https://xxx.ngrok-free.dev/Gym_Management_Systems
-                    // We want to return the full path including context path
-                    return fullPath;
+                // Extract: https://xxx.ngrok-free.dev
+                try {
+                    java.net.URI uri = new java.net.URI(returnUrl);
+                    String domain = uri.getScheme() + "://" + uri.getHost();
+                    if (uri.getPort() != -1 && uri.getPort() != 80 && uri.getPort() != 443) {
+                        domain += ":" + uri.getPort();
+                    }
+                    System.out.println("[CheckoutServlet] Extracted ngrok domain from config: " + domain);
+                    return domain;
+                } catch (java.net.URISyntaxException e) {
+                    System.err.println("[CheckoutServlet] Invalid URL format in vnp_ReturnUrl: " + returnUrl);
+                    // Fallback: Try to extract manually
+                    int vnpayIndex = returnUrl.indexOf("/vnpay-return");
+                    if (vnpayIndex > 0) {
+                        String fullPath = returnUrl.substring(0, vnpayIndex);
+                        // Remove context path to get just domain
+                        // Example: https://xxx.ngrok-free.dev/Gym_Management_Systems
+                        // We want: https://xxx.ngrok-free.dev
+                        int lastSlash = fullPath.lastIndexOf('/');
+                        if (lastSlash > 8) { // After https://
+                            String domain = fullPath.substring(0, lastSlash);
+                            System.out.println("[CheckoutServlet] Extracted ngrok domain (fallback): " + domain);
+                            return domain;
+                        }
+                    }
                 }
             }
         } catch (Exception e) {
-            System.err.println("[CheckoutServlet] Error getting ngrok URL from config: " + e.getMessage());
+            System.err.println("[CheckoutServlet] Error getting ngrok domain from config: " + e.getMessage());
         }
         return null;
     }

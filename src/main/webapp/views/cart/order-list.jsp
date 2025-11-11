@@ -431,7 +431,15 @@
                                         </span>
                                     </c:when>
                                     
-                                    <%-- Priority 2: If order is COMPLETED, show Completed badge --%>
+                                    <%-- Priority 2: If order is CONFIRMED, show "Đã hoàn thành" --%>
+                                    <c:when test="${order.orderStatus.code == 'CONFIRMED' or order.orderStatus.code == 'confirmed'}">
+                                        <span class="status-badge status-COMPLETED">
+                                            <i class="fas fa-check-circle"></i>
+                                            Đã hoàn thành
+                                        </span>
+                                    </c:when>
+                                    
+                                    <%-- Priority 3: If order is COMPLETED, show Completed badge --%>
                                     <c:when test="${order.orderStatus.code == 'COMPLETED' or order.orderStatus.code == 'completed' or order.orderStatus.code == 'DELIVERED' or order.orderStatus.code == 'delivered'}">
                                         <span class="status-badge status-COMPLETED">
                                             <i class="fas fa-check-circle"></i>
@@ -439,7 +447,7 @@
                                         </span>
                                     </c:when>
                                     
-                                    <%-- Priority 3: Check payment status for PENDING/PROCESSING orders --%>
+                                    <%-- Priority 4: Check payment status for PENDING/PROCESSING orders --%>
                                     <c:otherwise>
                                         <c:set var="orderPayments" value="${paymentsMap[order.orderId]}" />
                                         <c:set var="hasPaid" value="false" />

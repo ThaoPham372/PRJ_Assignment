@@ -14,10 +14,14 @@ import model.ProductType;
 import model.shop.Order;
 import model.shop.OrderItem;
 import model.shop.OrderStatus;
+import model.shop.PaymentStatus;
 import service.OrderService;
 import service.ProductService;
+import service.shop.PaymentService;
+import service.shop.PaymentServiceImpl;
 import dao.shop.OrderItemDao;
 import dao.shop.OrderDao;
+import dao.PaymentDAO;
 
 /*
     Note: 
@@ -181,22 +185,19 @@ public class SalesManagementServlet extends HttpServlet {
     }
 
     /**
-     * Tính doanh thu trong tháng hiện tại từ các đơn hàng đã hoàn thành
+     * Tính doanh thu hôm nay từ các payment có status = PAID
+     * Sử dụng timezone +7 (Asia/Ho_Chi_Minh) và tính từ paidAt
      */
-    private double getMonthlyRevenue(List<Order> orders) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime startOfMonth = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-        
-        BigDecimal revenue = orders.stream()
-                .filter(order -> order.getCreatedAt() != null && 
-                        !order.getCreatedAt().isBefore(startOfMonth) &&
-                        !order.getCreatedAt().isAfter(now) &&
-                        order.getOrderStatus() == OrderStatus.COMPLETED &&
-                        order.getTotalAmount() != null)
-                .map(Order::getTotalAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
-        return revenue.doubleValue();
+    private double getTodayRevenue() {
+        try {
+            PaymentDAO paymentDAO = new PaymentDAO();
+            BigDecimal revenue = paymentDAO.getRevenueToday();
+            return revenue.doubleValue();
+        } catch (Exception e) {
+            System.err.println("[SalesManagementServlet] Error getting today revenue: " + e.getMessage());
+            e.printStackTrace();
+            return 0.0;
+        }
     }
 
     /**
@@ -245,12 +246,12 @@ public class SalesManagementServlet extends HttpServlet {
     private void loadDashboardMetrics(HttpServletRequest req, List<Product> products, List<Order> orders) {
         int productCount = products.size();
         int monthlyOrderCount = getMonthlyOrderCount(orders);
-        double monthlyRevenue = getMonthlyRevenue(orders);
+        double todayRevenue = getTodayRevenue();
         int lowStockCount = getLowStockCount(products);
 
         req.setAttribute("productCount", productCount);
         req.setAttribute("monthlyOrderCount", monthlyOrderCount);
-        req.setAttribute("monthlyRevenue", monthlyRevenue);
+        req.setAttribute("todayRevenue", todayRevenue);
         req.setAttribute("lowStockCount", lowStockCount);
     }
 
@@ -326,7 +327,7 @@ public class SalesManagementServlet extends HttpServlet {
     }
 
     /**
-     * Xác nhận đơn hàng - cập nhật trạng thái thành COMPLETED
+     * Xác nhận đơn hàng - cập nhật payment status thành PAID và order status thành CONFIRMED
      * @return true nếu thành công, false nếu không tìm thấy đơn hàng hoặc có lỗi
      */
     private boolean handleConfirmOrder(int orderId) {
@@ -338,15 +339,38 @@ public class SalesManagementServlet extends HttpServlet {
             }
             
             // Kiểm tra trạng thái hiện tại
-            if (order.getOrderStatus() == OrderStatus.COMPLETED) {
-                System.out.println("[SalesManagementServlet] Order already completed: " + orderId);
-                return true; // Đã completed rồi, coi như thành công
+            if (order.getOrderStatus() == OrderStatus.CONFIRMED) {
+                System.out.println("[SalesManagementServlet] Order already confirmed: " + orderId);
+                return true; // Đã confirmed rồi, coi như thành công
             }
             
-            // Sử dụng OrderDao.updateOrderStatus để đảm bảo update đúng cách
+            // Lấy tất cả payments của order
+            PaymentService paymentService = new PaymentServiceImpl();
+            List<model.Payment> payments = paymentService.findPaymentsByOrder((long) orderId);
+            
+            // Update payment status thành PAID cho tất cả payments của order
+            if (payments != null && !payments.isEmpty()) {
+                for (model.Payment payment : payments) {
+                    if (payment.getStatus() != PaymentStatus.PAID) {
+                        boolean paymentUpdated = paymentService.updatePaymentStatus(
+                            payment.getPaymentId(), 
+                            PaymentStatus.PAID
+                        );
+                        if (paymentUpdated) {
+                            System.out.println("[SalesManagementServlet] Payment updated to PAID: paymentId=" + payment.getPaymentId());
+                        } else {
+                            System.err.println("[SalesManagementServlet] Failed to update payment: paymentId=" + payment.getPaymentId());
+                        }
+                    }
+                }
+            } else {
+                System.out.println("[SalesManagementServlet] No payments found for order: " + orderId);
+            }
+            
+            // Update order status thành CONFIRMED
             OrderDao orderDao = new OrderDao();
             try {
-                orderDao.updateOrderStatus(orderId, OrderStatus.COMPLETED);
+                orderDao.updateOrderStatus(orderId, OrderStatus.CONFIRMED);
                 System.out.println("[SalesManagementServlet] Order confirmed successfully: " + orderId);
                 return true;
             } catch (RuntimeException e) {

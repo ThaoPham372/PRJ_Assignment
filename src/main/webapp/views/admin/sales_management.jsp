@@ -649,9 +649,9 @@
                                 </div>
                                 <div class="stat-info">
                                     <h3>
-                                        <fmt:formatNumber value="${monthlyRevenue}" pattern="#,###" /> đ
+                                        <fmt:formatNumber value="${todayRevenue}" pattern="#,###" /> đ
                                     </h3>
-                                    <p>Doanh thu</p>
+                                    <p>Doanh thu hôm nay</p>
                                 </div>
                             </div>
 
@@ -897,11 +897,11 @@
                                                         <c:when test="${order.orderStatus.toString() == 'PENDING'}">
                                                             <span class="badge badge-danger">Chờ xác nhận</span>
                                                         </c:when>
-                                                        <c:when test="${order.orderStatus.toString() == 'COMPLETED'}">
+                                                        <c:when test="${order.orderStatus.toString() == 'CONFIRMED'}">
                                                             <span class="badge badge-success">Hoàn thành</span>
                                                         </c:when>
-                                                        <c:when test="${order.orderStatus.toString() == 'CONFIRMED'}">
-                                                            <span class="badge badge-warning">Đã xác nhận</span>
+                                                        <c:when test="${order.orderStatus.toString() == 'COMPLETED'}">
+                                                            <span class="badge badge-success">Hoàn thành</span>
                                                         </c:when>
                                                         <c:when test="${order.orderStatus.toString() == 'SHIPPING'}">
                                                             <span class="badge badge-warning">Đang giao</span>
@@ -915,7 +915,7 @@
                                                     </c:choose>
                                                 </td>
                                                 <td id="order-action-${order.orderId}">
-                                                    <c:if test="${order.orderStatus.toString() != 'COMPLETED' && order.orderStatus.toString() != 'CANCELLED'}">
+                                                    <c:if test="${order.orderStatus.toString() != 'CONFIRMED' && order.orderStatus.toString() != 'COMPLETED' && order.orderStatus.toString() != 'CANCELLED'}">
                                                         <button type="button"
                                                                 class="btn btn-small confirm-order-btn" 
                                                                 style="background: #27ae60; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; border: none; cursor: pointer;"
@@ -924,7 +924,7 @@
                                                             <i class="fas fa-check"></i> Hoàn thành
                                                         </button>
                                                     </c:if>
-                                                    <c:if test="${order.orderStatus.toString() == 'COMPLETED'}">
+                                                    <c:if test="${order.orderStatus.toString() == 'CONFIRMED' || order.orderStatus.toString() == 'COMPLETED'}">
                                                         <span style="color: #27ae60; font-weight: 600;">
                                                             <i class="fas fa-check-circle"></i> Đã hoàn thành
                                                         </span>
@@ -1118,13 +1118,13 @@
                             try {
                                 const data = JSON.parse(text);
                                 if (data.success) {
-                                    // Update status badge
+                                    // Update status badge - CONFIRMED status shows as "Hoàn thành"
                                     const statusCell = document.getElementById('order-status-' + orderId);
                                     if (statusCell) {
                                         statusCell.innerHTML = '<span class="badge badge-success">Hoàn thành</span>';
                                     }
                                     
-                                    // Update action cell
+                                    // Update action cell - show "Đã hoàn thành" for CONFIRMED status
                                     const actionCell = document.getElementById('order-action-' + orderId);
                                     if (actionCell) {
                                         actionCell.innerHTML = '<span style="color: #27ae60; font-weight: 600;"><i class="fas fa-check-circle"></i> Đã hoàn thành</span>';
