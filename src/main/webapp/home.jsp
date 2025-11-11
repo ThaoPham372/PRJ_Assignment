@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %> 
 <%@ include file="/views/common/header.jsp" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <link href="${pageContext.request.contextPath}/css/home.css" rel="stylesheet" type="text/css"/>
 <main>
     <style>
@@ -157,10 +158,72 @@
       transition: all 0.3s ease;
       box-shadow: 0 8px 25px rgba(236, 139, 94, 0.4);
       animation: fadeInUp 1s ease-out 0.4s both;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
     }
 
     .hero button:hover {
       transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 12px 35px rgba(236, 139, 94, 0.5);
+    }
+
+    /* Dashboard Button Styles */
+    .dashboard-btn {
+      background: var(--gradient-accent);
+      padding: 18px 40px;
+      border: none;
+      border-radius: 50px;
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(236, 139, 94, 0.4);
+      animation: fadeInUp 1s ease-out 0.4s both;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .dashboard-btn i {
+      font-size: 1.2rem;
+    }
+
+    .dashboard-btn:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 12px 35px rgba(236, 139, 94, 0.5);
+      color: #fff;
+    }
+
+    /* Admin Dashboard Button */
+    .admin-dashboard {
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+      box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+    }
+
+    .admin-dashboard:hover {
+      box-shadow: 0 12px 35px rgba(220, 53, 69, 0.5);
+    }
+
+    /* Trainer Dashboard Button */
+    .trainer-dashboard {
+      background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+      box-shadow: 0 8px 25px rgba(23, 162, 184, 0.4);
+    }
+
+    .trainer-dashboard:hover {
+      box-shadow: 0 12px 35px rgba(23, 162, 184, 0.5);
+    }
+
+    /* Member Dashboard Button */
+    .member-dashboard {
+      background: var(--gradient-accent);
+      box-shadow: 0 8px 25px rgba(236, 139, 94, 0.4);
+    }
+
+    .member-dashboard:hover {
       box-shadow: 0 12px 35px rgba(236, 139, 94, 0.5);
     }
 
@@ -531,11 +594,57 @@
   <section class="hero">
     <h1>Chào mừng đến với GymFit</h1>
     <p>Nơi thay đổi bản thân và sức khỏe của bạn</p>
-    <button
-      onclick="window.location.href='${pageContext.request.contextPath}/views/register.jsp'"
-    >
-      Đăng ký ngay
-    </button>
+    <c:choose>
+      <c:when test="${sessionScope.user != null}">
+        <!-- User đã đăng nhập - Hiển thị nút dashboard theo role -->
+        <c:choose>
+          <c:when test="${fn:toUpperCase(sessionScope.user.role) == 'ADMIN'}">
+            <button
+              onclick="window.location.href='${pageContext.request.contextPath}/admin/dashboard'"
+              class="dashboard-btn admin-dashboard"
+            >
+              <i class="fas fa-tachometer-alt"></i>
+              Vào Dashboard Admin
+            </button>
+          </c:when>
+          <c:when test="${fn:toUpperCase(sessionScope.user.role) == 'PT' || fn:toUpperCase(sessionScope.user.role) == 'TRAINER'}">
+            <button
+              onclick="window.location.href='${pageContext.request.contextPath}/pt/dashboard'"
+              class="dashboard-btn trainer-dashboard"
+            >
+              <i class="fas fa-dumbbell"></i>
+              Vào Dashboard PT
+            </button>
+          </c:when>
+          <c:when test="${fn:toUpperCase(sessionScope.user.role) == 'MEMBER' || fn:toUpperCase(sessionScope.user.role) == 'USER'}">
+            <button
+              onclick="window.location.href='${pageContext.request.contextPath}/member/dashboard'"
+              class="dashboard-btn member-dashboard"
+            >
+              <i class="fas fa-user-circle"></i>
+              Vào Dashboard Thành Viên
+            </button>
+          </c:when>
+          <c:otherwise>
+            <button
+              onclick="window.location.href='${pageContext.request.contextPath}/member/dashboard'"
+              class="dashboard-btn member-dashboard"
+            >
+              <i class="fas fa-user-circle"></i>
+              Vào Dashboard
+            </button>
+          </c:otherwise>
+        </c:choose>
+      </c:when>
+      <c:otherwise>
+        <!-- User chưa đăng nhập - Hiển thị nút đăng ký -->
+        <button
+          onclick="window.location.href='${pageContext.request.contextPath}/views/register.jsp'"
+        >
+          Đăng ký ngay
+        </button>
+      </c:otherwise>
+    </c:choose>
   </section>
 
   <!-- SERVICES -->

@@ -679,7 +679,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
               </p>
               <div class="management-card-actions">
                 <a
-                  href="${pageContext.request.contextPath}/views/admin/trainer_management.jsp"
+                  href="${pageContext.request.contextPath}/admin/trainer-management"
                   class="btn btn-small"
                 >
                   <i class="fas fa-list"></i> Xem danh sách
