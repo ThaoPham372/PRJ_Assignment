@@ -219,21 +219,20 @@
         return;
     }
 
-    // Chat history persistence với sessionStorage - chỉ duy trì trong phiên hiện tại
-    // Tự động xóa khi đóng tab hoặc logout
-    const STORAGE_KEY = "gymfit_chat_session";
+    // Chat history persistence với localStorage để giữ lại qua các trang
+    const STORAGE_KEY = "gymfit_chat_history_v2";
     let chatHistory = [];
     let isLoading = false;
 
-    // Load history từ sessionStorage (chỉ tồn tại trong phiên)
+    // Load history từ localStorage
     function loadChatHistory() {
         try {
-            const stored = sessionStorage.getItem(STORAGE_KEY);
+            const stored = localStorage.getItem(STORAGE_KEY);
             chatHistory = stored ? JSON.parse(stored) : [];
             
-            // Giới hạn số lượng tin nhắn để tránh quá tải (max 50 tin nhắn)
-            if (chatHistory.length > 50) {
-                chatHistory = chatHistory.slice(-50);
+            // Giới hạn số lượng tin nhắn để tránh quá tải (max 100 tin nhắn)
+            if (chatHistory.length > 100) {
+                chatHistory = chatHistory.slice(-100);
                 saveChatHistory();
             }
             
@@ -245,10 +244,10 @@
         }
     }
 
-    // Save history to sessionStorage (tự động xóa khi đóng tab)
+    // Save history to localStorage
     function saveChatHistory() {
         try {
-            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory));
         } catch (e) {
             console.error("[ChatBot] Error saving chat history:", e);
         }
@@ -281,7 +280,7 @@
     function clearChatHistory() {
         if (confirm("Bạn có chắc muốn xóa toàn bộ lịch sử chat không?")) {
             chatHistory = [];
-            sessionStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(STORAGE_KEY);
             addWelcomeMessage();
         }
     }
@@ -421,9 +420,10 @@
     // Initialize chat
     loadChatHistory();
 
-    // Auto-cleanup: Xóa lịch sử khi user logout hoặc đóng tab
-    // SessionStorage tự động xóa khi đóng tab/browser
-    console.log("[ChatBot] Initialized with session-based storage");
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        saveChatHistory();
+    });
 
 })();
 </script>

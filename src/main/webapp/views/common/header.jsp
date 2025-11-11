@@ -441,7 +441,9 @@
               ${sessionScope.user.username != null ? sessionScope.user.username
               : 'User'}
             </a>
-            <a href="${pageContext.request.contextPath}/logout" class="btn"
+            <a href="${pageContext.request.contextPath}/logout" 
+               class="btn"
+               onclick="sessionStorage.removeItem('gymfit_chat_session'); return true;"
               >ĐĂNG XUẤT</a
             >
           </div>

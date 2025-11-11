@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.0" 
+             xmlns="https://jakarta.ee/xml/ns/persistence" 
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+
+  <!-- Cấu hình cho Local Development -->
+  <persistence-unit name="gymPU-local" transaction-type="RESOURCE_LOCAL">
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+
+    <!-- Danh sách entity classes -->
+    <class>model.User</class>
+    <class>model.Admin</class>
+    <class>model.Member</class>
+    <class>model.Trainer</class>
+    <class>model.GymInfo</class>
+    <class>model.Package</class>
+    <class>model.Membership</class>
+    <class>model.Payment</class>
+    <class>model.Product</class>
+    <class>model.AdvisoryRequest</class>
+    <class>model.PasswordResetToken</class>
+    <class>model.Food</class>
+    <class>model.NutritionGoal</class>
+    <class>model.UserMeal</class>
+    <class>model.schedule.PTBooking</class>
+    <class>model.schedule.TrainerSchedule</class>
+    <class>model.schedule.TrainerException</class>
+    <class>model.schedule.TimeSlot</class>
+    <class>model.shop.Order</class>
+    <class>model.shop.OrderItem</class>
+    <class>model.shop.CartItem</class>
+
+    <exclude-unlisted-classes>false</exclude-unlisted-classes>
+
+    <properties>
+      <!-- Local MySQL Database Configuration -->
+      <property name="jakarta.persistence.jdbc.url" 
+                value="jdbc:mysql://localhost:3306/gym_management_local?useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=UTC&amp;characterEncoding=UTF-8"/>
+      <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
+      <property name="jakarta.persistence.jdbc.user" value="root"/>
+      <property name="jakarta.persistence.jdbc.password" value=""/>
+      
+      <!-- Auto create/update database schema -->
+      <property name="jakarta.persistence.schema-generation.database.action" value="create"/>
+      
+      <!-- Logging -->
+      <property name="eclipselink.logging.level" value="INFO"/>
+      <property name="eclipselink.logging.level.sql" value="FINE"/>
+      <property name="eclipselink.logging.parameters" value="true"/>
+      
+      <!-- Connection Pool -->
+      <property name="eclipselink.connection-pool.default.initial" value="5"/>
+      <property name="eclipselink.connection-pool.default.min" value="5"/>
+      <property name="eclipselink.connection-pool.default.max" value="20"/>
+    </properties>
+  </persistence-unit>
+  
+  <!-- Cấu hình cho Testing -->
+  <persistence-unit name="gymPU-test" transaction-type="RESOURCE_LOCAL">
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    
+    <!-- Same entities as local -->
+    <class>model.User</class>
+    <class>model.Admin</class>
+    <class>model.Member</class>
+    <class>model.Trainer</class>
+    <class>model.GymInfo</class>
+    <class>model.Package</class>
+    <class>model.Membership</class>
+    <class>model.Payment</class>
+    <class>model.Product</class>
+    <class>model.AdvisoryRequest</class>
+    <class>model.PasswordResetToken</class>
+    <class>model.Food</class>
+    <class>model.NutritionGoal</class>
+    <class>model.UserMeal</class>
+    <class>model.schedule.PTBooking</class>
+    <class>model.schedule.TrainerSchedule</class>
+    <class>model.schedule.TrainerException</class>
+    <class>model.schedule.TimeSlot</class>
+    <class>model.shop.Order</class>
+    <class>model.shop.OrderItem</class>
+    <class>model.shop.CartItem</class>
+
+    <exclude-unlisted-classes>false</exclude-unlisted-classes>
+
+    <properties>
+      <!-- Test H2 In-Memory Database -->
+      <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1"/>
+      <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
+      <property name="jakarta.persistence.jdbc.user" value="sa"/>
+      <property name="jakarta.persistence.jdbc.password" value=""/>
+      <property name="jakarta.persistence.schema-generation.database.action" value="create"/>
+      <property name="eclipselink.logging.level" value="WARNING"/>
+    </properties>
+  </persistence-unit>
+</persistence>
