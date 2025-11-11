@@ -465,177 +465,457 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         </div>
 
         <div class="content-area">
+          <!-- Messages -->
+          <c:if test="${not empty success}">
+            <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
+              <i class="fas fa-check-circle"></i> ${success}
+            </div>
+          </c:if>
+          <c:if test="${not empty error}">
+            <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+              <i class="fas fa-exclamation-circle"></i> ${error}
+            </div>
+          </c:if>
+
           <!-- Actions Bar -->
           <div class="actions-bar">
             <input
               type="text"
               class="filter-select"
+              id="searchInput"
               placeholder="Tìm kiếm PT..."
               style="width: 250px"
+              onkeyup="filterTrainers()"
             />
-            <button class="btn" onclick="alert('Thêm PT mới')">
+            <button class="btn" onclick="openAddTrainerModal()">
               <i class="fas fa-user-plus"></i> Thêm PT mới
             </button>
           </div>
 
           <!-- Trainers Grid -->
-          <div class="trainers-grid">
-            <!-- Trainer 1 -->
-            <div class="trainer-card">
-              <div class="trainer-header">
-                <div class="trainer-avatar">
-                  <i class="fas fa-user-tie"></i>
-                </div>
-                <div class="trainer-info">
-                  <h3>Nguyễn Văn PT</h3>
-                  <p><i class="fas fa-envelope"></i> pt01@gymfit.vn</p>
-                  <p><i class="fas fa-phone"></i> 0123456789</p>
-                </div>
-              </div>
+          <div class="trainers-grid" id="trainersGrid">
+            <c:choose>
+              <c:when test="${not empty trainers}">
+                <c:forEach var="trainer" items="${trainers}">
+                  <div class="trainer-card" data-name="${trainer.name}" data-email="${trainer.email}">
+                    <div class="trainer-header">
+                      <div class="trainer-avatar">
+                        <i class="fas fa-user-tie"></i>
+                      </div>
+                      <div class="trainer-info">
+                        <h3>${trainer.name}</h3>
+                        <p><i class="fas fa-envelope"></i> ${trainer.email}</p>
+                        <c:if test="${not empty trainer.phone}">
+                          <p><i class="fas fa-phone"></i> ${trainer.phone}</p>
+                        </c:if>
+                      </div>
+                    </div>
 
-              <div class="trainer-stats">
-                <div class="stat-item">
-                  <strong>45</strong>
-                  <span>Học viên</span>
-                </div>
-                <div class="stat-item">
-                  <strong>12</strong>
-                  <span>Lớp/tuần</span>
-                </div>
-                <div class="stat-item">
-                  <strong>4.8</strong>
-                  <span>⭐ Rating</span>
-                </div>
-              </div>
+                    <div class="trainer-stats">
+                      <div class="stat-item">
+                        <strong>${trainer.specialization != null ? trainer.specialization : 'N/A'}</strong>
+                        <span>Chuyên môn</span>
+                      </div>
+                      <div class="stat-item">
+                        <strong>${trainer.yearsOfExperience != null ? trainer.yearsOfExperience : 0}</strong>
+                        <span>Năm kinh nghiệm</span>
+                      </div>
+                      <div class="stat-item">
+                        <strong>
+                          <c:choose>
+                            <c:when test="${trainer.workAt != null}">
+                              <c:forEach var="gym" items="${gyms}">
+                                <c:if test="${gym.gymId.toString() == trainer.workAt}">
+                                  ${gym.name}
+                                </c:if>
+                              </c:forEach>
+                            </c:when>
+                            <c:otherwise>N/A</c:otherwise>
+                          </c:choose>
+                        </strong>
+                        <span>Cơ sở</span>
+                      </div>
+                    </div>
 
-              <div class="trainer-schedule">
-                <h4><i class="fas fa-calendar-alt"></i> Lịch tuần này</h4>
-                <div class="schedule-item">
-                  <span>Thứ 2 - 7:00</span>
-                  <span>Yoga Morning</span>
+                    <div class="trainer-actions">
+                      <a href="${pageContext.request.contextPath}/admin/trainer-management?action=edit&id=${trainer.id}" 
+                         class="btn btn-small" style="background: #3498db; text-decoration: none;">
+                        <i class="fas fa-edit"></i> Sửa
+                      </a>
+                      <button class="btn btn-small" style="background: #e74c3c" onclick="deleteTrainer(${trainer.id})">
+                        <i class="fas fa-trash"></i> Xóa
+                      </button>
+                    </div>
+                  </div>
+                </c:forEach>
+              </c:when>
+              <c:otherwise>
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-light);">
+                  <i class="fas fa-user-slash" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                  <p>Chưa có PT nào trong hệ thống</p>
                 </div>
-                <div class="schedule-item">
-                  <span>Thứ 4 - 18:00</span>
-                  <span>Cardio Blast</span>
-                </div>
-                <div class="schedule-item">
-                  <span>Thứ 6 - 19:00</span>
-                  <span>Group Training</span>
-                </div>
-              </div>
-
-              <div class="trainer-actions">
-                <button class="btn btn-small" style="background: #3498db">
-                  <i class="fas fa-edit"></i> Sửa
-                </button>
-                <button class="btn btn-small" style="background: #f39c12">
-                  <i class="fas fa-calendar"></i> Lịch
-                </button>
-              </div>
-            </div>
-
-            <!-- Trainer 2 -->
-            <div class="trainer-card">
-              <div class="trainer-header">
-                <div class="trainer-avatar">
-                  <i class="fas fa-user-tie"></i>
-                </div>
-                <div class="trainer-info">
-                  <h3>Trần Thị Coach</h3>
-                  <p><i class="fas fa-envelope"></i> coach02@gymfit.vn</p>
-                  <p><i class="fas fa-phone"></i> 0987654321</p>
-                </div>
-              </div>
-
-              <div class="trainer-stats">
-                <div class="stat-item">
-                  <strong>38</strong>
-                  <span>Học viên</span>
-                </div>
-                <div class="stat-item">
-                  <strong>10</strong>
-                  <span>Lớp/tuần</span>
-                </div>
-                <div class="stat-item">
-                  <strong>4.9</strong>
-                  <span>⭐ Rating</span>
-                </div>
-              </div>
-
-              <div class="trainer-schedule">
-                <h4><i class="fas fa-calendar-alt"></i> Lịch tuần này</h4>
-                <div class="schedule-item">
-                  <span>Thứ 3 - 6:00</span>
-                  <span>Spin Class</span>
-                </div>
-                <div class="schedule-item">
-                  <span>Thứ 5 - 17:00</span>
-                  <span>Zumba Dance</span>
-                </div>
-              </div>
-
-              <div class="trainer-actions">
-                <button class="btn btn-small" style="background: #3498db">
-                  <i class="fas fa-edit"></i> Sửa
-                </button>
-                <button class="btn btn-small" style="background: #f39c12">
-                  <i class="fas fa-calendar"></i> Lịch
-                </button>
-              </div>
-            </div>
-
-            <!-- Trainer 3 -->
-            <div class="trainer-card">
-              <div class="trainer-header">
-                <div class="trainer-avatar">
-                  <i class="fas fa-user-tie"></i>
-                </div>
-                <div class="trainer-info">
-                  <h3>Lê Văn Trainer</h3>
-                  <p><i class="fas fa-envelope"></i> trainer03@gymfit.vn</p>
-                  <p><i class="fas fa-phone"></i> 0369852147</p>
-                </div>
-              </div>
-
-              <div class="trainer-stats">
-                <div class="stat-item">
-                  <strong>52</strong>
-                  <span>Học viên</span>
-                </div>
-                <div class="stat-item">
-                  <strong>15</strong>
-                  <span>Lớp/tuần</span>
-                </div>
-                <div class="stat-item">
-                  <strong>5.0</strong>
-                  <span>⭐ Rating</span>
-                </div>
-              </div>
-
-              <div class="trainer-schedule">
-                <h4><i class="fas fa-calendar-alt"></i> Lịch tuần này</h4>
-                <div class="schedule-item">
-                  <span>Thứ 2-6 - 5:00</span>
-                  <span>Boot Camp</span>
-                </div>
-                <div class="schedule-item">
-                  <span>Thứ 7 - 8:00</span>
-                  <span>CrossFit</span>
-                </div>
-              </div>
-
-              <div class="trainer-actions">
-                <button class="btn btn-small" style="background: #3498db">
-                  <i class="fas fa-edit"></i> Sửa
-                </button>
-                <button class="btn btn-small" style="background: #f39c12">
-                  <i class="fas fa-calendar"></i> Lịch
-                </button>
-              </div>
-            </div>
+              </c:otherwise>
+            </c:choose>
           </div>
         </div>
       </main>
     </div>
+
+    <!-- Add/Edit Trainer Modal -->
+    <div class="modal" id="trainerModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+      <div class="modal-content" style="background: white; padding: 30px; border-radius: 15px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 id="trainerModalTitle">Thêm PT mới</h2>
+          <button onclick="closeModal('trainerModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <form action="${pageContext.request.contextPath}/admin/trainer-management" method="post" id="trainerForm">
+          <input type="hidden" name="action" id="trainerAction" value="add" />
+          <input type="hidden" name="id" id="trainerId" value="${editTrainer != null ? editTrainer.id : ''}" />
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Họ và tên *</label>
+            <input type="text" name="name" class="filter-select" style="width: 100%;" value="${editTrainer != null ? editTrainer.name : ''}" required />
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Email *</label>
+            <input type="email" name="email" class="filter-select" style="width: 100%;" value="${editTrainer != null ? editTrainer.email : ''}" required />
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Số điện thoại *</label>
+            <input type="text" name="phone" id="phoneInput" class="filter-select" style="width: 100%;" 
+                   value="${editTrainer != null ? editTrainer.phone : ''}" 
+                   pattern="[0-9]{10,11}" 
+                   title="Số điện thoại phải có 10-11 chữ số" 
+                   required />
+            <small style="color: #666;">Nhập số điện thoại 10-11 chữ số</small>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Username *</label>
+            <input type="text" name="username" id="usernameInput" class="filter-select" style="width: 100%;" 
+                   value="${editTrainer != null ? editTrainer.username : ''}" 
+                   pattern="[a-zA-Z0-9_]{3,20}" 
+                   title="Username phải có 3-20 ký tự, chỉ chứa chữ, số và dấu gạch dưới" 
+                   required />
+            <small style="color: #666;">3-20 ký tự, chỉ chứa chữ, số và _</small>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Mật khẩu <span id="passwordRequired">*</span></label>
+            <input type="password" name="password" id="passwordInput" class="filter-select" style="width: 100%;" 
+                   minlength="6" 
+                   title="Mật khẩu phải có ít nhất 6 ký tự" />
+            <small style="color: #666;" id="passwordHelp">(Mật khẩu tối thiểu 6 ký tự. Để trống nếu không muốn đổi mật khẩu khi sửa)</small>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Chuyên môn</label>
+            <input type="text" name="specialization" class="filter-select" style="width: 100%;" value="${editTrainer != null ? editTrainer.specialization : ''}" />
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Số năm kinh nghiệm</label>
+            <input type="number" name="yearsOfExperience" class="filter-select" style="width: 100%;" min="0" value="${editTrainer != null ? editTrainer.yearsOfExperience : ''}" />
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Trình độ chứng chỉ</label>
+            <input type="text" name="certificationLevel" class="filter-select" style="width: 100%;" value="${editTrainer != null ? editTrainer.certificationLevel : ''}" />
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Lương</label>
+            <input type="number" name="salary" class="filter-select" style="width: 100%;" step="0.01" min="0" value="${editTrainer != null ? editTrainer.salary : ''}" />
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Cơ sở làm việc *</label>
+            <select name="workAt" id="workAtSelect" class="filter-select" style="width: 100%;" required>
+              <option value="">-- Chọn cơ sở --</option>
+              <c:forEach var="gym" items="${gyms}">
+                <option value="${gym.gymId}" 
+                  <c:if test="${editTrainer != null && editTrainer.workAt != null && (editTrainer.workAt == gym.gymId.toString() || editTrainer.workAt.equals(gym.gymId.toString()))}">selected</c:if>>
+                  ${gym.name}<c:if test="${gym.address != null && !gym.address.isEmpty()}"> - ${gym.address}</c:if>
+                </option>
+              </c:forEach>
+            </select>
+            <small style="color: #666;">Chọn cơ sở gym mà PT sẽ làm việc</small>
+          </div>
+          
+          <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+            <button type="button" class="btn btn-outline" onclick="closeModal('trainerModal')">Hủy</button>
+            <button type="submit" class="btn" onclick="return validateTrainerForm()">Lưu</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Schedule Modal -->
+    <div class="modal" id="scheduleModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+      <div class="modal-content" style="background: white; padding: 30px; border-radius: 15px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2>Quản lý lịch PT</h2>
+          <button onclick="closeModal('scheduleModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        
+        <div id="scheduleList" style="margin-bottom: 20px;">
+          <h3 style="margin-bottom: 15px;">Lịch hiện tại</h3>
+          <div id="scheduleItems">
+            <c:if test="${not empty viewSchedules}">
+              <c:forEach var="schedule" items="${viewSchedules}">
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <strong>${schedule.dayOfWeek.displayName}</strong> - 
+                    <c:forEach var="slot" items="${timeSlots}">
+                      <c:if test="${slot.slotId == schedule.slotId}">
+                        ${slot.slotName} (${slot.startTime} - ${slot.endTime})
+                      </c:if>
+                    </c:forEach>
+                    <br/>
+                    <small style="color: #666;">
+                      Cơ sở: 
+                      <c:forEach var="gym" items="${gyms}">
+                        <c:if test="${gym.gymId.intValue() == schedule.gymId}">
+                          ${gym.name}
+                        </c:if>
+                      </c:forEach>
+                      | Trạng thái: ${schedule.isAvailable ? 'Có sẵn' : 'Không có sẵn'}
+                    </small>
+                  </div>
+                  <button class="btn btn-small" style="background: #e74c3c; padding: 5px 10px;" onclick="deleteSchedule(${schedule.scheduleId})">
+                    <i class="fas fa-trash"></i> Xóa
+                  </button>
+                </div>
+              </c:forEach>
+            </c:if>
+            <c:if test="${empty viewSchedules}">
+              <p style="color: #666; text-align: center; padding: 20px;">Chưa có lịch nào</p>
+            </c:if>
+          </div>
+        </div>
+        
+        <h3 style="margin-bottom: 15px;">Thêm lịch mới</h3>
+        <form action="${pageContext.request.contextPath}/admin/trainer-management" method="post" id="scheduleForm">
+          <input type="hidden" name="action" value="addSchedule" />
+          <input type="hidden" name="trainerId" id="scheduleTrainerId" />
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Cơ sở *</label>
+            <select name="gymId" class="filter-select" style="width: 100%;" required>
+              <option value="">-- Chọn cơ sở --</option>
+              <c:forEach var="gym" items="${gyms}">
+                <option value="${gym.gymId}">${gym.name}</option>
+              </c:forEach>
+            </select>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Thứ trong tuần *</label>
+            <select name="dayOfWeek" class="filter-select" style="width: 100%;" required>
+              <option value="">-- Chọn thứ --</option>
+              <option value="MONDAY">Thứ Hai</option>
+              <option value="TUESDAY">Thứ Ba</option>
+              <option value="WEDNESDAY">Thứ Tư</option>
+              <option value="THURSDAY">Thứ Năm</option>
+              <option value="FRIDAY">Thứ Sáu</option>
+              <option value="SATURDAY">Thứ Bảy</option>
+              <option value="SUNDAY">Chủ Nhật</option>
+            </select>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Ca tập *</label>
+            <select name="slotId" class="filter-select" style="width: 100%;" required>
+              <option value="">-- Chọn ca tập --</option>
+              <c:forEach var="slot" items="${timeSlots}">
+                <option value="${slot.slotId}">${slot.slotName} (${slot.startTime} - ${slot.endTime})</option>
+              </c:forEach>
+            </select>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Số lượng đặt tối đa</label>
+            <input type="number" name="maxBookings" class="filter-select" style="width: 100%;" value="1" min="1" />
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Ghi chú</label>
+            <textarea name="notes" class="filter-select" style="width: 100%;" rows="3"></textarea>
+          </div>
+          
+          <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+            <button type="button" class="btn btn-outline" onclick="closeModal('scheduleModal')">Đóng</button>
+            <button type="submit" class="btn">Thêm lịch</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const contextPath = "${pageContext.request.contextPath}";
+      
+      function filterTrainers() {
+        const input = document.getElementById('searchInput');
+        const filter = input.value.toLowerCase();
+        const cards = document.querySelectorAll('.trainer-card');
+        
+        cards.forEach(card => {
+          const name = card.getAttribute('data-name')?.toLowerCase() || '';
+          const email = card.getAttribute('data-email')?.toLowerCase() || '';
+          if (name.includes(filter) || email.includes(filter)) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      }
+      
+      function openAddTrainerModal() {
+        document.getElementById('trainerModalTitle').textContent = 'Thêm PT mới';
+        document.getElementById('trainerAction').value = 'add';
+        document.getElementById('trainerId').value = '';
+        document.getElementById('trainerForm').reset();
+        document.getElementById('passwordRequired').style.display = '';
+        document.getElementById('passwordInput').required = true;
+        document.getElementById('passwordInput').minLength = 6;
+        document.getElementById('trainerModal').style.display = 'flex';
+      }
+      
+      function validateTrainerForm() {
+        const form = document.getElementById('trainerForm');
+        const action = document.getElementById('trainerAction').value;
+        
+        // Validate required fields
+        const name = form.querySelector('input[name="name"]').value.trim();
+        const email = form.querySelector('input[name="email"]').value.trim();
+        const username = form.querySelector('input[name="username"]').value.trim();
+        const phone = form.querySelector('input[name="phone"]').value.trim();
+        const password = form.querySelector('input[name="password"]').value;
+        const workAt = form.querySelector('select[name="workAt"]').value;
+        
+        if (!name) {
+          alert('Vui lòng nhập họ và tên');
+          return false;
+        }
+        
+        if (!email) {
+          alert('Vui lòng nhập email');
+          return false;
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          alert('Email không hợp lệ');
+          return false;
+        }
+        
+        if (!username) {
+          alert('Vui lòng nhập username');
+          return false;
+        }
+        
+        // Validate username format
+        const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+        if (!usernameRegex.test(username)) {
+          alert('Username phải có 3-20 ký tự, chỉ chứa chữ, số và dấu gạch dưới');
+          return false;
+        }
+        
+        if (!phone) {
+          alert('Vui lòng nhập số điện thoại');
+          return false;
+        }
+        
+        // Validate phone format (10-11 digits)
+        const phoneRegex = /^[0-9]{10,11}$/;
+        if (!phoneRegex.test(phone)) {
+          alert('Số điện thoại phải có 10-11 chữ số');
+          return false;
+        }
+        
+        // Validate password for add action
+        if (action === 'add') {
+          if (!password) {
+            alert('Vui lòng nhập mật khẩu');
+            return false;
+          }
+          if (password.length < 6) {
+            alert('Mật khẩu phải có ít nhất 6 ký tự');
+            return false;
+          }
+        }
+        
+        if (!workAt) {
+          alert('Vui lòng chọn cơ sở làm việc');
+          return false;
+        }
+        
+        return true;
+      }
+      
+      function deleteSchedule(scheduleId) {
+        if (confirm('Bạn có chắc chắn muốn xóa lịch này?')) {
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = `${contextPath}/admin/trainer-management`;
+          
+          const actionInput = document.createElement('input');
+          actionInput.type = 'hidden';
+          actionInput.name = 'action';
+          actionInput.value = 'deleteSchedule';
+          form.appendChild(actionInput);
+          
+          const idInput = document.createElement('input');
+          idInput.type = 'hidden';
+          idInput.name = 'scheduleId';
+          idInput.value = scheduleId;
+          form.appendChild(idInput);
+          
+          document.body.appendChild(form);
+          form.submit();
+        }
+      }
+      
+      function deleteTrainer(trainerId) {
+        if (confirm('Bạn có chắc chắn muốn xóa PT này? (PT sẽ được đánh dấu là INACTIVE)')) {
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = `${contextPath}/admin/trainer-management`;
+          
+          const actionInput = document.createElement('input');
+          actionInput.type = 'hidden';
+          actionInput.name = 'action';
+          actionInput.value = 'delete';
+          form.appendChild(actionInput);
+          
+          const idInput = document.createElement('input');
+          idInput.type = 'hidden';
+          idInput.name = 'id';
+          idInput.value = trainerId;
+          form.appendChild(idInput);
+          
+          document.body.appendChild(form);
+          form.submit();
+        }
+      }
+      
+      
+      function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+      }
+      
+      // Close modal when clicking outside
+      window.onclick = function(event) {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+          if (event.target === modal) {
+            modal.style.display = 'none';
+          }
+        });
+      }
+    </script>
   </body>
 </html>

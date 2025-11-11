@@ -7,14 +7,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import model.Product;
 import model.ProductType;
+import model.shop.Order;
 import model.shop.OrderItem;
 import model.shop.OrderStatus;
-import service.OrderItemService;
 import service.OrderService;
 import service.ProductService;
+import dao.shop.OrderItemDao;
+import dao.shop.OrderDao;
 
 /*
     Note: 
@@ -22,10 +25,14 @@ import service.ProductService;
 @WebServlet(name = "SalesManagementServlet", urlPatterns = "/admin/sales-management")
 public class SalesManagementServlet extends HttpServlet {
 
-    ProductService productService = new ProductService();
-    OrderItemService orderItemService = new OrderItemService();
+    private final ProductService productService;
+    private final OrderService orderService;
 
-    // TODO: Tách products và orderItems
+    public SalesManagementServlet() {
+        this.productService = new ProductService();
+        this.orderService = new OrderService();
+    }
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String action = req.getParameter("action");
@@ -33,23 +40,81 @@ public class SalesManagementServlet extends HttpServlet {
             action = "";
 
         List<Product> products = getProducts();
-        List<OrderItem> orderItems = orderItemService.getAll();
+        List<Order> orders = orderService.getAll();
+        
+        // Load order items for each order
+        loadOrderItemsForOrders(orders);
 
-        loadDashboardMetrics(req, products);
+        // Load metrics from real data
+        loadDashboardMetrics(req, products, orders);
 
         switch (action) {
             case "deleteProduct" -> {
                 int productId = Integer.parseInt(req.getParameter("productId"));
                 handleDeleteProduct(products, productId);
+                // Redirect back to products tab
+                resp.sendRedirect(req.getContextPath() + "/admin/sales-management?tab=products&success=Sản phẩm đã được vô hiệu hóa!");
+                return;
+            }
+            case "activateProduct" -> {
+                int productId = Integer.parseInt(req.getParameter("productId"));
+                handleActivateProduct(productId);
+                // Redirect back to products tab
+                resp.sendRedirect(req.getContextPath() + "/admin/sales-management?tab=products&success=Sản phẩm đã được kích hoạt thành công!");
+                return;
             }
             case "confirmOrder" -> {
-                int orderId = Integer.parseInt(req.getParameter("orderId"));
-                System.out.println("\n\n\n" + orderId);
-                handleConfirmOrder(orderItems, orderId);
+                // Check if this is an AJAX request
+                String ajax = req.getParameter("ajax");
+                if ("true".equals(ajax)) {
+                    // Handle AJAX request - return JSON
+                    handleConfirmOrderAjax(req, resp);
+                    return;
+                } else {
+                    // Handle regular request - redirect
+                    try {
+                        int orderId = Integer.parseInt(req.getParameter("orderId"));
+                        boolean success = handleConfirmOrder(orderId);
+                        // Redirect to keep on orders tab with success message
+                        if (success) {
+                            String successMsg = java.net.URLEncoder.encode("Xác nhận đơn hàng thành công!", "UTF-8");
+                            resp.sendRedirect(req.getContextPath() + "/admin/sales-management?tab=orders&success=" + successMsg);
+                        } else {
+                            String errorMsg = java.net.URLEncoder.encode("Không thể xác nhận đơn hàng. Vui lòng thử lại!", "UTF-8");
+                            resp.sendRedirect(req.getContextPath() + "/admin/sales-management?tab=orders&error=" + errorMsg);
+                        }
+                    } catch (NumberFormatException e) {
+                        String errorMsg = java.net.URLEncoder.encode("Mã đơn hàng không hợp lệ!", "UTF-8");
+                        resp.sendRedirect(req.getContextPath() + "/admin/sales-management?tab=orders&error=" + errorMsg);
+                    } catch (Exception e) {
+                        System.err.println("[SalesManagementServlet] Error in confirmOrder action: " + e.getMessage());
+                        e.printStackTrace();
+                        String errorMsg = java.net.URLEncoder.encode("Lỗi khi xác nhận đơn hàng: " + e.getMessage(), "UTF-8");
+                        resp.sendRedirect(req.getContextPath() + "/admin/sales-management?tab=orders&error=" + errorMsg);
+                    }
+                    return;
+                }
             }
         }
 
-        req.setAttribute("orderItems", orderItems);
+        // Set active tab from request parameter
+        String activeTab = req.getParameter("tab");
+        if (activeTab == null || activeTab.isEmpty()) {
+            activeTab = "products";
+        }
+        req.setAttribute("activeTab", activeTab);
+        
+        // Get messages from request parameters (for redirect messages)
+        String success = req.getParameter("success");
+        String error = req.getParameter("error");
+        if (success != null && !success.isEmpty()) {
+            req.setAttribute("success", success);
+        }
+        if (error != null && !error.isEmpty()) {
+            req.setAttribute("error", error);
+        }
+
+        req.setAttribute("orders", orders);
         req.setAttribute("products", products);
 
         req.getRequestDispatcher("/views/admin/sales_management.jsp").forward(req, resp);
@@ -75,7 +140,12 @@ public class SalesManagementServlet extends HttpServlet {
             }
         }
 
-        resp.sendRedirect(req.getContextPath() + "/admin/sales-management");
+        // Redirect with active tab parameter
+        String activeTab = req.getParameter("activeTab");
+        if (activeTab == null || activeTab.isEmpty()) {
+            activeTab = "products";
+        }
+        resp.sendRedirect(req.getContextPath() + "/admin/sales-management?tab=" + activeTab);
     }
 
     private void handleEditProduct(HttpServletRequest req, HttpServletResponse resp) {
@@ -96,16 +166,46 @@ public class SalesManagementServlet extends HttpServlet {
         productService.update(product);
     }
 
-    private int getMonthlyOrderCount(List<Product> products) {
-        return 666;
+    /**
+     * Tính số đơn hàng trong tháng hiện tại
+     */
+    private int getMonthlyOrderCount(List<Order> orders) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfMonth = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        
+        return (int) orders.stream()
+                .filter(order -> order.getCreatedAt() != null && 
+                        !order.getCreatedAt().isBefore(startOfMonth) &&
+                        !order.getCreatedAt().isAfter(now))
+                .count();
     }
 
-    private double getMonthlyRevenue(List<Product> products) {
-        return 666d;
+    /**
+     * Tính doanh thu trong tháng hiện tại từ các đơn hàng đã hoàn thành
+     */
+    private double getMonthlyRevenue(List<Order> orders) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfMonth = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        
+        BigDecimal revenue = orders.stream()
+                .filter(order -> order.getCreatedAt() != null && 
+                        !order.getCreatedAt().isBefore(startOfMonth) &&
+                        !order.getCreatedAt().isAfter(now) &&
+                        order.getOrderStatus() == OrderStatus.COMPLETED &&
+                        order.getTotalAmount() != null)
+                .map(Order::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        return revenue.doubleValue();
     }
 
+    /**
+     * Đếm số sản phẩm sắp hết hàng (stock < 10)
+     */
     private int getLowStockCount(List<Product> products) {
-        return 666;
+        return (int) products.stream()
+                .filter(p -> p.getStockQuantity() != null && p.getStockQuantity() < 10)
+                .count();
     }
 
     private void handleAddProduct(HttpServletRequest req, HttpServletResponse resp) {
@@ -117,25 +217,35 @@ public class SalesManagementServlet extends HttpServlet {
         productService.add(product);
     }
 
+    /**
+     * Xóa sản phẩm (set active = false)
+     */
     private void handleDeleteProduct(List<Product> products, int id) {
-        for (Product p : products) {
-            if (p.getId() == id) {
-                p.setActive(false);
-                productService.update(p);
-                break;
-            }
+        Product product = productService.getById(id);
+        if (product != null) {
+            product.setActive(false);
+            productService.update(product);
         }
     }
 
-    private List<Product> getProductsActive(List<Product> products) {
-        products.removeIf(p -> !p.getActive());
-        return products;
+    /**
+     * Kích hoạt lại sản phẩm (set active = true)
+     */
+    private void handleActivateProduct(int productId) {
+        Product product = productService.getById(productId);
+        if (product != null) {
+            product.setActive(true);
+            productService.update(product);
+        }
     }
 
-    private void loadDashboardMetrics(HttpServletRequest req, List<Product> products) {
-        int productCount = products.size(); // Số lượng sản phẩm
-        int monthlyOrderCount = getMonthlyOrderCount(products); // Số đơn hàng tháng này
-        double monthlyRevenue = getMonthlyRevenue(products); // Doanh thu tháng này
+    /**
+     * Load dashboard metrics từ dữ liệu thật
+     */
+    private void loadDashboardMetrics(HttpServletRequest req, List<Product> products, List<Order> orders) {
+        int productCount = products.size();
+        int monthlyOrderCount = getMonthlyOrderCount(orders);
+        double monthlyRevenue = getMonthlyRevenue(orders);
         int lowStockCount = getLowStockCount(products);
 
         req.setAttribute("productCount", productCount);
@@ -144,20 +254,112 @@ public class SalesManagementServlet extends HttpServlet {
         req.setAttribute("lowStockCount", lowStockCount);
     }
 
+    /**
+     * Lấy tất cả sản phẩm (bao gồm cả inactive)
+     */
     private List<Product> getProducts() {
-        List<Product> products = productService.getAll();
-        products = getProductsActive(products);
-        return products;
+        return productService.getAll();
     }
 
-    private void handleConfirmOrder(List<OrderItem> orderItems, int orderId) {
-        for (OrderItem o : orderItems) {
-            if (o.getOrder().getOrderId() == orderId) {
-                o.getOrder().setOrderStatus(OrderStatus.COMPLETED);
-                System.out.println("OD status : " + o.getOrder().getOrderStatus());
-                new OrderService().update(o.getOrder());
-                break;
+    /**
+     * Load order items cho mỗi order
+     */
+    private void loadOrderItemsForOrders(List<Order> orders) {
+        OrderItemDao orderItemDao = new OrderItemDao();
+        for (Order order : orders) {
+            if (order.getOrderId() != null) {
+                List<OrderItem> items = orderItemDao.findByOrderId(order.getOrderId());
+                if (items != null) {
+                    order.setItems(items);
+                }
             }
         }
     }
+
+    /**
+     * Xử lý AJAX request để xác nhận đơn hàng
+     */
+    private void handleConfirmOrderAjax(HttpServletRequest req, HttpServletResponse resp) 
+            throws ServletException, IOException {
+        resp.setContentType("application/json;charset=UTF-8");
+        resp.setCharacterEncoding("UTF-8");
+        
+        // Enable CORS if needed
+        resp.setHeader("Access-Control-Allow-Origin", "*");
+        
+        try {
+            String orderIdParam = req.getParameter("orderId");
+            System.out.println("[SalesManagementServlet] AJAX confirmOrder - orderId: " + orderIdParam);
+            
+            if (orderIdParam == null || orderIdParam.trim().isEmpty()) {
+                resp.getWriter().write("{\"success\": false, \"message\": \"Mã đơn hàng không được để trống!\"}");
+                return;
+            }
+            
+            int orderId = Integer.parseInt(orderIdParam);
+            boolean success = handleConfirmOrder(orderId);
+            
+            System.out.println("[SalesManagementServlet] AJAX confirmOrder - result: " + success);
+            
+            if (success) {
+                // Return success JSON
+                String jsonResponse = "{\"success\": true, \"message\": \"Đơn hàng đã được hoàn thành thành công!\"}";
+                resp.getWriter().write(jsonResponse);
+                System.out.println("[SalesManagementServlet] AJAX response: " + jsonResponse);
+            } else {
+                // Return error JSON
+                String jsonResponse = "{\"success\": false, \"message\": \"Không thể hoàn thành đơn hàng. Vui lòng thử lại!\"}";
+                resp.getWriter().write(jsonResponse);
+                System.out.println("[SalesManagementServlet] AJAX response: " + jsonResponse);
+            }
+        } catch (NumberFormatException e) {
+            System.err.println("[SalesManagementServlet] NumberFormatException: " + e.getMessage());
+            resp.getWriter().write("{\"success\": false, \"message\": \"Mã đơn hàng không hợp lệ!\"}");
+        } catch (Exception e) {
+            System.err.println("[SalesManagementServlet] Error in confirmOrder AJAX: " + e.getMessage());
+            e.printStackTrace();
+            String errorMessage = e.getMessage() != null ? e.getMessage().replace("\"", "\\\"") : "Unknown error";
+            resp.getWriter().write("{\"success\": false, \"message\": \"Lỗi khi xử lý: " + errorMessage + "\"}");
+        } finally {
+            resp.getWriter().flush();
+        }
+    }
+
+    /**
+     * Xác nhận đơn hàng - cập nhật trạng thái thành COMPLETED
+     * @return true nếu thành công, false nếu không tìm thấy đơn hàng hoặc có lỗi
+     */
+    private boolean handleConfirmOrder(int orderId) {
+        try {
+            Order order = orderService.getOrderById(orderId);
+            if (order == null) {
+                System.err.println("[SalesManagementServlet] Order not found: " + orderId);
+                return false;
+            }
+            
+            // Kiểm tra trạng thái hiện tại
+            if (order.getOrderStatus() == OrderStatus.COMPLETED) {
+                System.out.println("[SalesManagementServlet] Order already completed: " + orderId);
+                return true; // Đã completed rồi, coi như thành công
+            }
+            
+            // Sử dụng OrderDao.updateOrderStatus để đảm bảo update đúng cách
+            OrderDao orderDao = new OrderDao();
+            try {
+                orderDao.updateOrderStatus(orderId, OrderStatus.COMPLETED);
+                System.out.println("[SalesManagementServlet] Order confirmed successfully: " + orderId);
+                return true;
+            } catch (RuntimeException e) {
+                System.err.println("[SalesManagementServlet] Failed to update order status: " + orderId);
+                System.err.println("[SalesManagementServlet] Error: " + e.getMessage());
+                e.printStackTrace();
+                return false;
+            }
+        } catch (Exception e) {
+            System.err.println("[SalesManagementServlet] Error confirming order: " + orderId);
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
+

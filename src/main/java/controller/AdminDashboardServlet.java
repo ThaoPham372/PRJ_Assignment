@@ -11,7 +11,6 @@ import java.io.IOException;
         "/admin/home",
         "/admin/dashboard",
         "/admin/service-schedule",
-        "/admin/trainer-management",
         "/admin/order-management",
         "/admin/payment-finance"
 })
@@ -35,8 +34,6 @@ public class AdminDashboardServlet extends HttpServlet {
 
             case "/admin/service-schedule" ->
                 jspPath = "/views/admin/service_schedule.jsp";
-            case "/admin/trainer-management" ->
-                jspPath = "/views/admin/trainer_management.jsp";
             case "/admin/order-management" ->
                 jspPath = "/views/admin/order_management.jsp";
             case "/admin/payment-finance" ->
