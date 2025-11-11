@@ -94,6 +94,30 @@ public class CheckoutServlet extends HttpServlet {
         String deliveryMethodStr = request.getParameter("deliveryMethod");
         String paymentMethodStr = request.getParameter("paymentMethod");
         
+        // If deliveryName is empty, null, or "khách hàng", get from member
+        if (deliveryName == null || deliveryName.trim().isEmpty() || 
+            "khách hàng".equalsIgnoreCase(deliveryName.trim()) || 
+            "Khách hàng".equals(deliveryName.trim())) {
+            try {
+                // Get member/user name from database
+                dao.UserDAO userDAO = new dao.UserDAO();
+                model.User user = userDAO.findById(userIdInt);
+                if (user != null && user.getName() != null && !user.getName().trim().isEmpty()) {
+                    deliveryName = user.getName();
+                    System.out.println("[CheckoutServlet] Using member name from database: " + deliveryName);
+                } else {
+                    // Fallback: if user name is also empty, use a default
+                    deliveryName = "Khách hàng";
+                    System.out.println("[CheckoutServlet] User name not found, using default: " + deliveryName);
+                }
+            } catch (Exception e) {
+                System.err.println("[CheckoutServlet] Error getting user name: " + e.getMessage());
+                e.printStackTrace();
+                // Fallback to default if error occurs
+                deliveryName = "Khách hàng";
+            }
+        }
+        
         // Validation
         if (deliveryName == null || deliveryName.trim().isEmpty() ||
             deliveryPhone == null || deliveryPhone.trim().isEmpty() ||

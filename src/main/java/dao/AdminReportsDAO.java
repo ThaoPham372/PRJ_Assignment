@@ -162,6 +162,106 @@ public List<ChartData> getMonthlyRevenueNative(String startDateStr) {
 }
 
 /**
+ * Get revenue by day for current month (GMT+7)
+ * Returns list of ChartData with date label and revenue amount
+ */
+@SuppressWarnings("unchecked")
+public List<ChartData> getRevenueByDayCurrentMonth() {
+    try {
+        // Get current month start and end in GMT+7
+        java.time.ZoneId vietnamZone = java.time.ZoneId.of("Asia/Ho_Chi_Minh");
+        java.time.LocalDate nowVietnam = java.time.LocalDate.now(vietnamZone);
+        java.time.LocalDate startOfMonth = nowVietnam.withDayOfMonth(1);
+        java.time.ZonedDateTime startOfMonthVietnam = startOfMonth.atStartOfDay(vietnamZone);
+        java.time.ZonedDateTime endOfMonthVietnam = nowVietnam.plusDays(1).atStartOfDay(vietnamZone);
+        
+        // Convert to UTC for database comparison
+        java.time.ZoneId utcZone = java.time.ZoneId.of("UTC");
+        java.time.ZonedDateTime startUTC = startOfMonthVietnam.withZoneSameInstant(utcZone);
+        java.time.ZonedDateTime endUTC = endOfMonthVietnam.withZoneSameInstant(utcZone);
+        
+        Date startDate = Date.from(startUTC.toInstant());
+        Date endDate = Date.from(endUTC.toInstant());
+        
+        String sql = "SELECT DATE(COALESCE(p.paid_at, p.payment_date)) as day_date, " +
+                     "COALESCE(SUM(p.amount), 0) as total_amount " +
+                     "FROM payments p " +
+                     "WHERE p.status = 'PAID' " +
+                     "AND (p.paid_at IS NOT NULL OR p.payment_date IS NOT NULL) " +
+                     "AND COALESCE(p.paid_at, p.payment_date) >= ?1 " +
+                     "AND COALESCE(p.paid_at, p.payment_date) < ?2 " +
+                     "GROUP BY day_date " +
+                     "ORDER BY day_date ASC";
+
+        Query query = em.createNativeQuery(sql);
+        query.setParameter(1, startDate, TemporalType.TIMESTAMP);
+        query.setParameter(2, endDate, TemporalType.TIMESTAMP);
+
+        List<Object[]> results = query.getResultList();
+        java.util.Map<String, BigDecimal> revenueMap = new java.util.HashMap<>();
+        for (Object[] row : results) {
+            if (row[0] != null && row[1] != null) {
+                String dateStr = row[0].toString();
+                BigDecimal amount = (BigDecimal) row[1];
+                revenueMap.put(dateStr, amount != null ? amount : BigDecimal.ZERO);
+            }
+        }
+        
+        // Create full month data (all days in current month)
+        List<ChartData> chartData = new ArrayList<>();
+        java.time.LocalDate day = startOfMonth;
+        while (!day.isAfter(nowVietnam)) {
+            String dateKey = day.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            BigDecimal amount = revenueMap.getOrDefault(dateKey, BigDecimal.ZERO);
+            chartData.add(new ChartData(dateKey, amount));
+            day = day.plusDays(1);
+        }
+        
+        return chartData;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return new ArrayList<>();
+    }
+}
+
+/**
+ * Get revenue by year (GMT+7)
+ * Returns list of ChartData with year label and revenue amount
+ */
+@SuppressWarnings("unchecked")
+public List<ChartData> getRevenueByYear(int years) {
+    try {
+        // Use native SQL with CONVERT_TZ for GMT+7 timezone
+        String sql = "SELECT DATE_FORMAT(CONVERT_TZ(COALESCE(p.paid_at, p.payment_date), '+00:00', '+07:00'), '%Y') as year_str, " +
+                     "COALESCE(SUM(p.amount), 0) as total_amount " +
+                     "FROM payments p " +
+                     "WHERE p.status = 'PAID' " +
+                     "AND (p.paid_at IS NOT NULL OR p.payment_date IS NOT NULL) " +
+                     "AND CONVERT_TZ(COALESCE(p.paid_at, p.payment_date), '+00:00', '+07:00') >= DATE_SUB(CONVERT_TZ(NOW(), '+00:00', '+07:00'), INTERVAL ?1 YEAR) " +
+                     "GROUP BY year_str " +
+                     "ORDER BY year_str ASC";
+
+        Query query = em.createNativeQuery(sql);
+        query.setParameter(1, years);
+
+        List<Object[]> results = query.getResultList();
+        List<ChartData> chartData = new ArrayList<>();
+        for (Object[] row : results) {
+            if (row[0] != null && row[1] != null) {
+                String yearStr = row[0].toString();
+                BigDecimal amount = (BigDecimal) row[1];
+                chartData.add(new ChartData(yearStr, amount != null ? amount : BigDecimal.ZERO));
+            }
+        }
+        
+        return chartData;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return new ArrayList<>();
+    }
+}
+
+/**
  * Fallback method nếu query chính không hoạt động
  */
 @SuppressWarnings("unchecked")
@@ -285,6 +385,98 @@ private List<ChartData> getMonthlyRevenueNativeFallback(String startDateStr) {
                 String monthStr = row[0].toString();
                 Long count = ((Number) row[1]).longValue();
                 chartData.add(new ChartData(monthStr, BigDecimal.valueOf(count)));
+            }
+            return chartData;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Get active memberships count by day for current month (GMT+7)
+     * Returns list of ChartData with date label and count of active memberships
+     */
+    @SuppressWarnings("unchecked")
+    public List<ChartData> getActiveMembershipsByDayCurrentMonth() {
+        try {
+            // Get current month start and end in GMT+7
+            java.time.ZoneId vietnamZone = java.time.ZoneId.of("Asia/Ho_Chi_Minh");
+            java.time.LocalDate nowVietnam = java.time.LocalDate.now(vietnamZone);
+            java.time.LocalDate startOfMonth = nowVietnam.withDayOfMonth(1);
+            java.time.ZonedDateTime startOfMonthVietnam = startOfMonth.atStartOfDay(vietnamZone);
+            java.time.ZonedDateTime endOfMonthVietnam = nowVietnam.plusDays(1).atStartOfDay(vietnamZone);
+            
+            // Convert to UTC for database comparison
+            java.time.ZoneId utcZone = java.time.ZoneId.of("UTC");
+            java.time.ZonedDateTime startUTC = startOfMonthVietnam.withZoneSameInstant(utcZone);
+            java.time.ZonedDateTime endUTC = endOfMonthVietnam.withZoneSameInstant(utcZone);
+            
+            Date startDate = Date.from(startUTC.toInstant());
+            Date endDate = Date.from(endUTC.toInstant());
+            
+            // Use native SQL with CONVERT_TZ for GMT+7 timezone
+            String sql = "SELECT DATE(CONVERT_TZ(m.created_date, '+00:00', '+07:00')) as day_date, COUNT(*) as membership_count " +
+                        "FROM memberships m " +
+                        "WHERE m.status = 'active' " +
+                        "AND CONVERT_TZ(m.created_date, '+00:00', '+07:00') >= ?1 " +
+                        "AND CONVERT_TZ(m.created_date, '+00:00', '+07:00') < ?2 " +
+                        "GROUP BY day_date " +
+                        "ORDER BY day_date ASC";
+            
+            Query query = em.createNativeQuery(sql);
+            query.setParameter(1, startDate, TemporalType.TIMESTAMP);
+            query.setParameter(2, endDate, TemporalType.TIMESTAMP);
+            
+            List<Object[]> results = query.getResultList();
+            java.util.Map<String, BigDecimal> dataMap = new java.util.HashMap<>();
+            for (Object[] row : results) {
+                String dateStr = row[0].toString();
+                Long count = ((Number) row[1]).longValue();
+                dataMap.put(dateStr, BigDecimal.valueOf(count));
+            }
+            
+            // Create full month data (all days in current month)
+            List<ChartData> chartData = new ArrayList<>();
+            java.time.LocalDate day = startOfMonth;
+            while (!day.isAfter(nowVietnam)) {
+                String dateKey = day.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                BigDecimal count = dataMap.getOrDefault(dateKey, BigDecimal.ZERO);
+                chartData.add(new ChartData(dateKey, count));
+                day = day.plusDays(1);
+            }
+            
+            return chartData;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Get active memberships count by year (GMT+7)
+     * Returns list of ChartData with year label and count of active memberships
+     */
+    @SuppressWarnings("unchecked")
+    public List<ChartData> getActiveMembershipsByYear(int years) {
+        try {
+            // Use native SQL with CONVERT_TZ for GMT+7 timezone
+            String sql = "SELECT DATE_FORMAT(CONVERT_TZ(m.created_date, '+00:00', '+07:00'), '%Y') as year_str, COUNT(*) as membership_count " +
+                        "FROM memberships m " +
+                        "WHERE m.status = 'active' " +
+                        "AND CONVERT_TZ(m.created_date, '+00:00', '+07:00') >= DATE_SUB(CONVERT_TZ(NOW(), '+00:00', '+07:00'), INTERVAL ?1 YEAR) " +
+                        "GROUP BY year_str " +
+                        "ORDER BY year_str ASC";
+            
+            Query query = em.createNativeQuery(sql);
+            query.setParameter(1, years);
+            
+            List<Object[]> results = query.getResultList();
+            List<ChartData> chartData = new ArrayList<>();
+            for (Object[] row : results) {
+                String yearStr = row[0].toString();
+                Long count = ((Number) row[1]).longValue();
+                chartData.add(new ChartData(yearStr, BigDecimal.valueOf(count)));
             }
             return chartData;
         } catch (Exception e) {

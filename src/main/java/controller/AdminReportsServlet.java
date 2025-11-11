@@ -26,16 +26,54 @@ public class AdminReportsServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Get period type from request parameter (day, month, year) - default to month
+        String periodType = request.getParameter("periodType");
+        if (periodType == null || periodType.trim().isEmpty()) {
+            periodType = "month"; // Default to month
+        }
+        
+        // Validate periodType
+        if (!periodType.equals("day") && !periodType.equals("month") && !periodType.equals("year")) {
+            periodType = "month"; // Fallback to month if invalid
+        }
+        
+        // Set periodType as attribute for JSP
+        request.setAttribute("periodType", periodType);
+        
         // Get summary stats from ReportService
         ReportSummary summary = reportService.getSummaryStats();
         request.setAttribute("summary", summary);
 
-        // Get chart data - Revenue
-        List<ChartData> revenueData = reportService.getRevenueChartData();
+        // Get chart data - Revenue (based on periodType)
+        List<ChartData> revenueData;
+        switch (periodType) {
+            case "day":
+                revenueData = reportService.getRevenueChartDataByDay();
+                break;
+            case "year":
+                revenueData = reportService.getRevenueChartDataByYear();
+                break;
+            case "month":
+            default:
+                revenueData = reportService.getRevenueChartDataByMonth();
+                break;
+        }
         request.setAttribute("revenueChartJson", gson.toJson(revenueData));
 
-        // Get chart data - Active Memberships (by month)
-        List<ChartData> activeMembershipsData = reportService.getActiveMembershipsByMonth();
+        // Get chart data - Active Memberships (based on periodType)
+        List<ChartData> activeMembershipsData;
+        switch (periodType) {
+            case "day":
+                activeMembershipsData = reportService.getActiveMembershipsByDayCurrentMonth();
+                break;
+            case "year":
+                activeMembershipsData = reportService.getActiveMembershipsByYear();
+                break;
+            case "month":
+            default:
+                activeMembershipsData = reportService.getActiveMembershipsByMonth();
+                break;
+        }
         request.setAttribute("activeMembershipsChartJson", gson.toJson(activeMembershipsData));
 
         // Get top 5 spenders

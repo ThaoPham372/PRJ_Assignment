@@ -74,6 +74,39 @@ public class ReportService {
         }
     }
 
+    /**
+     * Get revenue chart data by day for current month
+     */
+    public List<ChartData> getRevenueChartDataByDay() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            AdminReportsDAO dao = new AdminReportsDAO(em);
+            return dao.getRevenueByDayCurrentMonth();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Get revenue chart data by month (last 12 months)
+     */
+    public List<ChartData> getRevenueChartDataByMonth() {
+        return getRevenueChartData();
+    }
+
+    /**
+     * Get revenue chart data by year (last 5 years)
+     */
+    public List<ChartData> getRevenueChartDataByYear() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            AdminReportsDAO dao = new AdminReportsDAO(em);
+            return dao.getRevenueByYear(5);
+        } finally {
+            em.close();
+        }
+    }
+
     public List<ChartData> getPackageRevenueChartData() {
         EntityManager em = emf.createEntityManager();
         try {
@@ -110,6 +143,19 @@ public class ReportService {
     }
 
     /**
+     * Get active memberships chart data by day for current month
+     */
+    public List<ChartData> getActiveMembershipsByDayCurrentMonth() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            AdminReportsDAO dao = new AdminReportsDAO(em);
+            return dao.getActiveMembershipsByDayCurrentMonth();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
      * Get active memberships chart data by month (last 12 months)
      */
     public List<ChartData> getActiveMembershipsByMonth() {
@@ -117,6 +163,19 @@ public class ReportService {
         try {
             AdminReportsDAO dao = new AdminReportsDAO(em);
             return dao.getActiveMembershipsByMonth(12);
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Get active memberships chart data by year (last 5 years)
+     */
+    public List<ChartData> getActiveMembershipsByYear() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            AdminReportsDAO dao = new AdminReportsDAO(em);
+            return dao.getActiveMembershipsByYear(5);
         } finally {
             em.close();
         }

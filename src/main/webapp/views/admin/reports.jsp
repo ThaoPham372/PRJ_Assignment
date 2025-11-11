@@ -442,15 +442,6 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/admin/payment-finance"
-              class="sidebar-menu-link"
-            >
-              <i class="fas fa-money-bill-wave"></i
-              ><span>Thanh toán & Tài chính</span>
-            </a>
-          </li>
-          <li class="sidebar-menu-item">
-            <a
               href="${pageContext.request.contextPath}/admin/reports"
               class="sidebar-menu-link active"
             >
@@ -480,28 +471,16 @@
           <div class="filter-bar">
             <label style="font-weight: 600">Chọn khoảng thời gian:</label>
             <select
-              id="timeRangeSelect"
+              id="periodTypeSelect"
               class="filter-select"
-              onchange="toggleCustomDate()"
+              onchange="handlePeriodTypeChange()"
             >
-              <option value="7days">7 ngày qua</option>
-              <option value="30days">30 ngày qua</option>
-              <option value="3months">3 tháng qua</option>
-              <option value="6months">6 tháng qua</option>
-              <option value="12months" selected>12 tháng qua</option>
-              <option value="custom">Tùy chỉnh...</option>
+              <option value="day" ${periodType == 'day' ? 'selected' : ''}>Theo ngày (tháng này)</option>
+              <option value="month" ${periodType == 'month' ? 'selected' : ''} ${periodType == null ? 'selected' : ''}>Theo tháng (12 tháng qua)</option>
+              <option value="year" ${periodType == 'year' ? 'selected' : ''}>Theo năm (5 năm qua)</option>
             </select>
 
-            <div
-              id="customDateRange"
-              style="display: none; gap: 10px; align-items: center"
-            >
-              <input type="date" id="startDate" class="filter-select" />
-              <span>đến</span>
-              <input type="date" id="endDate" class="filter-select" />
-            </div>
-
-            <button class="btn" onclick="applyFilter()">
+            <button class="btn" onclick="applyPeriodFilter()">
               <i class="fas fa-filter"></i> Áp dụng
             </button>
           </div>
@@ -581,7 +560,13 @@
           <div class="reports-grid">
             <div class="report-card">
               <div class="report-card-header">
-                <h3 class="report-card-title">Hội viên Active</h3>
+                <h3 class="report-card-title" id="membershipsChartTitle">
+                  <c:choose>
+                    <c:when test="${periodType == 'day'}">Hội viên Active (theo ngày)</c:when>
+                    <c:when test="${periodType == 'year'}">Hội viên Active (theo năm)</c:when>
+                    <c:otherwise>Hội viên Active (theo tháng)</c:otherwise>
+                  </c:choose>
+                </h3>
                 <div
                   class="report-card-icon"
                   style="
@@ -615,16 +600,6 @@
                       value="${summary.newMembersThisMonth}"
                       type="number"
                     />
-                  </div>
-                </div>
-                <div class="summary-item">
-                  <div class="summary-label">Tăng trưởng</div>
-                  <div
-                    class="summary-value"
-                    style="color: ${summary.memberGrowthRate >= 0 ? '#38ef7d' : '#ff5b5b'}"
-                  >
-                    ${summary.memberGrowthRate > 0 ? '+' :
-                    ''}${summary.memberGrowthRate}%
                   </div>
                 </div>
               </div>
@@ -686,7 +661,13 @@
 
           <div class="large-chart">
             <div class="large-chart-header">
-              <h3 class="large-chart-title">Biểu đồ doanh thu 12 tháng qua</h3>
+              <h3 class="large-chart-title" id="revenueChartTitle">
+                <c:choose>
+                  <c:when test="${periodType == 'day'}">Biểu đồ doanh thu theo ngày (tháng này)</c:when>
+                  <c:when test="${periodType == 'year'}">Biểu đồ doanh thu theo năm (5 năm qua)</c:when>
+                  <c:otherwise>Biểu đồ doanh thu 12 tháng qua</c:otherwise>
+                </c:choose>
+              </h3>
             </div>
             <div class="large-chart-container">
               <canvas id="revenueLineChart"></canvas>
@@ -703,14 +684,19 @@
           style: 'currency',
           currency: 'VND',
         }).format(amount)
-      function toggleCustomDate() {
-        const select = document.getElementById('timeRangeSelect')
-        document.getElementById('customDateRange').style.display =
-          select.value === 'custom' ? 'flex' : 'none'
+      // Get periodType from server
+      const periodType = '${periodType != null ? periodType : "month"}'
+      
+      function handlePeriodTypeChange() {
+        // This function can be used for real-time updates if needed
+        // Currently, we use applyPeriodFilter() to reload the page
       }
-      function applyFilter() {
-        // Chức năng này sẽ cần gọi về Servlet với tham số lọc
-        alert('Chức năng lọc đang được phát triển!')
+      
+      function applyPeriodFilter() {
+        const periodTypeSelect = document.getElementById('periodTypeSelect')
+        const selectedPeriod = periodTypeSelect.value
+        // Reload page with periodType parameter
+        window.location.href = '${pageContext.request.contextPath}/admin/reports?periodType=' + selectedPeriod
       }
 
       // --- HÀM HỖ TRỢ FORMAT ---
@@ -733,6 +719,31 @@
           return 'Tháng ' + months[parseInt(parts[1]) - 1] + '/' + parts[0]
         }
         return monthStr
+      }
+
+      function formatDayLabel(dateStr) {
+        // dateStr format: "YYYY-MM-DD" -> "DD/MM"
+        const parts = dateStr.split('-')
+        if (parts.length === 3) {
+          return parts[2] + '/' + parts[1]
+        }
+        return dateStr
+      }
+
+      function formatYearLabel(yearStr) {
+        // yearStr format: "YYYY" -> "Năm YYYY"
+        return 'Năm ' + yearStr
+      }
+
+      function formatLabelByPeriodType(label, periodType) {
+        if (periodType === 'day') {
+          return formatDayLabel(label)
+        } else if (periodType === 'year') {
+          return formatYearLabel(label)
+        } else {
+          // month (default)
+          return formatMonthLabelFull(label)
+        }
       }
 
       // --- LẤY DỮ LIỆU TỪ SERVER ---
@@ -766,7 +777,7 @@
       if (activeMembershipsData && activeMembershipsData.length > 0) {
         activeMembershipsLabels = activeMembershipsData.map(item => {
           if (item && item.label) {
-            return formatMonthLabel(item.label)
+            return formatLabelByPeriodType(item.label, periodType)
           }
           return ''
         }).filter(label => label !== '')
@@ -779,8 +790,16 @@
         })
       } else {
         // Fallback data nếu không có dữ liệu
-        activeMembershipsLabels = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6']
-        activeMembershipsValues = [0, 0, 0, 0, 0, 0]
+        if (periodType === 'day') {
+          activeMembershipsLabels = []
+          activeMembershipsValues = []
+        } else if (periodType === 'year') {
+          activeMembershipsLabels = []
+          activeMembershipsValues = []
+        } else {
+          activeMembershipsLabels = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6']
+          activeMembershipsValues = [0, 0, 0, 0, 0, 0]
+        }
       }
 
       new Chart(activeMembershipsCtx, {
@@ -813,7 +832,14 @@
           scales: { 
             x: { 
               display: true,
-              grid: { display: false }
+              grid: { display: false },
+              ticks: {
+                maxRotation: periodType === 'day' ? 90 : 0,
+                minRotation: periodType === 'day' ? 90 : 0,
+                font: {
+                  size: periodType === 'day' ? 9 : 11
+                }
+              }
             }, 
             y: { 
               display: true,
@@ -856,7 +882,7 @@
         
         revenueLabels = revenueData.map((item) => {
           if (item && item.label) {
-            return formatMonthLabelFull(item.label)
+            return formatLabelByPeriodType(item.label, periodType)
           }
           return ''
         }).filter(label => label !== '')
@@ -1018,16 +1044,16 @@
                 drawBorder: false
               },
               ticks: {
-                maxRotation: 45,
-                minRotation: 45,
+                maxRotation: periodType === 'day' ? 90 : 45,
+                minRotation: periodType === 'day' ? 90 : 45,
                 font: {
-                  size: 11
+                  size: periodType === 'day' ? 10 : 11
                 },
                 color: '#5a6c7d'
               },
               title: {
                 display: true,
-                text: 'Tháng',
+                text: periodType === 'day' ? 'Ngày' : periodType === 'year' ? 'Năm' : 'Tháng',
                 font: {
                   size: 12,
                   weight: '600'
