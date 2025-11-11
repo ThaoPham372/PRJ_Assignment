@@ -824,62 +824,30 @@
               </div>
             </div>
 
-            <form id="passwordForm" action="${pageContext.request.contextPath}/pt/change-password" method="POST">
-              <div class="form-grid">
-                <div class="form-group full-width">
-                  <label>Mật khẩu hiện tại</label>
-                  <input
-                    type="password"
-                    name="currentPassword"
-                    id="currentPassword"
-                    placeholder="Nhập mật khẩu hiện tại"
-                    required
-                  />
-                </div>
-                <div class="form-group">
-                  <label>Mật khẩu mới</label>
-                  <input
-                    type="password"
-                    name="newPassword"
-                    id="newPassword"
-                    placeholder="Nhập mật khẩu mới"
-                    required
-                  />
-                </div>
-                <div class="form-group">
-                  <label>Xác nhận mật khẩu mới</label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    id="confirmPassword"
-                    placeholder="Nhập lại mật khẩu mới"
-                    required
-                  />
-                </div>
+            <div style="text-align: center; padding: 30px 20px;">
+              <p style="color: var(--text-light); margin-bottom: 25px; font-size: 1rem;">
+                Để đổi mật khẩu, chúng tôi sẽ gửi mã xác nhận đến email của bạn
+              </p>
+              <button type="button" class="btn" onclick="openChangePasswordModal()">
+                <i class="fas fa-key"></i>
+                Đổi mật khẩu
+              </button>
+            </div>
+
+            <!-- Thông báo hiển thị ngay dưới nút đổi mật khẩu -->
+            <c:if test="${not empty passwordSuccessMessage}">
+              <div id="passwordSuccessMessage" class="success-message" style="margin-top: 15px; padding: 12px 16px; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-check-circle"></i>
+                <span>${passwordSuccessMessage}</span>
               </div>
-              <div style="margin-top: 20px;">
-                <div style="text-align: right;">
-                <button type="submit" class="btn">
-                  <i class="fas fa-key"></i> Đổi mật khẩu
-                </button>
-                </div>
-                
-                <!-- Thông báo hiển thị ngay dưới nút đổi mật khẩu -->
-                <c:if test="${not empty passwordSuccessMessage}">
-                  <div id="passwordSuccessMessage" class="success-message" style="margin-top: 15px; padding: 12px 16px; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-check-circle"></i>
-                    <span>${passwordSuccessMessage}</span>
-                  </div>
-                </c:if>
-                
-                <c:if test="${not empty passwordErrorMessage}">
-                  <div id="passwordErrorMessage" class="error-message" style="margin-top: 15px; padding: 12px 16px; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span>${passwordErrorMessage}</span>
-                  </div>
-                </c:if>
+            </c:if>
+            
+            <c:if test="${not empty passwordErrorMessage}">
+              <div id="passwordErrorMessage" class="error-message" style="margin-top: 15px; padding: 12px 16px; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>${passwordErrorMessage}</span>
               </div>
-            </form>
+            </c:if>
           </div>
 
         </div>
@@ -1058,6 +1026,90 @@
         // Success/Error messages are handled by the server and session
       });
 
+    </script>
+
+    <!-- Change Password Confirmation Modal -->
+    <div class="modal" id="changePasswordModal">
+      <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+          <h3>
+            <i class="fas fa-key"></i>
+            Xác nhận đổi mật khẩu
+          </h3>
+          <button class="close-btn" onclick="closeChangePasswordModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div style="padding: 20px;">
+          <p style="margin-bottom: 20px; color: var(--text);">
+            Bạn có chắc chắn muốn đổi mật khẩu? Mã xác nhận sẽ được gửi đến email:
+          </p>
+          <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <strong style="color: var(--accent);">
+              <i class="fas fa-envelope"></i>
+              ${not empty trainer.email ? trainer.email : (not empty sessionScope.user.email ? sessionScope.user.email : 'N/A')}
+            </strong>
+          </div>
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" class="btn btn-secondary" onclick="closeChangePasswordModal()">
+              <i class="fas fa-times"></i> Hủy
+            </button>
+            <button type="button" class="btn" id="confirmPasswordBtn" onclick="confirmChangePassword()">
+              <i class="fas fa-check"></i> Xác nhận
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function openChangePasswordModal() {
+        const modal = document.getElementById('changePasswordModal');
+        if (modal) {
+          modal.classList.add('show');
+          console.log('Modal opened'); // Debug log
+        } else {
+          console.error('Modal not found'); // Debug log
+        }
+      }
+
+      function closeChangePasswordModal() {
+        const modal = document.getElementById('changePasswordModal');
+        if (modal) {
+          modal.classList.remove('show');
+        }
+      }
+
+      function confirmChangePassword() {
+        // Disable button to prevent double click
+        const confirmBtn = document.getElementById('confirmPasswordBtn');
+        if (confirmBtn) {
+          confirmBtn.disabled = true;
+          confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+        }
+
+        // Create form and submit
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '${pageContext.request.contextPath}/pt/change-password';
+        
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = 'changePassword';
+        form.appendChild(actionInput);
+
+        document.body.appendChild(form);
+        form.submit();
+      }
+
+      // Close modal when clicking outside
+      document.addEventListener('click', function(event) {
+        const modal = document.getElementById('changePasswordModal');
+        if (modal && event.target === modal) {
+          closeChangePasswordModal();
+        }
+      });
     </script>
   </body>
 </html>
