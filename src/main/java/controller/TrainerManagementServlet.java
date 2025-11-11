@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.Trainer;
+import model.User;
 import model.schedule.TrainerSchedule;
 import model.schedule.DayOfWeek;
 import service.TrainerService;
@@ -29,14 +30,12 @@ public class TrainerManagementServlet extends HttpServlet {
     private final TrainerService trainerService;
     private final UserService userService;
     private final TrainerScheduleService trainerScheduleService;
-    private final TimeSlotService timeSlotService;
     private final GymInfoDAO gymInfoDAO;
 
     public TrainerManagementServlet() {
         this.trainerService = new TrainerService();
         this.userService = new UserService();
         this.trainerScheduleService = new TrainerScheduleService();
-        this.timeSlotService = new TimeSlotService();
         this.gymInfoDAO = new GymInfoDAO();
     }
 
@@ -95,7 +94,7 @@ public class TrainerManagementServlet extends HttpServlet {
 
             req.setAttribute("trainers", activeTrainers);
             req.setAttribute("gyms", gymInfoDAO.findAll());
-            req.setAttribute("timeSlots", timeSlotService.getActiveTimeSlots());
+            req.setAttribute("timeSlots", trainerScheduleService.getActiveTimeSlots());
             
             req.getRequestDispatcher("/views/admin/trainer_management.jsp").forward(req, resp);
         } catch (Exception e) {
@@ -173,7 +172,7 @@ public class TrainerManagementServlet extends HttpServlet {
             req.setAttribute("viewScheduleTrainer", trainer);
             req.setAttribute("viewSchedules", schedules);
             req.setAttribute("gyms", gymInfoDAO.findAll());
-            req.setAttribute("timeSlots", timeSlotService.getActiveTimeSlots());
+            req.setAttribute("timeSlots", trainerScheduleService.getActiveTimeSlots());
             req.getRequestDispatcher("/views/admin/trainer_management.jsp").forward(req, resp);
         } catch (NumberFormatException e) {
             req.setAttribute("error", "ID PT không hợp lệ");
@@ -416,6 +415,18 @@ public class TrainerManagementServlet extends HttpServlet {
                 req.setAttribute("gyms", gymInfoDAO.findAll());
                 req.getRequestDispatcher("/views/admin/edit_trainer.jsp").forward(req, resp);
                 return;
+            }
+            
+            // Also check if email is used by any other user (Member, Admin)
+            if (userService.getUserByEmail(email) != null) {
+                User existingUser = userService.getUserByEmail(email);
+                if (!existingUser.getId().equals(trainer.getId())) {
+                    req.setAttribute("error", "Email đã được sử dụng bởi người dùng khác trong hệ thống");
+                    req.setAttribute("editTrainer", trainer);
+                    req.setAttribute("gyms", gymInfoDAO.findAll());
+                    req.getRequestDispatcher("/views/admin/edit_trainer.jsp").forward(req, resp);
+                    return;
+                }
             }
             
             if (phone == null || phone.trim().isEmpty()) {

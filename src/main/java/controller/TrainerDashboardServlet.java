@@ -1,6 +1,7 @@
 package controller;
 
 import java.io.IOException;
+import java.util.Map;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -11,6 +12,7 @@ import jakarta.servlet.http.HttpSession;
 import model.Trainer;
 import model.User;
 import service.PasswordService;
+import service.TrainerDashboardService;
 import service.TrainerService;
 
 /**
@@ -36,12 +38,14 @@ public class TrainerDashboardServlet extends HttpServlet {
 
   private TrainerService trainerService;
   private PasswordService passwordService;
+  private TrainerDashboardService dashboardService;
 
   @Override
   public void init() throws ServletException {
     super.init();
     this.trainerService = new TrainerService();
     this.passwordService = new PasswordService();
+    this.dashboardService = new TrainerDashboardService();
     System.out.println("[TrainerDashboardServlet] Initialized successfully");
   }
 
@@ -65,6 +69,12 @@ public class TrainerDashboardServlet extends HttpServlet {
 
     // Set trainer vào request để JSP sử dụng
     req.setAttribute("trainer", currentTrainer);
+
+    int trainerId = currentTrainer.getId();
+    Map<String, Long> quickStats = dashboardService.getQuickStats(trainerId);
+    req.setAttribute("totalStudents", quickStats.getOrDefault("totalStudents", 0L));
+    req.setAttribute("completedSessions", quickStats.getOrDefault("completedSessions", 0L));
+    req.setAttribute("todaySessions", quickStats.getOrDefault("todaySessions", 0L));
 
     String reqURI = req.getRequestURI();
     String contextPath = req.getContextPath();

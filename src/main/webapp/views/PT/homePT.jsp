@@ -454,7 +454,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
       .features {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-template-columns: repeat(4, 1fr);
         gap: 30px;
         padding: 60px 40px;
         max-width: 1200px;
@@ -689,25 +689,18 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                 </a>
               </li>
               <li class="pt-menu-item">
-                <a
-                  href="${pageContext.request.contextPath}/pt/reports"
-                  class="pt-menu-link"
-                >
-                  <i class="fas fa-chart-line"></i>
-                  <span>Thống kê & Báo cáo</span>
-                </a>
+                <!-- Item 'Thống kê & Báo cáo' đã được yêu cầu gỡ bỏ -->
               </li>
             </ul>
 
             <div class="pt-menu-footer">
               <a
-                  href="${pageContext.request.contextPath}/logout"
+                href="${pageContext.request.contextPath}/logout"
                 class="btn-logout"
-               
               >
                 <i class="fas fa-sign-out-alt"></i>
                 Đăng xuất
-                </a>
+              </a>
             </div>
           </div>
         </div>
@@ -740,7 +733,9 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         <div class="stat-icon">
           <i class="fas fa-users"></i>
         </div>
-        <div class="stat-number">24</div>
+        <div class="stat-number">
+          ${totalStudents != null ? totalStudents : 0}
+        </div>
         <div class="stat-label">Học viên đang phụ trách</div>
       </div>
 
@@ -748,7 +743,9 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         <div class="stat-icon">
           <i class="fas fa-calendar-check"></i>
         </div>
-        <div class="stat-number">48</div>
+        <div class="stat-number">
+          ${completedSessions != null ? completedSessions : 0}
+        </div>
         <div class="stat-label">Buổi tập đã hoàn thành</div>
       </div>
 
@@ -756,16 +753,10 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         <div class="stat-icon">
           <i class="fas fa-clock"></i>
         </div>
-        <div class="stat-number">8</div>
-        <div class="stat-label">Buổi tập hôm nay</div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-star"></i>
+        <div class="stat-number">
+          ${todaySessions != null ? todaySessions : 0}
         </div>
-        <div class="stat-number">4.8</div>
-        <div class="stat-label">Đánh giá trung bình</div>
+        <div class="stat-label">Buổi tập hôm nay</div>
       </div>
     </section>
 
@@ -780,10 +771,6 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           <i class="fas fa-user-circle"></i>
         </div>
         <h3>Hồ sơ cá nhân</h3>
-        <p>
-          Quản lý thông tin cá nhân, chỉnh sửa email, số điện thoại, avatar và
-          đổi mật khẩu.
-        </p>
       </div>
 
       <div
@@ -794,10 +781,6 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           <i class="fas fa-calendar-alt"></i>
         </div>
         <h3>Lịch huấn luyện</h3>
-        <p>
-          Xem và quản lý lịch tập, xác nhận/từ chối buổi tập, cập nhật trạng
-          thái và tạo buổi tập mới.
-        </p>
       </div>
 
       <div
@@ -808,10 +791,6 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           <i class="fas fa-users"></i>
         </div>
         <h3>Quản lý học viên</h3>
-        <p>
-          Xem danh sách học viên, theo dõi tiến độ, cập nhật chỉ số cơ thể và
-          ghi chú cho từng học viên.
-        </p>
       </div>
 
       <div
@@ -822,33 +801,6 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           <i class="fas fa-comments"></i>
         </div>
         <h3>Chat với học viên</h3>
-        <p>
-          Giao tiếp trực tiếp với học viên, nhận thông báo và hỗ trợ kịp thời.
-        </p>
-      </div>
-
-      <div
-        class="feature-card"
-        onclick="window.location.href='${pageContext.request.contextPath}/pt/reports'"
-      >
-        <div class="feature-icon">
-          <i class="fas fa-chart-line"></i>
-        </div>
-        <h3>Thống kê & Báo cáo</h3>
-        <p>
-          Xem tổng số học viên, buổi tập hoàn thành, đánh giá và lịch sử làm
-          việc.
-        </p>
-      </div>
-
-      <div class="feature-card" onclick="alert('Chức năng đang phát triển!')">
-        <div class="feature-icon">
-          <i class="fas fa-bell"></i>
-        </div>
-        <h3>Thông báo</h3>
-        <p>
-          Nhận thông báo về lịch tập mới, thay đổi lịch và tin nhắn từ học viên.
-        </p>
       </div>
     </section>
 

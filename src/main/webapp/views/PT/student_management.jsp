@@ -115,17 +115,57 @@
 
       .search-filter {
         background: var(--card);
-        border-radius: 15px;
-        padding: 25px;
-        margin-bottom: 30px;
-        box-shadow: 0 4px 20px var(--shadow);
+        border-radius: 18px;
+        padding: 22px;
+        margin-bottom: 18px;
+        box-shadow: 0 10px 30px rgba(20,26,73,.08);
+        border: 1px solid #eef0f3;
+      }
+      .search-title {
+        font-weight: 800;
+        color: var(--primary);
+        font-size: 1.05rem;
+        margin-bottom: 10px;
+      }
+      /* Toolbar chế độ hiển thị (đặt ngoài form tìm kiếm) */
+      .view-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 0 0 12px 0;
+      }
+      .view-toolbar .title {
+        font-weight: 700;
+        color: var(--primary);
+      }
+      .view-toolbar .group {
+        display: flex;
+        gap: 8px;
+      }
+      .view-toolbar .group .btn {
+        padding: 8px 14px;
       }
 
       .search-bar {
         display: grid;
-        grid-template-columns: 1fr auto auto;
-        gap: 15px;
+        grid-template-columns: 1fr minmax(180px, 240px) minmax(120px, 160px);
+        gap: 12px;
         align-items: end;
+      }
+      .input-icon {
+        position: relative;
+      }
+      .input-icon i {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-light);
+      }
+      .input-icon input {
+        padding-right: 42px;
+        padding-left: 16px;
+        width: 100%;
       }
 
       .form-group {
@@ -142,18 +182,36 @@
 
       .form-group input,
       .form-group select {
-        padding: 12px 15px;
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
+        padding: 13px 16px;
+        border: 1px solid #e7e9ee;
+        border-radius: 12px;
         font-size: 1rem;
-        transition: all 0.3s;
+        transition: all 0.2s ease;
+        background: #fff;
+        box-shadow: inset 0 1px 0 rgba(20,26,73,0.02);
       }
 
       .form-group input:focus,
       .form-group select:focus {
         outline: none;
-        border-color: var(--accent);
-        box-shadow: 0 0 0 3px rgba(236, 139, 90, 0.1);
+        border-color: rgba(236,139,90,.7);
+        box-shadow: 0 0 0 4px rgba(236,139,90,0.12);
+      }
+      .search-actions {
+        display: flex;
+        gap: 10px;
+        align-items: end;
+        justify-content: flex-end;
+        align-self: end;
+      }
+      .btn-search {
+        background: linear-gradient(135deg, #ec8b5a 0%, #d67a4f 100%);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 18px;
+        font-weight: 700;
+        box-shadow: 0 10px 24px rgba(236,139,90,.28);
       }
 
       .stats-grid {
@@ -314,7 +372,8 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(20, 26, 73, 0.25);
+        backdrop-filter: blur(2px);
         z-index: 1000;
         align-items: center;
         justify-content: center;
@@ -332,6 +391,8 @@
         width: 90%;
         max-height: 90vh;
         overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(20, 26, 73, 0.25);
+        border: 1px solid rgba(20, 26, 73, 0.08);
       }
 
       .modal-header {
@@ -346,6 +407,9 @@
       .modal-header h2 {
         color: var(--primary);
         font-size: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
 
       .close-btn {
@@ -354,17 +418,24 @@
         font-size: 2rem;
         cursor: pointer;
         color: var(--text-light);
+        transition: transform .15s ease, color .15s ease;
+      }
+      .close-btn:hover {
+        transform: rotate(90deg);
+        color: var(--accent);
       }
 
       .profile-section {
-        margin-bottom: 30px;
+        margin-bottom: 28px;
       }
 
       .profile-section h3 {
         color: var(--primary);
-        margin-bottom: 15px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid var(--accent);
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid rgba(236, 139, 90, 0.6);
+        font-weight: 700;
+        letter-spacing: .2px;
       }
 
       .info-grid {
@@ -374,26 +445,107 @@
       }
 
       .info-item {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 10px;
-        border-left: 4px solid var(--accent);
+        background: linear-gradient(0deg, #ffffff, #ffffff),
+                    radial-gradient(1200px circle at -20% -20%, rgba(236,139,90,0.12), transparent 40%),
+                    radial-gradient(1200px circle at 120% 120%, rgba(20,26,73,0.06), transparent 40%);
+        padding: 16px 16px 14px 16px;
+        border-radius: 12px;
+        border: 1px solid #eef0f3;
+        box-shadow: 0 2px 12px rgba(20, 26, 73, 0.04);
       }
 
       .info-label {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         color: var(--text-light);
-        margin-bottom: 5px;
+        margin-bottom: 6px;
+        letter-spacing: .15px;
       }
 
       .info-value {
-        font-size: 1.1rem;
-        font-weight: 600;
+        font-size: 1.05rem;
+        font-weight: 700;
         color: var(--primary);
+        word-break: break-word;
       }
 
       .notes-section {
         margin-top: 20px;
+      }
+
+      /* List view (table) */
+      .list-wrap {
+        background: var(--card);
+        border-radius: 15px;
+        box-shadow: 0 6px 26px rgba(20,26,73,0.08);
+        overflow: hidden;
+      }
+      .list-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .list-table thead tr {
+        background: linear-gradient(90deg, #141a49, #1c2c6d);
+        color: #fff;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+      .list-table th,
+      .list-table td {
+        padding: 14px 18px;
+        text-align: left;
+        font-size: 0.95rem;
+        white-space: nowrap;
+      }
+      .list-table tbody tr {
+        border-bottom: 1px solid #eef0f3;
+        transition: background .2s ease;
+        background: #fff;
+      }
+      .list-table tbody tr:hover {
+        background: rgba(236,139,90,0.06);
+      }
+      .list-table .num {
+        text-align: right;
+        color: var(--primary);
+        font-weight: 600;
+      }
+      .list-table .center {
+        text-align: center;
+      }
+      .name-cell {
+        color: var(--primary);
+        font-weight: 700;
+        max-width: 320px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .sub {
+        display: block;
+        font-size: .82rem;
+        color: var(--text-light);
+        font-weight: 500;
+        margin-top: 3px;
+        max-width: 320px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .goal-badge {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(236,139,90,0.12);
+        color: var(--primary);
+        font-weight: 600;
+        font-size: .85rem;
+      }
+      .actions-cell .btn {
+        padding: 8px 12px;
+        min-width: 92px;
+      }
+      @media (max-width: 1100px) {
+        .list-table th:nth-child(3),
+        .list-table td:nth-child(3) { display: none; } /* Ẩn cột Email trên màn nhỏ */
       }
 
       .note-input {
@@ -404,8 +556,71 @@
         font-size: 1rem;
         resize: vertical;
         min-height: 100px;
+        transition: border-color .2s ease, box-shadow .2s ease;
+      }
+      .note-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px rgba(236,139,90,0.12);
       }
 
+      /* Subtle button polish */
+      .btn {
+        box-shadow: 0 8px 20px rgba(236,139,90,0.25);
+      }
+      .btn:active {
+        transform: translateY(-1px) scale(0.99);
+      }
+
+      /* Edit modal tweaks */
+      #studentEditModal .profile-section h3 {
+        border-bottom-color: rgba(236,139,90,0.6);
+      }
+      #studentEditModal .info-item {
+        border-left: none;
+      }
+      #studentEditModal .note-input {
+        min-height: 80px;
+      }
+
+      /* Scrollbar (webkit) for nicer feel */
+      .modal-content::-webkit-scrollbar {
+        width: 10px;
+      }
+      .modal-content::-webkit-scrollbar-thumb {
+        background: rgba(20,26,73,.15);
+        border-radius: 10px;
+      }
+      .modal-content::-webkit-scrollbar-thumb:hover {
+        background: rgba(20,26,73,.25);
+      }
+
+      /* Toast */
+      .toast {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        min-width: 260px;
+        max-width: 90vw;
+        background: #ffffff;
+        color: var(--primary);
+        border-left: 6px solid var(--success);
+        box-shadow: 0 10px 30px rgba(20,26,73,.18);
+        border-radius: 10px;
+        padding: 14px 16px;
+        z-index: 1100;
+        display: none;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+      }
+      .toast.show {
+        display: flex;
+        animation: slideUp .25s ease;
+      }
+      @keyframes slideUp {
+        from { transform: translateY(10px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
       @media (max-width: 968px) {
         .search-bar {
           grid-template-columns: 1fr;
@@ -462,29 +677,24 @@
             <p>Đang hoạt động</p>
           </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-trophy"></i>
-          </div>
-          <div class="stat-content">
-            <h3>${achievedGoalCount != null ? achievedGoalCount : 0}</h3>
-            <p>Đạt mục tiêu</p>
-          </div>
-        </div>
       </div>
 
       <!-- Search & Filter -->
       <div class="search-filter">
-        <form action="${pageContext.request.contextPath}/pt/students/search" method="get">
+        <div class="search-title">Tìm kiếm học viên</div>
+        <form action="${pageContext.request.contextPath}/pt/students/search" method="get" style="margin:0">
           <div class="search-bar">
             <div class="form-group">
-              <label>Tìm kiếm học viên</label>
-              <input
+              <label>Từ khóa</label>
+              <div class="input-icon">
+                <i class="fas fa-search"></i>
+                <input
                 type="text"
                 name="keyword"
                 placeholder="Nhập tên, ID hoặc số điện thoại..."
                 value="${searchTerm != null ? searchTerm : ''}"
-              />
+                />
+              </div>
             </div>
             <div class="form-group">
               <label>Gói tập</label>
@@ -497,13 +707,28 @@
                 </c:if>
               </select>
             </div>
-            <button type="submit" class="btn"><i class="fas fa-search"></i> Tìm kiếm</button>
+            <div class="search-actions">
+              <button type="submit" class="btn btn-search"><i class="fas fa-search"></i> Tìm kiếm</button>
+            </div>
           </div>
         </form>
       </div>
 
-      <!-- Students Grid -->
-      <div class="students-grid">
+      <!-- View Mode Toolbar - đặt dưới form tìm kiếm -->
+      <div class="view-toolbar">
+        <div class="title">Chế độ hiển thị</div>
+        <div class="group">
+          <button type="button" class="btn btn-sm" id="btnCards" onclick="switchView('cards')">
+            <i class="fas fa-grip"></i> Thẻ
+          </button>
+          <button type="button" class="btn btn-sm" id="btnList" style="background:#6c757d" onclick="switchView('list')">
+            <i class="fas fa-list"></i> Danh sách
+          </button>
+        </div>
+      </div>
+
+      <!-- Students - Cards View -->
+      <div id="cards-view" class="students-grid">
         <c:choose>
           <c:when test="${students != null && !empty students}">
             <c:forEach var="student" items="${students}">
@@ -571,21 +796,12 @@
                     <span>${email != null ? email : 'N/A'}</span>
                   </div>
                   <div class="detail-item">
-                    <i class="fas fa-dumbbell"></i>
-                    <span>${totalSessions} buổi tập</span>
+                    <i class="fas fa-weight-scale"></i>
+                    <span>${weight != null ? weight : 0} kg</span>
                   </div>
                   <div class="detail-item">
-                    <i class="fas fa-check-circle"></i>
-                    <span>${completedSessions} đã hoàn thành</span>
-                  </div>
-                </div>
-                <div class="progress-section">
-                  <div class="progress-label">
-                    <span>Tiến độ tập luyện</span>
-                    <span><fmt:formatNumber value="${progress}" maxFractionDigits="0" />%</span>
-                  </div>
-                  <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${progress}%"></div>
+                    <i class="fas fa-heart-pulse"></i>
+                    <span>${bmi != null ? bmi : 0}</span>
                   </div>
                 </div>
                 <div class="student-actions">
@@ -612,9 +828,9 @@
                   </button>
                   <button
                     class="btn btn-sm"
-                    onclick="event.stopPropagation(); updateProgress(${memberId})"
+                    onclick="event.stopPropagation(); openStudentEdit(${memberId})"
                   >
-                    <i class="fas fa-edit"></i> Cập nhật
+                    <i class="fas fa-edit"></i> Chỉnh sửa
                   </button>
                 </div>
               </div>
@@ -627,6 +843,76 @@
             </div>
           </c:otherwise>
         </c:choose>
+      </div>
+
+      <!-- Students - List View -->
+       <div id="list-view" style="display:none;">
+         <div class="list-wrap">
+           <table class="list-table">
+             <thead>
+               <tr>
+                 <th>Họ tên</th>
+                 <th>SĐT</th>
+                 <th>Email</th>
+                 <th class="center">Cân nặng</th>
+                 <th class="center">Chiều cao</th>
+                 <th class="center">BMI</th>
+                 <th>Mục tiêu</th>
+                 <th class="center" style="width:190px;">Thao tác</th>
+               </tr>
+             </thead>
+             <tbody>
+            <c:choose>
+              <c:when test="${students != null && !empty students}">
+                <c:forEach var="student" items="${students}">
+                  <c:set var="memberId" value="${student[0]}" />
+                  <c:set var="name" value="${student[1]}" />
+                  <c:set var="phone" value="${student[2]}" />
+                  <c:set var="email" value="${student[3]}" />
+                  <c:set var="weight" value="${student[6]}" />
+                  <c:set var="height" value="${student[7]}" />
+                  <c:set var="bmi" value="${student[8]}" />
+                  <c:set var="goal" value="${student[9]}" />
+                    <tr data-member-id="${memberId}">
+                     <td class="name-cell">
+                       ${name != null ? name : 'N/A'}
+                       <span class="sub">${email != null ? email : 'N/A'}</span>
+                     </td>
+                     <td>${phone != null && !empty phone ? phone : 'Chưa có'}</td>
+                     <td>${email != null ? email : 'N/A'}</td>
+                     <td class="num">${weight != null ? weight : 0} kg</td>
+                     <td class="num">${height != null ? height : 0} cm</td>
+                     <td class="num">${bmi != null ? bmi : 0}</td>
+                     <td>
+                       <c:choose>
+                         <c:when test="${goal != null && !goal.isEmpty()}">
+                           <span class="goal-badge">${goal}</span>
+                         </c:when>
+                         <c:otherwise>
+                           <span class="sub">Chưa có mục tiêu</span>
+                         </c:otherwise>
+                       </c:choose>
+                     </td>
+                     <td class="actions-cell center">
+                       <button class="btn btn-info btn-sm" onclick="openStudentDetail(${memberId})" type="button">
+                         <i class="fas fa-eye"></i> Chi tiết
+                       </button>
+                       <button class="btn btn-sm" style="margin-left:6px" onclick="openStudentEdit(${memberId})" type="button">
+                         <i class="fas fa-edit"></i> Chỉnh sửa
+                       </button>
+                    </td>
+                  </tr>
+                </c:forEach>
+              </c:when>
+              <c:otherwise>
+                <tr>
+                   <td colspan="8" style="padding:24px; text-align:center; color: var(--text-light); font-weight:600;">Không có học viên để hiển thị</td>
+                </tr>
+              </c:otherwise>
+            </c:choose>
+             </tbody>
+           </table>
+         </div>
       </div>
     </div>
 
@@ -683,33 +969,14 @@
         </div>
 
         <div class="profile-section">
-          <h3>Tiến độ tập luyện</h3>
-          <div class="info-grid">
-            <div class="info-item">
-              <div class="info-label">Gói tập</div>
-              <div class="info-value">-</div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">Thời gian tập</div>
-              <div class="info-value">-</div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">Số buổi đã tập</div>
-              <div class="info-value">-</div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">Tiến độ</div>
-              <div class="info-value">-</div>
-            </div>
-          </div>
+          <!-- Đã bỏ phần tiến độ tập luyện theo yêu cầu -->
         </div>
 
         <div class="notes-section">
           <h3>Ghi chú của PT</h3>
-          <textarea
-            class="note-input"
-            placeholder="Nhập ghi chú về học viên..."
-          ></textarea>
+          <div id="modal-notes-view" class="info-item" style="background:#f8f9fa; padding:15px; border-radius:10px; border-left:4px solid var(--accent); min-height:60px;">
+            <div class="info-value">-</div>
+          </div>
         </div>
 
         <div
@@ -727,49 +994,134 @@
           >
             Đóng
           </button>
-          <button class="btn" onclick="saveNotes()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal chỉnh sửa học viên -->
+    <div id="studentEditModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2><i class="fas fa-user-edit"></i> Cập nhật học viên</h2>
+          <button class="close-btn" onclick="closeEditModal()">&times;</button>
+        </div>
+
+        <div class="profile-section">
+          <h3>Thông tin cá nhân</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Họ và tên</div>
+              <div class="info-value" id="edit-name">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Số điện thoại</div>
+              <div class="info-value" id="edit-phone">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Email</div>
+              <div class="info-value" id="edit-email">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Ngày sinh</div>
+              <div class="info-value" id="edit-dob">-</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-section">
+          <h3>Chỉ số cơ thể (có thể chỉnh sửa)</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Cân nặng (kg)</div>
+              <input id="edit-weight" type="number" step="0.1" class="note-input" style="min-height:auto;" />
+            </div>
+            <div class="info-item">
+              <div class="info-label">Chiều cao (cm)</div>
+              <input id="edit-height" type="number" step="0.1" class="note-input" style="min-height:auto;" />
+            </div>
+            <div class="info-item">
+              <div class="info-label">BMI</div>
+              <input id="edit-bmi" type="number" step="0.1" class="note-input" style="min-height:auto;" readonly />
+            </div>
+            <div class="info-item">
+              <div class="info-label">Mục tiêu</div>
+              <input id="edit-goal" type="text" class="note-input" style="min-height:auto;" />
+            </div>
+          </div>
+        </div>
+
+        <div class="notes-section">
+          <h3>Ghi chú của PT</h3>
+          <textarea id="edit-ptnote" class="note-input" placeholder="Nhập ghi chú về học viên..."></textarea>
+        </div>
+
+        <div
+          style="
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 30px;
+          "
+        >
+          <button
+            class="btn"
+            style="background: #6c757d"
+            onclick="closeEditModal()"
+          >
+            Đóng
+          </button>
+          <button class="btn" onclick="saveStudentEdit()">
             <i class="fas fa-save"></i> Lưu thay đổi
           </button>
         </div>
       </div>
     </div>
+    <!-- Toast -->
+    <div id="globalToast" class="toast">
+      <i class="fas fa-check-circle" style="color:#28a745;font-size:1.2rem;"></i>
+      <span id="toastText">Lưu thay đổi thành công</span>
+    </div>
 
     <script>
       let currentStudentData = null;
+      const CTX = '${pageContext.request.contextPath}';
+
+      function mapStudentResponse(data) {
+        currentStudentData = {
+          memberId: data.memberId,
+          name: data.name || '',
+          phone: data.phone || '',
+          email: data.email || '',
+          gender: data.gender || '',
+          dob: data.dob || '',
+          address: data.address || '',
+          weight: data.weight != null ? parseFloat(data.weight) : null,
+          height: data.height != null ? parseFloat(data.height) : null,
+          bmi: data.bmi != null ? parseFloat(data.bmi) : null,
+          goal: data.goal || '',
+          ptNote: data.ptNote || ''
+        };
+        return currentStudentData;
+      }
+
+      function fetchStudentData(memberId) {
+        return fetch(CTX + '/pt/students/detail?id=' + encodeURIComponent(memberId))
+          .then(r => r.json())
+          .then(data => {
+            if (!data || !data.success) {
+              throw new Error(data && data.message ? data.message : 'Không tải được dữ liệu học viên');
+            }
+            return mapStudentResponse(data);
+          });
+      }
 
       function openStudentDetail(memberId) {
-        // Find the element (card or button) that has the data attributes
-        let element = document.querySelector(`.student-card[data-student-id="${memberId}"]`);
-        if (!element) {
-          element = document.querySelector(`button[data-student-id="${memberId}"]`);
-        }
-
-        if (!element) {
-          console.error('Could not find student data for ID:', memberId);
-          return;
-        }
-
-        currentStudentData = {
-          memberId: memberId,
-          name: element.getAttribute('data-student-name') || '',
-          phone: element.getAttribute('data-student-phone') || '',
-          email: element.getAttribute('data-student-email') || '',
-          gender: element.getAttribute('data-student-gender') || '',
-          dob: element.getAttribute('data-student-dob') || '',
-          weight: parseFloat(element.getAttribute('data-student-weight')) || 0,
-          height: parseFloat(element.getAttribute('data-student-height')) || 0,
-          bmi: parseFloat(element.getAttribute('data-student-bmi')) || 0,
-          goal: element.getAttribute('data-student-goal') || '',
-          ptNote: element.getAttribute('data-student-note') || '',
-          packageName: element.getAttribute('data-student-package') || '',
-          totalBookings: parseInt(element.getAttribute('data-student-total')) || 0,
-          completedSessions: parseInt(element.getAttribute('data-student-completed')) || 0,
-          confirmedSessions: parseInt(element.getAttribute('data-student-confirmed')) || 0
-        };
-
-        // Update modal with actual data
-        updateModalContent();
-        document.getElementById('studentModal').classList.add('active');
+        fetchStudentData(memberId)
+          .then(() => {
+            updateModalContent();
+            document.getElementById('studentModal').classList.add('active');
+          })
+          .catch(err => showToast(err.message || 'Lỗi mạng khi tải dữ liệu học viên'));
       }
 
       function updateModalContent() {
@@ -789,27 +1141,21 @@
 
         // Body metrics: weight, height, bmi, goal
         if (infoValues.length >= 8) {
-          infoValues[4].textContent = currentStudentData.weight ? currentStudentData.weight + ' kg' : 'N/A';
-          infoValues[5].textContent = currentStudentData.height ? currentStudentData.height + ' cm' : 'N/A';
-          infoValues[6].textContent = currentStudentData.bmi ? currentStudentData.bmi.toFixed(1) : 'N/A';
+          infoValues[4].textContent = currentStudentData.weight != null ? currentStudentData.weight + ' kg' : 'N/A';
+          infoValues[5].textContent = currentStudentData.height != null ? currentStudentData.height + ' cm' : 'N/A';
+          infoValues[6].textContent = currentStudentData.bmi != null ? currentStudentData.bmi.toFixed(1) : 'N/A';
           infoValues[7].textContent = currentStudentData.goal || 'Chưa có mục tiêu';
         }
 
-        // Training progress: package, duration, sessions, progress
-        if (infoValues.length >= 12) {
-          infoValues[8].textContent = currentStudentData.packageName || 'Chưa có gói tập';
-          infoValues[9].textContent = 'Đang cập nhật'; // Duration months - would need membership data
-          infoValues[10].textContent = currentStudentData.completedSessions + ' buổi';
-          const progress = currentStudentData.totalBookings > 0 
-            ? Math.round((currentStudentData.completedSessions * 100) / currentStudentData.totalBookings)
-            : 0;
-          infoValues[11].textContent = progress + '%';
-        }
-
-        // Update notes
-        const noteTextarea = modal.querySelector('.note-input');
-        if (noteTextarea) {
-          noteTextarea.value = currentStudentData.ptNote || '';
+        // Update notes (read-only)
+        const notesBox = document.getElementById('modal-notes-view');
+        if (notesBox) {
+          const valueEl = notesBox.querySelector('.info-value');
+          if (valueEl) {
+            valueEl.textContent = currentStudentData.ptNote && currentStudentData.ptNote.trim().length > 0
+              ? currentStudentData.ptNote
+              : 'Chưa có ghi chú';
+          }
         }
       }
 
@@ -831,24 +1177,170 @@
         currentStudentData = null;
       }
 
-      function updateProgress(id) {
-        alert('Mở form cập nhật tiến độ cho học viên #' + id);
-        // TODO: Implement update progress functionality
+      // Open edit modal - allow updating body metrics and PT note
+      function openStudentEdit(memberId) {
+        fetchStudentData(memberId)
+          .then(() => {
+            // Fill readonly personal fields
+            document.getElementById('edit-name').textContent = currentStudentData.name || 'N/A';
+            document.getElementById('edit-phone').textContent = currentStudentData.phone || 'Chưa có';
+            document.getElementById('edit-email').textContent = currentStudentData.email || 'N/A';
+            document.getElementById('edit-dob').textContent = currentStudentData.dob ? formatDate(currentStudentData.dob) : 'N/A';
+            // Fill editable fields
+            document.getElementById('edit-weight').value = currentStudentData.weight != null ? currentStudentData.weight : '';
+            document.getElementById('edit-height').value = currentStudentData.height != null ? currentStudentData.height : '';
+            document.getElementById('edit-bmi').value = currentStudentData.bmi != null ? currentStudentData.bmi.toFixed(1) : '';
+            recomputeBMI();
+            document.getElementById('edit-goal').value = currentStudentData.goal || '';
+            document.getElementById('edit-ptnote').value = currentStudentData.ptNote || '';
+            document.getElementById('studentEditModal').classList.add('active');
+          })
+          .catch(err => showToast(err.message || 'Không tải được thông tin để chỉnh sửa'));
       }
 
-      function saveNotes() {
-        if (!currentStudentData) {
-          alert('Không có dữ liệu học viên!');
-          return;
+      function closeEditModal() {
+        document.getElementById('studentEditModal').classList.remove('active');
+      }
+
+      function recomputeBMI() {
+        const w = parseFloat(document.getElementById('edit-weight').value);
+        const h = parseFloat(document.getElementById('edit-height').value);
+        const bmiInput = document.getElementById('edit-bmi');
+        if (w > 0 && h > 0) {
+          const bmi = w / Math.pow(h / 100, 2);
+          bmiInput.value = bmi.toFixed(1);
+        } else {
+          if (currentStudentData && currentStudentData.bmi != null) {
+            bmiInput.value = currentStudentData.bmi.toFixed(1);
+          } else {
+            bmiInput.value = '';
+          }
         }
-
-        const noteTextarea = document.querySelector('#studentModal .note-input');
-        const notes = noteTextarea ? noteTextarea.value : '';
-
-        // TODO: Implement save notes via AJAX
-        alert('Lưu ghi chú thành công!');
-        closeModal();
       }
+
+      document.addEventListener('input', function(e) {
+        if (e.target && (e.target.id === 'edit-weight' || e.target.id === 'edit-height')) {
+          recomputeBMI();
+        }
+      });
+
+      function saveStudentEdit() {
+        if (!currentStudentData) return;
+        // Lấy giá trị mới
+        const newWeight = parseFloat(document.getElementById('edit-weight').value) || 0;
+        const newHeight = parseFloat(document.getElementById('edit-height').value) || 0;
+        const newBMI = parseFloat(document.getElementById('edit-bmi').value) || 0;
+        const newGoal = (document.getElementById('edit-goal').value || '').trim();
+        const newNote = (document.getElementById('edit-ptnote').value || '').trim();
+
+        // Gọi API để lưu thay đổi xuống server
+        const params = new URLSearchParams();
+        params.append('memberId', currentStudentData.memberId);
+        params.append('weight', newWeight);
+        params.append('height', newHeight);
+        params.append('bmi', newBMI);
+        params.append('goal', newGoal);
+        params.append('ptNote', newNote);
+
+        fetch(CTX + '/pt/students/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body: params.toString()
+        })
+        .then(r => r.json())
+        .then(res => {
+          if (res && res.success) {
+            // Cập nhật UI card tương ứng
+            const card = document.querySelector(`.student-card[data-student-id="${currentStudentData.memberId}"]`);
+            if (card) {
+              card.setAttribute('data-student-weight', newWeight);
+              card.setAttribute('data-student-height', newHeight);
+              card.setAttribute('data-student-bmi', newBMI);
+              card.setAttribute('data-student-goal', newGoal);
+              card.setAttribute('data-student-note', newNote);
+
+              // Cập nhật 2 ô hiển thị weight & BMI trong card
+              const detailItems = card.querySelectorAll('.student-details .detail-item span');
+              if (detailItems && detailItems.length >= 4) {
+                detailItems[2].textContent = (newWeight || 0) + ' kg';
+                detailItems[3].textContent = (newBMI || 0);
+              }
+            }
+
+            // Cập nhật bảng danh sách (list-view) nếu đang hiển thị
+            const row = document.querySelector(`#list-view tr[data-member-id="${currentStudentData.memberId}"]`);
+            if (row) {
+              const tds = row.querySelectorAll('td');
+              // cột: 0 name,1 phone,2 email,3 weight,4 height,5 bmi,6 goal,7 actions
+              if (tds.length >= 7) {
+                tds[3].textContent = (newWeight || 0) + ' kg';
+                tds[4].textContent = (newHeight || 0) + ' cm';
+                tds[5].textContent = (newBMI || 0);
+                tds[6].textContent = newGoal || 'Chưa có mục tiêu';
+              }
+            }
+
+            // Cập nhật dữ liệu hiện tại để modal chi tiết sync
+            currentStudentData.weight = newWeight;
+            currentStudentData.height = newHeight;
+            currentStudentData.bmi = newBMI;
+            currentStudentData.goal = newGoal;
+            currentStudentData.ptNote = newNote;
+
+            showToast('Lưu thay đổi thành công');
+            closeEditModal();
+
+            // Nếu modal xem chi tiết đang mở, cập nhật phần ghi chú và body metrics
+            const detailModal = document.getElementById('studentModal');
+            if (detailModal && detailModal.classList.contains('active')) {
+              updateModalContent();
+            }
+          } else {
+            showToast('Lưu thất bại, vui lòng thử lại');
+          }
+        })
+        .catch(() => {
+          showToast('Có lỗi khi lưu dữ liệu');
+        });
+      }
+
+      function showToast(message) {
+        const toast = document.getElementById('globalToast');
+        const text = document.getElementById('toastText');
+        text.textContent = message || 'Thao tác thành công';
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2500);
+      }
+
+      // Không còn cần tự suy ra contextPath vì đã có CTX từ server
+
+      // View toggle
+      function switchView(mode) {
+        const cards = document.getElementById('cards-view');
+        const list = document.getElementById('list-view');
+        const btnCards = document.getElementById('btnCards');
+        const btnList = document.getElementById('btnList');
+        if (mode === 'list') {
+          cards.style.display = 'none';
+          list.style.display = 'block';
+          btnCards.style.background = '#6c757d';
+          btnList.style.background = 'var(--accent)';
+          localStorage.setItem('ptStudentsView', 'list');
+        } else {
+          list.style.display = 'none';
+          cards.style.display = 'grid';
+          btnList.style.background = '#6c757d';
+          btnCards.style.background = 'var(--accent)';
+          localStorage.setItem('ptStudentsView', 'cards');
+        }
+      }
+      // init view based on saved preference
+      (function initViewToggle(){
+        const pref = localStorage.getItem('ptStudentsView') || 'cards';
+        switchView(pref);
+      })();
     </script>
   </body>
 </html>
