@@ -102,8 +102,24 @@ public class VNPayService {
             if (finalReturnUrl == null || finalReturnUrl.trim().isEmpty()) {
                 throw new IllegalStateException("Return URL is required. Please provide returnUrl parameter or configure vnp_ReturnUrl in email.properties");
             }
+            
+            // IMPORTANT: Ensure Return URL ends with /vnpay-return, not /auth/login
+            if (!finalReturnUrl.endsWith("/vnpay-return")) {
+                LOGGER.warning("[VNPayService] WARNING: Return URL does not end with /vnpay-return: " + finalReturnUrl);
+                // Fix it by appending /vnpay-return if missing
+                if (finalReturnUrl.endsWith("/")) {
+                    finalReturnUrl = finalReturnUrl + "vnpay-return";
+                } else {
+                    finalReturnUrl = finalReturnUrl + "/vnpay-return";
+                }
+                LOGGER.info("[VNPayService] Fixed Return URL to: " + finalReturnUrl);
+            }
+            
             vnp_Params.put("vnp_ReturnUrl", finalReturnUrl);
-            LOGGER.info("[VNPayService] Using ReturnUrl: " + finalReturnUrl);
+            LOGGER.info("[VNPayService] ========================================");
+            LOGGER.info("[VNPayService] VNPay Return URL: " + finalReturnUrl);
+            LOGGER.info("[VNPayService] IMPORTANT: This URL must match the URL registered in VNPay merchant portal!");
+            LOGGER.info("[VNPayService] ========================================");
             
             // Create date - VNPay requires timezone GMT+7 (Vietnam time)
             TimeZone vnTimeZone = TimeZone.getTimeZone("Asia/Ho_Chi_Minh");
@@ -136,10 +152,12 @@ public class VNPayService {
                     queryUrl.append(URLEncoder.encode(value, StandardCharsets.UTF_8.toString()));
                     queryUrl.append("&");
                     
-                    // Build sign data
+                    // Build sign data (FOLLOW VNPAY DEMO: encode field VALUE before hashing)
+                    // Important: VNPay demo uses US-ASCII for URL-encoding in hash data
+                    // to avoid signature mismatch we mirror that behavior here.
                     signData.append(key);
                     signData.append("=");
-                    signData.append(value);
+                    signData.append(URLEncoder.encode(value, StandardCharsets.US_ASCII.toString()));
                     signData.append("&");
                 }
             }
@@ -232,12 +250,11 @@ public class VNPayService {
                 
                 // Only include non-null and non-empty values
                 // IMPORTANT: Use the trimmed value (already trimmed when adding to vnpParams)
-                // VNPay expects raw values (not URL encoded) in sign data
+                // IMPORTANT: Mirror VNPay demo behavior by URL-encoding VALUE with US-ASCII before hashing
                 if (value != null && !value.trim().isEmpty()) {
                     signData.append(key);
                     signData.append("=");
-                    // Use the value as-is (already trimmed, already URL-decoded by servlet container)
-                    signData.append(value);
+                    signData.append(URLEncoder.encode(value, StandardCharsets.US_ASCII.toString()));
                     signData.append("&");
                 }
             }

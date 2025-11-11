@@ -222,8 +222,12 @@ public class CheckoutServlet extends HttpServlet {
                     System.out.println("[CheckoutServlet] Base URL: " + baseUrl);
                     System.out.println("[CheckoutServlet] Context Path: " + request.getContextPath());
                     
+                    // Build return URL explicitly to ensure it's correct
+                    String returnUrl = baseUrl + "/vnpay-return";
+                    System.out.println("[CheckoutServlet] VNPay Return URL: " + returnUrl);
+                    
                     String vnpayPaymentUrl = checkoutService.processVNPayPayment(
-                        order.getOrderId(), amount, orderInfo, ipAddress, baseUrl);
+                        order.getOrderId(), amount, orderInfo, ipAddress, returnUrl);
                     
                     if (vnpayPaymentUrl != null && !vnpayPaymentUrl.trim().isEmpty()) {
                         System.out.println("[CheckoutServlet] Redirecting to VNPay payment URL");

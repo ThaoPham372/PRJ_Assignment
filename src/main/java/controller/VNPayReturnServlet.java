@@ -4,7 +4,10 @@ import service.shop.PaymentService;
 import service.shop.PaymentServiceImpl;
 import service.shop.VNPayService;
 import model.shop.PaymentStatus;
-import Utils.SessionUtil;
+import dao.shop.OrderDao;
+import dao.shop.OrderItemDao;
+import model.shop.Order;
+import model.shop.OrderItem;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -27,12 +30,16 @@ public class VNPayReturnServlet extends HttpServlet {
     
     private VNPayService vnPayService;
     private PaymentService paymentService;
+    private OrderDao orderDao;
+    private OrderItemDao orderItemDao;
     
     @Override
     public void init() throws ServletException {
         super.init();
         this.vnPayService = new VNPayService();
         this.paymentService = new PaymentServiceImpl();
+        this.orderDao = new OrderDao();
+        this.orderItemDao = new OrderItemDao();
         LOGGER.info("[VNPayReturnServlet] Initialized successfully");
     }
     
@@ -122,14 +129,6 @@ public class VNPayReturnServlet extends HttpServlet {
                 return;
             }
             
-            // Check if user is logged in
-            if (!SessionUtil.isLoggedIn(request)) {
-                LOGGER.warning("[VNPayReturnServlet] User not logged in");
-                request.getSession().setAttribute("error", "Vui lòng đăng nhập để xem thông tin đơn hàng.");
-                response.sendRedirect(request.getContextPath() + "/auth/login");
-                return;
-            }
-            
             // Find payment by order ID
             List<model.Payment> payments = paymentService.findPaymentsByOrder(orderId.longValue());
             if (payments == null || payments.isEmpty()) {
@@ -157,15 +156,23 @@ public class VNPayReturnServlet extends HttpServlet {
                 
                 if (updated) {
                     LOGGER.info("[VNPayReturnServlet] Payment status updated to PAID successfully");
-                    request.getSession().setAttribute("success", "Thanh toán thành công! Đơn hàng của bạn đã được xác nhận.");
+                    payment.setStatus(PaymentStatus.PAID);
+                    if (vnp_TransactionNo != null && !vnp_TransactionNo.isBlank()) {
+                        payment.setExternalRef(vnp_TransactionNo);
+                    }
                 } else {
                     LOGGER.warning("[VNPayReturnServlet] Failed to update payment status");
-                    request.getSession().setAttribute("error", "Thanh toán thành công nhưng có lỗi khi cập nhật trạng thái. Vui lòng liên hệ hỗ trợ.");
                 }
+
+                // Load order details to display invoice
+                Order order = loadOrderWithItems(orderId);
+                request.setAttribute("order", order);
+                request.setAttribute("payments", payments);
+                request.setAttribute("successMessage", "Thanh toán thành công! Đơn hàng của bạn đã được xác nhận.");
                 
-                // Redirect to order success page
-                String successUrl = request.getContextPath() + "/order/success?orderId=" + orderId;
-                response.sendRedirect(successUrl);
+                // Forward to invoice/success page directly so user sees the bill even without login
+                request.getRequestDispatcher("/views/cart/success.jsp").forward(request, response);
+                return;
                 
             } else {
                 // Payment failed or cancelled
@@ -174,18 +181,40 @@ public class VNPayReturnServlet extends HttpServlet {
                 
                 // Update payment status to FAILED if not already PAID
                 if (payment.getStatus() != PaymentStatus.PAID) {
-                    paymentService.updatePaymentStatus(payment.getPaymentId(), PaymentStatus.FAILED);
+                    boolean failedUpdated = paymentService.updatePaymentStatus(payment.getPaymentId(), PaymentStatus.FAILED);
+                    if (failedUpdated) {
+                        payment.setStatus(PaymentStatus.FAILED);
+                    }
                 }
                 
-                request.getSession().setAttribute("error", "Thanh toán không thành công: " + responseMessage);
-                response.sendRedirect(request.getContextPath() + "/cart");
+                request.setAttribute("errorMessage", "Thanh toán không thành công: " + responseMessage);
+                request.getRequestDispatcher("/views/cart/checkout.jsp").forward(request, response);
             }
             
         } catch (Exception e) {
             LOGGER.severe("[VNPayReturnServlet] Error processing VNPay return: " + e.getMessage());
             e.printStackTrace();
-            request.getSession().setAttribute("error", "Có lỗi xảy ra khi xử lý kết quả thanh toán. Vui lòng liên hệ hỗ trợ.");
-            response.sendRedirect(request.getContextPath() + "/cart");
+            request.setAttribute("errorMessage", "Có lỗi xảy ra khi xử lý kết quả thanh toán. Vui lòng liên hệ hỗ trợ.");
+            request.getRequestDispatcher("/views/cart/checkout.jsp").forward(request, response);
+        }
+    }
+
+    /**
+     * Load order and attach items for invoice display
+     */
+    private Order loadOrderWithItems(Integer orderId) {
+        try {
+            Optional<Order> orderOpt = orderDao.findByIdOptional(orderId);
+            if (orderOpt.isEmpty()) {
+                return null;
+            }
+            Order order = orderOpt.get();
+            List<OrderItem> items = orderItemDao.findByOrderId(orderId);
+            order.setItems(items);
+            return order;
+        } catch (Exception ex) {
+            LOGGER.warning("[VNPayReturnServlet] Unable to load order details for invoice: " + ex.getMessage());
+            return null;
         }
     }
     
