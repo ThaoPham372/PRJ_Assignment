@@ -403,7 +403,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
       <aside class="sidebar">
         <div class="sidebar-header">
           <a
-            href="${pageContext.request.contextPath}/views/admin/dashboard.jsp"
+            href="${pageContext.request.contextPath}/admin/dashboard"
             class="sidebar-brand"
           >
             <i class="fas fa-dumbbell"></i>
@@ -539,18 +539,8 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                 <i class="fas fa-users"></i>
               </div>
               <div class="stat-info">
-                <h3>1,245</h3>
+                <h3>${totalMembersWithMembership != null ? totalMembersWithMembership : 0}</h3>
                 <p>Tổng số hội viên</p>
-              </div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-icon orange">
-                <i class="fas fa-dollar-sign"></i>
-              </div>
-              <div class="stat-info">
-                <h3>456M</h3>
-                <p>Doanh thu tháng này</p>
               </div>
             </div>
 
@@ -559,18 +549,18 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                 <i class="fas fa-user-check"></i>
               </div>
               <div class="stat-info">
-                <h3>892</h3>
-                <p>Check-in hôm nay</p>
+                <h3>${totalActiveMembers != null ? totalActiveMembers : 0}</h3>
+                <p>Tổng người dùng</p>
               </div>
             </div>
 
             <div class="stat-card">
-              <div class="stat-icon purple">
-                <i class="fas fa-calendar-check"></i>
+              <div class="stat-icon orange">
+                <i class="fas fa-dollar-sign"></i>
               </div>
               <div class="stat-info">
-                <h3>34</h3>
-                <p>Lớp training hôm nay</p>
+                <h3>${revenueFormatted != null ? revenueFormatted : '0'}</h3>
+                <p>Doanh thu tháng này</p>
               </div>
             </div>
           </div>
@@ -591,7 +581,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
               </p>
               <div class="management-card-actions">
                 <a
-                  href="${pageContext.request.contextPath}/views/admin/profile.jsp"
+                  href="${pageContext.request.contextPath}/admin/profile"
                   class="btn btn-small"
                 >
                   <i class="fas fa-edit"></i> Chỉnh sửa thông tin
@@ -613,7 +603,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
               </p>
               <div class="management-card-actions">
                 <a
-                  href="${pageContext.request.contextPath}/views/admin/account_management.jsp"
+                  href="${pageContext.request.contextPath}/admin/account-management"
                   class="btn btn-small"
                 >
                   <i class="fas fa-list"></i> Xem danh sách
@@ -635,7 +625,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
               </p>
               <div class="management-card-actions">
                 <a
-                  href="${pageContext.request.contextPath}/views/admin/member_management.jsp"
+                  href="${pageContext.request.contextPath}/admin/membership-management"
                   class="btn btn-small"
                 >
                   <i class="fas fa-list"></i> Quản lý
@@ -657,7 +647,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
               </p>
               <div class="management-card-actions">
                 <a
-                  href="${pageContext.request.contextPath}/views/admin/service_schedule.jsp"
+                  href="${pageContext.request.contextPath}/admin/service-schedule"
                   class="btn btn-small"
                 >
                   <i class="fas fa-calendar"></i> Xem lịch
@@ -679,7 +669,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
               </p>
               <div class="management-card-actions">
                 <a
-                  href="${pageContext.request.contextPath}/views/admin/trainer_management.jsp"
+                  href="${pageContext.request.contextPath}/admin/trainer-management"
                   class="btn btn-small"
                 >
                   <i class="fas fa-list"></i> Xem danh sách
@@ -701,7 +691,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
               </p>
               <div class="management-card-actions">
                 <a
-                  href="${pageContext.request.contextPath}/views/admin/order_management.jsp"
+                  href="${pageContext.request.contextPath}/admin/order-management"
                   class="btn btn-small"
                 >
                   <i class="fas fa-boxes"></i> Quản lý kho
@@ -723,7 +713,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
               </p>
               <div class="management-card-actions">
                 <a
-                  href="${pageContext.request.contextPath}/views/admin/payment_finance.jsp"
+                  href="${pageContext.request.contextPath}/admin/payment-finance"
                   class="btn btn-small"
                 >
                   <i class="fas fa-file-invoice-dollar"></i> Xem chi tiết
@@ -745,7 +735,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
               </p>
               <div class="management-card-actions">
                 <a
-                  href="${pageContext.request.contextPath}/views/admin/reports.jsp"
+                  href="${pageContext.request.contextPath}/admin/reports"
                   class="btn btn-small"
                 >
                   <i class="fas fa-chart-bar"></i> Xem báo cáo

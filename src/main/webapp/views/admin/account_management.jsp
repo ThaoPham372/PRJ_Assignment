@@ -749,8 +749,11 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Mật khẩu</label>
-                            <input type="password" class="form-input" name="password" value="" /> <!-- luôn để trống khi edit -->
+                            <label class="form-label">Mật khẩu <span id="passwordRequired" style="color: red;">*</span></label>
+                            <input type="password" class="form-input" name="password" id="passwordInput" value="" placeholder="Tối thiểu 8 ký tự, có chữ và số" required />
+                            <small style="color: #666; font-size: 0.85rem; margin-top: 5px; display: block;">
+                                Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ cái và số
+                            </small>
                         </div>
                         
                         <div class="form-group">
@@ -810,6 +813,13 @@
                     form.action = `${pageContext.request.contextPath}/admin/account-management`; 
                     form.method = 'post';
                     form.querySelector('input[name="action"]').value = 'addAccount';
+                    
+                    // Reset form và set mật khẩu là bắt buộc khi thêm mới
+                    form.reset();
+                    const passwordInput = document.getElementById('passwordInput');
+                    passwordInput.required = true;
+                    passwordInput.value = '';
+                    document.getElementById('passwordRequired').style.display = 'inline';
                 }
 
                 function openEditModal(id) { // Cần FIX
@@ -825,11 +835,18 @@
                         document.getElementById('modalTitle').textContent = 'Chỉnh sửa tài khoản';
 
                         // Điền dữ liệu vào form
-                        document.querySelector('input[name="name"]').value = user.name;
-                        document.querySelector('input[name="email"]').value = user.email;
-                        document.querySelector('input[name="username"]').value = user.username;
-                        document.querySelector('select[name="role"]').value = user.role = user.role.toLowerCase();
-                        document.querySelector('select[name="status"]').value = user.status = user.status.toLowerCase();
+                        document.querySelector('input[name="name"]').value = user.name || '';
+                        document.querySelector('input[name="email"]').value = user.email || '';
+                        document.querySelector('input[name="username"]').value = user.username || '';
+                        document.querySelector('select[name="role"]').value = (user.role || '').toLowerCase();
+                        document.querySelector('select[name="status"]').value = (user.status || '').toLowerCase();
+                        
+                        // Khi edit, mật khẩu không bắt buộc (có thể để trống nếu không muốn thay đổi)
+                        const passwordInput = document.getElementById('passwordInput');
+                        passwordInput.required = false;
+                        passwordInput.value = '';
+                        passwordInput.placeholder = 'Để trống nếu không muốn thay đổi mật khẩu';
+                        document.getElementById('passwordRequired').style.display = 'none';
                     })
                     .catch(err => console.error('Lỗi tải dữ liệu:', err));
                 }

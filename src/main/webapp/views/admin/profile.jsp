@@ -535,13 +535,27 @@
             </div>
 
             <div class="profile-body">
+              <!-- Messages -->
+              <c:if test="${not empty message}">
+                <div class="alert alert-success">
+                  <i class="fas fa-check-circle"></i>
+                  ${message}
+                </div>
+              </c:if>
+              <c:if test="${not empty error}">
+                <div class="alert alert-danger">
+                  <i class="fas fa-exclamation-circle"></i>
+                  ${error}
+                </div>
+              </c:if>
+
               <!-- Edit Information Form -->
               <h3 class="section-title">
                 <i class="fas fa-edit"></i>
                 Chỉnh sửa thông tin cá nhân
               </h3>
 
-              <form action="${pageContext.request.contextPath}/admin/profile?id=${sessionScope.user.userId}" method="post">
+              <form action="${pageContext.request.contextPath}/admin/profile?id=${sessionScope.user != null ? sessionScope.user.id : ''}" method="post">
                   <input type="hidden" name="action" value="updateAdmin" />
                 <div class="form-grid">
                   <div class="form-group">
@@ -633,54 +647,174 @@
                   Đổi mật khẩu
                 </h3>
 
-                <form action="${pageContext.request.contextPath}/admin/profile?id=${sessionScope.user.userId}" method="post">
-                    <input type="hidden" name="action" value="updateAdminPassword" />
-                  <div class="form-grid">
-                    <div class="form-group full-width">
-                      <label class="form-label">Mật khẩu hiện tại</label>
-                      <input
-                        type="password"
-                        class="form-input"
-                        name="currentPassword"
-                        required
-                      />
-                    </div>
-
-                    <div class="form-group">
-                      <label class="form-label">Mật khẩu mới</label>
-                      <input
-                        type="password"
-                        class="form-input"
-                        name="newPassword"
-                        required
-                      />
-                    </div>
-
-                    <div class="form-group">
-                      <label class="form-label">Xác nhận mật khẩu mới</label>
-                      <input
-                        type="password"
-                        class="form-input"
-                        name="confirmPassword"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div class="form-actions">
-                    <button type="reset" class="btn btn-outline">
-                      <i class="fas fa-times"></i> Hủy
-                    </button>
-                    <button type="submit" class="btn">
-                      <i class="fas fa-lock"></i> Đổi mật khẩu
-                    </button>
-                  </div>
-                </form>
+                <div style="text-align: center; padding: 20px;">
+                  <p style="color: var(--text-light); margin-bottom: 20px;">
+                    Để đổi mật khẩu, chúng tôi sẽ gửi mã xác nhận đến email của bạn
+                  </p>
+                  <button type="button" class="btn" onclick="openChangePasswordModal()">
+                    <i class="fas fa-key"></i>
+                    Đổi mật khẩu
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </main>
     </div>
+
+    <!-- Change Password Confirmation Modal -->
+    <div class="modal" id="changePasswordModal">
+      <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <i class="fas fa-key"></i>
+            Xác nhận đổi mật khẩu
+          </h3>
+          <button class="modal-close" onclick="closeChangePasswordModal()">
+            &times;
+          </button>
+        </div>
+        <div style="padding: 20px;">
+          <p style="margin-bottom: 20px; color: var(--text);">
+            Bạn có chắc chắn muốn đổi mật khẩu? Mã xác nhận sẽ được gửi đến email:
+          </p>
+          <div style="background: var(--muted); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <strong style="color: var(--accent);">
+              <i class="fas fa-envelope"></i>
+              ${sessionScope.user != null ? sessionScope.user.email : 'N/A'}
+            </strong>
+          </div>
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" class="btn btn-outline" onclick="closeChangePasswordModal()">
+              <i class="fas fa-times"></i> Hủy
+            </button>
+            <button type="button" class="btn" id="confirmPasswordBtn" onclick="confirmChangePassword()">
+              <i class="fas fa-check"></i> Xác nhận
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      .modal {
+        display: none !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal.active {
+        display: flex !important;
+      }
+
+      .modal-content {
+        background: #fff;
+        border-radius: 15px;
+        padding: 30px;
+        max-width: 600px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--muted);
+      }
+
+      .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .modal-close {
+        background: none;
+        border: none;
+        font-size: 2rem;
+        cursor: pointer;
+        color: var(--text-light);
+        line-height: 1;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+      }
+
+      .modal-close:hover {
+        background: var(--muted);
+        color: var(--text);
+      }
+    </style>
+
+    <script>
+      function openChangePasswordModal() {
+        const modal = document.getElementById('changePasswordModal');
+        if (modal) {
+          modal.classList.add('active');
+          console.log('Modal opened'); // Debug log
+        } else {
+          console.error('Modal not found'); // Debug log
+        }
+      }
+
+      function closeChangePasswordModal() {
+        const modal = document.getElementById('changePasswordModal');
+        if (modal) {
+          modal.classList.remove('active');
+        }
+      }
+
+      function confirmChangePassword() {
+        // Disable button to prevent double click
+        const confirmBtn = document.getElementById('confirmPasswordBtn');
+        if (confirmBtn) {
+          confirmBtn.disabled = true;
+          confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+        }
+
+        // Create form and submit
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '${pageContext.request.contextPath}/admin/profile';
+        
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = 'changePassword';
+        form.appendChild(actionInput);
+
+        document.body.appendChild(form);
+        form.submit();
+      }
+
+      // Close modal when clicking outside
+      document.addEventListener('click', function(event) {
+        const modal = document.getElementById('changePasswordModal');
+        if (modal && event.target === modal) {
+          closeChangePasswordModal();
+        }
+      });
+    </script>
   </body>
 </html>

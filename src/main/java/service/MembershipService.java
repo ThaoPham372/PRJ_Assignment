@@ -9,14 +9,14 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * MemberShipService - Service xử lý business logic cho membership
+ * MembershipService - Service xử lý business logic cho membership
  
  Tuân thủ mô hình MVC và nguyên tắc Single Responsibility
  */
-public class MemberShipService {
+public class MembershipService {
     private final MembershipDAO membershipDAO;
 
-    public MemberShipService() {
+    public MembershipService() {
         membershipDAO = new MembershipDAO();
     }
 

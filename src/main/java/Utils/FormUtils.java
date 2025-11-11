@@ -42,7 +42,17 @@ public class FormUtils {
         }
 
         if (request.getParameter("role") != null) {
-            obj.setRole(request.getParameter("role").trim());
+            String role = request.getParameter("role").trim();
+            // Chuẩn hóa role: admin -> Admin, member -> Member, trainer -> Trainer
+            if (role.equalsIgnoreCase("admin")) {
+                obj.setRole("Admin");
+            } else if (role.equalsIgnoreCase("member")) {
+                obj.setRole("Member");
+            } else if (role.equalsIgnoreCase("trainer")) {
+                obj.setRole("Trainer");
+            } else {
+                obj.setRole(role);
+            }
         }
 
         if (request.getParameter("username") != null) {
@@ -50,13 +60,16 @@ public class FormUtils {
         }
 
         String passwordStr = request.getParameter("password");
-        if (passwordStr != null && !passwordStr.isEmpty() && passwordService.isValidPassword(passwordStr)) {
+        if (passwordStr != null && !passwordStr.isEmpty()) {
+            // Luôn hash mật khẩu nếu có (giống như RegistrationService)
+            // Validation nên được xử lý ở tầng servlet/service, không phải ở FormUtils
             String passwordHash = passwordService.hashPassword(passwordStr);
             obj.setPassword(passwordHash);
         }
 
         if (request.getParameter("status") != null) {
-            obj.setStatus(request.getParameter("status").trim());
+            String status = request.getParameter("status").trim().toUpperCase();
+            obj.setStatus(status);
         }
 
         if (request.getParameter("emailVerified") != null) {
