@@ -723,45 +723,9 @@
     <!-- Statistics Cards -->
     <div class="stats-row">
         <div class="stat-item">
-            <div class="stat-label">Cân nặng</div>
-            <div class="stat-value">
-                <c:choose>
-                    <c:when test="${not empty weight}">
-                        <fmt:formatNumber value="${weight}" pattern="#,##0.0"/> kg
-                    </c:when>
-                    <c:when test="${not empty member.weight}">
-                        <fmt:formatNumber value="${member.weight}" pattern="#,##0.0"/> kg
-                    </c:when>
-                    <c:otherwise>--</c:otherwise>
-                </c:choose>
-            </div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-label">Chiều cao</div>
-            <div class="stat-value">
-                <c:choose>
-                    <c:when test="${not empty height}">
-                        <fmt:formatNumber value="${height}" pattern="#,##0"/> cm
-                    </c:when>
-                    <c:when test="${not empty member.height}">
-                        <fmt:formatNumber value="${member.height}" pattern="#,##0"/> cm
-                    </c:when>
-                    <c:otherwise>--</c:otherwise>
-                </c:choose>
-            </div>
-        </div>
-        <div class="stat-item">
             <div class="stat-label">Chỉ số BMI</div>
             <div class="stat-value">
                 <c:choose>
-                    <c:when test="${not empty bmi}">
-                        <fmt:formatNumber value="${bmi}" pattern="#,##0.0"/>
-                        <c:if test="${not empty bmiCategory}">
-                            <div style="font-size: 0.7rem; margin-top: 5px; font-weight: 600; color: var(--text-light);">
-                                (<c:out value="${bmiCategory}"/>)
-                            </div>
-                        </c:if>
-                    </c:when>
                     <c:when test="${not empty member.bmi}">
                         <fmt:formatNumber value="${member.bmi}" pattern="#,##0.0"/>
                     </c:when>
@@ -770,16 +734,35 @@
             </div>
         </div>
         <div class="stat-item">
-            <div class="stat-label">Mục tiêu</div>
-            <div class="stat-value" style="font-size: 1.2rem;">
+            <div class="stat-label">Calories hôm nay</div>
+            <div class="stat-value">
                 <c:choose>
-                    <c:when test="${not empty goal}">
-                        <c:out value="${goal}"/>
+                    <c:when test="${not empty todayCalories}">
+                        <fmt:formatNumber value="${todayCalories}" pattern="#,##0"/> kcal
                     </c:when>
-                    <c:when test="${not empty member.goal}">
-                        <c:out value="${member.goal}"/>
+                    <c:otherwise>0 kcal</c:otherwise>
+                </c:choose>
+            </div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Tổng đã chi tiêu</div>
+            <div class="stat-value">
+                <c:choose>
+                    <c:when test="${not empty totalSpent}">
+                        <fmt:formatNumber value="${totalSpent}" pattern="#,##0"/> đ
                     </c:when>
-                    <c:otherwise>Chưa đặt</c:otherwise>
+                    <c:otherwise>0 đ</c:otherwise>
+                </c:choose>
+            </div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Gói đang sở hữu</div>
+            <div class="stat-value" style="font-size: 1.1rem;">
+                <c:choose>
+                    <c:when test="${not empty currentPackageName}">
+                        <c:out value="${currentPackageName}"/>
+                    </c:when>
+                    <c:otherwise>Chưa có gói</c:otherwise>
                 </c:choose>
             </div>
         </div>

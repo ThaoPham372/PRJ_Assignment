@@ -12,6 +12,7 @@ import model.schedule.DayOfWeek;
 import service.TrainerService;
 import service.UserService;
 import service.schedule.TrainerScheduleService;
+import service.schedule.TimeSlotService;
 import dao.GymInfoDAO;
 import Utils.FormUtils;
 

@@ -121,16 +121,24 @@ public class TrainerDashboardServlet extends HttpServlet {
       return;
     }
 
-    // Routing dựa trên path
+    // Routing dựa trên path và action parameter
     String path = req.getServletPath();
+    String action = req.getParameter("action");
 
     try {
+      // Nếu có action="changePassword", xử lý đổi mật khẩu qua email
+      if ("changePassword".equals(action)) {
+        handleChangePassword(req, resp, currentTrainer);
+        return;
+      }
+
       switch (path) {
         case "/pt/update-profile":
           updateTrainerProfile(req, resp, currentTrainer);
           break;
 
         case "/pt/change-password":
+          // Nếu không có action, sử dụng method cũ (yêu cầu mật khẩu hiện tại)
           changeTrainerPassword(req, resp, currentTrainer);
           break;
 
@@ -342,6 +350,68 @@ public class TrainerDashboardServlet extends HttpServlet {
   private String getParameter(HttpServletRequest req, String name) {
     String value = req.getParameter(name);
     return (value != null && !value.trim().isEmpty()) ? value.trim() : null;
+  }
+
+  /**
+   * Xử lý yêu cầu đổi mật khẩu từ profile
+   * Tạo password reset token và chuyển hướng sang trang reset password
+   * Giống như chức năng của admin và member
+   */
+  private void handleChangePassword(HttpServletRequest request, HttpServletResponse response, Trainer trainer)
+      throws ServletException, IOException {
+    System.out.println("[TrainerDashboardServlet] ===== CHANGE PASSWORD REQUEST =====");
+    
+    try {
+      String email = trainer.getEmail();
+      HttpSession session = request.getSession();
+      
+      System.out.println("[TrainerDashboardServlet] Trainer email: " + email);
+      
+      if (email == null || email.trim().isEmpty()) {
+        session.setAttribute("passwordErrorMessage", "Không tìm thấy email. Vui lòng liên hệ quản trị viên.");
+        response.sendRedirect(request.getContextPath() + "/pt/profile");
+        return;
+      }
+
+      // Normalize email
+      email = email.trim().toLowerCase();
+
+      // Kiểm tra rate limiting (30 giây)
+      boolean hasPending = passwordService.hasPendingResetRequest(email);
+      if (hasPending) {
+        session.setAttribute("passwordErrorMessage", "Bạn đã yêu cầu đổi mật khẩu gần đây. Vui lòng đợi 30 giây trước khi gửi lại.");
+        response.sendRedirect(request.getContextPath() + "/pt/profile");
+        return;
+      }
+
+      // Tạo password reset token và gửi email
+      System.out.println("[TrainerDashboardServlet] Calling passwordService.requestPasswordReset()...");
+      String verificationCode = passwordService.requestPasswordReset(email);
+      
+      if (verificationCode == null) {
+        System.err.println("[TrainerDashboardServlet] ❌ Failed to generate verification code");
+        session.setAttribute("passwordErrorMessage", "Có lỗi xảy ra khi gửi email. Vui lòng thử lại sau.");
+        response.sendRedirect(request.getContextPath() + "/pt/profile");
+        return;
+      }
+
+      System.out.println("[TrainerDashboardServlet] ✅ Verification code generated: " + verificationCode);
+      
+      // Lưu email vào session và chuyển hướng sang trang reset password
+      session.setAttribute("resetEmail", email);
+      session.setAttribute("successMessage", "Mã xác nhận đã được gửi đến email: " + email);
+      
+      String redirectUrl = request.getContextPath() + "/auth/reset-password";
+      System.out.println("[TrainerDashboardServlet] Redirecting to: " + redirectUrl);
+      response.sendRedirect(redirectUrl);
+      
+    } catch (Exception e) {
+      System.err.println("[TrainerDashboardServlet] Error handling change password: " + e.getMessage());
+      e.printStackTrace();
+      HttpSession session = request.getSession();
+      session.setAttribute("passwordErrorMessage", "Có lỗi xảy ra. Vui lòng thử lại sau.");
+      response.sendRedirect(request.getContextPath() + "/pt/profile");
+    }
   }
 
   /**

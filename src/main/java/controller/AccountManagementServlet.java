@@ -90,18 +90,36 @@ public class AccountManagementServlet extends HttpServlet {
             throws ServletException, IOException {
         String username = req.getParameter("username");
         String email = req.getParameter("email");
+        String password = req.getParameter("password");
 
-        boolean isValidInput = isValidUsernameAndEmail(username, email); // Có thể đưa vào class InputValidator
-        if (!isValidInput)
+        boolean isValidInput = isValidUsernameAndEmail(username, email);
+        if (!isValidInput) {
+            req.setAttribute("error", "Username hoặc email không hợp lệ hoặc đã tồn tại");
             return;
+        }
 
-        String role = req.getParameter("role").toLowerCase();
-        if (role == null)
+        // Validate password khi tạo tài khoản mới
+        if (password == null || password.trim().isEmpty()) {
+            req.setAttribute("error", "Mật khẩu là bắt buộc khi tạo tài khoản mới");
+            return;
+        }
+
+        service.PasswordService passwordService = new service.PasswordService();
+        if (!passwordService.isValidPassword(password)) {
+            String validationMsg = passwordService.getPasswordValidationMessage(password);
+            req.setAttribute("error", validationMsg != null ? validationMsg : "Mật khẩu không hợp lệ");
+            return;
+        }
+
+        String role = req.getParameter("role");
+        if (role == null || role.trim().isEmpty()) {
             role = "member";
+        }
+        role = role.toLowerCase();
 
         createAccountByRole(role, req);
 
-        req.setAttribute("message", "Add account successful!");
+        req.setAttribute("message", "Thêm tài khoản thành công!");
     }
 
     private void updateAccount(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
@@ -174,6 +192,10 @@ public class AccountManagementServlet extends HttpServlet {
         AdminService adminService = new AdminService();
         Admin admin = new Admin();
         FormUtils.getFormValue(req, admin);
+        // Set createdDate nếu chưa có
+        if (admin.getCreatedDate() == null) {
+            admin.setCreatedDate(new java.util.Date());
+        }
         adminService.add(admin);
     }
 
@@ -181,6 +203,10 @@ public class AccountManagementServlet extends HttpServlet {
             throws ServletException, IOException {
         Member member = new Member();
         FormUtils.getFormValue(req, member);
+        // Set createdDate nếu chưa có
+        if (member.getCreatedDate() == null) {
+            member.setCreatedDate(new java.util.Date());
+        }
         MemberService memberService = new MemberService();
         memberService.add(member);
     }
@@ -188,6 +214,10 @@ public class AccountManagementServlet extends HttpServlet {
     private void addTrainer(HttpServletRequest req) {
         Trainer trainer = new Trainer();
         FormUtils.getFormValue(req, trainer);
+        // Set createdDate nếu chưa có
+        if (trainer.getCreatedDate() == null) {
+            trainer.setCreatedDate(new java.util.Date());
+        }
         TrainerService trainerService = new TrainerService();
         trainerService.add(trainer);
     }

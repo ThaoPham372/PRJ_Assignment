@@ -85,6 +85,7 @@ public class RoleBasedRedirectFilter implements Filter {
     /**
      * Extract role from session and normalize it
      * Handles both List<String> and String types for backward compatibility
+     * Also checks user.role as fallback
      * 
      * @param session HTTP session
      * @return Normalized role string (uppercase) or null if not found
@@ -103,6 +104,15 @@ public class RoleBasedRedirectFilter implements Filter {
         } else if (userRolesObj instanceof String) {
             // Fallback for backward compatibility
             role = (String) userRolesObj;
+        }
+        
+        // Fallback: Nếu không tìm thấy trong userRoles, lấy từ user.role
+        if (role == null || role.trim().isEmpty()) {
+            Object userObj = session.getAttribute("user");
+            if (userObj != null && userObj instanceof model.User) {
+                model.User user = (model.User) userObj;
+                role = user.getRole();
+            }
         }
         
         // Normalize role to uppercase for case-insensitive comparison
@@ -133,11 +143,17 @@ public class RoleBasedRedirectFilter implements Filter {
             return URL_HOME;
         }
 
+        // Kiểm tra ADMIN trước (case-insensitive)
+        if (isRoleMatch(role, ROLE_ADMIN)) {
+            return URL_ADMIN_DASHBOARD;
+        }
         
+        // Kiểm tra PT/Trainer
         if (isRoleMatch(role, ROLE_PT) || isRoleMatch(role, ROLE_TRAINER)) {
             return URL_PT_DASHBOARD;
         }
         
+        // Kiểm tra Member/User
         if (isRoleMatch(role, ROLE_MEMBER) || isRoleMatch(role, ROLE_USER)) {
             return URL_MEMBER_DASHBOARD;
         }

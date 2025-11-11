@@ -163,12 +163,36 @@ file="/views/common/header.jsp" %>
     align-items: center;
     gap: 8px;
     margin-left: 10px;
+    cursor: pointer;
   }
 
   .btn-change-password:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
     color: white;
+  }
+
+  .btn {
+    background: var(--gradient-accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(236, 139, 90, 0.4);
+  }
+
+  .btn-secondary {
+    background: #6c757d;
   }
 
   .btn-back-top {
@@ -432,6 +456,93 @@ file="/views/common/header.jsp" %>
     color: var(--danger);
   }
 
+  /* MODAL STYLES */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    display: none !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal.show {
+    display: flex !important;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .modal-content {
+    background: #fff;
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: slideInUp 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideInUp {
+    from {
+      transform: translateY(50px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+  }
+
+  .modal-header h3 {
+    color: var(--primary);
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .modal-header .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #999;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-header .close-btn:hover {
+    background: #f0f0f0;
+    color: #333;
+  }
+
   @media (max-width: 768px) {
     .profile-hero-content {
       flex-direction: column;
@@ -544,18 +655,11 @@ file="/views/common/header.jsp" %>
             <i class="fas fa-edit"></i>
             Chỉnh sửa thông tin
           </a>
-          <!-- Form đổi mật khẩu -->
-          <form
-            method="POST"
-            action="${pageContext.request.contextPath}/member/change-password"
-            style="display: inline-block; margin-left: 10px;"
-            onsubmit="return confirm('Bạn có chắc chắn muốn đổi mật khẩu? Mã xác nhận sẽ được gửi đến email của bạn.');"
-          >
-            <button type="submit" class="btn-change-password">
-              <i class="fas fa-key"></i>
-              Đổi mật khẩu
-            </button>
-          </form>
+          <!-- Nút đổi mật khẩu -->
+          <button type="button" class="btn-change-password" onclick="openChangePasswordModal()">
+            <i class="fas fa-key"></i>
+            Đổi mật khẩu
+          </button>
         </div>
       </div>
     </div>
@@ -855,5 +959,82 @@ file="/views/common/header.jsp" %>
   </div>
 </div>
 
+  <!-- Change Password Confirmation Modal -->
+  <div class="modal" id="changePasswordModal">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3>
+          <i class="fas fa-key"></i>
+          Xác nhận đổi mật khẩu
+        </h3>
+        <button class="close-btn" onclick="closeChangePasswordModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div style="padding: 20px;">
+        <p style="margin-bottom: 20px; color: var(--text);">
+          Bạn có chắc chắn muốn đổi mật khẩu? Mã xác nhận sẽ được gửi đến email:
+        </p>
+        <div style="background: var(--muted); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+          <strong style="color: var(--accent);">
+            <i class="fas fa-envelope"></i>
+            ${not empty member.email ? member.email : (not empty sessionScope.user.email ? sessionScope.user.email : 'N/A')}
+          </strong>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn btn-secondary" onclick="closeChangePasswordModal()">
+            <i class="fas fa-times"></i> Hủy
+          </button>
+          <button type="button" class="btn" id="confirmPasswordBtn" onclick="confirmChangePassword()">
+            <i class="fas fa-check"></i> Xác nhận
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openChangePasswordModal() {
+      const modal = document.getElementById('changePasswordModal');
+      if (modal) {
+        modal.classList.add('show');
+        console.log('Modal opened'); // Debug log
+      } else {
+        console.error('Modal not found'); // Debug log
+      }
+    }
+
+    function closeChangePasswordModal() {
+      const modal = document.getElementById('changePasswordModal');
+      if (modal) {
+        modal.classList.remove('show');
+      }
+    }
+
+    function confirmChangePassword() {
+      // Disable button to prevent double click
+      const confirmBtn = document.getElementById('confirmPasswordBtn');
+      if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+      }
+
+      // Create form and submit
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '${pageContext.request.contextPath}/member/change-password';
+      
+      document.body.appendChild(form);
+      form.submit();
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('click', function(event) {
+      const modal = document.getElementById('changePasswordModal');
+      if (modal && event.target === modal) {
+        closeChangePasswordModal();
+      }
+    });
+  </script>
 
 <%@ include file="/views/common/footer.jsp" %>
