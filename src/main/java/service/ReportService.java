@@ -63,8 +63,11 @@ public class ReportService {
         EntityManager em = emf.createEntityManager();
         try {
             AdminReportsDAO dao = new AdminReportsDAO(em);
-            // Lấy dữ liệu từ 11 tháng trước đến nay (tổng 12 tháng)
-            LocalDate oneYearAgo = LocalDate.now().minusMonths(11).withDayOfMonth(1);
+            // Lấy dữ liệu từ 12 tháng trước đến nay (tổng 12 tháng)
+            // Sử dụng timezone GMT+7
+            java.time.ZoneId vietnamZone = java.time.ZoneId.of("Asia/Ho_Chi_Minh");
+            java.time.LocalDate nowVietnam = java.time.LocalDate.now(vietnamZone);
+            java.time.LocalDate oneYearAgo = nowVietnam.minusMonths(11).withDayOfMonth(1); // 11 tháng trước + tháng hiện tại = 12 tháng
             return dao.getMonthlyRevenueNative(oneYearAgo.toString());
         } finally {
             em.close();
@@ -88,6 +91,45 @@ public class ReportService {
         try {
             AdminReportsDAO dao = new AdminReportsDAO(em);
             return dao.getMonthlyMemberGrowth(6);
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Get active memberships chart data by day (last 30 days)
+     */
+    public List<ChartData> getActiveMembershipsByDay() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            AdminReportsDAO dao = new AdminReportsDAO(em);
+            return dao.getActiveMembershipsByDay(30);
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Get active memberships chart data by month (last 12 months)
+     */
+    public List<ChartData> getActiveMembershipsByMonth() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            AdminReportsDAO dao = new AdminReportsDAO(em);
+            return dao.getActiveMembershipsByMonth(12);
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Get top 5 spenders in current month
+     */
+    public List<model.report.TopSpender> getTopSpendersThisMonth() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            AdminReportsDAO dao = new AdminReportsDAO(em);
+            return dao.getTopSpendersThisMonth(5);
         } finally {
             em.close();
         }

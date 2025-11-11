@@ -432,7 +432,7 @@
                                     </c:when>
                                     
                                     <%-- Priority 2: If order is CONFIRMED, show "Đã hoàn thành" --%>
-                                    <c:when test="${order.orderStatus.code == 'CONFIRMED' or order.orderStatus.code == 'confirmed'}">
+                                    <c:when test="${order.orderStatus.toString() == 'CONFIRMED' or order.orderStatus.code == 'CONFIRMED' or order.orderStatus.code == 'confirmed' or fn:toUpperCase(order.orderStatus.code) == 'CONFIRMED'}">
                                         <span class="status-badge status-COMPLETED">
                                             <i class="fas fa-check-circle"></i>
                                             Đã hoàn thành
@@ -453,7 +453,7 @@
                                         <c:set var="hasPaid" value="false" />
                                         <c:if test="${not empty orderPayments}">
                                             <c:forEach items="${orderPayments}" var="payment">
-                                                <c:if test="${payment.status.code == 'paid'}">
+                                                <c:if test="${payment.status.code == 'paid' or payment.status.code == 'PAID'}">
                                                     <c:set var="hasPaid" value="true" />
                                                 </c:if>
                                             </c:forEach>
@@ -470,10 +470,21 @@
                                             
                                             <%-- If paid, show Order Status (PENDING/PROCESSING) --%>
                                             <c:otherwise>
-                                                <span class="status-badge status-${order.orderStatus.code}">
-                                                    <i class="fas fa-${order.orderStatus.code == 'PROCESSING' || order.orderStatus.code == 'processing' ? 'spinner' : order.orderStatus.code == 'shipped' ? 'truck' : 'clock'}"></i>
-                                                    ${order.orderStatus.displayName}
-                                                </span>
+                                                <%-- Double check: if order status is CONFIRMED but somehow fell through, show "Đã hoàn thành" --%>
+                                                <c:choose>
+                                                    <c:when test="${order.orderStatus.toString() == 'CONFIRMED' or order.orderStatus.code == 'CONFIRMED' or order.orderStatus.code == 'confirmed' or fn:toUpperCase(order.orderStatus.code) == 'CONFIRMED'}">
+                                                        <span class="status-badge status-COMPLETED">
+                                                            <i class="fas fa-check-circle"></i>
+                                                            Đã hoàn thành
+                                                        </span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="status-badge status-${order.orderStatus.code}">
+                                                            <i class="fas fa-${order.orderStatus.code == 'PROCESSING' || order.orderStatus.code == 'processing' ? 'spinner' : order.orderStatus.code == 'shipped' ? 'truck' : 'clock'}"></i>
+                                                            ${order.orderStatus.displayName}
+                                                        </span>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </c:otherwise>
                                         </c:choose>
                                     </c:otherwise>

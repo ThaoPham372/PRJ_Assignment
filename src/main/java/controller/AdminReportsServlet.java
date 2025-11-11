@@ -15,6 +15,7 @@ import java.math.RoundingMode;
 import java.util.List;
 import model.report.ChartData;
 import model.report.ReportSummary;
+import model.report.TopSpender;
 
 @WebServlet( urlPatterns = "/admin/reports")
 public class AdminReportsServlet extends HttpServlet {
@@ -29,14 +30,18 @@ public class AdminReportsServlet extends HttpServlet {
         ReportSummary summary = reportService.getSummaryStats();
         request.setAttribute("summary", summary);
 
-        // Get chart data
+        // Get chart data - Revenue
         List<ChartData> revenueData = reportService.getRevenueChartData();
-        List<ChartData> packageData = reportService.getPackageRevenueChartData();
-        List<ChartData> memberData = reportService.getMemberGrowthChartData();
-
         request.setAttribute("revenueChartJson", gson.toJson(revenueData));
-        request.setAttribute("packageChartJson", gson.toJson(packageData));
-        request.setAttribute("memberChartJson", gson.toJson(memberData));
+
+        // Get chart data - Active Memberships (by month)
+        List<ChartData> activeMembershipsData = reportService.getActiveMembershipsByMonth();
+        request.setAttribute("activeMembershipsChartJson", gson.toJson(activeMembershipsData));
+
+        // Get top 5 spenders
+        List<TopSpender> topSpenders = reportService.getTopSpendersThisMonth();
+        request.setAttribute("topSpenders", topSpenders);
+        request.setAttribute("topSpendersJson", gson.toJson(topSpenders));
 
         // Calculate revenue statistics from PaymentDAO
         BigDecimal revenueToday = paymentDAO.getRevenueToday();
