@@ -11,7 +11,7 @@ import model.shop.PaymentMethod;
 import model.shop.PaymentStatus;
 import model.shop.OrderStatus;
 import model.shop.OrderItem;
-import service.MemberShipService;
+import service.MembershipService;
 import service.PackageService;
 
 import java.math.BigDecimal;
@@ -31,20 +31,20 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentDAO paymentDAO;
     private final OrderDao orderDao;
     private final OrderItemDao orderItemDao;
-    private final MemberShipService membershipService;
+    private final MembershipService membershipService;
     private final PackageService packageService;
 
     public PaymentServiceImpl() {
         this.paymentDAO = new PaymentDAO();
         this.orderDao = new OrderDao();
         this.orderItemDao = new OrderItemDao();
-        this.membershipService = new MemberShipService();
+        this.membershipService = new MembershipService();
         this.packageService = new PackageService();
     }
     
     // Constructor for dependency injection
     public PaymentServiceImpl(PaymentDAO paymentDAO, OrderDao orderDao, 
-                             OrderItemDao orderItemDao, MemberShipService membershipService,
+                             OrderItemDao orderItemDao, MembershipService membershipService,
                              PackageService packageService) {
         this.paymentDAO = paymentDAO;
         this.orderDao = orderDao;
@@ -202,7 +202,7 @@ public class PaymentServiceImpl implements PaymentService {
     /**
      * Activate membership from order if order contains package
  Reusable method following DRY principle
- Sử dụng MemberShipService.createOrExtendMembership() để tận dụng validation và logic đã có
+ Sử dụng MembershipService.createOrExtendMembership() để tận dụng validation và logic đã có
      * 
      * @param orderId Order ID
      * @param memberId Member ID
@@ -255,7 +255,7 @@ public class PaymentServiceImpl implements PaymentService {
             
             LOGGER.info("👤 [activateMembershipFromOrder] Member found: " + member.getName() + " (ID: " + memberId + ")");
             
-            // Sử dụng MemberShipService.createOrExtendMembership() để tận dụng validation và logic đã có
+            // Sử dụng MembershipService.createOrExtendMembership() để tận dụng validation và logic đã có
             // Method này sẽ tự động:
             // - Validate trước khi tạo
             // - Cộng thời gian nếu đã có gói cùng loại
@@ -271,7 +271,7 @@ public class PaymentServiceImpl implements PaymentService {
                     LOGGER.warning("⚠️ [activateMembershipFromOrder] Membership created but ID is null");
                 }
             } catch (IllegalArgumentException e) {
-                // Validation error từ MemberShipService
+                // Validation error từ MembershipService
                 LOGGER.warning("⚠️ [activateMembershipFromOrder] Validation failed: " + e.getMessage());
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "❌ [activateMembershipFromOrder] Error creating/extending membership", e);

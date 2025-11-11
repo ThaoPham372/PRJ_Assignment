@@ -11,8 +11,8 @@ import jakarta.servlet.http.HttpSession;
 import model.Member;
 import model.Membership;
 import model.Package;
-import service.MemberShipService;
-import service.MemberShipService.ValidationResult;
+import service.MembershipService;
+import service.MembershipService.ValidationResult;
 import service.PackageService;
 
 /**
@@ -36,13 +36,13 @@ import service.PackageService;
 })
 public class MembershipServlet extends BaseMemberServlet {
 
-    private MemberShipService membershipService;
+    private MembershipService membershipService;
     private PackageService packageService;
 
     @Override
     public void init() throws ServletException {
         super.init();
-        this.membershipService = new MemberShipService();
+        this.membershipService = new MembershipService();
         this.packageService = new PackageService();
         System.out.println("[MembershipServlet] Initialized successfully");
     }

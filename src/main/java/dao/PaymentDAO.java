@@ -243,4 +243,27 @@ public class PaymentDAO extends GenericDAO<Payment> {
             return BigDecimal.ZERO;
         }
     }
+
+    /**
+     * Get total amount spent by a member (all payments with status = PAID)
+     * @param memberId Member ID
+     * @return Total amount spent as BigDecimal
+     */
+    public BigDecimal getTotalSpentByMember(Integer memberId) {
+        try {
+            String jpql = "SELECT SUM(p.amount) FROM Payment p " +
+                         "WHERE p.memberId = :memberId " +
+                         "AND p.status = :status";
+            
+            TypedQuery<BigDecimal> query = em.createQuery(jpql, BigDecimal.class);
+            query.setParameter("memberId", memberId);
+            query.setParameter("status", PaymentStatus.PAID);
+            
+            BigDecimal result = query.getSingleResult();
+            return result != null ? result : BigDecimal.ZERO;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error getting total spent by member: " + memberId, e);
+            return BigDecimal.ZERO;
+        }
+    }
 }
