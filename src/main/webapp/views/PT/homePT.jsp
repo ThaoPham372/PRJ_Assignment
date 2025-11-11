@@ -700,13 +700,14 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
             </ul>
 
             <div class="pt-menu-footer">
-              <button
+              <a
+                  href="${pageContext.request.contextPath}/logout"
                 class="btn-logout"
-                onclick="window.location.href='${pageContext.request.contextPath}/logout"
+               
               >
                 <i class="fas fa-sign-out-alt"></i>
                 Đăng xuất
-              </button>
+                </a>
             </div>
           </div>
         </div>

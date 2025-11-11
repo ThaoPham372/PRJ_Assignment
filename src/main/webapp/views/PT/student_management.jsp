@@ -1,5 +1,7 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -488,10 +490,11 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
               <label>Gói tập</label>
               <select name="package">
                 <option value="">Tất cả</option>
-                <option value="Personal Training" ${packageFilter == 'Personal Training' ? 'selected' : ''}>Personal Training</option>
-                <option value="Weight Loss" ${packageFilter == 'Weight Loss' ? 'selected' : ''}>Weight Loss</option>
-                <option value="Bodybuilding" ${packageFilter == 'Bodybuilding' ? 'selected' : ''}>Bodybuilding</option>
-                <option value="Yoga" ${packageFilter == 'Yoga' ? 'selected' : ''}>Yoga</option>
+                <c:if test="${packages != null && !empty packages}">
+                  <c:forEach var="pkg" items="${packages}">
+                    <option value="${pkg.name}" ${packageFilter == pkg.name ? 'selected' : ''}>${pkg.name}</option>
+                  </c:forEach>
+                </c:if>
               </select>
             </div>
             <button type="submit" class="btn"><i class="fas fa-search"></i> Tìm kiếm</button>
@@ -504,53 +507,112 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         <c:choose>
           <c:when test="${students != null && !empty students}">
             <c:forEach var="student" items="${students}">
-              <div class="student-card" onclick="openStudentDetail(${student.id})">
+              <c:set var="memberId" value="${student[0]}" />
+              <c:set var="name" value="${student[1]}" />
+              <c:set var="phone" value="${student[2]}" />
+              <c:set var="email" value="${student[3]}" />
+              <c:set var="gender" value="${student[4]}" />
+              <c:set var="dob" value="${student[5]}" />
+              <c:set var="weight" value="${student[6]}" />
+              <c:set var="height" value="${student[7]}" />
+              <c:set var="bmi" value="${student[8]}" />
+              <c:set var="goal" value="${student[9]}" />
+              <c:set var="ptNote" value="${student[10]}" />
+              <c:choose>
+                <c:when test="${fn:length(student) > 12}">
+                  <c:set var="packageName" value="${student[11]}" />
+                  <c:set var="totalBookings" value="${student[12]}" />
+                  <c:set var="completedSessions" value="${student[13]}" />
+                  <c:set var="confirmedSessions" value="${student[14]}" />
+                  <c:set var="pendingSessions" value="${student[15]}" />
+                </c:when>
+                <c:otherwise>
+                  <c:set var="packageName" value="" />
+                  <c:set var="totalBookings" value="${student[11]}" />
+                  <c:set var="completedSessions" value="${student[12]}" />
+                  <c:set var="confirmedSessions" value="${student[13]}" />
+                  <c:set var="pendingSessions" value="${student[14]}" />
+                </c:otherwise>
+              </c:choose>
+              <c:set var="totalSessions" value="${completedSessions + confirmedSessions}" />
+              <c:set var="progress" value="${totalBookings > 0 ? (completedSessions * 100 / totalBookings) : 0}" />
+              <div class="student-card" onclick="openStudentDetail(${memberId})" 
+                   data-student-id="${memberId}"
+                   data-student-name="${name != null ? fn:escapeXml(name) : ''}"
+                   data-student-phone="${phone != null ? fn:escapeXml(phone) : ''}"
+                   data-student-email="${email != null ? fn:escapeXml(email) : ''}"
+                   data-student-gender="${gender != null ? fn:escapeXml(gender) : ''}"
+                   data-student-dob="${dob != null ? dob : ''}"
+                   data-student-weight="${weight != null ? weight : 0}"
+                   data-student-height="${height != null ? height : 0}"
+                   data-student-bmi="${bmi != null ? bmi : 0}"
+                   data-student-goal="${goal != null ? fn:escapeXml(goal) : ''}"
+                   data-student-note="${ptNote != null ? fn:escapeXml(ptNote) : ''}"
+                   data-student-package="${packageName != null ? fn:escapeXml(packageName) : ''}"
+                   data-student-total="${totalBookings}"
+                   data-student-completed="${completedSessions}"
+                   data-student-confirmed="${confirmedSessions}">
                 <div class="student-header">
                   <div class="student-avatar">
                     <i class="fas fa-user"></i>
                   </div>
                   <div class="student-info">
-                    <h3>${student.name != null ? student.name : 'N/A'}</h3>
-                    <p class="package">${student.packageName != null ? student.packageName : 'Personal Training'}</p>
+                    <h3>${name != null ? name : 'N/A'}</h3>
+                    <p class="package">${packageName != null && !empty packageName ? packageName : 'Chưa có gói tập'}</p>
                   </div>
                 </div>
                 <div class="student-details">
                   <div class="detail-item">
                     <i class="fas fa-phone"></i>
-                    <span>${student.phone != null && !empty student.phone ? student.phone : 'Chưa có'}</span>
+                    <span>${phone != null && !empty phone ? phone : 'Chưa có'}</span>
                   </div>
                   <div class="detail-item">
                     <i class="fas fa-envelope"></i>
-                    <span>${student.email != null ? student.email : 'N/A'}</span>
-                  </div>
-                  <div class="detail-item">
-                    <i class="fas fa-calendar"></i>
-                    <span>${student.trainingMonths != null ? student.trainingMonths : 0} tháng</span>
+                    <span>${email != null ? email : 'N/A'}</span>
                   </div>
                   <div class="detail-item">
                     <i class="fas fa-dumbbell"></i>
-                    <span>${student.sessionCount != null ? student.sessionCount : 0} buổi tập</span>
+                    <span>${totalSessions} buổi tập</span>
+                  </div>
+                  <div class="detail-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>${completedSessions} đã hoàn thành</span>
                   </div>
                 </div>
                 <div class="progress-section">
                   <div class="progress-label">
-                    <span>Tiến độ ${student.progressType != null ? student.progressType : 'tập luyện'}</span>
-                    <span>${student.progress != null ? student.progress : 0}%</span>
+                    <span>Tiến độ tập luyện</span>
+                    <span><fmt:formatNumber value="${progress}" maxFractionDigits="0" />%</span>
                   </div>
                   <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${student.progress != null ? student.progress : 0}%"></div>
+                    <div class="progress-fill" style="width: ${progress}%"></div>
                   </div>
                 </div>
                 <div class="student-actions">
                   <button
                     class="btn btn-info btn-sm"
-                    onclick="event.stopPropagation(); openStudentDetail(${student.id})"
+                    onclick="event.stopPropagation(); openStudentDetail(${memberId})"
+                    data-student-id="${memberId}"
+                    data-student-name="${name != null ? fn:escapeXml(name) : ''}"
+                    data-student-phone="${phone != null ? fn:escapeXml(phone) : ''}"
+                    data-student-email="${email != null ? fn:escapeXml(email) : ''}"
+                    data-student-gender="${gender != null ? fn:escapeXml(gender) : ''}"
+                    data-student-dob="${dob != null ? dob : ''}"
+                    data-student-weight="${weight != null ? weight : 0}"
+                    data-student-height="${height != null ? height : 0}"
+                    data-student-bmi="${bmi != null ? bmi : 0}"
+                    data-student-goal="${goal != null ? fn:escapeXml(goal) : ''}"
+                    data-student-note="${ptNote != null ? fn:escapeXml(ptNote) : ''}"
+                    data-student-package="${packageName != null ? fn:escapeXml(packageName) : ''}"
+                    data-student-total="${totalBookings}"
+                    data-student-completed="${completedSessions}"
+                    data-student-confirmed="${confirmedSessions}"
                   >
                     <i class="fas fa-eye"></i> Chi tiết
                   </button>
                   <button
                     class="btn btn-sm"
-                    onclick="event.stopPropagation(); updateProgress(${student.id})"
+                    onclick="event.stopPropagation(); updateProgress(${memberId})"
                   >
                     <i class="fas fa-edit"></i> Cập nhật
                   </button>
@@ -581,19 +643,19 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Họ và tên</div>
-              <div class="info-value">Nguyễn Văn A</div>
+              <div class="info-value">-</div>
             </div>
             <div class="info-item">
               <div class="info-label">Số điện thoại</div>
-              <div class="info-value">0912345678</div>
+              <div class="info-value">-</div>
             </div>
             <div class="info-item">
               <div class="info-label">Email</div>
-              <div class="info-value">nguyenvana@gmail.com</div>
+              <div class="info-value">-</div>
             </div>
             <div class="info-item">
               <div class="info-label">Ngày sinh</div>
-              <div class="info-value">15/05/1995</div>
+              <div class="info-value">-</div>
             </div>
           </div>
         </div>
@@ -603,19 +665,19 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Cân nặng hiện tại</div>
-              <div class="info-value">75 kg</div>
+              <div class="info-value">-</div>
             </div>
             <div class="info-item">
               <div class="info-label">Chiều cao</div>
-              <div class="info-value">175 cm</div>
+              <div class="info-value">-</div>
             </div>
             <div class="info-item">
               <div class="info-label">BMI</div>
-              <div class="info-value">24.5</div>
+              <div class="info-value">-</div>
             </div>
             <div class="info-item">
               <div class="info-label">Mục tiêu</div>
-              <div class="info-value">Giảm xuống 70 kg</div>
+              <div class="info-value">-</div>
             </div>
           </div>
         </div>
@@ -625,19 +687,19 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Gói tập</div>
-              <div class="info-value">Personal Training Premium</div>
+              <div class="info-value">-</div>
             </div>
             <div class="info-item">
               <div class="info-label">Thời gian tập</div>
-              <div class="info-value">3 tháng</div>
+              <div class="info-value">-</div>
             </div>
             <div class="info-item">
               <div class="info-label">Số buổi đã tập</div>
-              <div class="info-value">48 buổi</div>
+              <div class="info-value">-</div>
             </div>
             <div class="info-item">
               <div class="info-label">Tiến độ</div>
-              <div class="info-value">75%</div>
+              <div class="info-value">-</div>
             </div>
           </div>
         </div>
@@ -647,9 +709,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           <textarea
             class="note-input"
             placeholder="Nhập ghi chú về học viên..."
-          >
-Học viên rất chăm chỉ, tiến bộ tốt. Cần tăng cường bài tập cardio.</textarea
-          >
+          ></textarea>
         </div>
 
         <div
@@ -675,19 +735,117 @@ Học viên rất chăm chỉ, tiến bộ tốt. Cần tăng cường bài tậ
     </div>
 
     <script>
-      function openStudentDetail(id) {
+      let currentStudentData = null;
+
+      function openStudentDetail(memberId) {
+        // Find the element (card or button) that has the data attributes
+        let element = document.querySelector(`.student-card[data-student-id="${memberId}"]`);
+        if (!element) {
+          element = document.querySelector(`button[data-student-id="${memberId}"]`);
+        }
+
+        if (!element) {
+          console.error('Could not find student data for ID:', memberId);
+          return;
+        }
+
+        currentStudentData = {
+          memberId: memberId,
+          name: element.getAttribute('data-student-name') || '',
+          phone: element.getAttribute('data-student-phone') || '',
+          email: element.getAttribute('data-student-email') || '',
+          gender: element.getAttribute('data-student-gender') || '',
+          dob: element.getAttribute('data-student-dob') || '',
+          weight: parseFloat(element.getAttribute('data-student-weight')) || 0,
+          height: parseFloat(element.getAttribute('data-student-height')) || 0,
+          bmi: parseFloat(element.getAttribute('data-student-bmi')) || 0,
+          goal: element.getAttribute('data-student-goal') || '',
+          ptNote: element.getAttribute('data-student-note') || '',
+          packageName: element.getAttribute('data-student-package') || '',
+          totalBookings: parseInt(element.getAttribute('data-student-total')) || 0,
+          completedSessions: parseInt(element.getAttribute('data-student-completed')) || 0,
+          confirmedSessions: parseInt(element.getAttribute('data-student-confirmed')) || 0
+        };
+
+        // Update modal with actual data
+        updateModalContent();
         document.getElementById('studentModal').classList.add('active');
+      }
+
+      function updateModalContent() {
+        if (!currentStudentData) return;
+
+        // Update personal info
+        const modal = document.getElementById('studentModal');
+        const infoValues = modal.querySelectorAll('.info-value');
+        
+        // Personal info: name, phone, email, dob
+        if (infoValues.length >= 4) {
+          infoValues[0].textContent = currentStudentData.name || 'N/A';
+          infoValues[1].textContent = currentStudentData.phone || 'Chưa có';
+          infoValues[2].textContent = currentStudentData.email || 'N/A';
+          infoValues[3].textContent = currentStudentData.dob ? formatDate(currentStudentData.dob) : 'N/A';
+        }
+
+        // Body metrics: weight, height, bmi, goal
+        if (infoValues.length >= 8) {
+          infoValues[4].textContent = currentStudentData.weight ? currentStudentData.weight + ' kg' : 'N/A';
+          infoValues[5].textContent = currentStudentData.height ? currentStudentData.height + ' cm' : 'N/A';
+          infoValues[6].textContent = currentStudentData.bmi ? currentStudentData.bmi.toFixed(1) : 'N/A';
+          infoValues[7].textContent = currentStudentData.goal || 'Chưa có mục tiêu';
+        }
+
+        // Training progress: package, duration, sessions, progress
+        if (infoValues.length >= 12) {
+          infoValues[8].textContent = currentStudentData.packageName || 'Chưa có gói tập';
+          infoValues[9].textContent = 'Đang cập nhật'; // Duration months - would need membership data
+          infoValues[10].textContent = currentStudentData.completedSessions + ' buổi';
+          const progress = currentStudentData.totalBookings > 0 
+            ? Math.round((currentStudentData.completedSessions * 100) / currentStudentData.totalBookings)
+            : 0;
+          infoValues[11].textContent = progress + '%';
+        }
+
+        // Update notes
+        const noteTextarea = modal.querySelector('.note-input');
+        if (noteTextarea) {
+          noteTextarea.value = currentStudentData.ptNote || '';
+        }
+      }
+
+      function formatDate(dateStr) {
+        if (!dateStr || dateStr === 'null') return 'N/A';
+        try {
+          const date = new Date(dateStr);
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const year = date.getFullYear();
+          return day + '/' + month + '/' + year;
+        } catch (e) {
+          return dateStr;
+        }
       }
 
       function closeModal() {
         document.getElementById('studentModal').classList.remove('active');
+        currentStudentData = null;
       }
 
       function updateProgress(id) {
         alert('Mở form cập nhật tiến độ cho học viên #' + id);
+        // TODO: Implement update progress functionality
       }
 
       function saveNotes() {
+        if (!currentStudentData) {
+          alert('Không có dữ liệu học viên!');
+          return;
+        }
+
+        const noteTextarea = document.querySelector('#studentModal .note-input');
+        const notes = noteTextarea ? noteTextarea.value : '';
+
+        // TODO: Implement save notes via AJAX
         alert('Lưu ghi chú thành công!');
         closeModal();
       }

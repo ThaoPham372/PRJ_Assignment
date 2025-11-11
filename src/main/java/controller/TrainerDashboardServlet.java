@@ -28,7 +28,7 @@ import service.TrainerService;
     "/pt/profile",
     "/pt/update-profile", // Cập nhật thông tin trainer
     "/pt/change-password", // Đổi mật khẩu trainer
-    "/pt/students",
+    // "/pt/students" - Removed: handled by TrainerStudentServlet
     "/pt/chat",
     "/pt/reports"
 })
@@ -77,8 +77,7 @@ public class TrainerDashboardServlet extends HttpServlet {
         jspPath = "/views/PT/homePT.jsp";
       case "/pt/profile" ->
         jspPath = "/views/PT/profile.jsp";
-      case "/pt/students" ->
-        jspPath = "/views/PT/students.jsp";
+      // "/pt/students" - Removed: handled by TrainerStudentServlet
       case "/pt/chat" ->
         jspPath = "/views/PT/chat.jsp";
       case "/pt/reports" ->

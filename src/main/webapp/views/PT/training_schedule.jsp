@@ -625,6 +625,226 @@ uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
       .empty-state p {
         font-size: 1.1rem;
       }
+      /* Week Calendar Styles */
+      .week-calendar-container {
+        margin-top: 20px;
+        overflow-x: auto;
+      }
+      .week-calendar-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .week-calendar-table thead {
+        background: linear-gradient(135deg, var(--primary), #1f2961);
+        color: #fff;
+      }
+      .week-calendar-table th {
+        padding: 12px 8px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .week-calendar-table th.slot-header {
+        background: #0d1338;
+        min-width: 120px;
+      }
+      .week-calendar-table th small {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 400;
+        opacity: 0.9;
+        margin-top: 4px;
+      }
+      .week-calendar-table td {
+        padding: 10px 8px;
+        border: 1px solid #e0e0e0;
+        vertical-align: middle;
+        text-align: center;
+        min-width: 100px;
+      }
+      .slot-time-cell {
+        background: #f8f9fa;
+        font-weight: 600;
+        color: var(--primary);
+        text-align: left !important;
+        padding: 12px !important;
+      }
+      .slot-time-cell small {
+        color: var(--text-muted);
+        font-weight: 400;
+        font-size: 0.8rem;
+      }
+      .calendar-cell {
+        padding: 8px !important;
+        height: 80px;
+      }
+      .cell-status {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 4px;
+        border-radius: 8px;
+        min-height: 60px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+      .cell-status i {
+        font-size: 1.2rem;
+        margin-bottom: 4px;
+      }
+      .cell-status .status-text {
+        font-size: 0.75rem;
+        text-align: center;
+        line-height: 1.2;
+      }
+      .cell-exception {
+        background: #ffebee;
+        color: #c62828;
+        border: 2px solid #ef5350;
+      }
+      .cell-confirmed {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border: 2px solid #4caf50;
+      }
+      .cell-pending {
+        background: #fff3e0;
+        color: #e65100;
+        border: 2px solid #ff9800;
+      }
+      .cell-available {
+        background: #e3f2fd;
+        color: #1565c0;
+        border: 2px solid #2196f3;
+      }
+      .cell-unavailable {
+        background: #f5f5f5;
+        color: #757575;
+        border: 2px solid #bdbdbd;
+      }
+      .cell-empty {
+        background: #fafafa;
+        color: #bdbdbd;
+        border: 1px dashed #e0e0e0;
+      }
+      .calendar-legend {
+        display: flex;
+        gap: 20px;
+        margin-top: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+        color: var(--primary);
+        font-weight: 500;
+      }
+      .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        border: 2px solid;
+      }
+      .legend-color.cell-exception {
+        background: #ffebee;
+        border-color: #ef5350;
+      }
+      .legend-color.cell-confirmed {
+        background: #e8f5e9;
+        border-color: #4caf50;
+      }
+      .legend-color.cell-pending {
+        background: #fff3e0;
+        border-color: #ff9800;
+      }
+      .legend-color.cell-available {
+        background: #e3f2fd;
+        border-color: #2196f3;
+      }
+      .legend-color.cell-unavailable {
+        background: #f5f5f5;
+        border-color: #bdbdbd;
+      }
+      .legend-color.cell-empty {
+        background: #fafafa;
+        border-color: #e0e0e0;
+        border-style: dashed;
+      }
+      /* Schedule Header */
+      .schedule-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid var(--border);
+      }
+      .schedule-title {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      .schedule-title i {
+        font-size: 2rem;
+        color: var(--primary);
+      }
+      .title-content h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        line-height: 1.2;
+      }
+      .title-content .week-range {
+        margin: 5px 0 0 0;
+        font-size: 0.95rem;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+      /* Week Navigation */
+      .week-navigation {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .week-nav-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: var(--primary);
+        color: #fff;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        border: 2px solid var(--primary);
+        box-shadow: 0 2px 8px rgba(20, 26, 73, 0.2);
+      }
+      .week-nav-btn:hover {
+        background: #1f2961;
+        border-color: #1f2961;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(20, 26, 73, 0.3);
+      }
+      .week-nav-btn i {
+        font-size: 1rem;
+      }
       /* Bookings Grid */
       .bookings-grid {
         display: grid;
@@ -1491,47 +1711,188 @@ uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
         </c:if>
       </div>
 
-      <!-- LỊCH CỐ ĐỊNH HÀNG TUẦN -->
-      <div class="card">
-        <div class="section-title">
-          <i class="fas fa-clock"></i> Lịch làm việc cố định
+      <!-- LỊCH RIÊNG CỦA PT (Tuần hiện tại) -->
+      <div class="card" id="weeklyScheduleSection">
+        <div class="schedule-header">
+          <div class="schedule-title">
+            <i class="fas fa-calendar-week"></i>
+            <div class="title-content">
+              <h2>Lịch riêng của PT</h2>
+              <p class="week-range">Tuần ${weekStart} đến ${weekEnd}</p>
+            </div>
+          </div>
+          <div class="week-navigation">
+            <a
+              href="?week=${weekStart.minusWeeks(1)}#weeklyScheduleSection"
+              class="week-nav-btn"
+              title="Tuần trước"
+            >
+              <i class="fas fa-chevron-left"></i>
+            </a>
+            <a
+              href="?week=${weekStart.plusWeeks(1)}#weeklyScheduleSection"
+              class="week-nav-btn"
+              title="Tuần sau"
+            >
+              <i class="fas fa-chevron-right"></i>
+            </a>
+          </div>
         </div>
-        <c:if test="${empty schedules}">
+        <c:if test="${empty fixedTimeSlots || empty fixedMap}">
           <div class="empty-state">
             <i class="fas fa-calendar-alt"></i>
-            <p>Chưa thiết lập lịch cố định.</p>
+            <p>Chưa có lịch làm việc cố định.</p>
           </div>
         </c:if>
-        <c:if test="${not empty schedules}">
-          <table>
-            <thead>
-              <tr>
-                <th>Thứ</th>
-                <th>Slot</th>
-                <th>Rảnh</th>
-                <th>Ghi chú</th>
-              </tr>
-            </thead>
-            <tbody>
-              <c:forEach var="s" items="${schedules}">
+        <c:if test="${not empty fixedTimeSlots && not empty fixedMap}">
+          <div class="week-calendar-container">
+            <table class="week-calendar-table">
+              <thead>
                 <tr>
-                  <td>${s.dayOfWeek}</td>
-                  <td>${s.slotId}</td>
-                  <td>
-                    <c:choose>
-                      <c:when test="${s.isAvailable == true}">
-                        <span class="status-badge completed">Có mặt</span>
-                      </c:when>
-                      <c:otherwise>
-                        <span class="status-badge cancelled">Nghỉ</span>
-                      </c:otherwise>
-                    </c:choose>
-                  </td>
-                  <td>${s.notes}</td>
+                  <th class="slot-header">Khung giờ</th>
+                  <th>Thứ 2<br /><small>${weekStart}</small></th>
+                  <th>Thứ 3<br /><small>${weekStart.plusDays(1)}</small></th>
+                  <th>Thứ 4<br /><small>${weekStart.plusDays(2)}</small></th>
+                  <th>Thứ 5<br /><small>${weekStart.plusDays(3)}</small></th>
+                  <th>Thứ 6<br /><small>${weekStart.plusDays(4)}</small></th>
+                  <th>Thứ 7<br /><small>${weekStart.plusDays(5)}</small></th>
+                  <th>CN<br /><small>${weekStart.plusDays(6)}</small></th>
                 </tr>
-              </c:forEach>
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                <c:forEach var="slot" items="${fixedTimeSlots}">
+                  <tr>
+                    <td class="slot-time-cell">
+                      <strong>${slot[1]}</strong> - ${slot[2]}<br />
+                      <small>Slot ${slot[0]}</small>
+                    </td>
+                    <c:forEach var="dayOffset" begin="0" end="6">
+                      <c:set
+                        var="currentDate"
+                        value="${weekStart.plusDays(dayOffset)}"
+                      />
+                      <c:set var="cellKey" value="${currentDate}#${slot[0]}" />
+                      <c:set var="cellData" value="${fixedMap[cellKey]}" />
+                      <td class="calendar-cell">
+                        <c:choose>
+                          <c:when test="${not empty cellData}">
+                            <%-- row: [0]=slotId, [1]=actualDate, [2]=dayOfWeek,
+                            [3]=confirmedCount, [4]=pendingCount,
+                            [5]=hasException, [6]=exceptionType,
+                            [7]=hasSchedule, [8]=isAvailable --%>
+                            <c:set
+                              var="confirmedCount"
+                              value="${cellData[3]}"
+                            />
+                            <c:set var="pendingCount" value="${cellData[4]}" />
+                            <c:set var="hasException" value="${cellData[5]}" />
+                            <c:set var="exceptionType" value="${cellData[6]}" />
+                            <c:set var="hasSchedule" value="${cellData[7]}" />
+                            <c:set var="isAvailable" value="${cellData[8]}" />
+
+                            <c:choose>
+                              <%-- Ưu tiên 1: Có exception (Nghỉ/Bận) --%>
+                              <c:when test="${hasException == 1}">
+                                <div class="cell-status cell-exception">
+                                  <i class="fas fa-ban"></i>
+                                  <span class="status-text">
+                                    <c:choose>
+                                      <c:when test="${exceptionType == 'OFF'}"
+                                        >Nghỉ</c:when
+                                      >
+                                      <c:when test="${exceptionType == 'BUSY'}"
+                                        >Bận</c:when
+                                      >
+                                      <c:otherwise>Đặc biệt</c:otherwise>
+                                    </c:choose>
+                                  </span>
+                                </div>
+                              </c:when>
+                              <%-- Ưu tiên 2: Có buổi Confirmed --%>
+                              <c:when test="${confirmedCount > 0}">
+                                <div class="cell-status cell-confirmed">
+                                  <i class="fas fa-check-circle"></i>
+                                  <span class="status-text"
+                                    >Đã xác nhận (${confirmedCount})</span
+                                  >
+                                </div>
+                              </c:when>
+                              <%-- Ưu tiên 3: Có buổi Pending --%>
+                              <c:when test="${pendingCount > 0}">
+                                <div class="cell-status cell-pending">
+                                  <i class="fas fa-clock"></i>
+                                  <span class="status-text"
+                                    >Chờ xác nhận (${pendingCount})</span
+                                  >
+                                </div>
+                              </c:when>
+                              <%-- Ưu tiên 4: Có schedule nhưng không available
+                              --%>
+                              <c:when
+                                test="${hasSchedule == 1 && isAvailable == 0}"
+                              >
+                                <div class="cell-status cell-unavailable">
+                                  <i class="fas fa-times"></i>
+                                  <span class="status-text">Không có ca</span>
+                                </div>
+                              </c:when>
+                              <%-- Mặc định: Còn trống (có schedule và
+                              available) --%>
+                              <c:when
+                                test="${hasSchedule == 1 && isAvailable == 1}"
+                              >
+                                <div class="cell-status cell-available">
+                                  <i class="fas fa-check"></i>
+                                  <span class="status-text">Còn trống</span>
+                                </div>
+                              </c:when>
+                              <%-- Không có schedule --%>
+                              <c:otherwise>
+                                <div class="cell-status cell-empty">
+                                  <span class="status-text">-</span>
+                                </div>
+                              </c:otherwise>
+                            </c:choose>
+                          </c:when>
+                          <c:otherwise>
+                            <div class="cell-status cell-empty">
+                              <span class="status-text">-</span>
+                            </div>
+                          </c:otherwise>
+                        </c:choose>
+                      </td>
+                    </c:forEach>
+                  </tr>
+                </c:forEach>
+              </tbody>
+            </table>
+            <div class="calendar-legend">
+              <span class="legend-item"
+                ><span class="legend-color cell-exception"></span>
+                Nghỉ/Bận</span
+              >
+              <span class="legend-item"
+                ><span class="legend-color cell-confirmed"></span> Đã xác
+                nhận</span
+              >
+              <span class="legend-item"
+                ><span class="legend-color cell-pending"></span> Chờ xác
+                nhận</span
+              >
+              <span class="legend-item"
+                ><span class="legend-color cell-available"></span> Còn trống (Có
+                ca làm, chưa có booking)</span
+              >
+              <span class="legend-item"
+                ><span class="legend-color cell-unavailable"></span> Không có ca
+                (PT không làm việc slot này)</span
+              >
+              <span class="legend-item"
+                ><span class="legend-color cell-empty"></span> - (Chưa thiết lập
+                lịch cố định)</span
+              >
+            </div>
+          </div>
         </c:if>
       </div>
     </div>
@@ -1571,12 +1932,22 @@ uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
     </div>
 
     <script>
-      // Set min date to today
+      // Set min date to today and scroll to weekly schedule if needed
       document.addEventListener('DOMContentLoaded', function () {
         const dateInput = document.getElementById('exceptionDate');
         if (dateInput) {
           const today = new Date().toISOString().split('T')[0];
           dateInput.setAttribute('min', today);
+        }
+
+        // Scroll to weekly schedule section if URL has anchor
+        if (window.location.hash === '#weeklyScheduleSection') {
+          setTimeout(function () {
+            const section = document.getElementById('weeklyScheduleSection');
+            if (section) {
+              section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }, 100);
         }
 
         // Check for success messages (add or delete)

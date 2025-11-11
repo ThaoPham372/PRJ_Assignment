@@ -13,7 +13,7 @@ import model.Member;
 import model.Membership;
 import model.Package;
 import service.MemberService;
-import service.MembershipService;
+import service.MemberShipService;
 import service.PackageService;
 
 /*
@@ -22,7 +22,7 @@ import service.PackageService;
 @WebServlet(urlPatterns = "/admin/membership-management")
 public class MembershipManagementServlet extends HttpServlet {
 
-    private final MembershipService membershipService = new MembershipService();
+    private final MemberShipService membershipService = new MemberShipService();
     private final MemberService memberService = new MemberService();
     private final PackageService packageService = new PackageService();
 

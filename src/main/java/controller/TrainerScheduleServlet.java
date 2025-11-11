@@ -79,21 +79,48 @@ public class TrainerScheduleServlet extends HttpServlet {
     // =============================
     // 🧩 Lịch làm việc cố định (Weekly Fixed Schedule)
     // =============================
-    LocalDate today = LocalDate.now();
-    LocalDate monday = today.with(java.time.DayOfWeek.MONDAY);
+    // Lấy tuần từ request parameter, mặc định là tuần hiện tại
+    String weekParam = req.getParameter("week");
+    LocalDate monday;
+    if (weekParam != null && !weekParam.isEmpty()) {
+      try {
+        monday = LocalDate.parse(weekParam);
+        // Đảm bảo là thứ 2
+        monday = monday.with(java.time.DayOfWeek.MONDAY);
+      } catch (Exception e) {
+        LocalDate today = LocalDate.now();
+        monday = today.with(java.time.DayOfWeek.MONDAY);
+      }
+    } else {
+      LocalDate today = LocalDate.now();
+      monday = today.with(java.time.DayOfWeek.MONDAY);
+    }
 
     // Lấy danh sách ca giờ cơ bản
     List<Object[]> timeSlots = scheduleService.getTimeSlotsBasic();
 
-    // Lấy dữ liệu lịch cố định gộp với booking trong tuần
+    // Lấy dữ liệu lịch thực tế gộp với booking và exceptions trong tuần
     List<Object[]> fixedRows = scheduleService.getWeeklyFixedSchedule(trainerId, monday);
 
-    // Map để tra cứu nhanh theo khóa: DAY#SLOT
+    // Map để tra cứu nhanh theo khóa: actualDate#slotId
+    // row: [0]=slotId, [1]=actualDate, [2]=dayOfWeek, [3]=confirmedCount,
+    // [4]=pendingCount, [5]=hasException, [6]=exceptionType,
+    // [7]=hasSchedule, [8]=isAvailable
     Map<String, Object[]> fixedMap = new HashMap<>();
     for (Object[] row : fixedRows) {
-      // row: [0]=dayOfWeek, [1]=slotId, [2]=isAvailable, [3]=maxBookings,
-      // [4]=notes, [5]=total, [6]=confirmed, [7]=pending
-      fixedMap.put((String) row[0] + "#" + row[1], row);
+      // actualDate có thể là String hoặc Date từ native query
+      String actualDateStr;
+      if (row[1] instanceof java.sql.Date) {
+        actualDateStr = ((java.sql.Date) row[1]).toString();
+      } else if (row[1] instanceof java.util.Date) {
+        actualDateStr = new java.sql.Date(((java.util.Date) row[1]).getTime()).toString();
+      } else {
+        // Nếu là String, sử dụng trực tiếp
+        actualDateStr = row[1].toString();
+      }
+      Integer slotId = ((Number) row[0]).intValue();
+      String key = actualDateStr + "#" + slotId;
+      fixedMap.put(key, row);
     }
 
     req.setAttribute("weekStart", monday);

@@ -137,27 +137,72 @@ public class TrainerScheduleDAO extends BaseDAO {
         }
     }
 
-    // Lấy lịch cố định + đếm booking trong tuần [weekStart, weekEnd]
+    // Lấy lịch thực tế cho tuần (linh hoạt từ tất cả time slots + bookings +
+    // exceptions)
+    // Trả về: [slotId, actualDate, dayOfWeek, confirmedCount, pendingCount,
+    // hasException, exceptionType, hasSchedule, isAvailable]
     public List<Object[]> getWeeklyFixedSchedule(int trainerId, java.sql.Date weekStart, java.sql.Date weekEnd) {
-        String jpql = """
-                    SELECT s.dayOfWeek, s.slotId, s.isAvailable, s.maxBookings, s.notes,
-                           COUNT(b.bookingId) AS totalBooked,
-                           SUM(CASE WHEN b.bookingStatus = 'CONFIRMED' THEN 1 ELSE 0 END) AS confirmedBooked,
-                           SUM(CASE WHEN b.bookingStatus = 'PENDING'  THEN 1 ELSE 0 END) AS pendingBooked
-                    FROM TrainerSchedule s
-                    LEFT JOIN PTBooking b
-                      ON b.trainerId = s.trainerId
-                     AND b.slotId    = s.slotId
-                     AND b.bookingDate BETWEEN :start AND :end
-                    WHERE s.trainerId = :tid
-                    GROUP BY s.dayOfWeek, s.slotId, s.isAvailable, s.maxBookings, s.notes
-                    ORDER BY FIELD(s.dayOfWeek,'MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'), s.slotId
+        // Query linh hoạt: Lấy tất cả time slots, với mỗi slot và mỗi ngày trong tuần,
+        // kiểm tra bookings, exceptions và schedules
+        String sql = """
+                    SELECT
+                        ts.slot_id,
+                        DATE_ADD(?, INTERVAL day_offset DAY) AS actual_date,
+                        CASE day_offset
+                            WHEN 0 THEN 'MONDAY'
+                            WHEN 1 THEN 'TUESDAY'
+                            WHEN 2 THEN 'WEDNESDAY'
+                            WHEN 3 THEN 'THURSDAY'
+                            WHEN 4 THEN 'FRIDAY'
+                            WHEN 5 THEN 'SATURDAY'
+                            WHEN 6 THEN 'SUNDAY'
+                        END AS day_of_week,
+                        COALESCE(SUM(CASE WHEN b.booking_status = 'CONFIRMED' THEN 1 ELSE 0 END), 0) AS confirmed_count,
+                        COALESCE(SUM(CASE WHEN b.booking_status = 'PENDING' THEN 1 ELSE 0 END), 0) AS pending_count,
+                        CASE WHEN e.exception_id IS NOT NULL THEN 1 ELSE 0 END AS has_exception,
+                        e.exception_type,
+                        CASE WHEN s.schedule_id IS NOT NULL THEN 1 ELSE 0 END AS has_schedule,
+                        COALESCE(s.is_available, 0) AS is_available
+                    FROM time_slots ts
+                    CROSS JOIN (
+                        SELECT 0 AS day_offset UNION SELECT 1 UNION SELECT 2 UNION SELECT 3
+                        UNION SELECT 4 UNION SELECT 5 UNION SELECT 6
+                    ) days
+                    LEFT JOIN trainer_schedules s
+                      ON s.trainer_id = ?
+                     AND s.slot_id = ts.slot_id
+                     AND s.day_of_week = CASE days.day_offset
+                        WHEN 0 THEN 'MONDAY'
+                        WHEN 1 THEN 'TUESDAY'
+                        WHEN 2 THEN 'WEDNESDAY'
+                        WHEN 3 THEN 'THURSDAY'
+                        WHEN 4 THEN 'FRIDAY'
+                        WHEN 5 THEN 'SATURDAY'
+                        WHEN 6 THEN 'SUNDAY'
+                     END
+                    LEFT JOIN pt_bookings b
+                      ON b.trainer_id = ?
+                     AND b.slot_id = ts.slot_id
+                     AND b.booking_date = DATE_ADD(?, INTERVAL days.day_offset DAY)
+                     AND b.booking_status IN ('CONFIRMED', 'PENDING')
+                    LEFT JOIN trainer_exceptions e
+                      ON e.trainer_id = ?
+                     AND e.exception_date = DATE_ADD(?, INTERVAL days.day_offset DAY)
+                     AND (e.slot_id = ts.slot_id OR e.slot_id IS NULL)
+                    WHERE ts.is_active = 1
+                    GROUP BY ts.slot_id, days.day_offset, e.exception_id, e.exception_type, s.schedule_id, s.is_available
+                    ORDER BY ts.slot_id, days.day_offset
                 """;
-        var q = em.createQuery(jpql, Object[].class);
-        q.setParameter("tid", trainerId);
-        q.setParameter("start", weekStart);
-        q.setParameter("end", weekEnd);
-        return q.getResultList();
+        var q = em.createNativeQuery(sql);
+        q.setParameter(1, weekStart);
+        q.setParameter(2, trainerId);
+        q.setParameter(3, trainerId);
+        q.setParameter(4, weekStart);
+        q.setParameter(5, trainerId);
+        q.setParameter(6, weekStart);
+        @SuppressWarnings("unchecked")
+        List<Object[]> results = q.getResultList();
+        return results;
     }
 
     // Lấy danh sách time_slots (để làm hàng đầu dòng)
