@@ -16,8 +16,7 @@ import java.util.Locale;
         "/admin/home",
         "/admin/dashboard",
         "/admin/service-schedule",
-        "/admin/order-management",
-        "/admin/payment-finance"
+        "/admin/order-management"
 })
 public class AdminDashboardServlet extends HttpServlet {
 
@@ -46,8 +45,6 @@ public class AdminDashboardServlet extends HttpServlet {
                 jspPath = "/views/admin/service_schedule.jsp";
             case "/admin/order-management" ->
                 jspPath = "/views/admin/order_management.jsp";
-            case "/admin/payment-finance" ->
-                jspPath = "/views/admin/payment_finance.jsp";
 //            case "/admin/reports" ->
 //                jspPath = "/views/admin/reports.jsp";
             default ->

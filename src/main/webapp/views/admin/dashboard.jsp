@@ -490,15 +490,6 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/admin/payment-finance"
-              class="sidebar-menu-link"
-            >
-              <i class="fas fa-money-bill-wave"></i>
-              <span>Thanh toán & Tài chính</span>
-            </a>
-          </li>
-          <li class="sidebar-menu-item">
-            <a
               href="${pageContext.request.contextPath}/admin/reports"
               class="sidebar-menu-link"
             >
@@ -695,28 +686,6 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                   class="btn btn-small"
                 >
                   <i class="fas fa-boxes"></i> Quản lý kho
-                </a>
-              </div>
-            </div>
-
-            <!-- Payment & Finance -->
-            <div class="management-card">
-              <div class="management-card-header">
-                <div class="management-card-icon">
-                  <i class="fas fa-money-bill-wave"></i>
-                </div>
-                <h3 class="management-card-title">Thanh toán & Tài chính</h3>
-              </div>
-              <p class="management-card-description">
-                Quản lý hóa đơn, phương thức thanh toán và thống kê doanh thu
-                theo thời gian.
-              </p>
-              <div class="management-card-actions">
-                <a
-                  href="${pageContext.request.contextPath}/admin/payment-finance"
-                  class="btn btn-small"
-                >
-                  <i class="fas fa-file-invoice-dollar"></i> Xem chi tiết
                 </a>
               </div>
             </div>

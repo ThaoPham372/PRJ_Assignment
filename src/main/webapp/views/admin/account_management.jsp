@@ -610,15 +610,6 @@
                         </li>
                         <li class="sidebar-menu-item">
                             <a
-                                href="${pageContext.request.contextPath}/admin/payment-finance"
-                                class="sidebar-menu-link"
-                                >
-                                <i class="fas fa-money-bill-wave"></i>
-                                <span>Thanh toán & Tài chính</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-menu-item">
-                            <a
                                 href="${pageContext.request.contextPath}/admin/reports"
                                 class="sidebar-menu-link"
                                 >

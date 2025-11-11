@@ -123,6 +123,10 @@ public class MembershipService {
     /**
      * Validate việc đặt gói mới cho member
      * 
+     * Logic mới:
+     * - Chỉ cho phép mua package nếu: chưa có membership HOẶC đã có membership nhưng cùng package ID (gia hạn)
+     * - Nếu đã có membership với package khác → KHÔNG cho phép mua package mới
+     * 
      * @param memberId ID của member
      * @param packageToAdd Package muốn đặt
      * @return ValidationResult
@@ -141,24 +145,36 @@ public class MembershipService {
             return ValidationResult.failure(errors);
         }
 
-        // 2. Kiểm tra member đã có gói ACTIVE chưa (có thể có nhiều gói)
+        // 2. Kiểm tra member đã có gói ACTIVE chưa
         List<Membership> activeMemberships = getActiveMembershipsByMemberId(memberId);
         
-        // 3. Kiểm tra xem đã có gói cùng loại chưa
-        Membership existingSamePackage = getActiveMembershipByMemberIdAndPackageId(memberId, packageToAdd.getId());
-        if (existingSamePackage != null) {
-            // Nếu có gói cùng loại, sẽ cộng thời gian (không phải lỗi)
-            // Không cần thêm error ở đây
+        // 3. Nếu đã có active membership
+        if (activeMemberships != null && !activeMemberships.isEmpty()) {
+            // 3.1. Kiểm tra xem đã có gói cùng package ID chưa
+            Membership existingSamePackage = getActiveMembershipByMemberIdAndPackageId(memberId, packageToAdd.getId());
+            
+            if (existingSamePackage != null) {
+                // Có gói cùng loại → Cho phép gia hạn (không phải lỗi)
+                // Không cần thêm error, cho phép tiếp tục
+            } else {
+                // 3.2. Đã có membership nhưng package ID KHÁC → KHÔNG cho phép mua package mới
+                // Lấy package name của membership hiện có để hiển thị trong thông báo
+                String currentPackageName = "gói tập hiện tại";
+                if (activeMemberships.get(0).getPackageO() != null) {
+                    currentPackageName = activeMemberships.get(0).getPackageO().getName();
+                }
+                
+                String errorMessage = String.format(
+                    "Bạn đã có gói tập trước đó (%s). Không thể mua thêm gói tập khác. " +
+                    "Hãy liên hệ với admin nếu muốn đổi gói hoặc nâng hạng gói tập.",
+                    currentPackageName
+                );
+                errors.add(errorMessage);
+                return ValidationResult.failure(errors);
+            }
         }
 
-        // 4. Kiểm tra số lượng gói tối đa (nếu có quy định)
-        // Có thể thêm logic kiểm tra số lượng gói tối đa ở đây
-        // Ví dụ: không cho phép có quá 5 gói cùng lúc
-        if (activeMemberships.size() >= 5) {
-            errors.add("Bạn đã đạt số lượng gói thành viên tối đa (5 gói). Vui lòng đợi một số gói hết hạn trước khi đặt thêm.");
-            return ValidationResult.failure(errors);
-        }
-
+        // 4. Nếu chưa có membership hoặc có cùng package ID → Cho phép
         if (errors.isEmpty()) {
             return ValidationResult.success();
         } else {
@@ -171,6 +187,11 @@ public class MembershipService {
     /**
      * Tạo membership mới hoặc cộng thời gian vào membership hiện có (nếu cùng package)
      * 
+     * Logic:
+     * - Nếu đã có gói cùng package ID và còn hạn (ACTIVE + endDate > now) → Extend thời gian
+     * - Nếu đã có gói cùng package ID nhưng đã hết hạn → Extend từ ngày hiện tại (renew)
+     * - Nếu chưa có gói cùng package ID → Tạo mới
+     * 
      * @param memberId ID của member
      * @param packageToAdd Package muốn đặt
      * @return Membership đã được tạo hoặc cập nhật
@@ -182,20 +203,55 @@ public class MembershipService {
             throw new IllegalArgumentException(String.join(", ", validation.getErrors()));
         }
 
-        // 2. Kiểm tra xem đã có gói cùng loại ACTIVE chưa
-        Membership existingMembership = getActiveMembershipByMemberIdAndPackageId(memberId, packageToAdd.getId());
+        // 2. Kiểm tra xem đã có gói cùng loại ACTIVE chưa (còn hạn)
+        Membership existingActiveMembership = getActiveMembershipByMemberIdAndPackageId(memberId, packageToAdd.getId());
 
-        if (existingMembership != null) {
-            // Cộng thời gian vào gói hiện có
-            return extendMembershipDuration(existingMembership, packageToAdd.getDurationMonths());
-        } else {
-            // Tạo membership mới
-            return createNewMembership(memberId, packageToAdd);
+        if (existingActiveMembership != null) {
+            // Có gói ACTIVE còn hạn → Cộng thời gian vào endDate hiện tại
+            System.out.println("[MembershipService] Found active membership ID: " + existingActiveMembership.getId() + 
+                             " for package " + packageToAdd.getId() + ". Extending duration.");
+            return extendMembershipDuration(existingActiveMembership, packageToAdd.getDurationMonths());
         }
+        
+        // 3. Kiểm tra xem có gói cùng loại nhưng đã hết hạn không
+        Membership existingExpiredMembership = getExpiredMembershipByMemberIdAndPackageId(memberId, packageToAdd.getId());
+        
+        if (existingExpiredMembership != null) {
+            // Có gói cùng loại nhưng đã hết hạn → Renew từ ngày hiện tại
+            System.out.println("[MembershipService] Found expired membership ID: " + existingExpiredMembership.getId() + 
+                             " for package " + packageToAdd.getId() + ". Renewing from today.");
+            return renewExpiredMembership(existingExpiredMembership, packageToAdd);
+        }
+        
+        // 4. Chưa có gói cùng loại → Tạo mới
+        System.out.println("[MembershipService] No existing membership found for package " + packageToAdd.getId() + ". Creating new membership.");
+        return createNewMembership(memberId, packageToAdd);
     }
 
     /**
-     * Tạo membership mới
+     * Tạo membership mới LUÔN (không kiểm tra extend)
+     * Sử dụng khi thanh toán thành công - luôn tạo bảng membership mới
+     * 
+     * @param memberId ID của member
+     * @param packageToAdd Package muốn đặt
+     * @return Membership mới được tạo
+     */
+    public Membership createNewMembershipAlways(int memberId, Package packageToAdd) {
+        // Validate cơ bản: package phải tồn tại và active
+        if (packageToAdd == null) {
+            throw new IllegalArgumentException("Gói thành viên không tồn tại");
+        }
+        
+        if (packageToAdd.getIsActive() == null || !packageToAdd.getIsActive()) {
+            throw new IllegalArgumentException("Gói thành viên không còn hoạt động");
+        }
+        
+        // Luôn tạo mới, không kiểm tra extend
+        return createNewMembership(memberId, packageToAdd);
+    }
+    
+    /**
+     * Tạo membership mới (private method - được gọi bởi createNewMembershipAlways hoặc createOrExtendMembership)
      * 
      * @param memberId ID của member
      * @param packageToAdd Package muốn đặt
@@ -242,34 +298,123 @@ public class MembershipService {
     }
 
     /**
-     * Cộng thời gian vào membership hiện có
+     * Cộng thời gian vào membership hiện có (còn hạn)
+     * Tính từ endDate hiện tại để cộng thêm thời gian
      * 
-     * @param existingMembership Membership hiện có
+     * Ví dụ: Gói còn 7 ngày, mua thêm 30 ngày → Tổng cộng 37 ngày từ hôm nay
+     * 
+     * @param existingMembership Membership hiện có (còn hạn)
      * @param additionalMonths Số tháng cộng thêm
      * @return Membership đã được cập nhật
      */
     private Membership extendMembershipDuration(Membership existingMembership, int additionalMonths) {
         Date currentEndDate = existingMembership.getEndDate();
         if (currentEndDate == null) {
+            // Nếu không có endDate, tính từ hôm nay
             currentEndDate = new Date();
         }
         
-        // Cộng thêm số tháng vào endDate
+        // Cộng thêm số tháng vào endDate hiện tại
         Calendar cal = Calendar.getInstance();
         cal.setTime(currentEndDate);
         cal.add(Calendar.MONTH, additionalMonths);
-        existingMembership.setEndDate(cal.getTime());
+        Date newEndDate = cal.getTime();
+        existingMembership.setEndDate(newEndDate);
+        
+        // Đảm bảo status là ACTIVE
+        existingMembership.setStatus("ACTIVE");
         
         // Update updatedDate
         existingMembership.setUpdatedDate(new Date());
         
+        // Nếu chưa có activatedAt, set ngày hôm nay
+        if (existingMembership.getActivatedAt() == null) {
+            existingMembership.setActivatedAt(new Date());
+        }
+        
         // Update
         update(existingMembership);
         
-        System.out.println("[MembershipService] Extended membership ID: " + existingMembership.getId() + 
-                          " by " + additionalMonths + " months. New end date: " + existingMembership.getEndDate());
+        System.out.println("[MembershipService] ✅ Extended membership ID: " + existingMembership.getId() + 
+                          " by " + additionalMonths + " months.");
+        System.out.println("[MembershipService]    Old end date: " + currentEndDate);
+        System.out.println("[MembershipService]    New end date: " + newEndDate);
         
         return existingMembership;
+    }
+    
+    /**
+     * Renew membership đã hết hạn (tạo lại từ ngày hiện tại)
+     * 
+     * @param expiredMembership Membership đã hết hạn
+     * @param packageToAdd Package mới mua
+     * @return Membership đã được renew
+     */
+    private Membership renewExpiredMembership(Membership expiredMembership, Package packageToAdd) {
+        Date now = new Date();
+        
+        // Set startDate = hôm nay
+        expiredMembership.setStartDate(now);
+        
+        // Tính endDate từ hôm nay + duration
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(now);
+        cal.add(Calendar.MONTH, packageToAdd.getDurationMonths());
+        expiredMembership.setEndDate(cal.getTime());
+        
+        // Set status = ACTIVE
+        expiredMembership.setStatus("ACTIVE");
+        
+        // Set activatedAt = hôm nay
+        expiredMembership.setActivatedAt(now);
+        
+        // Update updatedDate
+        expiredMembership.setUpdatedDate(now);
+        
+        // Update
+        update(expiredMembership);
+        
+        System.out.println("[MembershipService] ✅ Renewed expired membership ID: " + expiredMembership.getId() + 
+                          " for package " + packageToAdd.getId() + ".");
+        System.out.println("[MembershipService]    New start date: " + now);
+        System.out.println("[MembershipService]    New end date: " + expiredMembership.getEndDate());
+        
+        return expiredMembership;
+    }
+    
+    /**
+     * Tìm membership đã hết hạn của member với package cụ thể
+     * 
+     * @param memberId ID của member
+     * @param packageId ID của package
+     * @return Membership đã hết hạn hoặc null nếu không tìm thấy
+     */
+    private Membership getExpiredMembershipByMemberIdAndPackageId(int memberId, int packageId) {
+        try {
+            Date now = new Date();
+            List<Membership> allMemberships = membershipDAO.findAll();
+            
+            // Tìm membership cùng package nhưng đã hết hạn hoặc status không phải ACTIVE
+            for (Membership m : allMemberships) {
+                if (m.getMember() != null && 
+                    m.getMember().getId().equals(memberId) &&
+                    m.getPackageO() != null &&
+                    m.getPackageO().getId().equals(packageId)) {
+                    
+                    // Kiểm tra nếu đã hết hạn (endDate < now) hoặc status không phải ACTIVE
+                    boolean isExpired = (m.getEndDate() != null && m.getEndDate().before(now)) ||
+                                       (!"ACTIVE".equalsIgnoreCase(m.getStatus()));
+                    
+                    if (isExpired) {
+                        return m;
+                    }
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            System.err.println("[MembershipService] Error finding expired membership: " + e.getMessage());
+            return null;
+        }
     }
 
     // ==================== LEGACY METHOD (for backward compatibility) ====================

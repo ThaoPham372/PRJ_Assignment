@@ -106,36 +106,63 @@ public class AdvisoryService {
 
     /**
      * Create advisory request from form data
+     * Enhanced validation with detailed error messages
      */
     public int createRequest(String fullName, String phone, String email, String address) {
+        // Validate full name
         if (fullName == null || fullName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Full name is required");
+            throw new IllegalArgumentException("Vui lòng nhập họ và tên");
         }
+        String trimmedName = fullName.trim();
+        if (trimmedName.length() < 2) {
+            throw new IllegalArgumentException("Họ và tên phải có ít nhất 2 ký tự");
+        }
+        if (trimmedName.length() > 100) {
+            throw new IllegalArgumentException("Họ và tên không được vượt quá 100 ký tự");
+        }
+        // Check if name contains only letters, spaces, and Vietnamese characters
+        if (!trimmedName.matches("^[\\p{L}\\s]+$")) {
+            throw new IllegalArgumentException("Họ và tên chỉ được chứa chữ cái và khoảng trắng");
+        }
+
+        // Validate phone
         if (phone == null || phone.trim().isEmpty()) {
-            throw new IllegalArgumentException("Phone is required");
+            throw new IllegalArgumentException("Vui lòng nhập số điện thoại");
         }
+        String trimmedPhone = phone.trim();
+        if (!isValidPhone(trimmedPhone)) {
+            throw new IllegalArgumentException("Số điện thoại không hợp lệ. Vui lòng nhập 10-11 chữ số");
+        }
+
+        // Validate email
         if (email == null || email.trim().isEmpty()) {
-            throw new IllegalArgumentException("Email is required");
+            throw new IllegalArgumentException("Vui lòng nhập địa chỉ email");
         }
+        String trimmedEmail = email.trim();
+        if (trimmedEmail.length() > 255) {
+            throw new IllegalArgumentException("Địa chỉ email không được vượt quá 255 ký tự");
+        }
+        if (!isValidEmail(trimmedEmail)) {
+            throw new IllegalArgumentException("Địa chỉ email không hợp lệ. Vui lòng kiểm tra lại");
+        }
+
+        // Validate address
         if (address == null || address.trim().isEmpty()) {
-            throw new IllegalArgumentException("Address is required");
+            throw new IllegalArgumentException("Vui lòng nhập địa chỉ");
         }
-
-        // Validate phone format
-        if (!isValidPhone(phone.trim())) {
-            throw new IllegalArgumentException("Phone number is invalid. Must be 10-11 digits.");
+        String trimmedAddress = address.trim();
+        if (trimmedAddress.length() < 5) {
+            throw new IllegalArgumentException("Địa chỉ phải có ít nhất 5 ký tự");
         }
-
-        // Validate email format
-        if (!isValidEmail(email.trim())) {
-            throw new IllegalArgumentException("Email format is invalid.");
+        if (trimmedAddress.length() > 500) {
+            throw new IllegalArgumentException("Địa chỉ không được vượt quá 500 ký tự");
         }
 
         AdvisoryRequest request = new AdvisoryRequest();
-        request.setFullName(fullName.trim());
-        request.setPhone(phone.trim());
-        request.setEmail(email.trim().toLowerCase());
-        request.setAddress(address.trim());
+        request.setFullName(trimmedName);
+        request.setPhone(trimmedPhone);
+        request.setEmail(trimmedEmail.toLowerCase());
+        request.setAddress(trimmedAddress);
 
         return createRequest(request);
     }
@@ -173,28 +200,59 @@ public class AdvisoryService {
 
     /**
      * Validate request entity
+     * Enhanced validation with detailed error messages
      */
     private void validateRequest(AdvisoryRequest request) {
         if (request == null) {
-            throw new IllegalArgumentException("Request cannot be null");
+            throw new IllegalArgumentException("Yêu cầu không hợp lệ");
         }
+        
+        // Validate full name
         if (request.getFullName() == null || request.getFullName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Full name is required");
+            throw new IllegalArgumentException("Vui lòng nhập họ và tên");
         }
+        String trimmedName = request.getFullName().trim();
+        if (trimmedName.length() < 2) {
+            throw new IllegalArgumentException("Họ và tên phải có ít nhất 2 ký tự");
+        }
+        if (trimmedName.length() > 100) {
+            throw new IllegalArgumentException("Họ và tên không được vượt quá 100 ký tự");
+        }
+        if (!trimmedName.matches("^[\\p{L}\\s]+$")) {
+            throw new IllegalArgumentException("Họ và tên chỉ được chứa chữ cái và khoảng trắng");
+        }
+        
+        // Validate phone
         if (request.getPhone() == null || request.getPhone().trim().isEmpty()) {
-            throw new IllegalArgumentException("Phone is required");
+            throw new IllegalArgumentException("Vui lòng nhập số điện thoại");
         }
+        String trimmedPhone = request.getPhone().trim();
+        if (!isValidPhone(trimmedPhone)) {
+            throw new IllegalArgumentException("Số điện thoại không hợp lệ. Vui lòng nhập 10-11 chữ số");
+        }
+        
+        // Validate email
         if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
-            throw new IllegalArgumentException("Email is required");
+            throw new IllegalArgumentException("Vui lòng nhập địa chỉ email");
         }
+        String trimmedEmail = request.getEmail().trim();
+        if (trimmedEmail.length() > 255) {
+            throw new IllegalArgumentException("Địa chỉ email không được vượt quá 255 ký tự");
+        }
+        if (!isValidEmail(trimmedEmail)) {
+            throw new IllegalArgumentException("Địa chỉ email không hợp lệ. Vui lòng kiểm tra lại");
+        }
+        
+        // Validate address
         if (request.getAddress() == null || request.getAddress().trim().isEmpty()) {
-            throw new IllegalArgumentException("Address is required");
+            throw new IllegalArgumentException("Vui lòng nhập địa chỉ");
         }
-        if (!isValidPhone(request.getPhone().trim())) {
-            throw new IllegalArgumentException("Phone number is invalid. Must be 10-11 digits.");
+        String trimmedAddress = request.getAddress().trim();
+        if (trimmedAddress.length() < 5) {
+            throw new IllegalArgumentException("Địa chỉ phải có ít nhất 5 ký tự");
         }
-        if (!isValidEmail(request.getEmail().trim())) {
-            throw new IllegalArgumentException("Email format is invalid.");
+        if (trimmedAddress.length() > 500) {
+            throw new IllegalArgumentException("Địa chỉ không được vượt quá 500 ký tự");
         }
     }
 

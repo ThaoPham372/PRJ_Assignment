@@ -171,7 +171,7 @@ public class MembershipServlet extends BaseMemberServlet {
             // Lấy packageId từ request
             String packageIdStr = request.getParameter("packageId");
             if (packageIdStr == null || packageIdStr.trim().isEmpty()) {
-                session.setAttribute("error", "Vui lòng chọn gói thành viên");
+                session.setAttribute("errorMessage", "Vui lòng chọn gói thành viên");
                 response.sendRedirect(request.getContextPath() + "/member/membership");
                 return;
             }
@@ -180,7 +180,7 @@ public class MembershipServlet extends BaseMemberServlet {
             try {
                 packageId = Integer.parseInt(packageIdStr);
             } catch (NumberFormatException e) {
-                session.setAttribute("error", "Gói thành viên không hợp lệ");
+                session.setAttribute("errorMessage", "Gói thành viên không hợp lệ");
                 response.sendRedirect(request.getContextPath() + "/member/membership");
                 return;
             }
@@ -188,7 +188,7 @@ public class MembershipServlet extends BaseMemberServlet {
             // Lấy package từ database
             Package packageToAdd = packageService.getById(packageId);
             if (packageToAdd == null) {
-                session.setAttribute("error", "Không tìm thấy gói thành viên");
+                session.setAttribute("errorMessage", "Không tìm thấy gói thành viên");
                 response.sendRedirect(request.getContextPath() + "/member/membership");
                 return;
             }
@@ -197,7 +197,7 @@ public class MembershipServlet extends BaseMemberServlet {
             ValidationResult validation = membershipService.validateNewMembership(member.getId(), packageToAdd);
             if (!validation.isValid()) {
                 String errorMessage = String.join(", ", validation.getErrors());
-                session.setAttribute("error", errorMessage);
+                session.setAttribute("errorMessage", errorMessage);
                 response.sendRedirect(request.getContextPath() + "/member/membership");
                 return;
             }
@@ -232,12 +232,12 @@ public class MembershipServlet extends BaseMemberServlet {
             
         } catch (IllegalArgumentException e) {
             // Validation error từ service
-            session.setAttribute("error", e.getMessage());
+            session.setAttribute("errorMessage", e.getMessage());
             response.sendRedirect(request.getContextPath() + "/member/membership");
         } catch (Exception e) {
             System.err.println("[MembershipServlet] Error purchasing membership: " + e.getMessage());
             e.printStackTrace();
-            session.setAttribute("error", "Có lỗi xảy ra khi đặt gói. Vui lòng thử lại sau.");
+            session.setAttribute("errorMessage", "Có lỗi xảy ra khi đặt gói. Vui lòng thử lại sau.");
             response.sendRedirect(request.getContextPath() + "/member/membership");
         }
     }

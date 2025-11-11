@@ -314,6 +314,155 @@
           justify-content: center;
         }
       }
+
+      /* ==================== ALERT MESSAGES STYLES ==================== */
+      .alert {
+        position: fixed;
+        top: 120px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10000;
+        min-width: 400px;
+        max-width: 600px;
+        width: auto;
+        padding: 18px 25px;
+        border-radius: 12px;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+        animation: slideDownFadeIn 0.4s ease-out;
+        border-left: 5px solid;
+        line-height: 1.5;
+        backdrop-filter: blur(10px);
+      }
+
+      @keyframes slideDownFadeIn {
+        from {
+          opacity: 0;
+          transform: translateX(-50%) translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+      }
+
+      .alert.fade.show {
+        opacity: 1;
+      }
+
+      .alert.fade {
+        opacity: 0;
+        transition: opacity 0.3s ease-out;
+      }
+
+      .alert-success {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+        border-left-color: #28a745;
+      }
+
+      .alert-danger {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+        border-left-color: #dc3545;
+      }
+
+      .alert i {
+        font-size: 1.3rem;
+        flex-shrink: 0;
+      }
+
+      .alert-success i {
+        color: #28a745;
+      }
+
+      .alert-danger i {
+        color: #dc3545;
+      }
+
+      .alert .alert-content {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .alert .alert-message {
+        flex: 1;
+        word-wrap: break-word;
+      }
+
+      /* Close Button */
+      .btn-close {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 5px 8px;
+        margin: 0;
+        opacity: 0.6;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        font-size: 1.2rem;
+        line-height: 1;
+        color: inherit;
+      }
+
+      .btn-close:hover {
+        opacity: 1;
+        background: rgba(0, 0, 0, 0.1);
+        transform: rotate(90deg);
+      }
+
+      .btn-close::before {
+        content: '×';
+        font-size: 1.5rem;
+        font-weight: 300;
+        line-height: 1;
+      }
+
+      /* Responsive Alerts */
+      @media (max-width: 768px) {
+        .alert {
+          min-width: 90%;
+          max-width: 95%;
+          top: 80px;
+          padding: 15px 20px;
+          font-size: 0.9rem;
+        }
+
+        .alert i {
+          font-size: 1.1rem;
+        }
+
+        .btn-close {
+          width: 24px;
+          height: 24px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .alert {
+          min-width: 95%;
+          padding: 12px 15px;
+          font-size: 0.85rem;
+        }
+
+        .alert .alert-content {
+          gap: 8px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -457,14 +606,19 @@
     <!-- Alert Messages -->
     <c:if test="${not empty sessionScope.successMessage}">
       <div
-        class="alert alert-success alert-dismissible fade show m-3"
+        class="alert alert-success alert-dismissible fade show"
         role="alert"
+        id="successAlert"
       >
-        <i class="fas fa-check-circle"></i> ${sessionScope.successMessage}
+        <div class="alert-content">
+          <i class="fas fa-check-circle"></i>
+          <span class="alert-message">${sessionScope.successMessage}</span>
+        </div>
         <button
           type="button"
           class="btn-close"
-          data-bs-dismiss="alert"
+          onclick="closeAlert('successAlert')"
+          aria-label="Close"
         ></button>
       </div>
       <c:remove var="successMessage" scope="session" />
@@ -472,18 +626,55 @@
 
     <c:if test="${not empty sessionScope.errorMessage}">
       <div
-        class="alert alert-danger alert-dismissible fade show m-3"
+        class="alert alert-danger alert-dismissible fade show"
         role="alert"
+        id="errorAlert"
       >
-        <i class="fas fa-exclamation-circle"></i> ${sessionScope.errorMessage}
+        <div class="alert-content">
+          <i class="fas fa-exclamation-circle"></i>
+          <span class="alert-message">${sessionScope.errorMessage}</span>
+        </div>
         <button
           type="button"
           class="btn-close"
-          data-bs-dismiss="alert"
+          onclick="closeAlert('errorAlert')"
+          aria-label="Close"
         ></button>
       </div>
       <c:remove var="errorMessage" scope="session" />
     </c:if>
+
+    <!-- JavaScript for closing alerts -->
+    <script>
+      function closeAlert(alertId) {
+        const alert = document.getElementById(alertId);
+        if (alert) {
+          alert.style.opacity = '0';
+          alert.style.transform = 'translateX(-50%) translateY(-20px)';
+          setTimeout(function() {
+            alert.style.display = 'none';
+          }, 300);
+        }
+      }
+
+      // Auto-hide alerts after 5 seconds
+      document.addEventListener('DOMContentLoaded', function() {
+        const successAlert = document.getElementById('successAlert');
+        const errorAlert = document.getElementById('errorAlert');
+        
+        if (successAlert) {
+          setTimeout(function() {
+            closeAlert('successAlert');
+          }, 5000);
+        }
+        
+        if (errorAlert) {
+          setTimeout(function() {
+            closeAlert('errorAlert');
+          }, 7000); // Error messages stay a bit longer (7 seconds)
+        }
+      });
+    </script>
 
     <!-- Main Content Container -->
     <main class="container-fluid py-4"></main>
