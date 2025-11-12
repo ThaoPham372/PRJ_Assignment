@@ -171,6 +171,65 @@ file="/views/common/header.jsp" %>
     background-color: #fffef8;
   }
 
+  /* Error states */
+  .form-group.error input {
+    border: 2px solid #f44336;
+    background-color: #fff5f5;
+    box-shadow: inset 0 2px 4px rgba(244, 67, 54, 0.1),
+      0 0 0 3px rgba(244, 67, 54, 0.2);
+  }
+
+  .form-group.error label {
+    color: #f44336;
+  }
+
+  .form-group.success input {
+    border: 2px solid #4caf50;
+    background-color: #f5fff5;
+  }
+
+  .form-group.success label {
+    color: #4caf50;
+  }
+
+  /* Error message */
+  .error-message {
+    color: #f44336;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    display: block;
+    font-weight: 500;
+    animation: slideDown 0.3s ease-out;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .error-message i {
+    margin-right: 5px;
+  }
+
+  /* Success message */
+  .success-message-field {
+    color: #4caf50;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    display: block;
+    font-weight: 500;
+  }
+
+  .success-message-field i {
+    margin-right: 5px;
+  }
+
   /* Submit button - màu cam nổi bật */
   .submit-btn {
     width: 100%;
@@ -371,20 +430,24 @@ file="/views/common/header.jsp" %>
       <!-- Form tư vấn -->
       <form action="${pageContext.request.contextPath}/advisory" method="POST">
         <!-- Full Name field -->
-        <div class="form-group">
+        <div class="form-group" id="fullNameGroup">
           <label for="fullName">FULL NAME</label>
           <input
             type="text"
             id="fullName"
             name="fullName"
             required
+            maxlength="100"
             value="${fullName != null ? fullName : (param.fullName != null ? param.fullName : '')}"
             placeholder="Nhập họ và tên của bạn"
+            onblur="validateFullName()"
+            oninput="clearError('fullNameGroup')"
           />
+          <span class="error-message" id="fullNameError" style="display: none;"></span>
         </div>
 
         <!-- Phone field -->
-        <div class="form-group">
+        <div class="form-group" id="phoneGroup">
           <label for="phone">PHONE</label>
           <input
             type="tel"
@@ -392,38 +455,49 @@ file="/views/common/header.jsp" %>
             name="phone"
             required
             pattern="[0-9]{10,11}"
+            maxlength="11"
             title="Vui lòng nhập số điện thoại hợp lệ (10-11 chữ số)"
             value="${phone != null ? phone : (param.phone != null ? param.phone : '')}"
             placeholder="Nhập số điện thoại của bạn (chỉ số)"
             onkeypress="return isNumberKey(event)"
-            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+            oninput="this.value = this.value.replace(/[^0-9]/g, ''); clearError('phoneGroup'); validatePhone()"
+            onblur="validatePhone()"
           />
+          <span class="error-message" id="phoneError" style="display: none;"></span>
         </div>
 
         <!-- Email field -->
-        <div class="form-group">
+        <div class="form-group" id="emailGroup">
           <label for="email">EMAIL</label>
           <input
             type="email"
             id="email"
             name="email"
             required
+            maxlength="255"
             value="${email != null ? email : (param.email != null ? param.email : '')}"
             placeholder="Nhập địa chỉ email của bạn"
+            onblur="validateEmail()"
+            oninput="clearError('emailGroup')"
           />
+          <span class="error-message" id="emailError" style="display: none;"></span>
         </div>
 
         <!-- Address field -->
-        <div class="form-group">
+        <div class="form-group" id="addressGroup">
           <label for="address">ADDRESS</label>
           <input
             type="text"
             id="address"
             name="address"
             required
+            maxlength="500"
             value="${address != null ? address : (param.address != null ? param.address : '')}"
             placeholder="Nhập địa chỉ của bạn"
+            onblur="validateAddress()"
+            oninput="clearError('addressGroup')"
           />
+          <span class="error-message" id="addressError" style="display: none;"></span>
         </div>
 
         <!-- Submit button -->
@@ -445,22 +519,184 @@ file="/views/common/header.jsp" %>
     return true;
   }
 
-  // Xử lý khi người dùng paste vào ô phone - chỉ giữ lại số
+  // Clear error state
+  function clearError(groupId) {
+    var group = document.getElementById(groupId);
+    if (group) {
+      group.classList.remove('error', 'success');
+      var errorSpan = group.querySelector('.error-message');
+      if (errorSpan) {
+        errorSpan.style.display = 'none';
+      }
+    }
+  }
+
+  // Show error
+  function showError(groupId, errorId, message) {
+    var group = document.getElementById(groupId);
+    var errorSpan = document.getElementById(errorId);
+    if (group && errorSpan) {
+      group.classList.remove('success');
+      group.classList.add('error');
+      errorSpan.innerHTML = '<i class="fas fa-exclamation-circle"></i>' + message;
+      errorSpan.style.display = 'block';
+    }
+  }
+
+  // Show success
+  function showSuccess(groupId) {
+    var group = document.getElementById(groupId);
+    if (group) {
+      group.classList.remove('error');
+      group.classList.add('success');
+      var errorSpan = group.querySelector('.error-message');
+      if (errorSpan) {
+        errorSpan.style.display = 'none';
+      }
+    }
+  }
+
+  // Validate Full Name
+  function validateFullName() {
+    var fullNameInput = document.getElementById('fullName');
+    var fullName = fullNameInput.value.trim();
+    
+    if (!fullName) {
+      showError('fullNameGroup', 'fullNameError', 'Vui lòng nhập họ và tên');
+      return false;
+    }
+    
+    if (fullName.length < 2) {
+      showError('fullNameGroup', 'fullNameError', 'Họ và tên phải có ít nhất 2 ký tự');
+      return false;
+    }
+    
+    if (fullName.length > 100) {
+      showError('fullNameGroup', 'fullNameError', 'Họ và tên không được vượt quá 100 ký tự');
+      return false;
+    }
+    
+    // Check if name contains only letters, spaces, and Vietnamese characters
+    if (!/^[\p{L}\s]+$/u.test(fullName)) {
+      showError('fullNameGroup', 'fullNameError', 'Họ và tên chỉ được chứa chữ cái và khoảng trắng');
+      return false;
+    }
+    
+    showSuccess('fullNameGroup');
+    return true;
+  }
+
+  // Validate Phone
+  function validatePhone() {
+    var phoneInput = document.getElementById('phone');
+    var phone = phoneInput.value.trim();
+    
+    if (!phone) {
+      showError('phoneGroup', 'phoneError', 'Vui lòng nhập số điện thoại');
+      return false;
+    }
+    
+    // Check if phone is 10-11 digits
+    if (!/^[0-9]{10,11}$/.test(phone)) {
+      showError('phoneGroup', 'phoneError', 'Số điện thoại phải có 10-11 chữ số');
+      return false;
+    }
+    
+    showSuccess('phoneGroup');
+    return true;
+  }
+
+  // Validate Email
+  function validateEmail() {
+    var emailInput = document.getElementById('email');
+    var email = emailInput.value.trim();
+    
+    if (!email) {
+      showError('emailGroup', 'emailError', 'Vui lòng nhập địa chỉ email');
+      return false;
+    }
+    
+    if (email.length > 255) {
+      showError('emailGroup', 'emailError', 'Địa chỉ email không được vượt quá 255 ký tự');
+      return false;
+    }
+    
+    // Email regex pattern
+    var emailPattern = /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    if (!emailPattern.test(email)) {
+      showError('emailGroup', 'emailError', 'Địa chỉ email không hợp lệ');
+      return false;
+    }
+    
+    showSuccess('emailGroup');
+    return true;
+  }
+
+  // Validate Address
+  function validateAddress() {
+    var addressInput = document.getElementById('address');
+    var address = addressInput.value.trim();
+    
+    if (!address) {
+      showError('addressGroup', 'addressError', 'Vui lòng nhập địa chỉ');
+      return false;
+    }
+    
+    if (address.length < 5) {
+      showError('addressGroup', 'addressError', 'Địa chỉ phải có ít nhất 5 ký tự');
+      return false;
+    }
+    
+    if (address.length > 500) {
+      showError('addressGroup', 'addressError', 'Địa chỉ không được vượt quá 500 ký tự');
+      return false;
+    }
+    
+    showSuccess('addressGroup');
+    return true;
+  }
+
+  // Form submission validation
   document.addEventListener('DOMContentLoaded', function () {
+    var form = document.querySelector('form');
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        var isValid = true;
+        
+        // Validate all fields
+        if (!validateFullName()) isValid = false;
+        if (!validatePhone()) isValid = false;
+        if (!validateEmail()) isValid = false;
+        if (!validateAddress()) isValid = false;
+        
+        if (!isValid) {
+          e.preventDefault();
+          // Scroll to first error
+          var firstError = document.querySelector('.form-group.error');
+          if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          return false;
+        }
+      });
+    }
+
+    // Xử lý khi người dùng paste vào ô phone - chỉ giữ lại số
     var phoneInput = document.getElementById('phone');
     if (phoneInput) {
       phoneInput.addEventListener('paste', function (e) {
         e.preventDefault();
-        var pastedText = (e.clipboardData || window.clipboardData).getData(
-          'text',
-        );
+        var pastedText = (e.clipboardData || window.clipboardData).getData('text');
         var numbersOnly = pastedText.replace(/[^0-9]/g, '');
         this.value = numbersOnly;
+        clearError('phoneGroup');
+        validatePhone();
       });
 
       // Xử lý khi blur - kiểm tra lại
       phoneInput.addEventListener('blur', function () {
         this.value = this.value.replace(/[^0-9]/g, '');
+        validatePhone();
       });
     }
   });

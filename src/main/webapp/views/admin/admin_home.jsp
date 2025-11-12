@@ -912,15 +912,6 @@
             </li>
             <li class="admin-menu-item">
               <a
-                href="${pageContext.request.contextPath}/views/admin/payment_finance.jsp"
-                class="admin-menu-link"
-              >
-                <i class="fas fa-money-bill-wave"></i>
-                <span>Thanh toán & Tài chính</span>
-              </a>
-            </li>
-            <li class="admin-menu-item">
-              <a
                 href="${pageContext.request.contextPath}/views/admin/reports.jsp"
                 class="admin-menu-link"
               >

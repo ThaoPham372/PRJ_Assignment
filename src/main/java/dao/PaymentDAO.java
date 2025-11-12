@@ -108,18 +108,37 @@ public class PaymentDAO extends GenericDAO<Payment> {
 
     /**
      * Get total revenue for today (payments with status = PAID)
+     * Uses timezone +7 (Asia/Ho_Chi_Minh) and calculates from paidAt field
+     * Converts Vietnam timezone to UTC for database comparison (assuming database stores UTC)
      * @return Total revenue as BigDecimal
      */
     public BigDecimal getRevenueToday() {
         try {
-            java.time.LocalDate today = java.time.LocalDate.now();
-            java.time.LocalDateTime startOfDay = today.atStartOfDay();
-            java.time.LocalDateTime endOfDay = today.atTime(23, 59, 59);
+            // Get current time in Vietnam timezone (+7)
+            java.time.ZoneId vietnamZone = java.time.ZoneId.of("Asia/Ho_Chi_Minh");
+            java.time.ZoneId utcZone = java.time.ZoneId.of("UTC");
+            
+            java.time.ZonedDateTime nowVietnam = java.time.ZonedDateTime.now(vietnamZone);
+            java.time.LocalDate todayVietnam = nowVietnam.toLocalDate();
+            
+            // Start of day in Vietnam timezone (00:00:00)
+            java.time.ZonedDateTime startOfDayVietnam = todayVietnam.atStartOfDay(vietnamZone);
+            // End of day in Vietnam timezone (23:59:59.999)
+            java.time.ZonedDateTime endOfDayVietnam = todayVietnam.atTime(23, 59, 59, 999999999).atZone(vietnamZone);
+            
+            // Convert to UTC for database comparison (assuming database stores timestamps in UTC)
+            java.time.ZonedDateTime startOfDayUTC = startOfDayVietnam.withZoneSameInstant(utcZone);
+            java.time.ZonedDateTime endOfDayUTC = endOfDayVietnam.withZoneSameInstant(utcZone);
+            
+            // Convert to java.util.Date for JPQL comparison
+            java.util.Date startOfDay = java.util.Date.from(startOfDayUTC.toInstant());
+            java.util.Date endOfDay = java.util.Date.from(endOfDayUTC.toInstant());
             
             String jpql = "SELECT SUM(p.amount) FROM Payment p " +
                          "WHERE p.status = :status " +
-                         "AND p.paymentDate >= :startOfDay " +
-                         "AND p.paymentDate <= :endOfDay";
+                         "AND p.paidAt IS NOT NULL " +
+                         "AND p.paidAt >= :startOfDay " +
+                         "AND p.paidAt <= :endOfDay";
             
             TypedQuery<BigDecimal> query = em.createQuery(jpql, BigDecimal.class);
             query.setParameter("status", PaymentStatus.PAID);

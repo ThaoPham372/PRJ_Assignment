@@ -8,8 +8,6 @@ import exception.EmptyCartException;
 import exception.InsufficientStockException;
 import model.Product;
 import model.shop.*;
-import service.shop.PaymentService;
-import service.shop.PaymentServiceImpl;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -138,7 +136,24 @@ public class CheckoutServiceImpl implements CheckoutService {
                 throw new IllegalArgumentException("Không tìm thấy gói thành viên");
             }
             
-            // 2. Create order
+            // 2. Validate membership purchase
+            // Kiểm tra xem user đã có membership với package khác chưa
+            // Nếu có → Không cho phép mua package mới, chỉ cho phép gia hạn package hiện có
+            service.MembershipService membershipService = new service.MembershipService();
+            service.MembershipService.ValidationResult validation = membershipService.validateNewMembership(
+                userId.intValue(), pkg);
+            
+            if (!validation.isValid()) {
+                String errorMessage = String.join(", ", validation.getErrors());
+                LOGGER.warning(String.format("Package checkout validation failed for user %d, package %d: %s", 
+                    userId, packageId, errorMessage));
+                throw new IllegalArgumentException(errorMessage);
+            }
+            
+            LOGGER.info(String.format("Package checkout validation passed for user %d, package %d", 
+                userId, packageId));
+            
+            // 3. Create order
             Order order = new Order();
             order.setMemberId(userId.intValue());
             order.setOrderNumber(generateOrderNumber());
@@ -173,7 +188,7 @@ public class CheckoutServiceImpl implements CheckoutService {
             
             orderItemDao.insertBatch(orderId, orderItems);
             
-            // 4. Create payment record for package order
+            // 5. Create payment record for package order
             createPaymentForOrder(userId.intValue(), orderId, pkg.getPrice(), paymentMethod);
             
             LOGGER.info("Package checkout completed successfully");
@@ -202,13 +217,14 @@ public class CheckoutServiceImpl implements CheckoutService {
     }
     
     @Override
-    public String processVNPayPayment(Integer orderId, Long amount, String orderInfo, String ipAddress, String baseUrl) {
+    public String processVNPayPayment(Integer orderId, Long amount, String orderInfo, String ipAddress, String returnUrl) {
         LOGGER.info("Processing VNPay payment for order: " + orderId + ", amount: " + amount);
         
         try {
             VNPayService vnPayService = new VNPayService();
-            // Build return URL dynamically from baseUrl
-            String returnUrl = baseUrl + "/vnpay-return";
+            // returnUrl đã được build đầy đủ từ CheckoutServlet (bao gồm /vnpay-return)
+            // Không cần xử lý thêm, truyền thẳng vào VNPayService
+            LOGGER.info("[CheckoutServiceImpl] Using returnUrl: " + returnUrl);
             String paymentUrl = vnPayService.buildPaymentUrl(orderId, amount, orderInfo, ipAddress, returnUrl);
             LOGGER.info("VNPay payment URL generated successfully");
             return paymentUrl;

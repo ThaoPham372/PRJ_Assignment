@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %> 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -441,15 +442,6 @@
           </li>
           <li class="sidebar-menu-item">
             <a
-              href="${pageContext.request.contextPath}/admin/payment-finance"
-              class="sidebar-menu-link"
-            >
-              <i class="fas fa-money-bill-wave"></i
-              ><span>Thanh toán & Tài chính</span>
-            </a>
-          </li>
-          <li class="sidebar-menu-item">
-            <a
               href="${pageContext.request.contextPath}/admin/reports"
               class="sidebar-menu-link active"
             >
@@ -479,28 +471,16 @@
           <div class="filter-bar">
             <label style="font-weight: 600">Chọn khoảng thời gian:</label>
             <select
-              id="timeRangeSelect"
+              id="periodTypeSelect"
               class="filter-select"
-              onchange="toggleCustomDate()"
+              onchange="handlePeriodTypeChange()"
             >
-              <option value="7days">7 ngày qua</option>
-              <option value="30days">30 ngày qua</option>
-              <option value="3months">3 tháng qua</option>
-              <option value="6months">6 tháng qua</option>
-              <option value="12months" selected>12 tháng qua</option>
-              <option value="custom">Tùy chỉnh...</option>
+              <option value="day" ${periodType == 'day' ? 'selected' : ''}>Theo ngày (tháng này)</option>
+              <option value="month" ${periodType == 'month' ? 'selected' : ''} ${periodType == null ? 'selected' : ''}>Theo tháng (12 tháng qua)</option>
+              <option value="year" ${periodType == 'year' ? 'selected' : ''}>Theo năm (5 năm qua)</option>
             </select>
 
-            <div
-              id="customDateRange"
-              style="display: none; gap: 10px; align-items: center"
-            >
-              <input type="date" id="startDate" class="filter-select" />
-              <span>đến</span>
-              <input type="date" id="endDate" class="filter-select" />
-            </div>
-
-            <button class="btn" onclick="applyFilter()">
+            <button class="btn" onclick="applyPeriodFilter()">
               <i class="fas fa-filter"></i> Áp dụng
             </button>
           </div>
@@ -580,7 +560,13 @@
           <div class="reports-grid">
             <div class="report-card">
               <div class="report-card-header">
-                <h3 class="report-card-title">Hội viên</h3>
+                <h3 class="report-card-title" id="membershipsChartTitle">
+                  <c:choose>
+                    <c:when test="${periodType == 'day'}">Hội viên Active (theo ngày)</c:when>
+                    <c:when test="${periodType == 'year'}">Hội viên Active (theo năm)</c:when>
+                    <c:otherwise>Hội viên Active (theo tháng)</c:otherwise>
+                  </c:choose>
+                </h3>
                 <div
                   class="report-card-icon"
                   style="
@@ -595,7 +581,7 @@
                 </div>
               </div>
               <div class="report-chart-container">
-                <canvas id="memberGrowthChart"></canvas>
+                <canvas id="activeMembershipsChart"></canvas>
               </div>
               <div class="report-summary">
                 <div class="summary-item">
@@ -616,22 +602,12 @@
                     />
                   </div>
                 </div>
-                <div class="summary-item">
-                  <div class="summary-label">Tăng trưởng</div>
-                  <div
-                    class="summary-value"
-                    style="color: ${summary.memberGrowthRate >= 0 ? '#38ef7d' : '#ff5b5b'}"
-                  >
-                    ${summary.memberGrowthRate > 0 ? '+' :
-                    ''}${summary.memberGrowthRate}%
-                  </div>
-                </div>
               </div>
             </div>
 
             <div class="report-card">
               <div class="report-card-header">
-                <h3 class="report-card-title">Doanh thu theo gói</h3>
+                <h3 class="report-card-title">Top 5 Hội viên Chi tiêu</h3>
                 <div
                   class="report-card-icon"
                   style="
@@ -642,41 +618,56 @@
                     );
                   "
                 >
-                  <i class="fas fa-dollar-sign"></i>
+                  <i class="fas fa-trophy"></i>
                 </div>
               </div>
-              <div class="report-chart-container">
-                <canvas id="packagePieChart"></canvas>
-              </div>
-              <div class="report-summary">
-                <div class="summary-item">
-                  <div class="summary-label">Tháng này</div>
-                  <div class="summary-value">
-                    <fmt:setLocale value="vi_VN" />
-                    <fmt:formatNumber
-                      value="${summary.revenueThisMonth}"
-                      type="currency"
-                      currencySymbol="₫"
-                    />
-                  </div>
-                </div>
-                <div class="summary-item">
-                  <div class="summary-label">Tăng trưởng</div>
-                  <div
-                    class="summary-value"
-                    style="color: ${summary.revenueGrowthRate >= 0 ? '#38ef7d' : '#ff5b5b'}"
-                  >
-                    ${summary.revenueGrowthRate > 0 ? '+' :
-                    ''}${summary.revenueGrowthRate}%
-                  </div>
-                </div>
+              <div class="report-chart-container" style="min-height: auto; padding: 15px;">
+                <c:choose>
+                  <c:when test="${not empty topSpenders}">
+                    <table style="width: 100%; border-collapse: collapse;">
+                      <thead>
+                        <tr style="background: #f0f0f0; border-bottom: 2px solid #ddd;">
+                          <th style="padding: 10px; text-align: left; font-size: 0.85rem;">#</th>
+                          <th style="padding: 10px; text-align: left; font-size: 0.85rem;">Tên</th>
+                          <th style="padding: 10px; text-align: right; font-size: 0.85rem;">Chi tiêu</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <c:forEach var="spender" items="${topSpenders}" varStatus="status">
+                          <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 10px; font-weight: 600; color: var(--accent);">${status.index + 1}</td>
+                            <td style="padding: 10px;">
+                              <div style="font-weight: 600;">${fn:escapeXml(spender.name)}</div>
+                              <div style="font-size: 0.8rem; color: #5a6c7d;">@${fn:escapeXml(spender.username)}</div>
+                            </td>
+                            <td style="padding: 10px; text-align: right; font-weight: 700; color: var(--primary);">
+                              <fmt:formatNumber value="${spender.totalSpent}" type="number" maxFractionDigits="0" /> đ
+                            </td>
+                          </tr>
+                        </c:forEach>
+                      </tbody>
+                    </table>
+                  </c:when>
+                  <c:otherwise>
+                    <div style="text-align: center; padding: 40px; color: #5a6c7d;">
+                      <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.3;"></i>
+                      <p>Chưa có dữ liệu</p>
+                    </div>
+                  </c:otherwise>
+                </c:choose>
               </div>
             </div>
           </div>
 
           <div class="large-chart">
             <div class="large-chart-header">
-              <h3 class="large-chart-title">Biểu đồ doanh thu 12 tháng qua</h3>
+              <h3 class="large-chart-title" id="revenueChartTitle">
+                <c:choose>
+                  <c:when test="${periodType == 'day'}">Biểu đồ doanh thu theo ngày (tháng này)</c:when>
+                  <c:when test="${periodType == 'year'}">Biểu đồ doanh thu theo năm (5 năm qua)</c:when>
+                  <c:otherwise>Biểu đồ doanh thu 12 tháng qua</c:otherwise>
+                </c:choose>
+              </h3>
             </div>
             <div class="large-chart-container">
               <canvas id="revenueLineChart"></canvas>
@@ -693,14 +684,19 @@
           style: 'currency',
           currency: 'VND',
         }).format(amount)
-      function toggleCustomDate() {
-        const select = document.getElementById('timeRangeSelect')
-        document.getElementById('customDateRange').style.display =
-          select.value === 'custom' ? 'flex' : 'none'
+      // Get periodType from server
+      const periodType = '${periodType != null ? periodType : "month"}'
+      
+      function handlePeriodTypeChange() {
+        // This function can be used for real-time updates if needed
+        // Currently, we use applyPeriodFilter() to reload the page
       }
-      function applyFilter() {
-        // Chức năng này sẽ cần gọi về Servlet với tham số lọc
-        alert('Chức năng lọc đang được phát triển!')
+      
+      function applyPeriodFilter() {
+        const periodTypeSelect = document.getElementById('periodTypeSelect')
+        const selectedPeriod = periodTypeSelect.value
+        // Reload page with periodType parameter
+        window.location.href = '${pageContext.request.contextPath}/admin/reports?periodType=' + selectedPeriod
       }
 
       // --- HÀM HỖ TRỢ FORMAT ---
@@ -725,49 +721,68 @@
         return monthStr
       }
 
+      function formatDayLabel(dateStr) {
+        // dateStr format: "YYYY-MM-DD" -> "DD/MM"
+        const parts = dateStr.split('-')
+        if (parts.length === 3) {
+          return parts[2] + '/' + parts[1]
+        }
+        return dateStr
+      }
+
+      function formatYearLabel(yearStr) {
+        // yearStr format: "YYYY" -> "Năm YYYY"
+        return 'Năm ' + yearStr
+      }
+
+      function formatLabelByPeriodType(label, periodType) {
+        if (periodType === 'day') {
+          return formatDayLabel(label)
+        } else if (periodType === 'year') {
+          return formatYearLabel(label)
+        } else {
+          // month (default)
+          return formatMonthLabelFull(label)
+        }
+      }
+
       // --- LẤY DỮ LIỆU TỪ SERVER ---
       const revenueDataRaw = '${revenueChartJson}'
-      const packageDataRaw = '${packageChartJson}'
-      const memberDataRaw = '${memberChartJson}'
+      const activeMembershipsDataRaw = '${activeMembershipsChartJson}'
       let revenueData = [],
-        packageData = [],
-        memberData = []
+        activeMembershipsData = []
 
       try {
         if (revenueDataRaw && revenueDataRaw !== '' && revenueDataRaw !== 'null') {
           revenueData = JSON.parse(revenueDataRaw)
         }
-        if (packageDataRaw && packageDataRaw !== '' && packageDataRaw !== 'null') {
-          packageData = JSON.parse(packageDataRaw)
-        }
-        if (memberDataRaw && memberDataRaw !== '' && memberDataRaw !== 'null') {
-          memberData = JSON.parse(memberDataRaw)
+        if (activeMembershipsDataRaw && activeMembershipsDataRaw !== '' && activeMembershipsDataRaw !== 'null') {
+          activeMembershipsData = JSON.parse(activeMembershipsDataRaw)
         }
       } catch (e) {
         console.error('Lỗi parse JSON:', e)
         console.error('revenueDataRaw:', revenueDataRaw)
-        console.error('packageDataRaw:', packageDataRaw)
-        console.error('memberDataRaw:', memberDataRaw)
+        console.error('activeMembershipsDataRaw:', activeMembershipsDataRaw)
       }
 
-      // --- 1. BIỂU ĐỒ HỘI VIÊN (Bar Chart - Dữ liệu thật) ---
-      const memberCtx = document
-        .getElementById('memberGrowthChart')
+      // --- 1. BIỂU ĐỒ HỘI VIÊN ACTIVE (Bar Chart) ---
+      const activeMembershipsCtx = document
+        .getElementById('activeMembershipsChart')
         .getContext('2d')
 
-      // Xử lý dữ liệu member: convert value từ BigDecimal sang number và format label
-      let memberLabels = []
-      let memberValues = []
+      // Xử lý dữ liệu active memberships: convert value từ BigDecimal sang number và format label
+      let activeMembershipsLabels = []
+      let activeMembershipsValues = []
       
-      if (memberData && memberData.length > 0) {
-        memberLabels = memberData.map(item => {
+      if (activeMembershipsData && activeMembershipsData.length > 0) {
+        activeMembershipsLabels = activeMembershipsData.map(item => {
           if (item && item.label) {
-            return formatMonthLabel(item.label)
+            return formatLabelByPeriodType(item.label, periodType)
           }
           return ''
         }).filter(label => label !== '')
         
-        memberValues = memberData.map(item => {
+        activeMembershipsValues = activeMembershipsData.map(item => {
           if (item && item.value !== undefined && item.value !== null) {
             return Number(item.value)
           }
@@ -775,18 +790,26 @@
         })
       } else {
         // Fallback data nếu không có dữ liệu
-        memberLabels = ['T6', 'T7', 'T8', 'T9', 'T10', 'T11']
-        memberValues = [0, 0, 0, 0, 0, 0]
+        if (periodType === 'day') {
+          activeMembershipsLabels = []
+          activeMembershipsValues = []
+        } else if (periodType === 'year') {
+          activeMembershipsLabels = []
+          activeMembershipsValues = []
+        } else {
+          activeMembershipsLabels = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6']
+          activeMembershipsValues = [0, 0, 0, 0, 0, 0]
+        }
       }
 
-      new Chart(memberCtx, {
+      new Chart(activeMembershipsCtx, {
         type: 'bar',
         data: {
-          labels: memberLabels,
+          labels: activeMembershipsLabels,
           datasets: [
             {
-              label: 'Hội viên mới',
-              data: memberValues,
+              label: 'Hội viên Active',
+              data: activeMembershipsValues,
               backgroundColor: 'rgba(102, 126, 234, 0.8)',
               borderColor: '#667eea',
               borderWidth: 2,
@@ -802,14 +825,21 @@
             tooltip: { 
               enabled: true,
               callbacks: {
-                label: (ctx) => 'Hội viên mới: ' + ctx.parsed.y
+                label: (ctx) => 'Hội viên Active: ' + ctx.parsed.y
               }
             } 
           },
           scales: { 
             x: { 
               display: true,
-              grid: { display: false }
+              grid: { display: false },
+              ticks: {
+                maxRotation: periodType === 'day' ? 90 : 0,
+                minRotation: periodType === 'day' ? 90 : 0,
+                font: {
+                  size: periodType === 'day' ? 9 : 11
+                }
+              }
             }, 
             y: { 
               display: true,
@@ -824,109 +854,57 @@
         },
       })
 
-      // --- 2. BIỂU ĐỒ TRÒN (DOANH THU THEO GÓI) ---
-      const packageCtx = document
-        .getElementById('packagePieChart')
-        .getContext('2d')
-
-      // Xử lý dữ liệu package
-      let packageLabels = []
-      let packageValues = []
-      
-      if (packageData && packageData.length > 0) {
-        packageLabels = packageData.map((item) => {
-          return item && item.label ? item.label : 'Không xác định'
-        })
-        packageValues = packageData.map((item) => {
-          if (item && item.value !== undefined && item.value !== null) {
-            return Number(item.value)
-          }
-          return 0
-        })
-      } else {
-        // Nếu không có dữ liệu, hiển thị thông báo
-        packageLabels = ['Chưa có dữ liệu']
-        packageValues = [1]
-      }
-
-      new Chart(packageCtx, {
-        type: 'pie',
-        data: {
-          labels: packageLabels,
-          datasets: [
-            {
-              data: packageValues,
-              backgroundColor: [
-                '#11998e',
-                '#38ef7d',
-                '#0575E6',
-                '#ff9966',
-                '#ec8b5a',
-                '#e0e0e0',
-                '#9b59b6',
-                '#3498db',
-              ],
-              borderWidth: 2,
-              borderColor: '#fff',
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: { 
-                boxWidth: 12, 
-                font: { size: 11 },
-                padding: 10
-              },
-            },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => {
-                  const label = ctx.label || ''
-                  const value = ctx.parsed !== undefined ? formatCurrency(ctx.parsed) : formatCurrency(ctx.raw)
-                  const percentage = ((ctx.parsed !== undefined ? ctx.parsed : ctx.raw) / packageValues.reduce((a, b) => a + b, 0) * 100).toFixed(1)
-                  return label + ': ' + value + ' (' + percentage + '%)'
-                },
-              },
-            },
-          },
-        },
-      })
-
       // --- 3. BIỂU ĐỒ ĐƯỜNG LỚN (DOANH THU 12 THÁNG) ---
       const revenueCtx = document
         .getElementById('revenueLineChart')
         .getContext('2d')
+      
+      // Tạo gradient đẹp hơn
       const revenueGradient = revenueCtx.createLinearGradient(0, 0, 0, 400)
-      revenueGradient.addColorStop(0, 'rgba(20, 26, 73, 0.5)')
+      revenueGradient.addColorStop(0, 'rgba(236, 139, 90, 0.3)')
+      revenueGradient.addColorStop(0.5, 'rgba(20, 26, 73, 0.2)')
       revenueGradient.addColorStop(1, 'rgba(20, 26, 73, 0.0)')
 
       // Xử lý dữ liệu revenue: format label và convert value
       let revenueLabels = []
       let revenueValues = []
       
+      console.log('Revenue data from server:', revenueData)
+      
       if (revenueData && revenueData.length > 0) {
+        // Sắp xếp dữ liệu theo thứ tự thời gian
+        revenueData.sort((a, b) => {
+          if (a.label && b.label) {
+            return a.label.localeCompare(b.label)
+          }
+          return 0
+        })
+        
         revenueLabels = revenueData.map((item) => {
           if (item && item.label) {
-            return formatMonthLabelFull(item.label)
+            return formatLabelByPeriodType(item.label, periodType)
           }
           return ''
         }).filter(label => label !== '')
         
         revenueValues = revenueData.map((item) => {
           if (item && item.value !== undefined && item.value !== null) {
-            return Number(item.value)
+            const value = Number(item.value)
+            console.log('Revenue value:', item.label, '=', value)
+            return value
           }
           return 0
         })
+        
+        console.log('Processed labels:', revenueLabels)
+        console.log('Processed values:', revenueValues)
+      } else {
+        console.warn('No revenue data received from server')
       }
 
       // Nếu không có dữ liệu, tạo mảng rỗng để chart không bị lỗi
       if (revenueLabels.length === 0) {
+        console.warn('No labels generated, creating empty chart')
         revenueLabels = []
         revenueValues = []
       }
@@ -939,15 +917,27 @@
             {
               label: 'Doanh thu',
               data: revenueValues,
-              borderColor: '#141a49',
+              borderColor: '#ec8b5a',
               backgroundColor: revenueGradient,
               fill: true,
               tension: 0.4,
               pointBackgroundColor: '#ec8b5a',
               pointBorderColor: '#fff',
-              pointHoverRadius: 6,
-              pointRadius: 4,
-              pointHoverBackgroundColor: '#ec8b5a',
+              pointBorderWidth: 2,
+              pointHoverRadius: 8,
+              pointHoverBorderWidth: 2,
+              pointRadius: 5,
+              pointHoverBackgroundColor: '#d67a4f',
+              borderWidth: 3,
+              segment: {
+                borderColor: (ctx) => {
+                  // Màu sáng hơn cho các điểm tăng trưởng
+                  if (ctx.p1.parsed.y > ctx.p0.parsed.y) {
+                    return '#27ae60'
+                  }
+                  return '#ec8b5a'
+                }
+              }
             },
           ],
         },
@@ -958,37 +948,125 @@
             intersect: false,
             mode: 'index'
           },
+          plugins: {
+            legend: { 
+              display: true,
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: {
+                  size: 12,
+                  weight: '600'
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              titleFont: {
+                size: 14,
+                weight: '600'
+              },
+              bodyFont: {
+                size: 13
+              },
+              borderColor: '#ec8b5a',
+              borderWidth: 1,
+              cornerRadius: 8,
+              displayColors: false,
+              callbacks: {
+                title: (items) => {
+                  if (items.length > 0 && items[0].label) {
+                    return items[0].label
+                  }
+                  return ''
+                },
+                label: (ctx) => {
+                  if (ctx.parsed.y !== null && ctx.parsed.y !== undefined) {
+                    const value = ctx.parsed.y
+                    const formatted = formatCurrency(value)
+                    return '💰 Doanh thu: ' + formatted
+                  }
+                  return '💰 Doanh thu: 0 đ'
+                },
+                footer: (items) => {
+                  if (items.length > 1) {
+                    const current = items[items.length - 1].parsed.y
+                    const previous = items[items.length - 2].parsed.y
+                    if (previous > 0) {
+                      const change = ((current - previous) / previous * 100).toFixed(1)
+                      const isPositive = change >= 0
+                      return isPositive 
+                        ? '📈 Tăng ' + Math.abs(change) + '% so với tháng trước'
+                        : '📉 Giảm ' + Math.abs(change) + '% so với tháng trước'
+                    }
+                  }
+                  return ''
+                }
+              },
+            },
+          },
           scales: {
             y: {
               beginAtZero: true,
               ticks: {
                 callback: function (value) {
-                  return formatCurrency(value).replace('₫', '') + 'đ'
+                  if (value >= 1000000) {
+                    return (value / 1000000).toFixed(1) + 'M đ'
+                  } else if (value >= 1000) {
+                    return (value / 1000).toFixed(0) + 'K đ'
+                  }
+                  return value + ' đ'
                 },
+                font: {
+                  size: 11
+                },
+                color: '#5a6c7d'
               },
-              grid: { color: '#f0f0f0' },
+              grid: { 
+                color: '#f0f0f0',
+                drawBorder: false
+              },
+              title: {
+                display: true,
+                text: 'Doanh thu (VNĐ)',
+                font: {
+                  size: 12,
+                  weight: '600'
+                },
+                color: '#5a6c7d'
+              }
             },
             x: { 
-              grid: { display: false },
+              grid: { 
+                display: false,
+                drawBorder: false
+              },
               ticks: {
-                maxRotation: 45,
-                minRotation: 45
+                maxRotation: periodType === 'day' ? 90 : 45,
+                minRotation: periodType === 'day' ? 90 : 45,
+                font: {
+                  size: periodType === 'day' ? 10 : 11
+                },
+                color: '#5a6c7d'
+              },
+              title: {
+                display: true,
+                text: periodType === 'day' ? 'Ngày' : periodType === 'year' ? 'Năm' : 'Tháng',
+                font: {
+                  size: 12,
+                  weight: '600'
+                },
+                color: '#5a6c7d'
               }
             },
           },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => {
-                  if (ctx.parsed.y !== null && ctx.parsed.y !== undefined) {
-                    return 'Doanh thu: ' + formatCurrency(ctx.parsed.y)
-                  }
-                  return 'Doanh thu: 0 đ'
-                },
-              },
-            },
-          },
+          elements: {
+            point: {
+              hoverBorderWidth: 3
+            }
+          }
         },
       })
     </script>

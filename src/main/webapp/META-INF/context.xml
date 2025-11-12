@@ -1,3 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<<<<<<< HEAD
 <Context path="/GymManagement"/>
+=======
+<!-- 
+    Context path configuration for Tomcat deployment
+    IMPORTANT: This path MUST match the context path used in VNPay Return URL
+    VNPay Return URL: https://bianca-appendicular-boldheartedly.ngrok-free.dev/Gym_Management_Systems/vnpay-return
+    Therefore, context path must be: /Gym_Management_Systems
+-->
+<Context path="/Gym_Management_Systems"/>
+>>>>>>> 79255745a2aa51fe102209688c638ee8e1e50963
 

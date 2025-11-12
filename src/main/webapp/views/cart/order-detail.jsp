@@ -414,9 +414,18 @@
                         <div class="info-item">
                             <span class="info-label">Trạng Thái Đơn Hàng</span>
                             <span class="info-value">
-                                <span class="status-badge ${fn:toLowerCase(order.orderStatus.code)}">
-                                    ${order.orderStatus.displayName}
-                                </span>
+                                <c:choose>
+                                    <c:when test="${order.orderStatus.code == 'CONFIRMED' or order.orderStatus.code == 'confirmed'}">
+                                        <span class="status-badge completed">
+                                            Đã hoàn thành
+                                        </span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="status-badge ${fn:toLowerCase(order.orderStatus.code)}">
+                                            ${order.orderStatus.displayName}
+                                        </span>
+                                    </c:otherwise>
+                                </c:choose>
                             </span>
                         </div>
                         <div class="info-item">

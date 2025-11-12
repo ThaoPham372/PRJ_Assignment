@@ -245,6 +245,22 @@ public class PaymentServiceImpl implements PaymentService {
             
             LOGGER.info("📦 [activateMembershipFromOrder] Package found: " + pkg.getName() + " (ID: " + packageId + ")");
             
+            // Validate membership purchase before activating
+            // Kiểm tra xem user đã có membership với package khác chưa
+            // Nếu có → Không cho phép kích hoạt membership mới (should not happen if validation is correct)
+            service.MembershipService membershipService = new service.MembershipService();
+            service.MembershipService.ValidationResult validation = membershipService.validateNewMembership(memberId, pkg);
+            
+            if (!validation.isValid()) {
+                String errorMessage = String.join(", ", validation.getErrors());
+                LOGGER.warning("⚠️ [activateMembershipFromOrder] Membership validation failed: " + errorMessage);
+                LOGGER.warning("⚠️ [activateMembershipFromOrder] Payment was successful but cannot activate membership due to validation error.");
+                // Không throw exception để tránh rollback payment, chỉ log warning
+                // Payment đã thành công, nhưng membership không được kích hoạt
+                // Admin cần xử lý thủ công trường hợp này
+                return;
+            }
+            
             // Get member
             service.MemberService memberService = new service.MemberService();
             Member member = memberService.getById(memberId);
@@ -255,18 +271,26 @@ public class PaymentServiceImpl implements PaymentService {
             
             LOGGER.info("👤 [activateMembershipFromOrder] Member found: " + member.getName() + " (ID: " + memberId + ")");
             
-            // Sử dụng MembershipService.createOrExtendMembership() để tận dụng validation và logic đã có
-            // Method này sẽ tự động:
-            // - Validate trước khi tạo
-            // - Cộng thời gian nếu đã có gói cùng loại
-            // - Tạo mới nếu chưa có
+            // Kích hoạt membership sau khi thanh toán thành công
+            // Logic:
+            // - Nếu đã có membership với cùng package → Gia hạn (extend duration)
+            // - Nếu chưa có membership → Tạo mới
+            // - Nếu đã có membership với package khác → Đã được chặn ở validation (không đến đây)
+            
+            // Kiểm tra xem có membership cùng package đã tồn tại trước đó không (để log chính xác)
+            Membership existingMembershipBefore = membershipService.getActiveMembershipByMemberIdAndPackageId(memberId, packageId);
+            boolean willExtend = (existingMembershipBefore != null);
+            String actionType = willExtend ? "EXTENDED" : "CREATED";
+            
             try {
                 Membership resultMembership = membershipService.createOrExtendMembership(memberId, pkg);
                 
                 if (resultMembership != null && resultMembership.getId() != null) {
-                    LOGGER.info("✅ [activateMembershipFromOrder] SUCCESS - Membership ID: " + resultMembership.getId() + 
+                    LOGGER.info("✅ [activateMembershipFromOrder] SUCCESS - " + actionType + " membership ID: " + resultMembership.getId() + 
                                ", Status: " + resultMembership.getStatus() + 
-                               ", EndDate: " + resultMembership.getEndDate());
+                               ", StartDate: " + resultMembership.getStartDate() +
+                               ", EndDate: " + resultMembership.getEndDate() +
+                               ", Package: " + pkg.getName() + " (ID: " + packageId + ")");
                 } else {
                     LOGGER.warning("⚠️ [activateMembershipFromOrder] Membership created but ID is null");
                 }
@@ -274,7 +298,7 @@ public class PaymentServiceImpl implements PaymentService {
                 // Validation error từ MembershipService
                 LOGGER.warning("⚠️ [activateMembershipFromOrder] Validation failed: " + e.getMessage());
             } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "❌ [activateMembershipFromOrder] Error creating/extending membership", e);
+                LOGGER.log(Level.SEVERE, "❌ [activateMembershipFromOrder] Error creating membership", e);
                 throw e; // Re-throw để catch bên ngoài xử lý
             }
             

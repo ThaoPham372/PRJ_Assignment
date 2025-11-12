@@ -55,9 +55,9 @@ public interface CheckoutService {
      * @param amount Payment amount (in VND)
      * @param orderInfo Order description
      * @param ipAddress Client IP address
-     * @param baseUrl Base URL (scheme + host + port + contextPath) for building return URL
+     * @param returnUrl Full return URL (including /vnpay-return path) for VNPay callback
      * @return VNPay payment URL
      */
-    String processVNPayPayment(Integer orderId, Long amount, String orderInfo, String ipAddress, String baseUrl);
+    String processVNPayPayment(Integer orderId, Long amount, String orderInfo, String ipAddress, String returnUrl);
 }
 

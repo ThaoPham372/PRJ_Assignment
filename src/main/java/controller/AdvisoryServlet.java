@@ -74,8 +74,12 @@ public class AdvisoryServlet extends HttpServlet {
 
         } catch (IllegalArgumentException e) {
             // Validation error: show error message
+            // The error message from service is already in Vietnamese and user-friendly
             request.setAttribute("errorMessage", e.getMessage());
             LOGGER.warning("Validation error: " + e.getMessage());
+            
+            // Keep form data for re-display so user doesn't lose their input
+            // (Already set above)
 
         } catch (Exception e) {
             // System error: show generic error message
@@ -83,6 +87,9 @@ public class AdvisoryServlet extends HttpServlet {
                     "Đã có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau!");
             LOGGER.severe("Error processing advisory request: " + e.getMessage());
             e.printStackTrace();
+            
+            // Keep form data for re-display
+            // (Already set above)
         }
 
         // Forward back to form
