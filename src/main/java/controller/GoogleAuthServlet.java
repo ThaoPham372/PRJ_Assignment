@@ -7,7 +7,6 @@ import Utils.ConfigManager;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -16,7 +15,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 @WebServlet(name = "GoogleAuthServlet", urlPatterns = {"/auth/google-login", "/auth/google-register"})
-public class GoogleAuthServlet extends HttpServlet {
+public class GoogleAuthServlet extends BaseAuthServlet {
 
     private GoogleAuthService googleAuthService;
 
@@ -87,9 +86,12 @@ public class GoogleAuthServlet extends HttpServlet {
             return;
         }
         HttpSession session = request.getSession(true);
-        session.setAttribute("user", result.user);
-        session.setAttribute("userRoles", result.roles);
-        session.setAttribute("isLoggedIn", true);
+        
+        // Sử dụng setupUserSession từ BaseAuthServlet để đảm bảo setup session đầy đủ
+        // Bao gồm: user, userRoles, isLoggedIn, userId, và member (nếu role là MEMBER)
+        String role = extractRoleFromResult(result);
+        setupUserSession(session, result.user, role);
+        
         String redirectUrl = determineRedirectUrl(result.roles);
         sendSuccess(out, "Login successful", request.getContextPath() + redirectUrl);
     }
@@ -101,14 +103,31 @@ public class GoogleAuthServlet extends HttpServlet {
             return;
         }
         HttpSession session = request.getSession(true);
-        session.setAttribute("user", result.user);
-        session.setAttribute("userRoles", result.roles);
-        session.setAttribute("isLoggedIn", true);
+        
+        // Sử dụng setupUserSession từ BaseAuthServlet để đảm bảo setup session đầy đủ
+        // Bao gồm: user, userRoles, isLoggedIn, userId, và member (nếu role là MEMBER)
+        String role = extractRoleFromResult(result);
+        setupUserSession(session, result.user, role);
+        
         String redirectUrl = determineRedirectUrl(result.roles);
         sendSuccess(out, "Registration successful", request.getContextPath() + redirectUrl);
     }
 
     // Token verification is handled by GoogleAuthService
+
+    /**
+     * Extract role từ AuthResult để sử dụng với setupUserSession
+     * Lấy role đầu tiên từ roles list hoặc từ user.role
+     */
+    private String extractRoleFromResult(AuthResult result) {
+        if (result.roles != null && !result.roles.isEmpty()) {
+            return result.roles.get(0);
+        }
+        if (result.user != null && result.user.getRole() != null) {
+            return result.user.getRole();
+        }
+        return null;
+    }
 
     private String extractCredential(String json) {
         if (json == null) return null;
@@ -158,5 +177,3 @@ public class GoogleAuthServlet extends HttpServlet {
     }
 
 }
-
-
