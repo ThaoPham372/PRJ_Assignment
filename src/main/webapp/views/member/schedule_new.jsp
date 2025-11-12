@@ -457,7 +457,6 @@ body {
     color: var(--primary);
 }
 
-<<<<<<< HEAD
 /* Booking Status Styles - Different colors for each status */
 .booking-status {
     padding: 8px 20px;
@@ -500,8 +499,6 @@ body {
     box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
 }
 
-=======
->>>>>>> dev/dev-admin
 .booking-notes {
     width: 100%;
     border: 2px solid #e9ecef;
@@ -564,7 +561,6 @@ body {
     transform: translateY(-3px);
 }
 
-<<<<<<< HEAD
 .btn-back {
     background: var(--yellow);
     color: var(--primary);
@@ -587,8 +583,6 @@ body {
     box-shadow: 0 8px 25px rgba(255, 222, 89, 0.4);
 }
 
-=======
->>>>>>> dev/dev-admin
 .action-buttons {
     display: flex;
     gap: 15px;
@@ -709,12 +703,6 @@ body {
         <div class="gym-grid" id="gymGrid">
             <!-- Gyms will be loaded here -->
         </div>
-<<<<<<< HEAD
-        <div class="action-buttons" style="justify-content: flex-end; margin-top: 20px;">
-            <!-- No back button for step 1 -->
-        </div>
-=======
->>>>>>> dev/dev-admin
     </div>
 
     <!-- Step 2: Choose Trainer -->
@@ -726,14 +714,11 @@ body {
         <div class="trainer-grid" id="trainerGrid">
             <!-- Trainers will be loaded here -->
         </div>
-<<<<<<< HEAD
         <div class="action-buttons" style="justify-content: flex-end; margin-top: 20px;">
             <button class="btn-back" onclick="previousStep()">
                 <i class="fas fa-arrow-left"></i> Quay Lại
             </button>
         </div>
-=======
->>>>>>> dev/dev-admin
     </div>
 
     <!-- Step 3: Choose Date -->
@@ -758,14 +743,11 @@ body {
                 <!-- Calendar will be generated here -->
             </div>
         </div>
-<<<<<<< HEAD
         <div class="action-buttons" style="justify-content: flex-end; margin-top: 20px;">
             <button class="btn-back" onclick="previousStep()">
                 <i class="fas fa-arrow-left"></i> Quay Lại
             </button>
         </div>
-=======
->>>>>>> dev/dev-admin
     </div>
 
     <!-- Step 4: Choose Time Slot -->
@@ -777,14 +759,11 @@ body {
         <div class="timeslot-grid" id="timeslotGrid">
             <!-- Time slots will be loaded here -->
         </div>
-<<<<<<< HEAD
         <div class="action-buttons" style="justify-content: flex-end; margin-top: 20px;">
             <button class="btn-back" onclick="previousStep()">
                 <i class="fas fa-arrow-left"></i> Quay Lại
             </button>
         </div>
-=======
->>>>>>> dev/dev-admin
     </div>
 
     <!-- Step 5: Confirm Booking -->
@@ -830,11 +809,7 @@ body {
         </div>
 
         <div class="action-buttons">
-<<<<<<< HEAD
             <button class="btn-back" onclick="previousStep()">
-=======
-            <button class="btn-secondary" onclick="previousStep()">
->>>>>>> dev/dev-admin
                 <i class="fas fa-arrow-left"></i> Quay Lại
             </button>
             <button class="btn-primary" onclick="confirmBooking()">
@@ -842,7 +817,6 @@ body {
             </button>
         </div>
     </div>
-<<<<<<< HEAD
 
     <!-- Alert message area (before Member Personal Schedule) -->
     <div id="bookingAlertContainer" style="margin-top: 30px;"></div>
@@ -871,14 +845,6 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-=======
-</div>
-
-<script>
-// Get context path
-const contextPath = '${pageContext.request.contextPath}';
-
->>>>>>> dev/dev-admin
 // State management
 let bookingState = {
     currentStep: 1,
@@ -893,10 +859,7 @@ let bookingState = {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadGyms();
-<<<<<<< HEAD
     loadMemberBookings();
-=======
->>>>>>> dev/dev-admin
 });
 
 // Load gyms from server
@@ -924,57 +887,34 @@ function displayGyms(gyms) {
     gyms.forEach(gym => {
         const gymCard = document.createElement('div');
         gymCard.className = 'gym-card';
-<<<<<<< HEAD
-        gymCard.onclick = (e) => selectGym(gym, e);
+        gymCard.onclick = () => selectGym(gym, gymCard);
         const gymName = escapeHtml(gym.gymName || '');
         const gymAddress = escapeHtml(gym.location || 'Địa chỉ');
-        gymCard.innerHTML = 
-            '<div class="gym-icon">' +
-                '<i class="fas fa-dumbbell"></i>' +
-            '</div>' +
-            '<div class="gym-name">' + gymName + '</div>' +
-            '<div class="gym-address">' + gymAddress + '</div>';
-=======
-        gymCard.onclick = () => selectGym(gym, gymCard);
         gymCard.innerHTML = `
             <div class="gym-icon">
                 <i class="fas fa-dumbbell"></i>
             </div>
-            <div class="gym-name">${gym.gymName}</div>
-            <div class="gym-address">${gym.location || 'Địa chỉ'}</div>
+            <div class="gym-name">${gymName}</div>
+            <div class="gym-address">${gymAddress}</div>
         `;
->>>>>>> dev/dev-admin
         gymGrid.appendChild(gymCard);
     });
 }
 
 // Select gym
-<<<<<<< HEAD
-function selectGym(gym, event) {
-=======
 function selectGym(gym, element) {
->>>>>>> dev/dev-admin
     bookingState.selectedGym = gym;
     
     // Update UI
     document.querySelectorAll('.gym-card').forEach(card => {
         card.classList.remove('selected');
     });
-<<<<<<< HEAD
-    if (event && event.currentTarget) {
-        event.currentTarget.classList.add('selected');
-    }
-    
-    // Load trainers for this gym
-    loadTrainers(gym.gymId || gym.id);
-=======
     if (element) {
         element.classList.add('selected');
     }
     
     // Load trainers for this gym
-    loadTrainers(gym.gymId);
->>>>>>> dev/dev-admin
+    loadTrainers(gym.gymId || gym.id);
     
     // Move to next step
     setTimeout(() => {
@@ -1007,31 +947,15 @@ function displayTrainers(trainers) {
     trainers.forEach(trainer => {
         const trainerCard = document.createElement('div');
         trainerCard.className = 'trainer-card';
-<<<<<<< HEAD
-        trainerCard.onclick = (e) => selectTrainer(trainer, e);
+        trainerCard.onclick = () => selectTrainer(trainer, trainerCard);
         const trainerName = escapeHtml(trainer.name || '');
         const trainerSpecialty = escapeHtml(trainer.specialization || 'Huấn luyện viên');
-        trainerCard.innerHTML = 
-            '<div class="trainer-avatar">' +
-                '<i class="fas fa-user"></i>' +
-            '</div>' +
-            '<div class="trainer-name">' + trainerName + '</div>' +
-            '<div class="trainer-specialty">' + trainerSpecialty + '</div>' +
-            '<div class="trainer-rating">' +
-                '<i class="fas fa-star"></i>' +
-                '<i class="fas fa-star"></i>' +
-                '<i class="fas fa-star"></i>' +
-                '<i class="fas fa-star"></i>' +
-                '<i class="fas fa-star"></i>' +
-            '</div>';
-=======
-        trainerCard.onclick = () => selectTrainer(trainer, trainerCard);
         trainerCard.innerHTML = `
             <div class="trainer-avatar">
                 <i class="fas fa-user"></i>
             </div>
-            <div class="trainer-name">${trainer.name}</div>
-            <div class="trainer-specialty">${trainer.specialization || 'Huấn luyện viên'}</div>
+            <div class="trainer-name">${trainerName}</div>
+            <div class="trainer-specialty">${trainerSpecialty}</div>
             <div class="trainer-rating">
                 <i class="fas fa-star"></i>
                 <i class="fas fa-star"></i>
@@ -1040,30 +964,20 @@ function displayTrainers(trainers) {
                 <i class="fas fa-star"></i>
             </div>
         `;
->>>>>>> dev/dev-admin
         trainerGrid.appendChild(trainerCard);
     });
 }
 
 // Select trainer
-<<<<<<< HEAD
-function selectTrainer(trainer, event) {
-=======
 function selectTrainer(trainer, element) {
->>>>>>> dev/dev-admin
     bookingState.selectedTrainer = trainer;
     
     // Update UI
     document.querySelectorAll('.trainer-card').forEach(card => {
         card.classList.remove('selected');
     });
-<<<<<<< HEAD
-    if (event && event.currentTarget) {
-        event.currentTarget.classList.add('selected');
-=======
     if (element) {
         element.classList.add('selected');
->>>>>>> dev/dev-admin
     }
     
     // Generate calendar
@@ -1083,11 +997,7 @@ function generateCalendar() {
     // Update month title
     const monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
                        'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
-<<<<<<< HEAD
-    document.getElementById('calendarMonth').textContent = monthNames[currentMonth] + ', ' + currentYear;
-=======
     document.getElementById('calendarMonth').textContent = `${monthNames[currentMonth]}, ${currentYear}`;
->>>>>>> dev/dev-admin
     
     calendarGrid.innerHTML = '';
     
@@ -1113,7 +1023,6 @@ function generateCalendar() {
     }
     
     // Day cells
-<<<<<<< HEAD
     const todayDate = new Date();
     todayDate.setHours(0, 0, 0, 0);
     
@@ -1122,33 +1031,18 @@ function generateCalendar() {
         const cellDate = new Date(currentYear, currentMonth, day);
         cellDate.setHours(0, 0, 0, 0);
         const isPast = cellDate < todayDate;
-=======
-    for (let day = 1; day <= daysInMonth; day++) {
-        const dayCell = document.createElement('div');
-        const cellDate = new Date(currentYear, currentMonth, day);
-        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const isPast = cellDate < todayStart;
->>>>>>> dev/dev-admin
         
         dayCell.className = 'calendar-day';
         if (isPast) {
             dayCell.classList.add('disabled');
         }
-<<<<<<< HEAD
         if (todayDate.getDate() === day && todayDate.getMonth() === currentMonth && todayDate.getFullYear() === currentYear) {
-=======
-        if (today.getDate() === day && today.getMonth() === currentMonth && today.getFullYear() === currentYear) {
->>>>>>> dev/dev-admin
             dayCell.classList.add('today');
         }
         dayCell.textContent = day;
         
         if (!isPast) {
-<<<<<<< HEAD
-            dayCell.onclick = (e) => selectDate(cellDate, e);
-=======
             dayCell.onclick = () => selectDate(cellDate, dayCell);
->>>>>>> dev/dev-admin
         }
         
         calendarGrid.appendChild(dayCell);
@@ -1156,24 +1050,15 @@ function generateCalendar() {
 }
 
 // Select date
-<<<<<<< HEAD
-function selectDate(date, event) {
-=======
 function selectDate(date, element) {
->>>>>>> dev/dev-admin
     bookingState.selectedDate = date;
     
     // Update UI
     document.querySelectorAll('.calendar-day:not(.disabled)').forEach(cell => {
         cell.classList.remove('selected');
     });
-<<<<<<< HEAD
-    if (event && event.currentTarget) {
-        event.currentTarget.classList.add('selected');
-=======
     if (element) {
         element.classList.add('selected');
->>>>>>> dev/dev-admin
     }
     
     // Load available time slots
@@ -1188,21 +1073,15 @@ function selectDate(date, element) {
 // Load available time slots
 function loadTimeSlots() {
     const { selectedGym, selectedTrainer, selectedDate } = bookingState;
-<<<<<<< HEAD
     // Format date as YYYY-MM-DD to avoid timezone issues
     const year = selectedDate.getFullYear();
     const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
     const day = String(selectedDate.getDate()).padStart(2, '0');
-    const dateStr = year + '-' + month + '-' + day;
+    const dateStr = `${year}-${month}-${day}`;
     const trainerId = selectedTrainer.id || selectedTrainer.trainerId;
     const gymId = selectedGym.gymId || selectedGym.id;
     
-    fetch(contextPath + '/api/schedule/available-slots?trainerId=' + trainerId + '&gymId=' + gymId + '&date=' + dateStr)
-=======
-    const dateStr = selectedDate.toISOString().split('T')[0];
-    
-    fetch(contextPath + '/api/schedule/available-slots?trainerId=' + selectedTrainer.id + '&gymId=' + selectedGym.gymId + '&date=' + dateStr)
->>>>>>> dev/dev-admin
+    fetch(`${contextPath}/api/schedule/available-slots?trainerId=${trainerId}&gymId=${gymId}&date=${dateStr}`)
         .then(response => response.json())
         .then(result => {
             if (result.success) {
@@ -1239,7 +1118,6 @@ function displayTimeSlots(allSlots, availableSlotIds) {
     const timeslotGrid = document.getElementById('timeslotGrid');
     timeslotGrid.innerHTML = '';
     
-<<<<<<< HEAD
     if (!allSlots || allSlots.length === 0) {
         timeslotGrid.innerHTML = '<p style="text-align: center; color: #6c757d; grid-column: 1 / -1;">Không có khung giờ nào</p>';
         return;
@@ -1266,18 +1144,19 @@ function displayTimeSlots(allSlots, availableSlotIds) {
         const isAvailable = hasAvailableSlots && availableIds.includes(slotId);
         
         const slotCard = document.createElement('div');
-        slotCard.className = 'timeslot-card' + (isAvailable ? '' : ' unavailable');
+        slotCard.className = `timeslot-card ${isAvailable ? '' : 'unavailable'}`;
         if (isAvailable) {
-            slotCard.onclick = (e) => selectTimeSlot(slot, e);
+            slotCard.onclick = () => selectTimeSlot(slot, slotCard);
         }
         const startTime = escapeHtml(slot.startTime || '');
         const endTime = escapeHtml(slot.endTime || '');
         const statusIcon = isAvailable 
             ? '<i class="fas fa-check-circle"></i> Còn trống' 
             : '<i class="fas fa-times-circle"></i> Đã đặt';
-        slotCard.innerHTML = 
-            '<div class="timeslot-time">' + startTime + ' - ' + endTime + '</div>' +
-            '<div class="timeslot-status">' + statusIcon + '</div>';
+        slotCard.innerHTML = `
+            <div class="timeslot-time">${startTime} - ${endTime}</div>
+            <div class="timeslot-status">${statusIcon}</div>
+        `;
         timeslotGrid.appendChild(slotCard);
     });
     
@@ -1291,41 +1170,15 @@ function displayTimeSlots(allSlots, availableSlotIds) {
 }
 
 // Select time slot
-function selectTimeSlot(slot, event) {
-=======
-    allSlots.forEach(slot => {
-        const isAvailable = availableSlotIds.includes(slot.slotId);
-        const slotCard = document.createElement('div');
-        slotCard.className = `timeslot-card ${isAvailable ? '' : 'unavailable'}`;
-        if (isAvailable) {
-            slotCard.onclick = () => selectTimeSlot(slot, slotCard);
-        }
-        slotCard.innerHTML = `
-            <div class="timeslot-time">${slot.startTime} - ${slot.endTime}</div>
-            <div class="timeslot-status">
-                ${isAvailable ? '<i class="fas fa-check-circle"></i> Còn trống' : '<i class="fas fa-times-circle"></i> Đã đặt'}
-            </div>
-        `;
-        timeslotGrid.appendChild(slotCard);
-    });
-}
-
-// Select time slot
 function selectTimeSlot(slot, element) {
->>>>>>> dev/dev-admin
     bookingState.selectedSlot = slot;
     
     // Update UI
     document.querySelectorAll('.timeslot-card').forEach(card => {
         card.classList.remove('selected');
     });
-<<<<<<< HEAD
-    if (event && event.currentTarget) {
-        event.currentTarget.classList.add('selected');
-=======
     if (element) {
         element.classList.add('selected');
->>>>>>> dev/dev-admin
     }
     
     // Update summary
@@ -1341,13 +1194,8 @@ function selectTimeSlot(slot, element) {
 function updateSummary() {
     const { selectedGym, selectedTrainer, selectedDate, selectedSlot } = bookingState;
     
-<<<<<<< HEAD
     document.getElementById('summaryGym').textContent = selectedGym.gymName || '';
     document.getElementById('summaryTrainer').textContent = selectedTrainer.name || '';
-=======
-    document.getElementById('summaryGym').textContent = selectedGym.gymName;
-    document.getElementById('summaryTrainer').textContent = selectedTrainer.name;
->>>>>>> dev/dev-admin
     
     const dateStr = selectedDate.toLocaleDateString('vi-VN', { 
         weekday: 'long', 
@@ -1356,11 +1204,7 @@ function updateSummary() {
         day: 'numeric' 
     });
     document.getElementById('summaryDate').textContent = dateStr;
-<<<<<<< HEAD
-    document.getElementById('summaryTime').textContent = (selectedSlot.startTime || '') + ' - ' + (selectedSlot.endTime || '');
-=======
-    document.getElementById('summaryTime').textContent = `${selectedSlot.startTime} - ${selectedSlot.endTime}`;
->>>>>>> dev/dev-admin
+    document.getElementById('summaryTime').textContent = `${selectedSlot.startTime || ''} - ${selectedSlot.endTime || ''}`;
 }
 
 // Confirm booking
@@ -1368,36 +1212,27 @@ function confirmBooking() {
     const { selectedGym, selectedTrainer, selectedDate, selectedSlot } = bookingState;
     const notes = document.getElementById('bookingNotes').value;
     
-<<<<<<< HEAD
     // Format date as YYYY-MM-DD to avoid timezone issues
     const year = selectedDate.getFullYear();
     const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
     const day = String(selectedDate.getDate()).padStart(2, '0');
-    const dateStr = year + '-' + month + '-' + day;
+    const dateStr = `${year}-${month}-${day}`;
     
     const bookingData = {
         gymId: selectedGym.gymId || selectedGym.id,
         trainerId: selectedTrainer.id || selectedTrainer.trainerId,
         date: dateStr,
         slotId: selectedSlot.slotId || selectedSlot.id,
-=======
-    const bookingData = {
-        gymId: selectedGym.gymId,
-        trainerId: selectedTrainer.id,
-        date: selectedDate.toISOString().split('T')[0],
-        slotId: selectedSlot.slotId,
->>>>>>> dev/dev-admin
         notes: notes
     };
     
-    fetch(contextPath + '/api/schedule/bookings', {
+    fetch(`${contextPath}/api/schedule/bookings`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(bookingData)
     })
-<<<<<<< HEAD
     .then(response => {
         // Check if response is ok
         if (!response.ok) {
@@ -1495,15 +1330,6 @@ function confirmBooking() {
                     }
                 }, 1000);
             }, 500);
-=======
-    .then(response => response.json())
-    .then(result => {
-        if (result.success) {
-            showAlert('Đặt lịch thành công! Vui lòng chờ PT xác nhận.', 'success');
-            setTimeout(() => {
-                window.location.href = contextPath + '/member/dashboard';
-            }, 2000);
->>>>>>> dev/dev-admin
         } else {
             showAlert(result.message || 'Đặt lịch thất bại. Vui lòng thử lại.', 'danger');
         }
@@ -1517,16 +1343,6 @@ function confirmBooking() {
 // Navigation functions
 function nextStep() {
     if (bookingState.currentStep < 5) {
-<<<<<<< HEAD
-        document.getElementById('step' + bookingState.currentStep).classList.add('hidden');
-        document.getElementById('step' + bookingState.currentStep + '-indicator').classList.remove('active');
-        document.getElementById('step' + bookingState.currentStep + '-indicator').classList.add('completed');
-        
-        bookingState.currentStep++;
-        
-        document.getElementById('step' + bookingState.currentStep).classList.remove('hidden');
-        document.getElementById('step' + bookingState.currentStep + '-indicator').classList.add('active');
-=======
         document.getElementById(`step${bookingState.currentStep}`).classList.add('hidden');
         document.getElementById(`step${bookingState.currentStep}-indicator`).classList.remove('active');
         document.getElementById(`step${bookingState.currentStep}-indicator`).classList.add('completed');
@@ -1535,7 +1351,6 @@ function nextStep() {
         
         document.getElementById(`step${bookingState.currentStep}`).classList.remove('hidden');
         document.getElementById(`step${bookingState.currentStep}-indicator`).classList.add('active');
->>>>>>> dev/dev-admin
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1543,16 +1358,6 @@ function nextStep() {
 
 function previousStep() {
     if (bookingState.currentStep > 1) {
-<<<<<<< HEAD
-        document.getElementById('step' + bookingState.currentStep).classList.add('hidden');
-        document.getElementById('step' + bookingState.currentStep + '-indicator').classList.remove('active');
-        
-        bookingState.currentStep--;
-        
-        document.getElementById('step' + bookingState.currentStep).classList.remove('hidden');
-        document.getElementById('step' + bookingState.currentStep + '-indicator').classList.add('active');
-        document.getElementById('step' + bookingState.currentStep + '-indicator').classList.remove('completed');
-=======
         document.getElementById(`step${bookingState.currentStep}`).classList.add('hidden');
         document.getElementById(`step${bookingState.currentStep}-indicator`).classList.remove('active');
         
@@ -1561,27 +1366,22 @@ function previousStep() {
         document.getElementById(`step${bookingState.currentStep}`).classList.remove('hidden');
         document.getElementById(`step${bookingState.currentStep}-indicator`).classList.add('active');
         document.getElementById(`step${bookingState.currentStep}-indicator`).classList.remove('completed');
->>>>>>> dev/dev-admin
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
 
 function previousMonth() {
-<<<<<<< HEAD
     const today = new Date();
     const currentDate = new Date(bookingState.currentYear, bookingState.currentMonth, 1);
     const minDate = new Date(today.getFullYear(), today.getMonth(), 1);
     
-=======
->>>>>>> dev/dev-admin
     if (bookingState.currentMonth === 0) {
         bookingState.currentMonth = 11;
         bookingState.currentYear--;
     } else {
         bookingState.currentMonth--;
     }
-<<<<<<< HEAD
     
     // Don't allow going to past months
     const newDate = new Date(bookingState.currentYear, bookingState.currentMonth, 1);
@@ -1590,8 +1390,6 @@ function previousMonth() {
         bookingState.currentYear = today.getFullYear();
     }
     
-=======
->>>>>>> dev/dev-admin
     generateCalendar();
 }
 
@@ -1603,23 +1401,6 @@ function nextMonth() {
         bookingState.currentMonth++;
     }
     generateCalendar();
-}
-
-<<<<<<< HEAD
-// Show alert message
-function showAlert(message, type) {
-    const alertContainer = document.getElementById('alertContainer');
-    const alert = document.createElement('div');
-    const iconClass = type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle';
-    alert.className = 'alert alert-' + type;
-    alert.innerHTML = '<i class="fas fa-' + iconClass + '"></i> ' + escapeHtml(message);
-=======
-// Escape HTML to prevent XSS
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
 }
 
 // Get icon class based on alert type
@@ -1650,14 +1431,12 @@ function showAlert(message, type) {
         <i class="fas fa-${iconClass}"></i>
         ${escapedMessage}
     `;
->>>>>>> dev/dev-admin
     alertContainer.appendChild(alert);
     
     setTimeout(() => {
         alert.remove();
     }, 5000);
 }
-<<<<<<< HEAD
 
 // Load member bookings
 function loadMemberBookings() {
@@ -1909,8 +1688,6 @@ function cancelMemberBooking(bookingId, event) {
         button.innerHTML = originalText;
     });
 }
-=======
->>>>>>> dev/dev-admin
 </script>
 
 <%@ include file="/views/common/footer.jsp" %>
