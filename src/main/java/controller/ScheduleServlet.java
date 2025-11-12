@@ -91,10 +91,22 @@ public class ScheduleServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        String pathInfo = request.getServletPath();
+        String pathInfo = request.getPathInfo();
+        if (pathInfo == null) {
+            pathInfo = request.getServletPath();
+        }
+        
+        LOGGER.info("POST request path: " + pathInfo);
         
         try {
-            if ("/api/schedule/bookings".equals(pathInfo)) {
+            // Check if this is a cancel request
+            if (pathInfo != null && pathInfo.contains("/cancel")) {
+                handleCancelBooking(request, response);
+                return;
+            }
+            
+            // Regular POST requests
+            if ("/api/schedule/bookings".equals(pathInfo) || pathInfo.endsWith("/api/schedule/bookings")) {
                 handleCreateBooking(request, response);
             } else {
                 sendError(response, 404, "Endpoint not found");
@@ -109,10 +121,15 @@ public class ScheduleServlet extends HttpServlet {
     protected void doPut(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        String pathInfo = request.getServletPath();
+        String pathInfo = request.getPathInfo();
+        if (pathInfo == null) {
+            pathInfo = request.getServletPath();
+        }
+        
+        LOGGER.info("PUT request path: " + pathInfo);
         
         try {
-            if (pathInfo.contains("/cancel")) {
+            if (pathInfo != null && pathInfo.contains("/cancel")) {
                 handleCancelBooking(request, response);
             } else {
                 sendError(response, 404, "Endpoint not found");
@@ -320,6 +337,16 @@ public class ScheduleServlet extends HttpServlet {
                 bookingData.put("trainer", trainerData);
             }
             
+            // Gym info
+            if (booking.getGym() != null) {
+                Map<String, Object> gymData = new HashMap<>();
+                gymData.put("gymId", booking.getGym().getGymId());
+                gymData.put("gymName", booking.getGym().getName());
+                gymData.put("name", booking.getGym().getName()); // Alias for compatibility
+                gymData.put("address", booking.getGym().getAddress());
+                bookingData.put("gym", gymData);
+            }
+            
             // Time slot info
             if (booking.getTimeSlot() != null) {
                 Map<String, Object> slotData = new HashMap<>();
@@ -337,10 +364,14 @@ public class ScheduleServlet extends HttpServlet {
     }
     
     /**
-     * PUT /api/schedule/bookings/{id}/cancel - Cancel booking
+     * PUT/POST /api/schedule/bookings/{id}/cancel - Cancel booking
      */
     private void handleCancelBooking(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
+        
+        // Always set JSON content type first
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
         
         // Check if member is logged in
         Member member = (Member) request.getSession().getAttribute("member");
@@ -350,33 +381,84 @@ public class ScheduleServlet extends HttpServlet {
         }
         
         // Extract booking ID from path
-        String pathInfo = request.getServletPath();
-        String[] parts = pathInfo.split("/");
+        // URL pattern: /api/schedule/bookings/{id}/cancel
+        String requestURI = request.getRequestURI();
+        String contextPath = request.getContextPath();
+        String pathInfo = request.getPathInfo();
+        
+        LOGGER.info("Cancel booking - requestURI: " + requestURI + ", contextPath: " + contextPath + ", pathInfo: " + pathInfo);
+        
+        Integer bookingId = null;
         
         try {
-            Integer bookingId = null;
-            for (int i = 0; i < parts.length; i++) {
-                if ("bookings".equals(parts[i]) && i + 1 < parts.length) {
-                    bookingId = Integer.parseInt(parts[i + 1]);
-                    break;
+            // Method 1: Try to extract from pathInfo
+            if (pathInfo != null) {
+                String[] parts = pathInfo.split("/");
+                for (int i = 0; i < parts.length; i++) {
+                    if ("bookings".equals(parts[i]) && i + 1 < parts.length) {
+                        try {
+                            bookingId = Integer.parseInt(parts[i + 1]);
+                            LOGGER.info("Extracted booking ID from pathInfo: " + bookingId);
+                            break;
+                        } catch (NumberFormatException e) {
+                            // Not a number, continue
+                        }
+                    }
+                }
+            }
+            
+            // Method 2: Try to extract from requestURI
+            if (bookingId == null && requestURI != null) {
+                String relativePath = requestURI;
+                if (contextPath != null && requestURI.startsWith(contextPath)) {
+                    relativePath = requestURI.substring(contextPath.length());
+                }
+                
+                // Pattern: /api/schedule/bookings/{id}/cancel
+                String pattern = "/api/schedule/bookings/";
+                int patternIndex = relativePath.indexOf(pattern);
+                if (patternIndex >= 0) {
+                    int startIndex = patternIndex + pattern.length();
+                    int endIndex = relativePath.indexOf("/", startIndex);
+                    if (endIndex < 0) {
+                        endIndex = relativePath.length();
+                    }
+                    String idStr = relativePath.substring(startIndex, endIndex);
+                    try {
+                        bookingId = Integer.parseInt(idStr);
+                        LOGGER.info("Extracted booking ID from requestURI: " + bookingId);
+                    } catch (NumberFormatException e) {
+                        LOGGER.warning("Could not parse booking ID from: " + idStr);
+                    }
                 }
             }
             
             if (bookingId == null) {
-                sendError(response, 400, "Invalid booking ID");
+                LOGGER.warning("Could not extract booking ID. requestURI: " + requestURI + ", pathInfo: " + pathInfo);
+                sendError(response, 400, "Không tìm thấy ID lịch đặt");
                 return;
             }
             
             Map<String, Object> result = scheduleService.cancelBookingByMember(bookingId, member.getId());
             
             if ((Boolean) result.get("success")) {
-                sendSuccess(response, result);
+                // Send result directly, not wrapped
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write(gson.toJson(result));
             } else {
-                sendError(response, 400, (String) result.get("message"));
+                String errorMsg = (String) result.get("message");
+                if (errorMsg == null || errorMsg.isEmpty()) {
+                    errorMsg = "Không thể hủy lịch đặt";
+                }
+                sendError(response, 400, errorMsg);
             }
             
         } catch (NumberFormatException e) {
-            sendError(response, 400, "Invalid booking ID");
+            LOGGER.log(Level.WARNING, "Invalid booking ID format", e);
+            sendError(response, 400, "ID lịch đặt không hợp lệ");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error in cancel booking", e);
+            sendError(response, 500, "Lỗi hệ thống. Vui lòng thử lại sau.");
         }
     }
     

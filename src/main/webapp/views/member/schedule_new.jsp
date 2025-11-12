@@ -457,6 +457,48 @@ body {
     color: var(--primary);
 }
 
+/* Booking Status Styles - Different colors for each status */
+.booking-status {
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: inline-block;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Chờ Xác Nhận - Màu vàng */
+.status-PENDING {
+    background: var(--yellow);
+    color: var(--primary);
+    border: 2px solid var(--yellow-dark);
+    box-shadow: 0 2px 8px rgba(255, 222, 89, 0.3);
+}
+
+/* Đã Xác Nhận - Màu xanh lá */
+.status-CONFIRMED {
+    background: #d4edda;
+    color: #155724;
+    border: 2px solid #28a745;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+/* Hoàn Thành - Màu xanh dương */
+.status-COMPLETED {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 2px solid #17a2b8;
+    box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
+}
+
+/* Đã Hủy - Màu đỏ nhạt */
+.status-CANCELLED {
+    background: #f8d7da;
+    color: #721c24;
+    border: 2px solid #dc3545;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
 .booking-notes {
     width: 100%;
     border: 2px solid #e9ecef;
@@ -517,6 +559,28 @@ body {
     background: var(--accent);
     color: white;
     transform: translateY(-3px);
+}
+
+.btn-back {
+    background: var(--yellow);
+    color: var(--primary);
+    border: 2px solid var(--yellow);
+    border-radius: 25px;
+    padding: 15px 35px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(255, 222, 89, 0.3);
+}
+
+.btn-back:hover {
+    background: var(--yellow-dark);
+    border-color: var(--yellow-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255, 222, 89, 0.4);
 }
 
 .action-buttons {
@@ -639,6 +703,9 @@ body {
         <div class="gym-grid" id="gymGrid">
             <!-- Gyms will be loaded here -->
         </div>
+        <div class="action-buttons" style="justify-content: flex-end; margin-top: 20px;">
+            <!-- No back button for step 1 -->
+        </div>
     </div>
 
     <!-- Step 2: Choose Trainer -->
@@ -649,6 +716,11 @@ body {
         </h3>
         <div class="trainer-grid" id="trainerGrid">
             <!-- Trainers will be loaded here -->
+        </div>
+        <div class="action-buttons" style="justify-content: flex-end; margin-top: 20px;">
+            <button class="btn-back" onclick="previousStep()">
+                <i class="fas fa-arrow-left"></i> Quay Lại
+            </button>
         </div>
     </div>
 
@@ -674,6 +746,11 @@ body {
                 <!-- Calendar will be generated here -->
             </div>
         </div>
+        <div class="action-buttons" style="justify-content: flex-end; margin-top: 20px;">
+            <button class="btn-back" onclick="previousStep()">
+                <i class="fas fa-arrow-left"></i> Quay Lại
+            </button>
+        </div>
     </div>
 
     <!-- Step 4: Choose Time Slot -->
@@ -684,6 +761,11 @@ body {
         </h3>
         <div class="timeslot-grid" id="timeslotGrid">
             <!-- Time slots will be loaded here -->
+        </div>
+        <div class="action-buttons" style="justify-content: flex-end; margin-top: 20px;">
+            <button class="btn-back" onclick="previousStep()">
+                <i class="fas fa-arrow-left"></i> Quay Lại
+            </button>
         </div>
     </div>
 
@@ -730,7 +812,7 @@ body {
         </div>
 
         <div class="action-buttons">
-            <button class="btn-secondary" onclick="previousStep()">
+            <button class="btn-back" onclick="previousStep()">
                 <i class="fas fa-arrow-left"></i> Quay Lại
             </button>
             <button class="btn-primary" onclick="confirmBooking()">
@@ -738,9 +820,34 @@ body {
             </button>
         </div>
     </div>
+
+    <!-- Alert message area (before Member Personal Schedule) -->
+    <div id="bookingAlertContainer" style="margin-top: 30px;"></div>
+
+    <!-- Member Personal Schedule Section -->
+    <div class="booking-card" style="margin-top: 30px;">
+        <h3 class="section-title">
+            <i class="fas fa-calendar-check"></i>
+            Lịch Tập Cá Nhân Của Tôi
+        </h3>
+        <div id="memberBookingsList">
+            <!-- Member bookings will be loaded here -->
+        </div>
+    </div>
 </div>
 
 <script>
+// Store context path in JavaScript variable
+const contextPath = '${pageContext.request.contextPath}';
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // State management
 let bookingState = {
     currentStep: 1,
@@ -755,11 +862,12 @@ let bookingState = {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadGyms();
+    loadMemberBookings();
 });
 
 // Load gyms from server
 function loadGyms() {
-    fetch('${pageContext.request.contextPath}/api/schedule/gyms')
+    fetch(contextPath + '/api/schedule/gyms')
         .then(response => response.json())
         .then(result => {
             if (result.success) {
@@ -782,30 +890,33 @@ function displayGyms(gyms) {
     gyms.forEach(gym => {
         const gymCard = document.createElement('div');
         gymCard.className = 'gym-card';
-        gymCard.onclick = () => selectGym(gym);
-        gymCard.innerHTML = `
-            <div class="gym-icon">
-                <i class="fas fa-dumbbell"></i>
-            </div>
-            <div class="gym-name">${gym.gymName}</div>
-            <div class="gym-address">${gym.location || 'Địa chỉ'}</div>
-        `;
+        gymCard.onclick = (e) => selectGym(gym, e);
+        const gymName = escapeHtml(gym.gymName || '');
+        const gymAddress = escapeHtml(gym.location || 'Địa chỉ');
+        gymCard.innerHTML = 
+            '<div class="gym-icon">' +
+                '<i class="fas fa-dumbbell"></i>' +
+            '</div>' +
+            '<div class="gym-name">' + gymName + '</div>' +
+            '<div class="gym-address">' + gymAddress + '</div>';
         gymGrid.appendChild(gymCard);
     });
 }
 
 // Select gym
-function selectGym(gym) {
+function selectGym(gym, event) {
     bookingState.selectedGym = gym;
     
     // Update UI
     document.querySelectorAll('.gym-card').forEach(card => {
         card.classList.remove('selected');
     });
-    event.currentTarget.classList.add('selected');
+    if (event && event.currentTarget) {
+        event.currentTarget.classList.add('selected');
+    }
     
     // Load trainers for this gym
-    loadTrainers(gym.id);
+    loadTrainers(gym.gymId || gym.id);
     
     // Move to next step
     setTimeout(() => {
@@ -815,7 +926,7 @@ function selectGym(gym) {
 
 // Load trainers for selected gym
 function loadTrainers(gymId) {
-    fetch(`${pageContext.request.contextPath}/api/schedule/trainers?gymId=${gymId}`)
+    fetch(contextPath + '/api/schedule/trainers?gymId=' + gymId)
         .then(response => response.json())
         .then(result => {
             if (result.success) {
@@ -838,34 +949,37 @@ function displayTrainers(trainers) {
     trainers.forEach(trainer => {
         const trainerCard = document.createElement('div');
         trainerCard.className = 'trainer-card';
-        trainerCard.onclick = () => selectTrainer(trainer);
-        trainerCard.innerHTML = `
-            <div class="trainer-avatar">
-                <i class="fas fa-user"></i>
-            </div>
-            <div class="trainer-name">${trainer.name}</div>
-            <div class="trainer-specialty">${trainer.specialization || 'Huấn luyện viên'}</div>
-            <div class="trainer-rating">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-            </div>
-        `;
+        trainerCard.onclick = (e) => selectTrainer(trainer, e);
+        const trainerName = escapeHtml(trainer.name || '');
+        const trainerSpecialty = escapeHtml(trainer.specialization || 'Huấn luyện viên');
+        trainerCard.innerHTML = 
+            '<div class="trainer-avatar">' +
+                '<i class="fas fa-user"></i>' +
+            '</div>' +
+            '<div class="trainer-name">' + trainerName + '</div>' +
+            '<div class="trainer-specialty">' + trainerSpecialty + '</div>' +
+            '<div class="trainer-rating">' +
+                '<i class="fas fa-star"></i>' +
+                '<i class="fas fa-star"></i>' +
+                '<i class="fas fa-star"></i>' +
+                '<i class="fas fa-star"></i>' +
+                '<i class="fas fa-star"></i>' +
+            '</div>';
         trainerGrid.appendChild(trainerCard);
     });
 }
 
 // Select trainer
-function selectTrainer(trainer) {
+function selectTrainer(trainer, event) {
     bookingState.selectedTrainer = trainer;
     
     // Update UI
     document.querySelectorAll('.trainer-card').forEach(card => {
         card.classList.remove('selected');
     });
-    event.currentTarget.classList.add('selected');
+    if (event && event.currentTarget) {
+        event.currentTarget.classList.add('selected');
+    }
     
     // Generate calendar
     generateCalendar();
@@ -884,7 +998,7 @@ function generateCalendar() {
     // Update month title
     const monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
                        'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
-    document.getElementById('calendarMonth').textContent = `${monthNames[currentMonth]}, ${currentYear}`;
+    document.getElementById('calendarMonth').textContent = monthNames[currentMonth] + ', ' + currentYear;
     
     calendarGrid.innerHTML = '';
     
@@ -910,22 +1024,26 @@ function generateCalendar() {
     }
     
     // Day cells
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+    
     for (let day = 1; day <= daysInMonth; day++) {
         const dayCell = document.createElement('div');
         const cellDate = new Date(currentYear, currentMonth, day);
-        const isPast = cellDate < today.setHours(0, 0, 0, 0);
+        cellDate.setHours(0, 0, 0, 0);
+        const isPast = cellDate < todayDate;
         
         dayCell.className = 'calendar-day';
         if (isPast) {
             dayCell.classList.add('disabled');
         }
-        if (today.getDate() === day && today.getMonth() === currentMonth && today.getFullYear() === currentYear) {
+        if (todayDate.getDate() === day && todayDate.getMonth() === currentMonth && todayDate.getFullYear() === currentYear) {
             dayCell.classList.add('today');
         }
         dayCell.textContent = day;
         
         if (!isPast) {
-            dayCell.onclick = () => selectDate(cellDate);
+            dayCell.onclick = (e) => selectDate(cellDate, e);
         }
         
         calendarGrid.appendChild(dayCell);
@@ -933,14 +1051,16 @@ function generateCalendar() {
 }
 
 // Select date
-function selectDate(date) {
+function selectDate(date, event) {
     bookingState.selectedDate = date;
     
     // Update UI
     document.querySelectorAll('.calendar-day:not(.disabled)').forEach(cell => {
         cell.classList.remove('selected');
     });
-    event.currentTarget.classList.add('selected');
+    if (event && event.currentTarget) {
+        event.currentTarget.classList.add('selected');
+    }
     
     // Load available time slots
     loadTimeSlots();
@@ -954,9 +1074,15 @@ function selectDate(date) {
 // Load available time slots
 function loadTimeSlots() {
     const { selectedGym, selectedTrainer, selectedDate } = bookingState;
-    const dateStr = selectedDate.toISOString().split('T')[0];
+    // Format date as YYYY-MM-DD to avoid timezone issues
+    const year = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(selectedDate.getDate()).padStart(2, '0');
+    const dateStr = year + '-' + month + '-' + day;
+    const trainerId = selectedTrainer.id || selectedTrainer.trainerId;
+    const gymId = selectedGym.gymId || selectedGym.id;
     
-    fetch(`${pageContext.request.contextPath}/api/schedule/available-slots?trainerId=${selectedTrainer.id}&gymId=${selectedGym.gymId}&date=${dateStr}`)
+    fetch(contextPath + '/api/schedule/available-slots?trainerId=' + trainerId + '&gymId=' + gymId + '&date=' + dateStr)
         .then(response => response.json())
         .then(result => {
             if (result.success) {
@@ -974,7 +1100,7 @@ function loadTimeSlots() {
 // Display available time slots
 function displayAvailableSlots(availableSlotIds) {
     // First, get all time slots
-    fetch(`${pageContext.request.contextPath}/api/schedule/timeslots`)
+    fetch(contextPath + '/api/schedule/timeslots')
         .then(response => response.json())
         .then(result => {
             if (result.success) {
@@ -993,32 +1119,67 @@ function displayTimeSlots(allSlots, availableSlotIds) {
     const timeslotGrid = document.getElementById('timeslotGrid');
     timeslotGrid.innerHTML = '';
     
+    if (!allSlots || allSlots.length === 0) {
+        timeslotGrid.innerHTML = '<p style="text-align: center; color: #6c757d; grid-column: 1 / -1;">Không có khung giờ nào</p>';
+        return;
+    }
+    
+    // Sort slots by start time
+    allSlots.sort((a, b) => {
+        const timeA = a.startTime || '';
+        const timeB = b.startTime || '';
+        return timeA.localeCompare(timeB);
+    });
+    
+    // Normalize availableSlotIds to ensure we're comparing correctly
+    const availableIds = (availableSlotIds && Array.isArray(availableSlotIds)) 
+        ? availableSlotIds.map(id => parseInt(id)) 
+        : [];
+    
+    // If availableSlotIds is empty, it means no slots are available (all booked or no schedule)
+    // But we should still show all slots with proper status
+    const hasAvailableSlots = availableIds.length > 0;
+    
     allSlots.forEach(slot => {
-        const isAvailable = availableSlotIds.includes(slot.slotId);
+        const slotId = parseInt(slot.slotId || slot.id);
+        const isAvailable = hasAvailableSlots && availableIds.includes(slotId);
+        
         const slotCard = document.createElement('div');
-        slotCard.className = `timeslot-card ${isAvailable ? '' : 'unavailable'}`;
+        slotCard.className = 'timeslot-card' + (isAvailable ? '' : ' unavailable');
         if (isAvailable) {
-            slotCard.onclick = () => selectTimeSlot(slot);
+            slotCard.onclick = (e) => selectTimeSlot(slot, e);
         }
-        slotCard.innerHTML = `
-            <div class="timeslot-time">${slot.startTime} - ${slot.endTime}</div>
-            <div class="timeslot-status">
-                ${isAvailable ? '<i class="fas fa-check-circle"></i> Còn trống' : '<i class="fas fa-times-circle"></i> Đã đặt'}
-            </div>
-        `;
+        const startTime = escapeHtml(slot.startTime || '');
+        const endTime = escapeHtml(slot.endTime || '');
+        const statusIcon = isAvailable 
+            ? '<i class="fas fa-check-circle"></i> Còn trống' 
+            : '<i class="fas fa-times-circle"></i> Đã đặt';
+        slotCard.innerHTML = 
+            '<div class="timeslot-time">' + startTime + ' - ' + endTime + '</div>' +
+            '<div class="timeslot-status">' + statusIcon + '</div>';
         timeslotGrid.appendChild(slotCard);
     });
+    
+    // Show message if no slots available
+    if (!hasAvailableSlots && allSlots.length > 0) {
+        const messageDiv = document.createElement('div');
+        messageDiv.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 20px; color: #856404; background: #fff3cd; border-radius: 8px; margin-top: 15px;';
+        messageDiv.innerHTML = '<i class="fas fa-info-circle"></i> Huấn luyện viên không có lịch làm việc vào ngày này hoặc tất cả khung giờ đã được đặt.';
+        timeslotGrid.appendChild(messageDiv);
+    }
 }
 
 // Select time slot
-function selectTimeSlot(slot) {
+function selectTimeSlot(slot, event) {
     bookingState.selectedSlot = slot;
     
     // Update UI
     document.querySelectorAll('.timeslot-card').forEach(card => {
         card.classList.remove('selected');
     });
-    event.currentTarget.classList.add('selected');
+    if (event && event.currentTarget) {
+        event.currentTarget.classList.add('selected');
+    }
     
     // Update summary
     updateSummary();
@@ -1033,8 +1194,8 @@ function selectTimeSlot(slot) {
 function updateSummary() {
     const { selectedGym, selectedTrainer, selectedDate, selectedSlot } = bookingState;
     
-    document.getElementById('summaryGym').textContent = selectedGym.gymName;
-    document.getElementById('summaryTrainer').textContent = selectedTrainer.name;
+    document.getElementById('summaryGym').textContent = selectedGym.gymName || '';
+    document.getElementById('summaryTrainer').textContent = selectedTrainer.name || '';
     
     const dateStr = selectedDate.toLocaleDateString('vi-VN', { 
         weekday: 'long', 
@@ -1043,7 +1204,7 @@ function updateSummary() {
         day: 'numeric' 
     });
     document.getElementById('summaryDate').textContent = dateStr;
-    document.getElementById('summaryTime').textContent = `${selectedSlot.startTime} - ${selectedSlot.endTime}`;
+    document.getElementById('summaryTime').textContent = (selectedSlot.startTime || '') + ' - ' + (selectedSlot.endTime || '');
 }
 
 // Confirm booking
@@ -1051,28 +1212,124 @@ function confirmBooking() {
     const { selectedGym, selectedTrainer, selectedDate, selectedSlot } = bookingState;
     const notes = document.getElementById('bookingNotes').value;
     
+    // Format date as YYYY-MM-DD to avoid timezone issues
+    const year = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(selectedDate.getDate()).padStart(2, '0');
+    const dateStr = year + '-' + month + '-' + day;
+    
     const bookingData = {
-        gymId: selectedGym.gymId,
-        trainerId: selectedTrainer.id,
-        date: selectedDate.toISOString().split('T')[0],
-        slotId: selectedSlot.slotId,
+        gymId: selectedGym.gymId || selectedGym.id,
+        trainerId: selectedTrainer.id || selectedTrainer.trainerId,
+        date: dateStr,
+        slotId: selectedSlot.slotId || selectedSlot.id,
         notes: notes
     };
     
-    fetch('${pageContext.request.contextPath}/api/schedule/bookings', {
+    fetch(contextPath + '/api/schedule/bookings', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(bookingData)
     })
-    .then(response => response.json())
+    .then(response => {
+        // Check if response is ok
+        if (!response.ok) {
+            return response.json().then(data => {
+                return { success: false, message: data.message || 'Đặt lịch thất bại. Vui lòng thử lại.' };
+            });
+        }
+        return response.json();
+    })
     .then(result => {
         if (result.success) {
-            showAlert('Đặt lịch thành công! Vui lòng chờ PT xác nhận.', 'success');
+            // Show success message using alert
+            alert('Đặt lịch thành công! Vui lòng chờ PT xác nhận.');
+            
+            // Reset booking state first
+            bookingState = {
+                currentStep: 1,
+                selectedGym: null,
+                selectedTrainer: null,
+                selectedDate: null,
+                selectedSlot: null,
+                currentMonth: new Date().getMonth(),
+                currentYear: new Date().getFullYear()
+            };
+            
+            // Reset to step 1 (but keep "Lịch Tập Cá Nhân Của Tôi" section visible)
+            document.querySelectorAll('.booking-card').forEach(card => {
+                // Don't hide the member bookings section
+                if (!card.querySelector('#memberBookingsList')) {
+                    card.classList.add('hidden');
+                }
+            });
+            document.getElementById('step1').classList.remove('hidden');
+            document.querySelectorAll('.step').forEach((step, idx) => {
+                step.classList.remove('active', 'completed');
+                if (idx === 0) step.classList.add('active');
+            });
+            
+            // Clear selections
+            document.getElementById('gymGrid').innerHTML = '';
+            document.getElementById('trainerGrid').innerHTML = '';
+            document.getElementById('timeslotGrid').innerHTML = '';
+            document.getElementById('bookingNotes').value = '';
+            
+            // Reload gyms to reset the form
+            loadGyms();
+            
+            // Reload member bookings after a short delay to ensure data is saved
             setTimeout(() => {
-                window.location.href = '${pageContext.request.contextPath}/member/dashboard';
-            }, 2000);
+                loadMemberBookings();
+                
+                // Scroll to "Lịch Tập Cá Nhân Của Tôi" section after loading
+                setTimeout(() => {
+                    const memberBookingsList = document.getElementById('memberBookingsList');
+                    if (memberBookingsList) {
+                        // Find the parent booking-card container
+                        const memberScheduleSection = memberBookingsList.closest('.booking-card');
+                        if (memberScheduleSection) {
+                            // Ensure the section is visible
+                            memberScheduleSection.classList.remove('hidden');
+                            memberScheduleSection.style.display = '';
+                            
+                            // Scroll to show the section title and content
+                            memberScheduleSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            
+                            // Highlight the section with animation
+                            memberScheduleSection.style.transition = 'all 0.5s ease';
+                            memberScheduleSection.style.boxShadow = '0 0 30px rgba(255, 152, 0, 0.7)';
+                            memberScheduleSection.style.border = '3px solid var(--orange)';
+                            memberScheduleSection.style.transform = 'scale(1.01)';
+                            
+                            // Add a pulse animation
+                            let pulseCount = 0;
+                            const pulseInterval = setInterval(() => {
+                                if (pulseCount < 3) {
+                                    memberScheduleSection.style.boxShadow = 
+                                        pulseCount % 2 === 0 
+                                            ? '0 0 40px rgba(255, 152, 0, 0.8)' 
+                                            : '0 0 20px rgba(255, 152, 0, 0.5)';
+                                    pulseCount++;
+                                } else {
+                                    clearInterval(pulseInterval);
+                                    // Remove highlight after animation
+                                    setTimeout(() => {
+                                        memberScheduleSection.style.boxShadow = '';
+                                        memberScheduleSection.style.border = '';
+                                        memberScheduleSection.style.transform = '';
+                                    }, 1000);
+                                }
+                            }, 300);
+                        } else {
+                            // Fallback: scroll to the list itself
+                            memberBookingsList.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }
+                }, 1000);
+            }, 500);
         } else {
             showAlert(result.message || 'Đặt lịch thất bại. Vui lòng thử lại.', 'danger');
         }
@@ -1086,14 +1343,14 @@ function confirmBooking() {
 // Navigation functions
 function nextStep() {
     if (bookingState.currentStep < 5) {
-        document.getElementById(`step${bookingState.currentStep}`).classList.add('hidden');
-        document.getElementById(`step${bookingState.currentStep}-indicator`).classList.remove('active');
-        document.getElementById(`step${bookingState.currentStep}-indicator`).classList.add('completed');
+        document.getElementById('step' + bookingState.currentStep).classList.add('hidden');
+        document.getElementById('step' + bookingState.currentStep + '-indicator').classList.remove('active');
+        document.getElementById('step' + bookingState.currentStep + '-indicator').classList.add('completed');
         
         bookingState.currentStep++;
         
-        document.getElementById(`step${bookingState.currentStep}`).classList.remove('hidden');
-        document.getElementById(`step${bookingState.currentStep}-indicator`).classList.add('active');
+        document.getElementById('step' + bookingState.currentStep).classList.remove('hidden');
+        document.getElementById('step' + bookingState.currentStep + '-indicator').classList.add('active');
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1101,26 +1358,38 @@ function nextStep() {
 
 function previousStep() {
     if (bookingState.currentStep > 1) {
-        document.getElementById(`step${bookingState.currentStep}`).classList.add('hidden');
-        document.getElementById(`step${bookingState.currentStep}-indicator`).classList.remove('active');
+        document.getElementById('step' + bookingState.currentStep).classList.add('hidden');
+        document.getElementById('step' + bookingState.currentStep + '-indicator').classList.remove('active');
         
         bookingState.currentStep--;
         
-        document.getElementById(`step${bookingState.currentStep}`).classList.remove('hidden');
-        document.getElementById(`step${bookingState.currentStep}-indicator`).classList.add('active');
-        document.getElementById(`step${bookingState.currentStep}-indicator`).classList.remove('completed');
+        document.getElementById('step' + bookingState.currentStep).classList.remove('hidden');
+        document.getElementById('step' + bookingState.currentStep + '-indicator').classList.add('active');
+        document.getElementById('step' + bookingState.currentStep + '-indicator').classList.remove('completed');
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
 
 function previousMonth() {
+    const today = new Date();
+    const currentDate = new Date(bookingState.currentYear, bookingState.currentMonth, 1);
+    const minDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    
     if (bookingState.currentMonth === 0) {
         bookingState.currentMonth = 11;
         bookingState.currentYear--;
     } else {
         bookingState.currentMonth--;
     }
+    
+    // Don't allow going to past months
+    const newDate = new Date(bookingState.currentYear, bookingState.currentMonth, 1);
+    if (newDate < minDate) {
+        bookingState.currentMonth = today.getMonth();
+        bookingState.currentYear = today.getFullYear();
+    }
+    
     generateCalendar();
 }
 
@@ -1138,16 +1407,265 @@ function nextMonth() {
 function showAlert(message, type) {
     const alertContainer = document.getElementById('alertContainer');
     const alert = document.createElement('div');
-    alert.className = `alert alert-${type}`;
-    alert.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'}"></i>
-        ${message}
-    `;
+    const iconClass = type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle';
+    alert.className = 'alert alert-' + type;
+    alert.innerHTML = '<i class="fas fa-' + iconClass + '"></i> ' + escapeHtml(message);
     alertContainer.appendChild(alert);
     
     setTimeout(() => {
         alert.remove();
     }, 5000);
+}
+
+// Load member bookings
+function loadMemberBookings() {
+    fetch(contextPath + '/api/schedule/bookings')
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                displayMemberBookings(result.data);
+            } else {
+                document.getElementById('memberBookingsList').innerHTML = 
+                    '<p style="text-align: center; color: #6c757d; padding: 20px;">Chưa có lịch tập nào</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading member bookings:', error);
+            document.getElementById('memberBookingsList').innerHTML = 
+                '<p style="text-align: center; color: #dc3545; padding: 20px;">Không thể tải lịch tập</p>';
+        });
+}
+
+// Display member bookings
+function displayMemberBookings(bookings) {
+    const container = document.getElementById('memberBookingsList');
+    
+    if (!bookings || bookings.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 20px;">Chưa có lịch tập nào</p>';
+        return;
+    }
+    
+    // Sort by date (upcoming first - lịch gần nhất lên trước)
+    bookings.sort((a, b) => {
+        const dateA = new Date(a.bookingDate);
+        const dateB = new Date(b.bookingDate);
+        // Sort ascending: upcoming dates first
+        return dateA - dateB;
+    });
+    
+    container.innerHTML = '';
+    bookings.forEach(booking => {
+        const card = createMemberBookingCard(booking);
+        container.appendChild(card);
+    });
+}
+
+// Create member booking card
+function createMemberBookingCard(booking) {
+    const card = document.createElement('div');
+    card.className = 'booking-card';
+    card.style.marginBottom = '15px';
+    
+    const statusClass = 'status-' + (booking.bookingStatus || 'PENDING');
+    const statusText = getBookingStatusText(booking.bookingStatus);
+    const canCancel = booking.bookingStatus === 'PENDING' || booking.bookingStatus === 'CONFIRMED';
+    
+    const trainerName = booking.trainer ? escapeHtml(booking.trainer.name) : 'N/A';
+    const gymName = booking.gym ? escapeHtml(booking.gym.gymName || booking.gym.name) : 'N/A';
+    const bookingDate = formatBookingDate(booking.bookingDate);
+    const timeSlot = booking.timeSlot ? escapeHtml(booking.timeSlot.startTime) + ' - ' + escapeHtml(booking.timeSlot.endTime) : 'N/A';
+    const notes = booking.notes ? '<div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; font-size: 0.9rem;"><strong>Ghi chú:</strong> ' + escapeHtml(booking.notes) + '</div>' : '';
+    // Get booking ID - handle both bookingId and id fields
+    const bookingId = booking.bookingId || booking.id;
+    const cancelButton = canCancel ? '<div style="margin-top: 15px;"><button class="btn btn-danger" onclick="cancelMemberBooking(' + bookingId + ', event)"><i class="fas fa-times-circle"></i> Hủy Lịch</button></div>' : '';
+    
+    card.innerHTML = 
+        '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 2px solid #e9ecef;">' +
+            '<h4 style="margin: 0; color: var(--primary);"><i class="fas fa-dumbbell"></i> Buổi Tập PT</h4>' +
+            '<span class="booking-status ' + statusClass + '">' + escapeHtml(statusText) + '</span>' +
+        '</div>' +
+        '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">' +
+            '<div><strong style="color: #6c757d; font-size: 0.9rem;">Cơ sở:</strong><br><span style="color: var(--primary); font-weight: 600;">' + gymName + '</span></div>' +
+            '<div><strong style="color: #6c757d; font-size: 0.9rem;">Huấn luyện viên:</strong><br><span style="color: var(--primary); font-weight: 600;">' + trainerName + '</span></div>' +
+            '<div><strong style="color: #6c757d; font-size: 0.9rem;">Ngày tập:</strong><br><span style="color: var(--primary); font-weight: 600;">' + bookingDate + '</span></div>' +
+            '<div><strong style="color: #6c757d; font-size: 0.9rem;">Giờ tập:</strong><br><span style="color: var(--primary); font-weight: 600;">' + timeSlot + '</span></div>' +
+        '</div>' +
+        notes +
+        cancelButton;
+    
+    return card;
+}
+
+// Get booking status text
+function getBookingStatusText(status) {
+    const statusMap = {
+        'PENDING': 'Chờ Xác Nhận',
+        'CONFIRMED': 'Đã Xác Nhận',
+        'CANCELLED': 'Đã Hủy',
+        'COMPLETED': 'Hoàn Thành'
+    };
+    return statusMap[status] || status || 'Chờ Xác Nhận';
+}
+
+// Format booking date
+function formatBookingDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('vi-VN', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+// Show alert message before "Lịch Tập Cá Nhân Của Tôi" section
+function showBookingAlert(message, type) {
+    const alertContainer = document.getElementById('bookingAlertContainer');
+    if (!alertContainer) return;
+    
+    // Remove existing alerts
+    alertContainer.innerHTML = '';
+    
+    // Create alert div
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-' + (type === 'success' ? 'success' : 'danger');
+    alertDiv.style.cssText = 'padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px;';
+    
+    const icon = type === 'success' 
+        ? '<i class="fas fa-check-circle" style="font-size: 1.2rem;"></i>' 
+        : '<i class="fas fa-exclamation-circle" style="font-size: 1.2rem;"></i>';
+    
+    alertDiv.innerHTML = icon + '<span>' + escapeHtml(message) + '</span>';
+    
+    alertContainer.appendChild(alertDiv);
+    
+    // Auto remove after 5 seconds for success messages
+    if (type === 'success') {
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.style.transition = 'opacity 0.5s';
+                alertDiv.style.opacity = '0';
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.remove();
+                    }
+                }, 500);
+            }
+        }, 5000);
+    }
+}
+
+// Cancel member booking
+function cancelMemberBooking(bookingId, event) {
+    // Ensure bookingId is a number
+    bookingId = parseInt(bookingId);
+    if (isNaN(bookingId)) {
+        alert('ID lịch đặt không hợp lệ');
+        return;
+    }
+    
+    if (!confirm('Bạn có chắc muốn hủy lịch tập này?\n\n⚠️ Lưu ý: Chỉ có thể hủy lịch trước 24 giờ diễn ra buổi tập.\n\nKhung giờ sẽ được giải phóng để người khác có thể đặt lịch.')) {
+        return;
+    }
+    
+    // Disable button and show loading
+    const button = (event && event.target) ? event.target.closest('button') : document.querySelector('button[onclick*="cancelMemberBooking(' + bookingId + ')"]');
+    if (!button) {
+        alert('Không tìm thấy nút hủy lịch');
+        return;
+    }
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+    
+    console.log('Cancelling booking ID:', bookingId, 'URL:', contextPath + '/api/schedule/bookings/' + bookingId + '/cancel');
+    fetch(contextPath + '/api/schedule/bookings/' + bookingId + '/cancel', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        // Always parse as text first, then try to parse as JSON
+        return response.text().then(text => {
+            try {
+                // Try to parse as JSON
+                const jsonData = JSON.parse(text);
+                return jsonData;
+            } catch (e) {
+                // If not JSON, check response status
+                if (response.ok) {
+                    // Success but not JSON - return success
+                    return { success: true, message: 'Hủy lịch thành công!' };
+                } else {
+                    // Error response - extract message from HTML if possible
+                    let errorMsg = 'Không thể hủy lịch. Vui lòng thử lại.';
+                    if (text.includes('405') || text.includes('Méthode non autorisée')) {
+                        errorMsg = 'Phương thức không được phép. Vui lòng thử lại.';
+                    } else if (text.includes('401') || text.includes('đăng nhập')) {
+                        errorMsg = 'Vui lòng đăng nhập lại.';
+                    } else if (text.length < 500 && text.trim().length > 0) {
+                        // If text is short, might be a simple error message
+                        errorMsg = text.trim();
+                    }
+                    return { success: false, message: errorMsg };
+                }
+            }
+        });
+    })
+    .then(result => {
+        console.log('Cancel booking result:', result);
+        if (result && result.success) {
+            // Show success message using alert
+            alert('Hủy lịch thành công');
+            
+            // Find and remove the booking card from UI
+            const card = button.closest('.booking-card');
+            if (card) {
+                // Add fade out animation
+                card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                card.style.opacity = '0';
+                card.style.transform = 'translateX(-20px)';
+                
+                // Remove card after animation
+                setTimeout(() => {
+                    card.remove();
+                    
+                    // Check if there are no more bookings
+                    const memberBookingsList = document.getElementById('memberBookingsList');
+                    if (memberBookingsList && memberBookingsList.children.length === 0) {
+                        memberBookingsList.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 20px;">Chưa có lịch tập nào</p>';
+                    }
+                }, 300);
+            } else {
+                // Fallback: reload bookings if card not found
+                setTimeout(() => {
+                    loadMemberBookings();
+                }, 500);
+            }
+        } else {
+            const errorMsg = (result && result.message) ? result.message : 'Không thể hủy lịch. Vui lòng thử lại.';
+            console.error('Cancel booking failed:', errorMsg, result);
+            // Show error message using alert
+            alert('Hủy lịch không thành công: ' + errorMsg);
+            // Re-enable button
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        console.error('Error cancelling booking:', error);
+        let errorMsg = 'Có lỗi xảy ra khi hủy lịch. Vui lòng thử lại.';
+        if (error.message && !error.message.includes('<html') && !error.message.includes('<!doctype')) {
+            errorMsg = error.message;
+        }
+        // Show error message using alert
+        alert('Hủy lịch không thành công: ' + errorMsg);
+        // Re-enable button
+        button.disabled = false;
+        button.innerHTML = originalText;
+    });
 }
 </script>
 
