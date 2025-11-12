@@ -1,5 +1,12 @@
 package controller;
 
+import java.io.IOException;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import Utils.FormUtils;
+import dao.GymInfoDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -7,19 +14,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.Trainer;
 import model.User;
-import model.schedule.TrainerSchedule;
 import model.schedule.DayOfWeek;
+import model.schedule.TrainerSchedule;
 import service.TrainerService;
 import service.UserService;
 import service.schedule.TrainerScheduleService;
-import service.schedule.TimeSlotService;
-import dao.GymInfoDAO;
-import Utils.FormUtils;
-
-import java.io.IOException;
-import java.sql.SQLIntegrityConstraintViolationException;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * TrainerManagementServlet - Quản lý PT và lịch của PT
@@ -44,7 +43,7 @@ public class TrainerManagementServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         String action = req.getParameter("action");
-        
+
         if (action != null) {
             switch (action) {
                 case "edit" -> handleEditTrainer(req, resp);
@@ -60,7 +59,7 @@ public class TrainerManagementServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         String action = req.getParameter("action");
-        
+
         if (action == null) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Action parameter is required");
             return;
@@ -89,14 +88,14 @@ public class TrainerManagementServlet extends HttpServlet {
             List<Trainer> allTrainers = trainerService.getAll();
             // Lọc chỉ lấy trainers có status = "active"
             List<Trainer> activeTrainers = allTrainers.stream()
-                    .filter(t -> t.getStatus() != null && 
+                    .filter(t -> t.getStatus() != null &&
                             "active".equalsIgnoreCase(t.getStatus()))
                     .collect(Collectors.toList());
 
             req.setAttribute("trainers", activeTrainers);
             req.setAttribute("gyms", gymInfoDAO.findAll());
             req.setAttribute("timeSlots", trainerScheduleService.getActiveTimeSlots());
-            
+
             req.getRequestDispatcher("/views/admin/trainer_management.jsp").forward(req, resp);
         } catch (Exception e) {
             req.setAttribute("error", "Lỗi khi tải danh sách PT: " + e.getMessage());
@@ -119,7 +118,7 @@ public class TrainerManagementServlet extends HttpServlet {
 
             int trainerId = Integer.parseInt(trainerIdStr);
             Trainer trainer = trainerService.getTrainerById(trainerId);
-            
+
             if (trainer == null) {
                 req.setAttribute("error", "Không tìm thấy PT với ID: " + trainerId);
                 loadTrainersList(req, resp);
@@ -153,7 +152,7 @@ public class TrainerManagementServlet extends HttpServlet {
 
             int trainerId = Integer.parseInt(trainerIdStr);
             Trainer trainer = trainerService.getTrainerById(trainerId);
-            
+
             if (trainer == null) {
                 req.setAttribute("error", "Không tìm thấy PT với ID: " + trainerId);
                 loadTrainersList(req, resp);
@@ -161,14 +160,14 @@ public class TrainerManagementServlet extends HttpServlet {
             }
 
             List<TrainerSchedule> schedules = trainerScheduleService.getAvailableSchedulesByTrainer(trainerId);
-            
+
             // Load trainers list
             List<Trainer> allTrainers = trainerService.getAll();
             List<Trainer> activeTrainers = allTrainers.stream()
-                    .filter(t -> t.getStatus() != null && 
+                    .filter(t -> t.getStatus() != null &&
                             "active".equalsIgnoreCase(t.getStatus()))
                     .collect(Collectors.toList());
-            
+
             req.setAttribute("trainers", activeTrainers);
             req.setAttribute("viewScheduleTrainer", trainer);
             req.setAttribute("viewSchedules", schedules);
@@ -197,87 +196,87 @@ public class TrainerManagementServlet extends HttpServlet {
             String phone = req.getParameter("phone");
             String password = req.getParameter("password");
             String workAt = req.getParameter("workAt");
-            
+
             if (name == null || name.trim().isEmpty()) {
                 req.setAttribute("error", "Vui lòng nhập họ và tên");
                 loadTrainersList(req, resp);
                 return;
             }
-            
+
             if (email == null || email.trim().isEmpty()) {
                 req.setAttribute("error", "Vui lòng nhập email");
                 loadTrainersList(req, resp);
                 return;
             }
-            
+
             // Validate email format
             if (!email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
                 req.setAttribute("error", "Email không hợp lệ");
                 loadTrainersList(req, resp);
                 return;
             }
-            
+
             // Check if email already exists in entire user table (Admin, Member, Trainer)
             if (userService.getUserByEmail(email) != null) {
                 req.setAttribute("error", "Email đã tồn tại trong hệ thống. Vui lòng sử dụng email khác.");
                 loadTrainersList(req, resp);
                 return;
             }
-            
+
             if (username == null || username.trim().isEmpty()) {
                 req.setAttribute("error", "Vui lòng nhập username");
                 loadTrainersList(req, resp);
                 return;
             }
-            
+
             // Validate username format
             if (!username.matches("^[a-zA-Z0-9_]{3,20}$")) {
                 req.setAttribute("error", "Username phải có 3-20 ký tự, chỉ chứa chữ, số và dấu gạch dưới");
                 loadTrainersList(req, resp);
                 return;
             }
-            
+
             // Check if username already exists in entire user table
             if (userService.getUserByUsername(username) != null) {
                 req.setAttribute("error", "Username đã tồn tại trong hệ thống. Vui lòng chọn username khác.");
                 loadTrainersList(req, resp);
                 return;
             }
-            
+
             if (phone == null || phone.trim().isEmpty()) {
                 req.setAttribute("error", "Vui lòng nhập số điện thoại");
                 loadTrainersList(req, resp);
                 return;
             }
-            
+
             // Validate phone format
             if (!phone.matches("^[0-9]{10,11}$")) {
                 req.setAttribute("error", "Số điện thoại phải có 10-11 chữ số");
                 loadTrainersList(req, resp);
                 return;
             }
-            
+
             if (password == null || password.trim().isEmpty()) {
                 req.setAttribute("error", "Vui lòng nhập mật khẩu");
                 loadTrainersList(req, resp);
                 return;
             }
-            
+
             if (password.length() < 6) {
                 req.setAttribute("error", "Mật khẩu phải có ít nhất 6 ký tự");
                 loadTrainersList(req, resp);
                 return;
             }
-            
+
             if (workAt == null || workAt.trim().isEmpty()) {
                 req.setAttribute("error", "Vui lòng chọn cơ sở làm việc");
                 loadTrainersList(req, resp);
                 return;
             }
-            
+
             Trainer trainer = new Trainer();
             FormUtils.getFormValue(req, trainer);
-            
+
             // Set các field riêng của Trainer
             if (req.getParameter("specialization") != null) {
                 trainer.setSpecialization(req.getParameter("specialization").trim());
@@ -306,7 +305,7 @@ public class TrainerManagementServlet extends HttpServlet {
 
             // Set status mặc định là active
             trainer.setStatus("active");
-            
+
             // Thêm trainer vào database
             try {
                 trainerService.add(trainer);
@@ -315,17 +314,20 @@ public class TrainerManagementServlet extends HttpServlet {
                 // Handle database constraint violations
                 Throwable cause = e.getCause();
                 String errorMessage = e.getMessage();
-                
+
                 // Check for SQLIntegrityConstraintViolationException
                 if (cause instanceof SQLIntegrityConstraintViolationException) {
                     SQLIntegrityConstraintViolationException sqlEx = (SQLIntegrityConstraintViolationException) cause;
                     String sqlMessage = sqlEx.getMessage();
-                    
+
                     if (sqlMessage != null) {
-                        if (sqlMessage.contains("unique_email") || (sqlMessage.contains("Duplicate entry") && sqlMessage.contains("email"))) {
+                        if (sqlMessage.contains("unique_email")
+                                || (sqlMessage.contains("Duplicate entry") && sqlMessage.contains("email"))) {
                             req.setAttribute("error", "Email đã tồn tại trong hệ thống. Vui lòng sử dụng email khác.");
-                        } else if (sqlMessage.contains("unique_username") || (sqlMessage.contains("Duplicate entry") && sqlMessage.contains("username"))) {
-                            req.setAttribute("error", "Username đã tồn tại trong hệ thống. Vui lòng chọn username khác.");
+                        } else if (sqlMessage.contains("unique_username")
+                                || (sqlMessage.contains("Duplicate entry") && sqlMessage.contains("username"))) {
+                            req.setAttribute("error",
+                                    "Username đã tồn tại trong hệ thống. Vui lòng chọn username khác.");
                         } else {
                             req.setAttribute("error", "Dữ liệu không hợp lệ: " + sqlMessage);
                         }
@@ -346,12 +348,12 @@ public class TrainerManagementServlet extends HttpServlet {
                 req.setAttribute("error", "Lỗi khi thêm PT: " + e.getMessage());
                 e.printStackTrace();
             }
-            
+
         } catch (Exception e) {
             req.setAttribute("error", "Lỗi khi xử lý form: " + e.getMessage());
             e.printStackTrace();
         }
-        
+
         loadTrainersList(req, resp);
     }
 
@@ -370,7 +372,7 @@ public class TrainerManagementServlet extends HttpServlet {
 
             int trainerId = Integer.parseInt(trainerIdStr);
             Trainer trainer = trainerService.getTrainerById(trainerId);
-            
+
             if (trainer == null) {
                 req.setAttribute("error", "Không tìm thấy PT với ID: " + trainerId);
                 loadTrainersList(req, resp);
@@ -382,7 +384,7 @@ public class TrainerManagementServlet extends HttpServlet {
             String email = req.getParameter("email");
             String phone = req.getParameter("phone");
             String workAt = req.getParameter("workAt");
-            
+
             if (name == null || name.trim().isEmpty()) {
                 req.setAttribute("error", "Vui lòng nhập họ và tên");
                 req.setAttribute("editTrainer", trainer);
@@ -390,7 +392,7 @@ public class TrainerManagementServlet extends HttpServlet {
                 req.getRequestDispatcher("/views/admin/edit_trainer.jsp").forward(req, resp);
                 return;
             }
-            
+
             if (email == null || email.trim().isEmpty()) {
                 req.setAttribute("error", "Vui lòng nhập email");
                 req.setAttribute("editTrainer", trainer);
@@ -398,7 +400,7 @@ public class TrainerManagementServlet extends HttpServlet {
                 req.getRequestDispatcher("/views/admin/edit_trainer.jsp").forward(req, resp);
                 return;
             }
-            
+
             // Validate email format
             if (!email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
                 req.setAttribute("error", "Email không hợp lệ");
@@ -407,7 +409,7 @@ public class TrainerManagementServlet extends HttpServlet {
                 req.getRequestDispatcher("/views/admin/edit_trainer.jsp").forward(req, resp);
                 return;
             }
-            
+
             // Check if email is already used by another trainer
             Trainer existingTrainer = trainerService.getTrainerByEmail(email);
             if (existingTrainer != null && !existingTrainer.getId().equals(trainer.getId())) {
@@ -417,7 +419,7 @@ public class TrainerManagementServlet extends HttpServlet {
                 req.getRequestDispatcher("/views/admin/edit_trainer.jsp").forward(req, resp);
                 return;
             }
-            
+
             // Also check if email is used by any other user (Member, Admin)
             if (userService.getUserByEmail(email) != null) {
                 User existingUser = userService.getUserByEmail(email);
@@ -429,7 +431,7 @@ public class TrainerManagementServlet extends HttpServlet {
                     return;
                 }
             }
-            
+
             if (phone == null || phone.trim().isEmpty()) {
                 req.setAttribute("error", "Vui lòng nhập số điện thoại");
                 req.setAttribute("editTrainer", trainer);
@@ -437,7 +439,7 @@ public class TrainerManagementServlet extends HttpServlet {
                 req.getRequestDispatcher("/views/admin/edit_trainer.jsp").forward(req, resp);
                 return;
             }
-            
+
             // Validate phone format
             if (!phone.matches("^[0-9]{10,11}$")) {
                 req.setAttribute("error", "Số điện thoại phải có 10-11 chữ số");
@@ -446,7 +448,7 @@ public class TrainerManagementServlet extends HttpServlet {
                 req.getRequestDispatcher("/views/admin/edit_trainer.jsp").forward(req, resp);
                 return;
             }
-            
+
             if (workAt == null || workAt.trim().isEmpty()) {
                 req.setAttribute("error", "Vui lòng chọn cơ sở làm việc");
                 req.setAttribute("editTrainer", trainer);
@@ -459,9 +461,9 @@ public class TrainerManagementServlet extends HttpServlet {
             // Lưu lại username và password hiện tại trước khi gọi FormUtils
             String originalUsername = trainer.getUsername();
             String originalPassword = trainer.getPassword();
-            
+
             FormUtils.getFormValue(req, trainer);
-            
+
             // Khôi phục username và password về giá trị ban đầu
             trainer.setUsername(originalUsername);
             trainer.setPassword(originalPassword);
@@ -498,14 +500,14 @@ public class TrainerManagementServlet extends HttpServlet {
             req.setAttribute("gyms", gymInfoDAO.findAll());
             req.getRequestDispatcher("/views/admin/edit_trainer.jsp").forward(req, resp);
             return;
-            
+
         } catch (NumberFormatException e) {
             req.setAttribute("error", "ID PT không hợp lệ");
         } catch (Exception e) {
             req.setAttribute("error", "Lỗi khi cập nhật PT: " + e.getMessage());
             e.printStackTrace();
         }
-        
+
         loadTrainersList(req, resp);
     }
 
@@ -524,7 +526,7 @@ public class TrainerManagementServlet extends HttpServlet {
 
             int trainerId = Integer.parseInt(trainerIdStr);
             Trainer trainer = trainerService.getTrainerById(trainerId);
-            
+
             if (trainer == null) {
                 req.setAttribute("error", "Không tìm thấy PT với ID: " + trainerId);
                 loadTrainersList(req, resp);
@@ -533,13 +535,13 @@ public class TrainerManagementServlet extends HttpServlet {
 
             trainerService.delete(trainer);
             req.setAttribute("success", "Xóa PT thành công!");
-            
+
         } catch (NumberFormatException e) {
             req.setAttribute("error", "ID PT không hợp lệ");
         } catch (Exception e) {
             req.setAttribute("error", "Lỗi khi xóa PT: " + e.getMessage());
         }
-        
+
         loadTrainersList(req, resp);
     }
 
@@ -553,7 +555,7 @@ public class TrainerManagementServlet extends HttpServlet {
             String gymIdStr = req.getParameter("gymId");
             String dayOfWeekStr = req.getParameter("dayOfWeek");
             String slotIdStr = req.getParameter("slotId");
-            
+
             if (trainerIdStr == null || gymIdStr == null || dayOfWeekStr == null || slotIdStr == null) {
                 req.setAttribute("error", "Thiếu thông tin cần thiết để thêm lịch");
                 loadTrainersList(req, resp);
@@ -566,7 +568,7 @@ public class TrainerManagementServlet extends HttpServlet {
             schedule.setGymId((int) Long.parseLong(gymIdStr));
             schedule.setDayOfWeek(DayOfWeek.fromCode(dayOfWeekStr));
             schedule.setSlotId(Integer.parseInt(slotIdStr));
-            
+
             if (req.getParameter("maxBookings") != null && !req.getParameter("maxBookings").isEmpty()) {
                 try {
                     schedule.setMaxBookings(Integer.parseInt(req.getParameter("maxBookings").trim()));
@@ -574,11 +576,11 @@ public class TrainerManagementServlet extends HttpServlet {
                     schedule.setMaxBookings(1);
                 }
             }
-            
+
             if (req.getParameter("notes") != null) {
                 schedule.setNotes(req.getParameter("notes").trim());
             }
-            
+
             if (req.getParameter("isAvailable") != null) {
                 schedule.setIsAvailable("true".equalsIgnoreCase(req.getParameter("isAvailable")));
             } else {
@@ -587,13 +589,13 @@ public class TrainerManagementServlet extends HttpServlet {
 
             trainerScheduleService.createSchedule(schedule);
             req.setAttribute("success", "Thêm lịch cho PT thành công!");
-            
+
         } catch (IllegalArgumentException e) {
             req.setAttribute("error", "Lỗi: " + e.getMessage());
         } catch (Exception e) {
             req.setAttribute("error", "Lỗi khi thêm lịch: " + e.getMessage());
         }
-        
+
         loadTrainersList(req, resp);
     }
 
@@ -643,13 +645,13 @@ public class TrainerManagementServlet extends HttpServlet {
 
             trainerScheduleService.updateSchedule(schedule);
             req.setAttribute("success", "Cập nhật lịch thành công!");
-            
+
         } catch (NumberFormatException e) {
             req.setAttribute("error", "ID lịch không hợp lệ");
         } catch (Exception e) {
             req.setAttribute("error", "Lỗi khi cập nhật lịch: " + e.getMessage());
         }
-        
+
         loadTrainersList(req, resp);
     }
 
@@ -675,14 +677,13 @@ public class TrainerManagementServlet extends HttpServlet {
 
             trainerScheduleService.deleteSchedule(schedule);
             req.setAttribute("success", "Xóa lịch thành công!");
-            
+
         } catch (NumberFormatException e) {
             req.setAttribute("error", "ID lịch không hợp lệ");
         } catch (Exception e) {
             req.setAttribute("error", "Lỗi khi xóa lịch: " + e.getMessage());
         }
-        
+
         loadTrainersList(req, resp);
     }
 }
-

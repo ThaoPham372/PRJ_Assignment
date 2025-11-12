@@ -688,9 +688,6 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                   <span>Chat với học viên</span>
                 </a>
               </li>
-              <li class="pt-menu-item">
-                <!-- Item 'Thống kê & Báo cáo' đã được yêu cầu gỡ bỏ -->
-              </li>
             </ul>
 
             <div class="pt-menu-footer">

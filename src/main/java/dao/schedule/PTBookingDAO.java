@@ -199,4 +199,24 @@ public class PTBookingDAO extends GenericDAO<PTBooking> {
             throw new RuntimeException("Failed to cancel booking: " + e.getMessage(), e);
         }
     }
+
+    /**
+     * Find all bookings with full details (member, trainer, timeSlot) for admin
+     * view
+     */
+    public List<PTBooking> findAllWithDetails() {
+        try {
+            String jpql = "SELECT b FROM PTBooking b " +
+                    "LEFT JOIN FETCH b.member " +
+                    "LEFT JOIN FETCH b.trainer " +
+                    "LEFT JOIN FETCH b.timeSlot " +
+                    "ORDER BY b.bookingDate DESC, b.slotId";
+
+            TypedQuery<PTBooking> query = em.createQuery(jpql, PTBooking.class);
+            return query.getResultList();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error finding all bookings with details", e);
+            return Collections.emptyList();
+        }
+    }
 }

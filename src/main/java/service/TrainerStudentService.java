@@ -37,4 +37,3 @@ public class TrainerStudentService {
     return dao.getStudentDetail(memberId, trainerId);
   }
 }
-
