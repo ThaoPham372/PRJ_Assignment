@@ -632,7 +632,7 @@
           <!-- Remember Me -->
           <div class="checkbox-group">
             <c:choose>
-              <c:when test="${rememberMeChecked == true}">
+              <c:when test="${rememberMeChecked}">
                 <input
                   type="checkbox"
                   id="rememberMe"
