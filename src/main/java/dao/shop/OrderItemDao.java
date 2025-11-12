@@ -21,7 +21,7 @@ public class OrderItemDao extends GenericDAO<OrderItem> {
     }
 
     /**
-     * Insert batch of order items - reuses GenericDAO.save()
+     * Insert batch of order items - uses persist directly to avoid nested transactions
      */
     public void insertBatch(Integer orderId, List<OrderItem> items) {
         if (items == null || items.isEmpty()) {
@@ -37,8 +37,9 @@ public class OrderItemDao extends GenericDAO<OrderItem> {
                 // Calculate discount_percent if not provided
                 calculateDiscountPercentIfNeeded(item);
                 
-                // Use GenericDAO save method
-                save(item);
+                // Use persist directly instead of save() to avoid nested transactions
+                // save() would begin/commit its own transaction, which conflicts with our batch transaction
+                em.persist(item);
             }
             
             commitTransaction();
