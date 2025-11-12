@@ -388,6 +388,120 @@
                     display: flex;
                 }
 
+                /* Custom Confirmation Modal */
+                .custom-confirm-modal {
+                    display: none;
+                    position: fixed;
+                    z-index: 1100;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    animation: fadeIn 0.3s ease;
+                }
+
+                .custom-confirm-modal.show {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .custom-confirm-modal-content {
+                    background-color: #fff;
+                    border-radius: 12px;
+                    padding: 0;
+                    max-width: 450px;
+                    width: 90%;
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+                    animation: slideDown 0.3s ease;
+                    overflow: hidden;
+                }
+
+                .custom-confirm-modal-header {
+                    padding: 20px 25px;
+                    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+                    color: #fff;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                }
+
+                .custom-confirm-modal-header i {
+                    font-size: 1.5rem;
+                }
+
+                .custom-confirm-modal-header h3 {
+                    margin: 0;
+                    font-size: 1.3rem;
+                    font-weight: 600;
+                }
+
+                .custom-confirm-modal-body {
+                    padding: 25px;
+                    color: var(--text);
+                    font-size: 1rem;
+                    line-height: 1.6;
+                }
+
+                .custom-confirm-modal-footer {
+                    padding: 15px 25px;
+                    background: #f8f9fa;
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 10px;
+                    border-top: 1px solid #e0e0e0;
+                }
+
+                .confirm-modal-btn {
+                    padding: 10px 20px;
+                    border: none;
+                    border-radius: 6px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    font-size: 0.95rem;
+                }
+
+                .confirm-modal-btn-cancel {
+                    background: #e0e0e0;
+                    color: #333;
+                }
+
+                .confirm-modal-btn-cancel:hover {
+                    background: #d0d0d0;
+                }
+
+                .confirm-modal-btn-danger {
+                    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+                    color: #fff;
+                }
+
+                .confirm-modal-btn-danger:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+                }
+
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                    }
+                    to {
+                        opacity: 1;
+                    }
+                }
+
+                @keyframes slideDown {
+                    from {
+                        transform: translateY(-50px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateY(0);
+                        opacity: 1;
+                    }
+                }
+
                 .modal-content {
                     background: #fff;
                     border-radius: 15px;
@@ -787,6 +901,22 @@
                 </div>
             </div>
 
+            <!-- Custom Confirmation Modal for Delete -->
+            <div id="deleteConfirmModal" class="custom-confirm-modal">
+                <div class="custom-confirm-modal-content">
+                    <div class="custom-confirm-modal-header">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Xóa tài khoản</h3>
+                    </div>
+                    <div class="custom-confirm-modal-body">
+                        <p id="deleteConfirmMessage">Bạn có chắc chắn muốn xóa tài khoản này? Hành động này không thể hoàn tác.</p>
+                    </div>
+                    <div class="custom-confirm-modal-footer">
+                        <button class="confirm-modal-btn confirm-modal-btn-cancel" onclick="closeDeleteConfirmModal()">Hủy</button>
+                        <button class="confirm-modal-btn confirm-modal-btn-danger" id="deleteConfirmBtn" onclick="executeDelete()">Xóa</button>
+                    </div>
+                </div>
+            </div>
             
             <c:if test="${not empty errorMessage}">
                 <script>
@@ -801,7 +931,7 @@
                     document.getElementById('modalTitle').textContent =
                             'Thêm tài khoản mới';
                     const form = document.querySelector('#accountForm');
-                    form.action = `${pageContext.request.contextPath}/admin/account-management`; 
+                    form.action = contextPath + '/admin/account-management'; 
                     form.method = 'post';
                     form.querySelector('input[name="action"]').value = 'addAccount';
                     
@@ -818,7 +948,7 @@
                     .then(response => response.json())
                     .then(user => {
                         const form = document.querySelector('#accountForm');
-                        form.action = `${pageContext.request.contextPath}/admin/account-management?id=` + id; 
+                        form.action = contextPath + '/admin/account-management?id=' + id; 
                         form.method = 'post';
                         form.querySelector('input[name="action"]').value = 'updateAccount';
                         
@@ -846,24 +976,90 @@
                     document.getElementById(modalId).classList.remove('active');
                 }
 
+                // Delete confirmation modal state
+                let currentDeleteId = null;
+
                 function deleteAccount(id) {
-                    if (confirm('Bạn có chắc chắn muốn xóa tài khoản này?')) {
-                        const url = "${pageContext.request.contextPath}/admin/account-management?action=deleteAccount&id=" + id;
-                        fetch(url, {method: 'POST'})
-                                .then(response => {
-                                    if (response.ok) {
-                                        alert('Xóa tài khoản thành công!');
-                                        location.reload(); // 🔄 reload lại trang sau khi xóa
-                                    } else {
-                                        alert('Xóa thất bại!');
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error('Error:', error);
-                                    alert('Đã xảy ra lỗi!');
-                                });
-                    }
+                    currentDeleteId = id;
+                    showDeleteConfirmModal();
                 }
+
+                function showDeleteConfirmModal() {
+                    const modal = document.getElementById('deleteConfirmModal');
+                    modal.classList.add('show');
+                }
+
+                function closeDeleteConfirmModal() {
+                    const modal = document.getElementById('deleteConfirmModal');
+                    modal.classList.remove('show');
+                    currentDeleteId = null;
+                }
+
+                function executeDelete() {
+                    if (currentDeleteId === null) {
+                        return;
+                    }
+
+                    const url = "${pageContext.request.contextPath}/admin/account-management?action=deleteAccount&id=" + currentDeleteId;
+                    fetch(url, {method: 'POST'})
+                            .then(response => {
+                                if (response.ok) {
+                                    closeDeleteConfirmModal();
+                                    // Show success message
+                                    showSuccessMessage('Xóa tài khoản thành công!');
+                                    setTimeout(() => {
+                                        location.reload(); // 🔄 reload lại trang sau khi xóa
+                                    }, 1500);
+                                } else {
+                                    closeDeleteConfirmModal();
+                                    alert('Xóa thất bại!');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                closeDeleteConfirmModal();
+                                alert('Đã xảy ra lỗi!');
+                            });
+                }
+
+                function showSuccessMessage(message) {
+                    // Create success alert
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success';
+                    alertDiv.style.position = 'fixed';
+                    alertDiv.style.top = '20px';
+                    alertDiv.style.right = '20px';
+                    alertDiv.style.zIndex = '1200';
+                    alertDiv.style.padding = '15px 20px';
+                    alertDiv.style.borderRadius = '8px';
+                    alertDiv.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                    alertDiv.innerHTML = '<i class="fas fa-check-circle"></i> ' + message;
+                    document.body.appendChild(alertDiv);
+
+                    // Auto remove after 3 seconds
+                    setTimeout(() => {
+                        alertDiv.style.opacity = '0';
+                        alertDiv.style.transition = 'opacity 0.5s ease';
+                        setTimeout(() => {
+                            alertDiv.remove();
+                        }, 500);
+                    }, 3000);
+                }
+
+                // Close modal when clicking outside
+                document.addEventListener('click', function(event) {
+                    const modal = document.getElementById('deleteConfirmModal');
+                    if (event.target === modal) {
+                        closeDeleteConfirmModal();
+                    }
+                });
+
+                // Close modal with Escape key
+                document.addEventListener('keydown', function(event) {
+                    if (event.key === 'Escape') {
+                        closeDeleteConfirmModal();
+                    }
+                });
 
                 document.getElementById('roleFilter').addEventListener('change', handleFilterChange);
                 document.getElementById('statusFilter').addEventListener('change', handleFilterChange);

@@ -285,4 +285,21 @@ public class TrainerScheduleDAO extends BaseDAO {
     public List<TrainerSchedule> getAvailableSchedulesByTrainer(int trainerId) {
         return getWeeklySchedule(trainerId);
     }
+
+    // Get all trainer schedules with full details for admin view
+    public List<TrainerSchedule> findAll() {
+        try {
+            TypedQuery<TrainerSchedule> q = em.createQuery(
+                    "SELECT s FROM TrainerSchedule s " +
+                            "LEFT JOIN FETCH s.trainer " +
+                            "LEFT JOIN FETCH s.timeSlot " +
+                            "ORDER BY s.trainerId, s.dayOfWeek, s.slotId",
+                    TrainerSchedule.class);
+            return q.getResultList();
+        } catch (Exception e) {
+            System.err.println("Error getting all trainer schedules: " + e.getMessage());
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
 }

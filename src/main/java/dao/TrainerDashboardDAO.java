@@ -21,7 +21,7 @@ public class TrainerDashboardDAO {
      * [1] total completed sessions
      * [2] sessions scheduled for today (confirmed/completed)
      */
-    public Object[] getQuickStats(int trainerId) {
+    public long[] getQuickStats(int trainerId) {
         EntityManager em = null;
         try {
             em = EMF.createEntityManager();
@@ -35,22 +35,34 @@ public class TrainerDashboardDAO {
             """;
             Query query = em.createNativeQuery(sql);
             query.setParameter(1, trainerId);
-            Object result = query.getSingleResult();
-            if (result instanceof Object[] arr) {
-                Object[] safe = new Object[3];
-                safe[0] = arr.length > 0 ? arr[0] : 0L;
-                safe[1] = arr.length > 1 ? arr[1] : 0L;
-                safe[2] = arr.length > 2 ? arr[2] : 0L;
-                return safe;
-            }
-            return new Object[]{result, 0L, 0L};
+            Object raw = query.getSingleResult();
+            Object[] arr = raw instanceof Object[] ? (Object[]) raw : new Object[]{raw};
+            long total = toLong(arr, 0);
+            long completed = toLong(arr, 1);
+            long today = toLong(arr, 2);
+            return new long[]{total, completed, today};
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "[TrainerDashboardDAO] Failed to get quick stats for trainer " + trainerId, e);
-            return new Object[]{0L, 0L, 0L};
+            return new long[]{0L, 0L, 0L};
         } finally {
             if (em != null) {
                 em.close();
             }
+        }
+    }
+
+    private long toLong(Object[] arr, int idx) {
+        if (arr == null || arr.length <= idx || arr[idx] == null) {
+            return 0L;
+        }
+        Object val = arr[idx];
+        if (val instanceof Number num) {
+            return num.longValue();
+        }
+        try {
+            return Long.parseLong(val.toString());
+        } catch (NumberFormatException ex) {
+            return 0L;
         }
     }
 }

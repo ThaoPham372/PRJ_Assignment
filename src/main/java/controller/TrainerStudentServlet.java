@@ -1,5 +1,8 @@
 package controller;
 
+import java.io.IOException;
+import java.util.List;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -7,11 +10,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.Trainer;
-import service.TrainerStudentService;
-import service.PackageService;
 import service.MemberService;
-import java.io.IOException;
-import java.util.List;
+import service.PackageService;
+import service.TrainerStudentService;
 
 /**
  * TrainerStudentServlet
@@ -22,10 +23,10 @@ import java.util.List;
  * - GET /pt/students/detail - Get student detail
  */
 @WebServlet(urlPatterns = {
-    "/pt/students",
-    "/pt/students/search",
-    "/pt/students/detail",
-    "/pt/students/update"
+        "/pt/students",
+        "/pt/students/search",
+        "/pt/students/detail",
+        "/pt/students/update"
 })
 public class TrainerStudentServlet extends HttpServlet {
 
@@ -34,14 +35,22 @@ public class TrainerStudentServlet extends HttpServlet {
     private MemberService memberService;
 
     private static String toJsonStr(Object v) {
-        if (v == null) return "null";
+        if (v == null)
+            return "null";
         String s = String.valueOf(v).replace("\\", "\\\\").replace("\"", "\\\"");
         return "\"" + s + "\"";
     }
+
     private static String toJsonNum(Object v) {
-        if (v == null) return "null";
-        if (v instanceof Number) return v.toString();
-        try { return String.valueOf(new java.math.BigDecimal(String.valueOf(v))); } catch (Exception e) { return "null"; }
+        if (v == null)
+            return "null";
+        if (v instanceof Number)
+            return v.toString();
+        try {
+            return String.valueOf(new java.math.BigDecimal(String.valueOf(v)));
+        } catch (Exception e) {
+            return "null";
+        }
     }
 
     @Override
@@ -81,32 +90,31 @@ public class TrainerStudentServlet extends HttpServlet {
                             var m = memberService.getById(Integer.parseInt(memberIdParam));
                             if (m != null) {
                                 String json = String.format(
-                                    "{\"success\":true," +
-                                    "\"memberId\":%s," +
-                                    "\"name\":%s," +
-                                    "\"phone\":%s," +
-                                    "\"email\":%s," +
-                                    "\"gender\":%s," +
-                                    "\"dob\":%s," +
-                                    "\"address\":%s," +
-                                    "\"weight\":%s," +
-                                    "\"height\":%s," +
-                                    "\"bmi\":%s," +
-                                    "\"goal\":%s," +
-                                    "\"ptNote\":%s}",
-                                    toJsonNum(m.getId()),
-                                    toJsonStr(m.getName()),
-                                    toJsonStr(m.getPhone()),
-                                    toJsonStr(m.getEmail()),
-                                    toJsonStr(m.getGender()),
-                                    toJsonStr(m.getDob()),
-                                    toJsonStr(m.getAddress()),
-                                    toJsonNum(m.getWeight()),
-                                    toJsonNum(m.getHeight()),
-                                    toJsonNum(m.getBmi()),
-                                    toJsonStr(m.getGoal()),
-                                    toJsonStr(m.getPtNote())
-                                );
+                                        "{\"success\":true," +
+                                                "\"memberId\":%s," +
+                                                "\"name\":%s," +
+                                                "\"phone\":%s," +
+                                                "\"email\":%s," +
+                                                "\"gender\":%s," +
+                                                "\"dob\":%s," +
+                                                "\"address\":%s," +
+                                                "\"weight\":%s," +
+                                                "\"height\":%s," +
+                                                "\"bmi\":%s," +
+                                                "\"goal\":%s," +
+                                                "\"ptNote\":%s}",
+                                        toJsonNum(m.getId()),
+                                        toJsonStr(m.getName()),
+                                        toJsonStr(m.getPhone()),
+                                        toJsonStr(m.getEmail()),
+                                        toJsonStr(m.getGender()),
+                                        toJsonStr(m.getDob()),
+                                        toJsonStr(m.getAddress()),
+                                        toJsonNum(m.getWeight()),
+                                        toJsonNum(m.getHeight()),
+                                        toJsonNum(m.getBmi()),
+                                        toJsonStr(m.getGoal()),
+                                        toJsonStr(m.getPtNote()));
                                 resp.getWriter().write(json);
                                 return;
                             } else {
@@ -117,23 +125,22 @@ public class TrainerStudentServlet extends HttpServlet {
                         }
                         // Map indices theo TrainerStudentDAO.getStudentDetail
                         String json = String.format(
-                            "{\"success\":true," +
-                            "\"memberId\":%s," +
-                            "\"name\":%s," +
-                            "\"phone\":%s," +
-                            "\"email\":%s," +
-                            "\"gender\":%s," +
-                            "\"dob\":%s," +
-                            "\"address\":%s," +
-                            "\"weight\":%s," +
-                            "\"height\":%s," +
-                            "\"bmi\":%s," +
-                            "\"goal\":%s," +
-                            "\"ptNote\":%s}",
-                            toJsonNum(d[0]), toJsonStr(d[1]), toJsonStr(d[2]), toJsonStr(d[3]), toJsonStr(d[4]),
-                            toJsonStr(d[5]), toJsonStr(d[6]), toJsonNum(d[7]), toJsonNum(d[8]), toJsonNum(d[9]),
-                            toJsonStr(d[10]), toJsonStr(d[11])
-                        );
+                                "{\"success\":true," +
+                                        "\"memberId\":%s," +
+                                        "\"name\":%s," +
+                                        "\"phone\":%s," +
+                                        "\"email\":%s," +
+                                        "\"gender\":%s," +
+                                        "\"dob\":%s," +
+                                        "\"address\":%s," +
+                                        "\"weight\":%s," +
+                                        "\"height\":%s," +
+                                        "\"bmi\":%s," +
+                                        "\"goal\":%s," +
+                                        "\"ptNote\":%s}",
+                                toJsonNum(d[0]), toJsonStr(d[1]), toJsonStr(d[2]), toJsonStr(d[3]), toJsonStr(d[4]),
+                                toJsonStr(d[5]), toJsonStr(d[6]), toJsonNum(d[7]), toJsonNum(d[8]), toJsonNum(d[9]),
+                                toJsonStr(d[10]), toJsonStr(d[11]));
                         resp.getWriter().write(json);
                         return;
                     } catch (NumberFormatException e) {
@@ -153,13 +160,12 @@ public class TrainerStudentServlet extends HttpServlet {
 
                 // Get students with or without filter
                 List<Object[]> students;
-                if ((keyword != null && !keyword.trim().isEmpty()) || 
-                    (packageFilter != null && !packageFilter.trim().isEmpty())) {
+                if ((keyword != null && !keyword.trim().isEmpty()) ||
+                        (packageFilter != null && !packageFilter.trim().isEmpty())) {
                     students = studentService.getTrainerStudentsWithFilter(
-                        trainerId, 
-                        keyword != null ? keyword.trim() : null,
-                        packageFilter != null && !packageFilter.trim().isEmpty() ? packageFilter : null
-                    );
+                            trainerId,
+                            keyword != null ? keyword.trim() : null,
+                            packageFilter != null && !packageFilter.trim().isEmpty() ? packageFilter : null);
                 } else {
                     students = studentService.getTrainerStudents(trainerId);
                 }
@@ -221,13 +227,22 @@ public class TrainerStudentServlet extends HttpServlet {
             }
 
             if (weightStr != null && !weightStr.isBlank()) {
-                try { member.setWeight(Float.parseFloat(weightStr)); } catch (NumberFormatException ignored) {}
+                try {
+                    member.setWeight(Float.parseFloat(weightStr));
+                } catch (NumberFormatException ignored) {
+                }
             }
             if (heightStr != null && !heightStr.isBlank()) {
-                try { member.setHeight(Float.parseFloat(heightStr)); } catch (NumberFormatException ignored) {}
+                try {
+                    member.setHeight(Float.parseFloat(heightStr));
+                } catch (NumberFormatException ignored) {
+                }
             }
             if (bmiStr != null && !bmiStr.isBlank()) {
-                try { member.setBmi(Float.parseFloat(bmiStr)); } catch (NumberFormatException ignored) {}
+                try {
+                    member.setBmi(Float.parseFloat(bmiStr));
+                } catch (NumberFormatException ignored) {
+                }
             }
             if (goal != null) {
                 member.setGoal(goal.trim());
@@ -241,8 +256,7 @@ public class TrainerStudentServlet extends HttpServlet {
             resp.getWriter().write("{\"success\":true}");
         } catch (Exception e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().write("{\"success\":false,\"message\":\"" + e.getMessage().replace("\"","\\\"") + "\"}");
+            resp.getWriter().write("{\"success\":false,\"message\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}");
         }
     }
 }
-

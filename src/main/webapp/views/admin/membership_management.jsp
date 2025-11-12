@@ -474,6 +474,120 @@
                 background: #f39c12;
                 color: #fff;
             }
+
+            /* Custom Confirmation Modal */
+            .custom-confirm-modal {
+                display: none;
+                position: fixed;
+                z-index: 1100;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                animation: fadeIn 0.3s ease;
+            }
+
+            .custom-confirm-modal.show {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .custom-confirm-modal-content {
+                background-color: #fff;
+                border-radius: 12px;
+                padding: 0;
+                max-width: 450px;
+                width: 90%;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+                animation: slideDown 0.3s ease;
+                overflow: hidden;
+            }
+
+            .custom-confirm-modal-header {
+                padding: 20px 25px;
+                background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+                color: #fff;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .custom-confirm-modal-header i {
+                font-size: 1.5rem;
+            }
+
+            .custom-confirm-modal-header h3 {
+                margin: 0;
+                font-size: 1.3rem;
+                font-weight: 600;
+            }
+
+            .custom-confirm-modal-body {
+                padding: 25px;
+                color: var(--text);
+                font-size: 1rem;
+                line-height: 1.6;
+            }
+
+            .custom-confirm-modal-footer {
+                padding: 15px 25px;
+                background: #f8f9fa;
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+                border-top: 1px solid #e0e0e0;
+            }
+
+            .confirm-modal-btn {
+                padding: 10px 20px;
+                border: none;
+                border-radius: 6px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-size: 0.95rem;
+            }
+
+            .confirm-modal-btn-cancel {
+                background: #e0e0e0;
+                color: #333;
+            }
+
+            .confirm-modal-btn-cancel:hover {
+                background: #d0d0d0;
+            }
+
+            .confirm-modal-btn-danger {
+                background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+                color: #fff;
+            }
+
+            .confirm-modal-btn-danger:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+
+            @keyframes slideDown {
+                from {
+                    transform: translateY(-50px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
         </style>
     </head>
     <body>
@@ -731,13 +845,6 @@
                                                                 onclick="openEditMembershipModal('${membership.id}', '${membership.member.username}', '${membership.member.name}', '${membership.packageO.id}', '${membership.status}', '${membership.startDate}')" >
                                                             <i class="fas fa-edit"></i>
                                                         </button>
-                                                        <button
-                                                            class="btn-icon"
-                                                            style="background: #9b59b6"
-                                                            title="Gia hạn"
-                                                            >
-                                                            <i class="fas fa-calendar-plus"></i>
-                                                        </button>
                                                         <button class="btn-icon btn-delete" title="Xóa" name="deleteMembership" onclick="handleClickDelete(${membership.id})">
                                                             <i class="fas fa-trash"></i>
                                                         </button>
@@ -881,6 +988,23 @@
             </div>
         </div>
 
+        <!-- Custom Confirmation Modal for Delete -->
+        <div id="deleteConfirmModal" class="custom-confirm-modal">
+            <div class="custom-confirm-modal-content">
+                <div class="custom-confirm-modal-header">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Xóa hội viên</h3>
+                </div>
+                <div class="custom-confirm-modal-body">
+                    <p id="deleteConfirmMessage">Bạn có chắc chắn muốn xóa hội viên này? Hành động này không thể hoàn tác.</p>
+                </div>
+                <div class="custom-confirm-modal-footer">
+                    <button class="confirm-modal-btn confirm-modal-btn-cancel" onclick="closeDeleteConfirmModal()">Hủy</button>
+                    <button class="confirm-modal-btn confirm-modal-btn-danger" id="deleteConfirmBtn" onclick="executeDelete()">Xóa</button>
+                </div>
+            </div>
+        </div>
+
         <script>
             console.log("JS Loaded ✅");
 
@@ -948,12 +1072,48 @@
                 document.getElementById(modalId).classList.remove('active');
             }
 
+            // Delete confirmation modal state
+            let currentDeleteMembershipId = null;
+
             function deleteMembership(membershipId) {
-                if (confirm('Bạn có chắc chắn muốn xóa hội viên này không?')) {
-                    // Redirect to servlet with delete action
-                    window.location.href = `${contextPath}/admin/membership-management?action=deleteMembership&membershipId=` + membershipId;
-                }
+                currentDeleteMembershipId = membershipId;
+                showDeleteConfirmModal();
             }
+
+            function showDeleteConfirmModal() {
+                const modal = document.getElementById('deleteConfirmModal');
+                modal.classList.add('show');
+            }
+
+            function closeDeleteConfirmModal() {
+                const modal = document.getElementById('deleteConfirmModal');
+                modal.classList.remove('show');
+                currentDeleteMembershipId = null;
+            }
+
+            function executeDelete() {
+                if (currentDeleteMembershipId === null) {
+                    return;
+                }
+
+                // Redirect to servlet with delete action
+                window.location.href = contextPath + '/admin/membership-management?action=deleteMembership&membershipId=' + currentDeleteMembershipId;
+            }
+
+            // Close modal when clicking outside
+            document.addEventListener('click', function(event) {
+                const modal = document.getElementById('deleteConfirmModal');
+                if (event.target === modal) {
+                    closeDeleteConfirmModal();
+                }
+            });
+
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    closeDeleteConfirmModal();
+                }
+            });
 
             document.querySelectorAll('.filter-select').forEach(select => {
                 select.addEventListener('change', () => {
