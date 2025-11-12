@@ -552,4 +552,49 @@ public class ScheduleService {
             return new ArrayList<>();
         }
     }
+    
+    /**
+     * Get trainer by ID
+     */
+    public Trainer getTrainerById(Integer trainerId) {
+        try {
+            if (trainerId == null) {
+                return null;
+            }
+            return trainerDAO.findById(trainerId);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error getting trainer by ID: " + trainerId, e);
+            return null;
+        }
+    }
+    
+    /**
+     * Get gym by ID
+     */
+    public GymInfo getGymById(Integer gymId) {
+        try {
+            if (gymId == null) {
+                return null;
+            }
+            return gymInfoDAO.findById(gymId);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error getting gym by ID: " + gymId, e);
+            return null;
+        }
+    }
+    
+    /**
+     * Get time slot by ID
+     */
+    public TimeSlot getTimeSlotById(Integer slotId) {
+        try {
+            if (slotId == null) {
+                return null;
+            }
+            return timeSlotDAO.findById(slotId);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error getting time slot by ID: " + slotId, e);
+            return null;
+        }
+    }
 }

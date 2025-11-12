@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.Member;
@@ -16,18 +15,19 @@ import model.Member;
     "/member/schedule",
     "/member/my-bookings"
 })
-public class MemberScheduleServlet extends HttpServlet {
+public class MemberScheduleServlet extends BaseMemberServlet {
     private static final long serialVersionUID = 1L;
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        // Check if member is logged in
-        Member member = (Member) request.getSession().getAttribute("member");
+        // Kiểm tra authentication sử dụng method từ BaseMemberServlet
+        // Method này sẽ kiểm tra isLoggedIn, lấy user từ session, 
+        // reload member từ DB nếu cần, và redirect về login nếu chưa đăng nhập
+        Member member = requireAuthentication(request, response);
         if (member == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
+            return; // Đã redirect trong requireAuthentication
         }
         
         String pathInfo = request.getServletPath();

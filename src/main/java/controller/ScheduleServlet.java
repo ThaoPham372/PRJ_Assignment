@@ -329,15 +329,24 @@ public class ScheduleServlet extends HttpServlet {
             bookingData.put("notes", booking.getNotes());
             bookingData.put("cancelledReason", booking.getCancelledReason());
             
-            // Trainer info
+            // Trainer info - Load if null but trainerId exists
             if (booking.getTrainer() != null) {
                 Map<String, Object> trainerData = new HashMap<>();
                 trainerData.put("id", booking.getTrainer().getId());
                 trainerData.put("name", booking.getTrainer().getName());
                 bookingData.put("trainer", trainerData);
+            } else if (booking.getTrainerId() != null) {
+                // Load trainer from database if relationship is null
+                Trainer trainer = scheduleService.getTrainerById(booking.getTrainerId());
+                if (trainer != null) {
+                    Map<String, Object> trainerData = new HashMap<>();
+                    trainerData.put("id", trainer.getId());
+                    trainerData.put("name", trainer.getName());
+                    bookingData.put("trainer", trainerData);
+                }
             }
             
-            // Gym info
+            // Gym info - Load if null but gymId exists
             if (booking.getGym() != null) {
                 Map<String, Object> gymData = new HashMap<>();
                 gymData.put("gymId", booking.getGym().getGymId());
@@ -345,9 +354,20 @@ public class ScheduleServlet extends HttpServlet {
                 gymData.put("name", booking.getGym().getName()); // Alias for compatibility
                 gymData.put("address", booking.getGym().getAddress());
                 bookingData.put("gym", gymData);
+            } else if (booking.getGymId() != null) {
+                // Load gym from database if relationship is null
+                GymInfo gym = scheduleService.getGymById(booking.getGymId());
+                if (gym != null) {
+                    Map<String, Object> gymData = new HashMap<>();
+                    gymData.put("gymId", gym.getGymId());
+                    gymData.put("gymName", gym.getName());
+                    gymData.put("name", gym.getName()); // Alias for compatibility
+                    gymData.put("address", gym.getAddress());
+                    bookingData.put("gym", gymData);
+                }
             }
             
-            // Time slot info
+            // Time slot info - Load if null but slotId exists
             if (booking.getTimeSlot() != null) {
                 Map<String, Object> slotData = new HashMap<>();
                 slotData.put("slotId", booking.getTimeSlot().getSlotId());
@@ -355,6 +375,17 @@ public class ScheduleServlet extends HttpServlet {
                 slotData.put("startTime", booking.getTimeSlot().getStartTime().toString());
                 slotData.put("endTime", booking.getTimeSlot().getEndTime().toString());
                 bookingData.put("timeSlot", slotData);
+            } else if (booking.getSlotId() != null) {
+                // Load time slot from database if relationship is null
+                TimeSlot timeSlot = scheduleService.getTimeSlotById(booking.getSlotId());
+                if (timeSlot != null) {
+                    Map<String, Object> slotData = new HashMap<>();
+                    slotData.put("slotId", timeSlot.getSlotId());
+                    slotData.put("slotName", timeSlot.getSlotName());
+                    slotData.put("startTime", timeSlot.getStartTime().toString());
+                    slotData.put("endTime", timeSlot.getEndTime().toString());
+                    bookingData.put("timeSlot", slotData);
+                }
             }
             
             bookingList.add(bookingData);
