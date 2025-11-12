@@ -195,7 +195,7 @@ public class EditProfileServlet extends BaseMemberServlet {
         }
         
         // Load nutrition goal if exists
-        java.util.Optional<NutritionGoal> nutritionGoalOpt = nutritionService.getNutritionGoal(member.getId());
+        java.util.Optional<NutritionGoal> nutritionGoalOpt = nutritionService.getNutritionGoal(member.getId().intValue());
         if (nutritionGoalOpt.isPresent()) {
             NutritionGoal goal = nutritionGoalOpt.get();
             request.setAttribute("nutritionGoal", goal);
@@ -517,7 +517,7 @@ public class EditProfileServlet extends BaseMemberServlet {
                 // Calculate and save nutrition goal
                 try {
                     nutritionService.calculateAndSaveNutritionGoal(
-                        member.getId(),
+                        member.getId().intValue(),
                         member.getWeight(),
                         member.getHeight(),
                         age,
