@@ -40,6 +40,14 @@
       <property name="jakarta.persistence.jdbc.password" value="ToThanhNam123!!!"/>
       <property name="jakarta.persistence.schema-generation.database.action" value="update"/>
       <property name="eclipselink.logging.level" value="FINE"/>
+      
+      <!-- Connection Pool Configuration -->
+      <property name="eclipselink.connection-pool.default.initial" value="5"/>
+      <property name="eclipselink.connection-pool.default.min" value="5"/>
+      <property name="eclipselink.connection-pool.default.max" value="50"/>
+      <property name="eclipselink.connection-pool.default.maxIdleTime" value="300000"/>
+      <property name="eclipselink.connection-pool.default.maxWaitTime" value="30000"/>
+      <property name="eclipselink.connection-pool.default.validateConnection" value="true"/>
     </properties>
   </persistence-unit>
 </persistence>

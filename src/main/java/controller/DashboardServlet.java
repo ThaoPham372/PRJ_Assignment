@@ -33,7 +33,6 @@ import service.nutrition.NutritionServiceImpl;
  */
 @WebServlet(name = "DashboardServlet", urlPatterns = {
     "/member/dashboard",
-    "/member/schedule",
     "/member/support"
 })
 public class DashboardServlet extends BaseMemberServlet {
@@ -73,7 +72,6 @@ public class DashboardServlet extends BaseMemberServlet {
                     showDashboard(request, response, currentMember);
                     break;
 
-                case "/member/schedule":
                 case "/member/support":
                     // Forward đơn giản đến JSP tương ứng
                     request.getRequestDispatcher("/views" + path + ".jsp").forward(request, response);

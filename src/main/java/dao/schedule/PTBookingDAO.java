@@ -61,6 +61,7 @@ public class PTBookingDAO extends GenericDAO<PTBooking> {
         try {
             String jpql = "SELECT b FROM PTBooking b " +
                     "LEFT JOIN FETCH b.trainer " +
+                    "LEFT JOIN FETCH b.gym " +
                     "LEFT JOIN FETCH b.timeSlot " +
                     "WHERE b.memberId = :memberId " +
                     "ORDER BY b.bookingDate DESC, b.slotId";

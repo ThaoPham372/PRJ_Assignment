@@ -28,26 +28,43 @@ public abstract class BaseDAO {
         em = emf.createEntityManager();
     }
 
+    /**
+     * Get EntityManagerFactory (for creating new EntityManager instances)
+     */
+    protected static EntityManagerFactory getEntityManagerFactory() {
+        if (emf == null) {
+            emf = Persistence.createEntityManagerFactory("gymPU");
+        }
+        return emf;
+    }
+
+    /**
+     * Create a new EntityManager instance
+     */
+    protected EntityManager createEntityManager() {
+        return getEntityManagerFactory().createEntityManager();
+    }
+
     public void beginTransaction() {
-        if (!em.getTransaction().isActive()) {
+        if (em != null && em.isOpen() && !em.getTransaction().isActive()) {
             em.getTransaction().begin();
         }
     }
 
     public void commitTransaction() {
-        if (em.getTransaction().isActive()) {
+        if (em != null && em.isOpen() && em.getTransaction().isActive()) {
             em.getTransaction().commit();
         }
     }
 
     public void rollbackTransaction() {
-        if (em.getTransaction().isActive()) {
+        if (em != null && em.isOpen() && em.getTransaction().isActive()) {
             em.getTransaction().rollback();
         }
     }
 
     public void close() {
-        if (em.isOpen()) {
+        if (em != null && em.isOpen()) {
             em.close();
         }
     }

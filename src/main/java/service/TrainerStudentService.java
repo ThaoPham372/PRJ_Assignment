@@ -1,68 +1,40 @@
 package service;
 
-import dao.TrainerStudentDAO;
 import java.util.List;
 
+import dao.TrainerStudentDAO;
+
 /**
- * Service for Trainer Student Management
- * Handles business logic for managing trainer's students
+ * TrainerStudentService
+ * - Bao bọc DAO, cung cấp API rõ ràng cho Controller
+ * - Không chứa logic truy cập DB trực tiếp
  */
 public class TrainerStudentService {
-    private TrainerStudentDAO dao;
 
-    public TrainerStudentService() {
-        this.dao = new TrainerStudentDAO();
-    }
+  private final TrainerStudentDAO dao;
 
-    /**
-     * Get list of students assigned to a trainer
-     * 
-     * @param trainerId The trainer ID
-     * @return List of Object arrays containing student information
-     *         Array indices: [0]=memberId, [1]=name, [2]=phone, [3]=email, [4]=gender, 
-     *                        [5]=dob, [6]=weight, [7]=height, [8]=bmi, [9]=goal, 
-     *                        [10]=ptNote, [11]=totalBookings, [12]=completedSessions,
-     *                        [13]=confirmedSessions, [14]=pendingSessions
-     */
-    public List<Object[]> getTrainerStudents(Integer trainerId) {
-        return dao.getStudentsByTrainer(trainerId);
-    }
+  public TrainerStudentService() {
+    this.dao = new TrainerStudentDAO();
+  }
 
-    /**
-     * Get students with search and filter
-     * 
-     * @param trainerId The trainer ID
-     * @param keyword Search keyword (name, phone, email)
-     * @param packageName Filter by package name
-     * @return List of Object arrays containing student information
-     *         Array indices: [0]=memberId, [1]=name, [2]=phone, [3]=email, [4]=gender,
-     *                        [5]=dob, [6]=weight, [7]=height, [8]=bmi, [9]=goal,
-     *                        [10]=ptNote, [11]=packageName, [12]=totalBookings,
-     *                        [13]=completedSessions, [14]=confirmedSessions, [15]=pendingSessions
-     */
-    public List<Object[]> getTrainerStudentsWithFilter(Integer trainerId, String keyword, String packageName) {
-        return dao.getStudentsByTrainerWithFilter(trainerId, keyword, packageName);
-    }
+  /** Lấy danh sách học viên của PT (booking CONFIRMED/COMPLETED) */
+  public List<Object[]> getTrainerStudents(int trainerId) {
+    return dao.getStudentsByTrainer(trainerId);
+  }
 
-    /**
-     * Get student statistics
-     * 
-     * @param trainerId The trainer ID
-     * @return Object array: [0]=totalStudents, [1]=activeStudents, [2]=achievedGoalCount
-     */
-    public Object[] getStudentStatistics(Integer trainerId) {
-        return dao.getStudentStatistics(trainerId);
-    }
+  /** Tìm kiếm + lọc theo gói tập */
+  public List<Object[]> getTrainerStudentsWithFilter(int trainerId, String keyword, String packageName) {
+    return dao.getStudentsByTrainerWithFilter(trainerId, keyword, packageName);
+  }
 
-    /**
-     * Get student detail
-     * 
-     * @param memberId The member ID
-     * @param trainerId The trainer ID
-     * @return Object array containing detailed student information
-     */
-    public Object[] getStudentDetail(Integer memberId, Integer trainerId) {
-        return dao.getStudentDetail(memberId, trainerId);
-    }
+  /** Thống kê: [0]=totalStudents, [1]=activeStudents, [2]=achievedGoalCount */
+  public Object[] getStudentStatistics(int trainerId) {
+    return dao.getStudentStatistics(trainerId);
+  }
+
+  /** Chi tiết một học viên của PT */
+  public Object[] getStudentDetail(int memberId, int trainerId) {
+    return dao.getStudentDetail(memberId, trainerId);
+  }
 }
 

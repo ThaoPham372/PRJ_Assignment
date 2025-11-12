@@ -36,21 +36,43 @@ public class ChatAIServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json; charset=UTF-8");
 
-        String userMessage = extractUserMessage(request);
-        
-        if (userMessage == null || userMessage.isEmpty()) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Message is empty");
-            return;
-        }
-
         try {
-            AIResponse aiResponse = chatAIService.getAIResponse(userMessage);
+            String userMessage = extractUserMessage(request);
+            
+            if (userMessage == null || userMessage.trim().isEmpty()) {
+                response.getWriter().write(gson.toJson(
+                    new AIResponse("Hãy nhập câu hỏi của bạn.")
+                ));
+                return;
+            }
+
+            // Giới hạn độ dài tin nhắn
+            if (userMessage.length() > 500) {
+                response.getWriter().write(gson.toJson(
+                    new AIResponse("Tin nhắn quá dài. Vui lòng nhập tin nhắn ngắn hơn 500 ký tự.")
+                ));
+                return;
+            }
+
+            // Lấy memberId từ session nếu user đã đăng nhập
+            Integer memberId = null;
+            Object memberObj = request.getSession().getAttribute("member");
+            if (memberObj != null && memberObj instanceof model.Member) {
+                memberId = ((model.Member) memberObj).getId();
+            }
+
+            // Gọi service với member context
+            AIResponse aiResponse = chatAIService.getAIResponseWithMemberContext(userMessage, memberId);
             response.getWriter().write(gson.toJson(aiResponse));
+            
         } catch (Exception e) {
             System.err.println("[ChatAIServlet] Error: " + e.getMessage());
-            e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write(gson.toJson(new AIResponse("Lỗi máy chủ: " + e.getMessage())));
+            // Không in stack trace ra log để tránh spam
+            
+            response.setStatus(HttpServletResponse.SC_OK); // Vẫn trả 200 OK
+            response.getWriter().write(gson.toJson(
+                new AIResponse("Hệ thống đang bị gián đoạn, hãy thử lại sau nhé...")
+            ));
         }
     }
     
