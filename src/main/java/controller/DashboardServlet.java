@@ -33,7 +33,6 @@ import service.nutrition.NutritionServiceImpl;
  */
 @WebServlet(name = "DashboardServlet", urlPatterns = {
     "/member/dashboard",
-    "/member/schedule",
     "/member/support"
 })
 public class DashboardServlet extends BaseMemberServlet {
@@ -73,7 +72,6 @@ public class DashboardServlet extends BaseMemberServlet {
                     showDashboard(request, response, currentMember);
                     break;
 
-                case "/member/schedule":
                 case "/member/support":
                     // Forward đơn giản đến JSP tương ứng
                     request.getRequestDispatcher("/views" + path + ".jsp").forward(request, response);
@@ -106,7 +104,7 @@ public class DashboardServlet extends BaseMemberServlet {
             }
             
             // 2. Lấy tổng calories đã nạp trong ngày từ NutritionService
-            DailyIntakeDTO todayTotals = nutritionService.todayTotals(member.getId().longValue());
+            DailyIntakeDTO todayTotals = nutritionService.todayTotals(member.getId().intValue());
             BigDecimal todayCalories = todayTotals != null && todayTotals.getCaloriesKcal() != null 
                     ? todayTotals.getCaloriesKcal() 
                     : BigDecimal.ZERO;

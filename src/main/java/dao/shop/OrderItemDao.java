@@ -65,6 +65,29 @@ public class OrderItemDao extends GenericDAO<OrderItem> {
     }
 
     /**
+     * Find all items for multiple orders in a single query (batch loading)
+     * This solves the N+1 query problem by loading all items at once
+     * 
+     * @param orderIds List of order IDs
+     * @return List of all order items for the given orders
+     */
+    public List<OrderItem> findByOrderIds(List<Integer> orderIds) {
+        if (orderIds == null || orderIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        
+        try {
+            String jpql = "SELECT oi FROM OrderItem oi WHERE oi.orderId IN :orderIds ORDER BY oi.orderId, oi.orderItemId";
+            TypedQuery<OrderItem> query = em.createQuery(jpql, OrderItem.class);
+            query.setParameter("orderIds", orderIds);
+            return query.getResultList();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error finding order items for orders: " + orderIds, e);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
      * Helper method to calculate discount percent if needed
      */
     private void calculateDiscountPercentIfNeeded(OrderItem item) {

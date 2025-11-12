@@ -83,6 +83,21 @@ public class TrainerScheduleDAO extends BaseDAO {
             return Collections.emptyList();
         }
     }
+    
+    // Get schedules by gym ID
+    public List<TrainerSchedule> findByGymId(Integer gymId) {
+        try {
+            TypedQuery<TrainerSchedule> q = em.createQuery(
+                    "SELECT s FROM TrainerSchedule s WHERE s.gymId = :gymId",
+                    TrainerSchedule.class);
+            q.setParameter("gymId", gymId);
+            return q.getResultList();
+        } catch (Exception e) {
+            System.err.println("Error getting schedules by gym ID: " + e.getMessage());
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
 
     // 4. Lấy danh sách exception (nghỉ/bận/đặc biệt)
     public List<TrainerException> getTrainerExceptions(int trainerId) {

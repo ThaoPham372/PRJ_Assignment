@@ -63,16 +63,16 @@ public class NutritionServlet extends HttpServlet {
             return;
         }
 
-        Long userId = Long.valueOf(currentUser.getId());
+        Integer memberId = currentUser.getId();
         String path = request.getPathInfo();
         
         try {
             if (path == null || path.equals("/")) {
                 // GET /member/nutrition - Hiển thị trang dinh dưỡng hôm nay
-                showNutritionPage(request, response, userId);
+                showNutritionPage(request, response, memberId);
             } else if (path.equals("/history")) {
                 // GET /member/nutrition/history - Hiển thị lịch sử dinh dưỡng
-                showNutritionHistory(request, response, userId);
+                showNutritionHistory(request, response, memberId);
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -99,7 +99,7 @@ public class NutritionServlet extends HttpServlet {
             return;
         }
 
-        Long userId = Long.valueOf(currentUser.getId());
+        Integer memberId = currentUser.getId();
         String path = request.getPathInfo();
         
         try {
@@ -108,10 +108,10 @@ public class NutritionServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/member/nutrition");
             } else if (path.equals("/addMeal")) {
                 // POST /member/nutrition/addMeal - Thêm món ăn
-                addMeal(request, response, userId);
+                addMeal(request, response, memberId);
             } else if (path.equals("/deleteMeal")) {
                 // POST /member/nutrition/deleteMeal - Xóa món ăn
-                deleteMeal(request, response, userId);
+                deleteMeal(request, response, memberId);
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -146,7 +146,7 @@ public class NutritionServlet extends HttpServlet {
      * Hiển thị trang dinh dưỡng hôm nay
      * Loads foods, today's meals, totals, and nutrition goals
      */
-    private void showNutritionPage(HttpServletRequest request, HttpServletResponse response, Long userId)
+    private void showNutritionPage(HttpServletRequest request, HttpServletResponse response, Integer memberId)
             throws ServletException, IOException {
         
         try {
@@ -164,11 +164,11 @@ public class NutritionServlet extends HttpServlet {
             request.setAttribute("foods", foods);
             
             // Load today's meals
-            List<model.UserMeal> todayMeals = nutritionService.todayMeals(userId);
+            List<model.UserMeal> todayMeals = nutritionService.todayMeals(memberId);
             request.setAttribute("todayMeals", todayMeals);
             
             // Load today's totals
-            model.DailyIntakeDTO totals = nutritionService.todayTotals(userId);
+            model.DailyIntakeDTO totals = nutritionService.todayTotals(memberId);
             // Ensure totals is never null
             if (totals == null) {
                 totals = new model.DailyIntakeDTO();
@@ -177,7 +177,7 @@ public class NutritionServlet extends HttpServlet {
             
             // Load nutrition goals for progress calculation
             @SuppressWarnings("unchecked")
-            Optional<NutritionGoal> goalOpt = (Optional<NutritionGoal>) (Optional<?>) nutritionService.getNutritionGoal(userId);
+            Optional<NutritionGoal> goalOpt = (Optional<NutritionGoal>) (Optional<?>) nutritionService.getNutritionGoal(memberId);
             if (goalOpt.isPresent()) {
                 NutritionGoal goal = goalOpt.get();
                 BigDecimal targetCalories = goal.getDailyCaloriesTarget();
@@ -226,7 +226,7 @@ public class NutritionServlet extends HttpServlet {
      * Hiển thị lịch sử dinh dưỡng
      * Loads meals and totals for a specific date
      */
-    private void showNutritionHistory(HttpServletRequest request, HttpServletResponse response, Long userId)
+    private void showNutritionHistory(HttpServletRequest request, HttpServletResponse response, Integer memberId)
             throws ServletException, IOException {
         
         try {
@@ -257,11 +257,11 @@ public class NutritionServlet extends HttpServlet {
             request.setAttribute("selectedDate", selectedDate);
             
             // Load meals for selected date
-            List<model.UserMeal> meals = nutritionService.getMealsByDate(userId, selectedDate);
+            List<model.UserMeal> meals = nutritionService.getMealsByDate(memberId, selectedDate);
             request.setAttribute("meals", meals);
             
             // Load totals for selected date
-            model.DailyIntakeDTO totals = nutritionService.getDailyTotalsByDate(userId, selectedDate);
+            model.DailyIntakeDTO totals = nutritionService.getDailyTotalsByDate(memberId, selectedDate);
             request.setAttribute("totals", totals);
             
             // Forward to nutrition-history.jsp
@@ -280,7 +280,7 @@ public class NutritionServlet extends HttpServlet {
      * Thêm món ăn vào hôm nay
      * Validates input and calls service layer
      */
-    private void addMeal(HttpServletRequest request, HttpServletResponse response, Long userId)
+    private void addMeal(HttpServletRequest request, HttpServletResponse response, Integer memberId)
             throws ServletException, IOException {
         
         try {
@@ -327,7 +327,7 @@ public class NutritionServlet extends HttpServlet {
             }
             
             // Call service to add meal
-            nutritionService.addMeal(userId, foodId, servings);
+            nutritionService.addMeal(memberId, foodId, servings);
             
             // Set success message
             setSessionMessage(request, "nutritionSuccess", "Đã thêm món ăn thành công!");
@@ -350,7 +350,7 @@ public class NutritionServlet extends HttpServlet {
      * Xóa món ăn
      * Validates input and calls service layer
      */
-    private void deleteMeal(HttpServletRequest request, HttpServletResponse response, Long userId)
+    private void deleteMeal(HttpServletRequest request, HttpServletResponse response, Integer memberId)
             throws ServletException, IOException {
         
         try {
@@ -374,7 +374,7 @@ public class NutritionServlet extends HttpServlet {
             }
             
             // Call service to delete meal
-            boolean deleted = nutritionService.deleteMeal(userId, mealId);
+            boolean deleted = nutritionService.deleteMeal(memberId, mealId);
             
             if (deleted) {
                 setSessionMessage(request, "nutritionSuccess", "Đã xóa món ăn thành công!");

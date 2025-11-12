@@ -57,10 +57,10 @@ public class NutritionServiceImpl implements NutritionService {
     }
 
     @Override
-    public void addMeal(long userId, long foodId, BigDecimal servings) {
+    public void addMeal(int memberId, long foodId, BigDecimal servings) {
         // Validate inputs
-        if (userId <= 0) {
-            throw new IllegalArgumentException("Invalid user ID");
+        if (memberId <= 0) {
+            throw new IllegalArgumentException("Invalid member ID");
         }
         
         if (foodId <= 0) {
@@ -82,98 +82,98 @@ public class NutritionServiceImpl implements NutritionService {
         OffsetDateTime eatenAt = nowVN.withZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime();
         
         // Insert meal snapshot
-        userMealDao.insertSnapshot(userId, foodId, servings, eatenAt);
+        userMealDao.insertSnapshot(memberId, foodId, servings, eatenAt);
     }
 
     @Override
-    public List<UserMeal> todayMeals(long userId) {
-        if (userId <= 0) {
+    public List<UserMeal> todayMeals(int memberId) {
+        if (memberId <= 0) {
             return Collections.emptyList();
         }
         
         // Get today's date in Vietnam timezone
         LocalDate todayVN = LocalDate.now(VN_ZONE);
         
-        return userMealDao.listMealsOfDay(userId, todayVN);
+        return userMealDao.listMealsOfDay(memberId, todayVN);
     }
 
     @Override
-    public DailyIntakeDTO todayTotals(long userId) {
-        if (userId <= 0) {
+    public DailyIntakeDTO todayTotals(int memberId) {
+        if (memberId <= 0) {
             return new DailyIntakeDTO();
         }
         
         // Get today's date in Vietnam timezone
         LocalDate todayVN = LocalDate.now(VN_ZONE);
         
-        return userMealDao.sumOfDay(userId, todayVN);
+        return userMealDao.sumOfDay(memberId, todayVN);
     }
 
     @Override
-    public boolean deleteMeal(long userId, long mealId) {
-        if (userId <= 0 || mealId <= 0) {
+    public boolean deleteMeal(int memberId, long mealId) {
+        if (memberId <= 0 || mealId <= 0) {
             return false;
         }
         
-        return userMealDao.deleteMeal(mealId, userId);
+        return userMealDao.deleteMeal(mealId, memberId);
     }
 
     @Override
-    public List<UserMeal> getMealHistory(long userId, int days) {
-        if (userId <= 0 || days <= 0) {
+    public List<UserMeal> getMealHistory(int memberId, int days) {
+        if (memberId <= 0 || days <= 0) {
             return Collections.emptyList();
         }
         
         LocalDate endDate = LocalDate.now(VN_ZONE).plusDays(1); // Exclusive
         LocalDate startDate = endDate.minusDays(days);
         
-        return userMealDao.getMealHistory(userId, startDate, endDate);
+        return userMealDao.getMealHistory(memberId, startDate, endDate);
     }
 
     @Override
-    public java.util.Map<java.time.LocalDate, DailyIntakeDTO> getDailyTotalsHistory(long userId, int days) {
-        if (userId <= 0 || days <= 0) {
+    public java.util.Map<java.time.LocalDate, DailyIntakeDTO> getDailyTotalsHistory(int memberId, int days) {
+        if (memberId <= 0 || days <= 0) {
             return Collections.emptyMap();
         }
         
         LocalDate endDate = LocalDate.now(VN_ZONE).plusDays(1); // Exclusive
         LocalDate startDate = endDate.minusDays(days);
         
-        return userMealDao.getDailyTotalsHistory(userId, startDate, endDate);
+        return userMealDao.getDailyTotalsHistory(memberId, startDate, endDate);
     }
 
     @Override
-    public Optional<NutritionGoal> getNutritionGoal(long userId) {
-        if (userId <= 0) {
+    public Optional<NutritionGoal> getNutritionGoal(int memberId) {
+        if (memberId <= 0) {
             return Optional.empty();
         }
-        return nutritionGoalDao.findByUserId(userId);
+        return nutritionGoalDao.findByMemberId(memberId);
     }
     
     @Override
-    public List<UserMeal> getMealsByDate(long userId, LocalDate date) {
-        if (userId <= 0 || date == null) {
+    public List<UserMeal> getMealsByDate(int memberId, LocalDate date) {
+        if (memberId <= 0 || date == null) {
             return Collections.emptyList();
         }
         
         // Date should already be in VN timezone format
-        return userMealDao.listMealsOfDay(userId, date);
+        return userMealDao.listMealsOfDay(memberId, date);
     }
     
     @Override
-    public DailyIntakeDTO getDailyTotalsByDate(long userId, LocalDate date) {
-        if (userId <= 0 || date == null) {
+    public DailyIntakeDTO getDailyTotalsByDate(int memberId, LocalDate date) {
+        if (memberId <= 0 || date == null) {
             return new DailyIntakeDTO();
         }
         
         // Date should already be in VN timezone format
-        return userMealDao.sumOfDay(userId, date);
+        return userMealDao.sumOfDay(memberId, date);
     }
     
     @Override
-    public NutritionGoal calculateAndSaveNutritionGoal(long userId, Float weight, Float height, Integer age, String gender, String goalType, String activityLevel) {
-        if (userId <= 0 || weight == null || weight <= 0 || height == null || height <= 0) {
-            throw new IllegalArgumentException("Invalid user data for nutrition goal calculation");
+    public NutritionGoal calculateAndSaveNutritionGoal(int memberId, Float weight, Float height, Integer age, String gender, String goalType, String activityLevel) {
+        if (memberId <= 0 || weight == null || weight <= 0 || height == null || height <= 0) {
+            throw new IllegalArgumentException("Invalid member data for nutrition goal calculation");
         }
         
         // Calculate BMR using Mifflin-St Jeor Equation
@@ -193,7 +193,7 @@ public class NutritionServiceImpl implements NutritionService {
         
         // Create or update NutritionGoal
         NutritionGoal goal = new NutritionGoal();
-        goal.setUserId(userId);
+        goal.setMemberId(memberId);
         goal.setGoalType(goalType);
         goal.setActivityFactor(activityFactor);
         goal.setDailyCaloriesTarget(caloriesTarget);

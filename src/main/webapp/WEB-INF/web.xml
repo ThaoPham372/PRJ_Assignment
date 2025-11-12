@@ -37,6 +37,11 @@
     
     <!-- Error pages -->
     <error-page>
+        <error-code>403</error-code>
+        <location>/views/error/403.jsp</location>
+    </error-page>
+    
+    <error-page>
         <error-code>404</error-code>
         <location>/views/error/404.jsp</location>
     </error-page>
@@ -59,7 +64,62 @@
     <filter-mapping>
         <filter-name>CharacterEncodingFilter</filter-name>
         <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
     </filter-mapping>
     
-    <!-- Security constraints sẽ được thêm sau khi có authentication -->
+    <!-- Role-based Filters -->
+    <!-- Note: Filters are also configured using @WebFilter annotations -->
+    <!-- The following configuration ensures proper filter ordering -->
+    
+    <!-- Authentication Filter - Must run first for protected pages -->
+    <filter>
+        <filter-name>AuthenticationFilter</filter-name>
+        <filter-class>filter.AuthenticationFilter</filter-class>
+    </filter>
+    
+    <filter-mapping>
+        <filter-name>AuthenticationFilter</filter-name>
+        <url-pattern>/cart/*</url-pattern>
+        <url-pattern>/checkout/*</url-pattern>
+        <url-pattern>/order/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+    
+    <!-- Admin Filter -->
+    <filter>
+        <filter-name>AdminFilter</filter-name>
+        <filter-class>filter.AdminFilter</filter-class>
+    </filter>
+    
+    <filter-mapping>
+        <filter-name>AdminFilter</filter-name>
+        <url-pattern>/admin/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+    
+    <!-- Trainer Filter -->
+    <filter>
+        <filter-name>TrainerFilter</filter-name>
+        <filter-class>filter.TrainerFilter</filter-class>
+    </filter>
+    
+    <filter-mapping>
+        <filter-name>TrainerFilter</filter-name>
+        <url-pattern>/pt/*</url-pattern>
+        <url-pattern>/trainer/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+    
+    <!-- Member Filter -->
+    <filter>
+        <filter-name>MemberFilter</filter-name>
+        <filter-class>filter.MemberFilter</filter-class>
+    </filter>
+    
+    <filter-mapping>
+        <filter-name>MemberFilter</filter-name>
+        <url-pattern>/member/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
 </web-app>
