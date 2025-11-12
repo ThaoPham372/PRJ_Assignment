@@ -216,11 +216,46 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         padding: 25px;
         box-shadow: 0 4px 15px var(--shadow);
         transition: all 0.3s ease;
+        position: relative;
       }
 
       .trainer-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .trainer-card.inactive {
+        opacity: 0.7;
+        border: 2px dashed #ccc;
+        background: #f8f9fa;
+      }
+
+      .trainer-card.inactive:hover {
+        opacity: 0.9;
+      }
+
+      .status-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .status-badge.active {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .status-badge.inactive {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
       }
 
       .trainer-header {
@@ -488,7 +523,12 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
             <c:choose>
               <c:when test="${not empty trainers}">
                 <c:forEach var="trainer" items="${trainers}">
-                  <div class="trainer-card" data-name="${trainer.name}" data-email="${trainer.email}">
+                  <c:set var="trainerStatus" value="${trainer.status != null ? trainer.status : ''}" />
+                  <c:set var="isActive" value="${trainerStatus == 'active' || trainerStatus == 'ACTIVE'}" />
+                  <div class="trainer-card ${isActive ? '' : 'inactive'}" data-name="${trainer.name}" data-email="${trainer.email}">
+                    <span class="status-badge ${isActive ? 'active' : 'inactive'}">
+                      ${isActive ? 'ACTIVE' : 'INACTIVE'}
+                    </span>
                     <div class="trainer-header">
                       <div class="trainer-avatar">
                         <i class="fas fa-user-tie"></i>
@@ -533,9 +573,18 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
                          class="btn btn-small" style="background: #3498db; text-decoration: none;">
                         <i class="fas fa-edit"></i> Sửa
                       </a>
-                      <button class="btn btn-small" style="background: #e74c3c" onclick="deleteTrainer(${trainer.id})">
-                        <i class="fas fa-trash"></i> Xóa
-                      </button>
+                      <c:choose>
+                        <c:when test="${isActive}">
+                          <button class="btn btn-small" style="background: #e74c3c" onclick="deleteTrainer(${trainer.id})">
+                            <i class="fas fa-trash"></i> Xóa
+                          </button>
+                        </c:when>
+                        <c:otherwise>
+                          <button class="btn btn-small" style="background: #28a745" onclick="activateTrainer(${trainer.id})">
+                            <i class="fas fa-check-circle"></i> Kích Hoạt
+                          </button>
+                        </c:otherwise>
+                      </c:choose>
                     </div>
                   </div>
                 </c:forEach>
@@ -851,7 +900,7 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
         if (confirm('Bạn có chắc chắn muốn xóa lịch này?')) {
           const form = document.createElement('form');
           form.method = 'POST';
-          form.action = `${contextPath}/admin/trainer-management`;
+          form.action = contextPath + '/admin/trainer-management';
           
           const actionInput = document.createElement('input');
           actionInput.type = 'hidden';
@@ -871,15 +920,62 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
       }
       
       function deleteTrainer(trainerId) {
+        if (!trainerId) {
+          console.error('deleteTrainer: trainerId is missing');
+          alert('Lỗi: Không tìm thấy ID của PT');
+          return;
+        }
+        
         if (confirm('Bạn có chắc chắn muốn xóa PT này? (PT sẽ được đánh dấu là INACTIVE)')) {
+          // Đảm bảo contextPath được định nghĩa
+          const basePath = contextPath || '';
+          const actionUrl = basePath + '/admin/trainer-management';
+          
+          console.log('deleteTrainer: Submitting form to', actionUrl, 'with trainerId:', trainerId);
+          
           const form = document.createElement('form');
           form.method = 'POST';
-          form.action = `${contextPath}/admin/trainer-management`;
+          form.action = actionUrl;
           
           const actionInput = document.createElement('input');
           actionInput.type = 'hidden';
           actionInput.name = 'action';
           actionInput.value = 'delete';
+          form.appendChild(actionInput);
+          
+          const idInput = document.createElement('input');
+          idInput.type = 'hidden';
+          idInput.name = 'id';
+          idInput.value = trainerId;
+          form.appendChild(idInput);
+          
+          document.body.appendChild(form);
+          form.submit();
+        }
+      }
+
+      function activateTrainer(trainerId) {
+        if (!trainerId) {
+          console.error('activateTrainer: trainerId is missing');
+          alert('Lỗi: Không tìm thấy ID của PT');
+          return;
+        }
+        
+        if (confirm('Bạn có chắc chắn muốn kích hoạt lại PT này? (PT sẽ được đánh dấu là ACTIVE)')) {
+          // Đảm bảo contextPath được định nghĩa
+          const basePath = contextPath || '';
+          const actionUrl = basePath + '/admin/trainer-management';
+          
+          console.log('activateTrainer: Submitting form to', actionUrl, 'with trainerId:', trainerId);
+          
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = actionUrl;
+          
+          const actionInput = document.createElement('input');
+          actionInput.type = 'hidden';
+          actionInput.name = 'action';
+          actionInput.value = 'activate';
           form.appendChild(actionInput);
           
           const idInput = document.createElement('input');

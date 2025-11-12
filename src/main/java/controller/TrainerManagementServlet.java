@@ -12,7 +12,6 @@ import model.schedule.DayOfWeek;
 import service.TrainerService;
 import service.UserService;
 import service.schedule.TrainerScheduleService;
-import service.schedule.TimeSlotService;
 import dao.GymInfoDAO;
 import Utils.FormUtils;
 
@@ -70,6 +69,7 @@ public class TrainerManagementServlet extends HttpServlet {
             case "add" -> handleAddTrainer(req, resp);
             case "update" -> handleUpdateTrainer(req, resp);
             case "delete" -> handleDeleteTrainer(req, resp);
+            case "activate" -> handleActivateTrainer(req, resp);
             case "addSchedule" -> handleAddSchedule(req, resp);
             case "updateSchedule" -> handleUpdateSchedule(req, resp);
             case "deleteSchedule" -> handleDeleteSchedule(req, resp);
@@ -81,19 +81,25 @@ public class TrainerManagementServlet extends HttpServlet {
     }
 
     /**
-     * Load danh sách trainers (chỉ active)
+     * Load danh sách trainers (tất cả, kể cả inactive)
      */
     private void loadTrainersList(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         try {
+            // Load tất cả trainers, không filter
             List<Trainer> allTrainers = trainerService.getAll();
-            // Lọc chỉ lấy trainers có status = "active"
-            List<Trainer> activeTrainers = allTrainers.stream()
-                    .filter(t -> t.getStatus() != null && 
-                            "active".equalsIgnoreCase(t.getStatus()))
+            
+            // Sắp xếp: active trước, inactive sau
+            List<Trainer> sortedTrainers = allTrainers.stream()
+                    .sorted((t1, t2) -> {
+                        boolean t1Active = t1.getStatus() != null && "active".equalsIgnoreCase(t1.getStatus());
+                        boolean t2Active = t2.getStatus() != null && "active".equalsIgnoreCase(t2.getStatus());
+                        if (t1Active == t2Active) return 0;
+                        return t1Active ? -1 : 1; // active trước
+                    })
                     .collect(Collectors.toList());
 
-            req.setAttribute("trainers", activeTrainers);
+            req.setAttribute("trainers", sortedTrainers);
             req.setAttribute("gyms", gymInfoDAO.findAll());
             req.setAttribute("timeSlots", trainerScheduleService.getActiveTimeSlots());
             
@@ -511,6 +517,7 @@ public class TrainerManagementServlet extends HttpServlet {
 
     /**
      * Xóa trainer (set status = inactive)
+     * Chỉ xóa trainer đang active
      */
     private void handleDeleteTrainer(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -522,7 +529,15 @@ public class TrainerManagementServlet extends HttpServlet {
                 return;
             }
 
-            int trainerId = Integer.parseInt(trainerIdStr);
+            int trainerId;
+            try {
+                trainerId = Integer.parseInt(trainerIdStr);
+            } catch (NumberFormatException e) {
+                req.setAttribute("error", "ID PT không hợp lệ: " + trainerIdStr);
+                loadTrainersList(req, resp);
+                return;
+            }
+
             Trainer trainer = trainerService.getTrainerById(trainerId);
             
             if (trainer == null) {
@@ -531,13 +546,72 @@ public class TrainerManagementServlet extends HttpServlet {
                 return;
             }
 
+            // Kiểm tra nếu trainer đã inactive
+            if (trainer.getStatus() != null && "inactive".equalsIgnoreCase(trainer.getStatus())) {
+                req.setAttribute("error", "PT này đã bị xóa (INACTIVE) rồi");
+                loadTrainersList(req, resp);
+                return;
+            }
+
+            // Xóa trainer (set status = inactive)
             trainerService.delete(trainer);
-            req.setAttribute("success", "Xóa PT thành công!");
+            req.setAttribute("success", "Xóa PT thành công! PT đã được đánh dấu là INACTIVE.");
             
-        } catch (NumberFormatException e) {
-            req.setAttribute("error", "ID PT không hợp lệ");
         } catch (Exception e) {
+            System.err.println("[TrainerManagementServlet] Error deleting trainer: " + e.getMessage());
+            e.printStackTrace();
             req.setAttribute("error", "Lỗi khi xóa PT: " + e.getMessage());
+        }
+        
+        loadTrainersList(req, resp);
+    }
+
+    /**
+     * Kích hoạt lại trainer (set status = active)
+     */
+    private void handleActivateTrainer(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        try {
+            String trainerIdStr = req.getParameter("id");
+            if (trainerIdStr == null || trainerIdStr.isEmpty()) {
+                req.setAttribute("error", "ID PT không hợp lệ");
+                loadTrainersList(req, resp);
+                return;
+            }
+
+            int trainerId;
+            try {
+                trainerId = Integer.parseInt(trainerIdStr);
+            } catch (NumberFormatException e) {
+                req.setAttribute("error", "ID PT không hợp lệ: " + trainerIdStr);
+                loadTrainersList(req, resp);
+                return;
+            }
+
+            Trainer trainer = trainerService.getTrainerById(trainerId);
+            
+            if (trainer == null) {
+                req.setAttribute("error", "Không tìm thấy PT với ID: " + trainerId);
+                loadTrainersList(req, resp);
+                return;
+            }
+
+            // Kiểm tra nếu trainer đã active
+            if (trainer.getStatus() != null && "active".equalsIgnoreCase(trainer.getStatus())) {
+                req.setAttribute("error", "PT này đã được kích hoạt (ACTIVE) rồi");
+                loadTrainersList(req, resp);
+                return;
+            }
+
+            // Kích hoạt trainer (set status = active)
+            trainer.setStatus("active");
+            trainerService.update(trainer);
+            req.setAttribute("success", "Kích hoạt PT thành công! PT đã được đánh dấu là ACTIVE.");
+            
+        } catch (Exception e) {
+            System.err.println("[TrainerManagementServlet] Error activating trainer: " + e.getMessage());
+            e.printStackTrace();
+            req.setAttribute("error", "Lỗi khi kích hoạt PT: " + e.getMessage());
         }
         
         loadTrainersList(req, resp);

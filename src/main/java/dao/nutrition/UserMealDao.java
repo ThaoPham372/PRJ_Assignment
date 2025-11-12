@@ -20,7 +20,7 @@ import java.util.Map;
  * DAO for UserMeal entity using JPA
  * Extends GenericDAO for basic CRUD operations
  * Follows DAO pattern and OOP principles
- * Handles database operations for user_meals table
+ * Handles database operations for member_meals table
  */
 public class UserMealDao extends GenericDAO<UserMeal> {
     
@@ -49,16 +49,16 @@ public class UserMealDao extends GenericDAO<UserMeal> {
     }
 
     /**
-     * Insert a meal snapshot for a user
-     * Gets nutrition info from foods table, inserts into user_meals
+     * Insert a meal snapshot for a member
+     * Gets nutrition info from foods table, inserts into member_meals
      * Reuses GenericDAO.save() for persistence
-     * @param userId user ID
+     * @param memberId member ID
      * @param foodId food ID
      * @param servings number of servings
      * @param eatenAt time when the meal was eaten (OffsetDateTime with timezone)
      */
-    public void insertSnapshot(Long userId, Long foodId, BigDecimal servings, OffsetDateTime eatenAt) {
-        if (userId == null || foodId == null || servings == null || servings.compareTo(BigDecimal.ZERO) <= 0) {
+    public void insertSnapshot(Long memberId, Long foodId, BigDecimal servings, OffsetDateTime eatenAt) {
+        if (memberId == null || foodId == null || servings == null || servings.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Invalid parameters for insertSnapshot");
         }
         
@@ -85,7 +85,7 @@ public class UserMealDao extends GenericDAO<UserMeal> {
             
             // Create UserMeal entity
             UserMeal meal = new UserMeal();
-            meal.setUserId(userId);
+            meal.setMemberId(memberId);
             meal.setFoodId(foodId);
             meal.setServings(servings);
             meal.setEatenAt(eatenAt != null ? eatenAt.toLocalDateTime() : LocalDateTime.now());
@@ -112,14 +112,14 @@ public class UserMealDao extends GenericDAO<UserMeal> {
     }
 
     /**
-     * List meals of a specific day for a user
+     * List meals of a specific day for a member
      * Reuses helper methods following DRY principle
-     * @param userId user ID
+     * @param memberId member ID
      * @param localDateVN date in Vietnam timezone (Asia/Ho_Chi_Minh)
      * @return list of meals for that day
      */
-    public List<UserMeal> listMealsOfDay(Long userId, LocalDate localDateVN) {
-        if (userId == null || localDateVN == null) {
+    public List<UserMeal> listMealsOfDay(Long memberId, LocalDate localDateVN) {
+        if (memberId == null || localDateVN == null) {
             return new ArrayList<>();
         }
         
@@ -130,7 +130,7 @@ public class UserMealDao extends GenericDAO<UserMeal> {
             LocalDateTime endUTC = utcRange[1];
             
             // Query meals and populate food names
-            return queryMealsWithFoodNames(userId, startUTC, endUTC);
+            return queryMealsWithFoodNames(memberId, startUTC, endUTC);
         } catch (Exception e) {
             System.err.println("[UserMealDao] Error listing meals of day: " + e.getMessage());
             return new ArrayList<>();
@@ -142,14 +142,14 @@ public class UserMealDao extends GenericDAO<UserMeal> {
      * Reusable method following DRY principle
      * Ensures generated columns (total_*) are loaded and calculated
      */
-    private List<UserMeal> queryMealsWithFoodNames(Long userId, LocalDateTime startUTC, LocalDateTime endUTC) {
+    private List<UserMeal> queryMealsWithFoodNames(Long memberId, LocalDateTime startUTC, LocalDateTime endUTC) {
         TypedQuery<UserMeal> query = em.createQuery(
-            "SELECT um FROM UserMeal um WHERE um.userId = :userId " +
+            "SELECT um FROM UserMeal um WHERE um.memberId = :memberId " +
             "AND um.eatenAt >= :startTime AND um.eatenAt < :endTime " +
             "ORDER BY um.eatenAt DESC",
             UserMeal.class
         );
-        query.setParameter("userId", userId);
+        query.setParameter("memberId", memberId);
         query.setParameter("startTime", startUTC);
         query.setParameter("endTime", endUTC);
         
@@ -188,13 +188,13 @@ public class UserMealDao extends GenericDAO<UserMeal> {
      * Sum total calories and protein for a specific day
      * Calculates from meal list to ensure accuracy
      * This method is more reliable than native query for generated columns
-     * @param userId user ID
+     * @param memberId member ID
      * @param localDateVN date in Vietnam timezone
      * @return DailyIntakeDTO with totals
      */
-    public DailyIntakeDTO sumOfDay(Long userId, LocalDate localDateVN) {
-        if (userId == null || localDateVN == null) {
-            System.out.println("[UserMealDao] sumOfDay - Invalid parameters: userId=" + userId + ", date=" + localDateVN);
+    public DailyIntakeDTO sumOfDay(Long memberId, LocalDate localDateVN) {
+        if (memberId == null || localDateVN == null) {
+            System.out.println("[UserMealDao] sumOfDay - Invalid parameters: memberId=" + memberId + ", date=" + localDateVN);
             return new DailyIntakeDTO();
         }
         
@@ -204,12 +204,12 @@ public class UserMealDao extends GenericDAO<UserMeal> {
             LocalDateTime startUTC = utcRange[0];
             LocalDateTime endUTC = utcRange[1];
             
-            System.out.println("[UserMealDao] sumOfDay - Querying meals for userId=" + userId + 
+            System.out.println("[UserMealDao] sumOfDay - Querying meals for memberId=" + memberId + 
                              ", dateVN=" + localDateVN + ", UTC range=[" + startUTC + " to " + endUTC + "]");
             
             // Always calculate from meal list for reliability
             // This ensures we get accurate totals even if generated columns aren't loaded
-            List<UserMeal> meals = queryMealsWithFoodNames(userId, startUTC, endUTC);
+            List<UserMeal> meals = queryMealsWithFoodNames(memberId, startUTC, endUTC);
             
             System.out.println("[UserMealDao] sumOfDay - Found " + meals.size() + " meals");
             
@@ -295,13 +295,13 @@ public class UserMealDao extends GenericDAO<UserMeal> {
     /**
      * Get meal history for a date range
      * Reuses queryMealsWithFoodNames method following DRY principle
-     * @param userId user ID
+     * @param memberId member ID
      * @param startDate start date (inclusive) in Vietnam timezone
      * @param endDate end date (exclusive) in Vietnam timezone
      * @return list of meals in the date range
      */
-    public List<UserMeal> getMealHistory(Long userId, LocalDate startDate, LocalDate endDate) {
-        if (userId == null || startDate == null || endDate == null) {
+    public List<UserMeal> getMealHistory(Long memberId, LocalDate startDate, LocalDate endDate) {
+        if (memberId == null || startDate == null || endDate == null) {
             return new ArrayList<>();
         }
         
@@ -314,7 +314,7 @@ public class UserMealDao extends GenericDAO<UserMeal> {
             LocalDateTime endUTC = endOfDayVN.withZoneSameInstant(UTC_ZONE).toLocalDateTime();
             
             // Reuse helper method
-            return queryMealsWithFoodNames(userId, startUTC, endUTC);
+            return queryMealsWithFoodNames(memberId, startUTC, endUTC);
         } catch (Exception e) {
             System.err.println("[UserMealDao] Error getting meal history: " + e.getMessage());
             return new ArrayList<>();
@@ -324,13 +324,13 @@ public class UserMealDao extends GenericDAO<UserMeal> {
     /**
      * Get daily totals for a date range
      * Groups meals by date and sums nutrition values
-     * @param userId user ID
+     * @param memberId member ID
      * @param startDate start date (inclusive) in Vietnam timezone
      * @param endDate end date (exclusive) in Vietnam timezone
      * @return map of date (LocalDate) to DailyIntakeDTO
      */
-    public Map<LocalDate, DailyIntakeDTO> getDailyTotalsHistory(Long userId, LocalDate startDate, LocalDate endDate) {
-        if (userId == null || startDate == null || endDate == null) {
+    public Map<LocalDate, DailyIntakeDTO> getDailyTotalsHistory(Long memberId, LocalDate startDate, LocalDate endDate) {
+        if (memberId == null || startDate == null || endDate == null) {
             return new LinkedHashMap<>();
         }
         
@@ -344,12 +344,12 @@ public class UserMealDao extends GenericDAO<UserMeal> {
             
             // Query all meals in the date range
             TypedQuery<UserMeal> query = em.createQuery(
-                "SELECT um FROM UserMeal um WHERE um.userId = :userId " +
+                "SELECT um FROM UserMeal um WHERE um.memberId = :memberId " +
                 "AND um.eatenAt >= :startTime AND um.eatenAt < :endTime " +
                 "ORDER BY um.eatenAt DESC",
                 UserMeal.class
             );
-            query.setParameter("userId", userId);
+            query.setParameter("memberId", memberId);
             query.setParameter("startTime", startUTC);
             query.setParameter("endTime", endUTC);
             
@@ -396,18 +396,18 @@ public class UserMealDao extends GenericDAO<UserMeal> {
      * Delete a meal entry by ID
      * Reuses GenericDAO.delete() for deletion
      * @param mealId meal ID
-     * @param userId user ID (for security check)
+     * @param memberId member ID (for security check)
      * @return true if deleted successfully, false otherwise
      */
-    public boolean deleteMeal(Long mealId, Long userId) {
-        if (mealId == null || userId == null) {
+    public boolean deleteMeal(Long mealId, Long memberId) {
+        if (mealId == null || memberId == null) {
             return false;
         }
         
         try {
-            // Find meal and verify it belongs to the user
+            // Find meal and verify it belongs to the member
             UserMeal meal = em.find(UserMeal.class, mealId);
-            if (meal == null || !meal.getUserId().equals(userId)) {
+            if (meal == null || !meal.getMemberId().equals(memberId)) {
                 return false;
             }
             

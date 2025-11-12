@@ -609,7 +609,7 @@
               name="username"
               class="form-input"
               placeholder="user name"
-              value="${username != null ? username : (sessionScope.registeredUsername != null ? sessionScope.registeredUsername : '')}"
+              value="${username != null ? username : (rememberedUsername != null ? rememberedUsername : (sessionScope.registeredUsername != null ? sessionScope.registeredUsername : ''))}"
               required
             />
             <div id="username-error" class="error-message"></div>
@@ -623,6 +623,7 @@
               name="password"
               class="form-input"
               placeholder="mật khẩu"
+              value="${rememberedPassword != null ? rememberedPassword : ''}"
               required
             />
             <div id="password-error" class="error-message"></div>
@@ -630,12 +631,25 @@
 
           <!-- Remember Me -->
           <div class="checkbox-group">
-            <input
-              type="checkbox"
-              id="rememberMe"
-              name="rememberMe"
-              class="checkbox-input"
-            />
+            <c:choose>
+              <c:when test="${rememberMeChecked == true}">
+                <input
+                  type="checkbox"
+                  id="rememberMe"
+                  name="rememberMe"
+                  class="checkbox-input"
+                  checked
+                />
+              </c:when>
+              <c:otherwise>
+                <input
+                  type="checkbox"
+                  id="rememberMe"
+                  name="rememberMe"
+                  class="checkbox-input"
+                />
+              </c:otherwise>
+            </c:choose>
             <label for="rememberMe" class="checkbox-label"
               >Ghi nhớ đăng nhập</label
             >
@@ -677,6 +691,7 @@
         const form = document.getElementById('loginForm');
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
+        const rememberMeCheckbox = document.getElementById('rememberMe');
         const loginBtn = document.getElementById('loginBtn');
         const loginText = document.getElementById('loginText');
         const loadingSpinner = document.getElementById('loadingSpinner');
@@ -685,6 +700,37 @@
 
         // Flag to prevent double submission
         let isSubmitting = false;
+
+        // Function to get cookie by name
+        function getCookie(name) {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop().split(';').shift();
+          return null;
+        }
+
+        // Load cookies and pre-fill form (backup method)
+        function loadCookies() {
+          const rememberedUsername = getCookie('rememberedUsername');
+          const rememberedPassword = getCookie('rememberedPassword');
+          
+          // Only fill if fields are empty (to avoid overwriting server-set values)
+          if (rememberedUsername && !usernameInput.value) {
+            usernameInput.value = rememberedUsername;
+          }
+          
+          if (rememberedPassword && !passwordInput.value) {
+            passwordInput.value = rememberedPassword;
+          }
+          
+          // Check remember me checkbox if cookies exist
+          if (rememberedUsername && rememberedPassword) {
+            rememberMeCheckbox.checked = true;
+          }
+        }
+
+        // Load cookies on page load
+        loadCookies();
 
         // Function to enable login button
         function enableLoginButton() {

@@ -9,12 +9,12 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 /**
- * UserMeal entity representing a meal entry in user_meals table
+ * UserMeal entity representing a meal entry in member_meals table
  * Follows JPA Entity best practices
  * Encapsulates meal data and provides timezone conversion utilities
  */
 @Entity
-@Table(name = "user_meals")
+@Table(name = "member_meals")
 public class UserMeal {
     
     // Constants for timezone operations
@@ -25,8 +25,8 @@ public class UserMeal {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @Column(name = "member_id", nullable = false)
+    private Long memberId;
     
     @Column(name = "food_id", nullable = false)
     private Long foodId;
@@ -94,12 +94,30 @@ public class UserMeal {
         this.id = id;
     }
 
-    public Long getUserId() {
-        return userId;
+    public Long getMemberId() {
+        return memberId;
     }
 
+    public void setMemberId(Long memberId) {
+        this.memberId = memberId;
+    }
+    
+    /**
+     * Backward compatibility: Get memberId as userId (deprecated)
+     * @deprecated Use getMemberId() instead
+     */
+    @Deprecated
+    public Long getUserId() {
+        return memberId;
+    }
+
+    /**
+     * Backward compatibility: Set memberId as userId (deprecated)
+     * @deprecated Use setMemberId() instead
+     */
+    @Deprecated
     public void setUserId(Long userId) {
-        this.userId = userId;
+        this.memberId = userId;
     }
 
     public Long getFoodId() {

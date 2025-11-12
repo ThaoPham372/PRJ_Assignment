@@ -507,13 +507,13 @@ uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
           <h1><i class="fas fa-home"></i> Dashboard Admin</h1>
           <div class="top-bar-actions">
             <a
-              href="${pageContext.request.contextPath}/home.jsp"
+              href="${pageContext.request.contextPath}/home"
               class="btn btn-outline"
             >
               <i class="fas fa-home"></i> Về trang chủ
             </a>
             <a
-              href="${pageContext.request.contextPath}/views/login.jsp"
+              href="${pageContext.request.contextPath}/login"
               class="btn"
             >
               <i class="fas fa-sign-out-alt"></i> Đăng xuất

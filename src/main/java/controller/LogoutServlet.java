@@ -3,6 +3,7 @@ package controller;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -76,8 +77,43 @@ public class LogoutServlet extends BaseAuthServlet {
             System.out.println("[LogoutServlet] No active session found");
         }
         
+        // Xóa Remember Me cookies khi đăng xuất
+        deleteRememberMeCookies(request, response);
+        
         // Redirect về trang home
         response.sendRedirect(request.getContextPath() + "/home");
+    }
+
+    /**
+     * Xóa Remember Me cookies khi đăng xuất
+     * 
+     * @param request HttpServletRequest
+     * @param response HttpServletResponse
+     */
+    private void deleteRememberMeCookies(HttpServletRequest request, HttpServletResponse response) {
+        String USERNAME_COOKIE = "rememberedUsername";
+        String PASSWORD_COOKIE = "rememberedPassword";
+        
+        // Set cookie path - use "/" for entire application
+        String cookiePath = "/";
+        String contextPath = request.getContextPath();
+        if (contextPath != null && !contextPath.isEmpty() && !contextPath.equals("/")) {
+            cookiePath = contextPath;
+        }
+        
+        // Xóa cookie username
+        Cookie usernameCookie = new Cookie(USERNAME_COOKIE, "");
+        usernameCookie.setMaxAge(0);
+        usernameCookie.setPath(cookiePath);
+        response.addCookie(usernameCookie);
+        
+        // Xóa cookie password
+        Cookie passwordCookie = new Cookie(PASSWORD_COOKIE, "");
+        passwordCookie.setMaxAge(0);
+        passwordCookie.setPath(cookiePath);
+        response.addCookie(passwordCookie);
+        
+        System.out.println("[LogoutServlet] Remember me cookies deleted");
     }
 }
 
