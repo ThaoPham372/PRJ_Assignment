@@ -28,77 +28,77 @@ public interface NutritionService {
     List<Food> getDefaultFoods(int limit);
     
     /**
-     * Add a meal for a user
-     * @param userId user ID
+     * Add a meal for a member
+     * @param memberId member ID
      * @param foodId food ID
      * @param servings number of servings
      */
-    void addMeal(long userId, long foodId, BigDecimal servings);
+    void addMeal(int memberId, long foodId, BigDecimal servings);
     
     /**
-     * Get today's meals for a user (using Vietnam timezone)
-     * @param userId user ID
+     * Get today's meals for a member (using Vietnam timezone)
+     * @param memberId member ID
      * @return list of meals eaten today
      */
-    List<UserMeal> todayMeals(long userId);
+    List<UserMeal> todayMeals(int memberId);
     
     /**
-     * Get today's nutrition totals for a user (using Vietnam timezone)
-     * @param userId user ID
+     * Get today's nutrition totals for a member (using Vietnam timezone)
+     * @param memberId member ID
      * @return daily intake totals
      */
-    DailyIntakeDTO todayTotals(long userId);
+    DailyIntakeDTO todayTotals(int memberId);
     
     /**
      * Delete a meal entry
-     * @param userId user ID
+     * @param memberId member ID
      * @param mealId meal ID
      * @return true if deleted successfully, false otherwise
      */
-    boolean deleteMeal(long userId, long mealId);
+    boolean deleteMeal(int memberId, long mealId);
     
     /**
      * Get meal history for a date range
-     * @param userId user ID
+     * @param memberId member ID
      * @param days number of days to look back (e.g., 7 for last 7 days)
      * @return list of meals in the date range
      */
-    List<UserMeal> getMealHistory(long userId, int days);
+    List<UserMeal> getMealHistory(int memberId, int days);
     
     /**
      * Get daily totals history for a date range
-     * @param userId user ID
+     * @param memberId member ID
      * @param days number of days to look back
      * @return map of date to daily totals
      */
-    java.util.Map<java.time.LocalDate, DailyIntakeDTO> getDailyTotalsHistory(long userId, int days);
+    java.util.Map<java.time.LocalDate, DailyIntakeDTO> getDailyTotalsHistory(int memberId, int days);
     
     /**
-     * Get nutrition goal for a user
-     * @param userId user ID
+     * Get nutrition goal for a member
+     * @param memberId member ID
      * @return Optional containing NutritionGoal if found, empty otherwise
      */
-    java.util.Optional<model.NutritionGoal> getNutritionGoal(long userId);
+    java.util.Optional<model.NutritionGoal> getNutritionGoal(int memberId);
     
     /**
      * Get meals for a specific date
-     * @param userId user ID
+     * @param memberId member ID
      * @param date date to get meals for (in format yyyy-MM-dd or LocalDate)
      * @return list of meals for that date
      */
-    List<UserMeal> getMealsByDate(long userId, java.time.LocalDate date);
+    List<UserMeal> getMealsByDate(int memberId, java.time.LocalDate date);
     
     /**
      * Get daily totals for a specific date
-     * @param userId user ID
+     * @param memberId member ID
      * @param date date to get totals for
      * @return daily intake totals
      */
-    DailyIntakeDTO getDailyTotalsByDate(long userId, java.time.LocalDate date);
+    DailyIntakeDTO getDailyTotalsByDate(int memberId, java.time.LocalDate date);
     
     /**
-     * Calculate and save nutrition goal based on user's body metrics and goals
-     * @param userId user ID
+     * Calculate and save nutrition goal based on member's body metrics and goals
+     * @param memberId member ID
      * @param weight current weight in kg
      * @param height height in cm
      * @param age age in years
@@ -107,6 +107,6 @@ public interface NutritionService {
      * @param activityLevel activity level (sedentary, light, moderate, active, very_active)
      * @return NutritionGoal with calculated targets
      */
-    model.NutritionGoal calculateAndSaveNutritionGoal(long userId, Float weight, Float height, Integer age, String gender, String goalType, String activityLevel);
+    model.NutritionGoal calculateAndSaveNutritionGoal(int memberId, Float weight, Float height, Integer age, String gender, String goalType, String activityLevel);
 }
 

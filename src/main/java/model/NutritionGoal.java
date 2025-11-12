@@ -5,16 +5,16 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * Model class for User Nutrition Goal
- * Represents a user's nutrition goal (giảm cân, tăng cân, giữ dáng)
- * JPA Entity for user_nutrition_goals table
+ * Model class for Member Nutrition Goal
+ * Represents a member's nutrition goal (giảm cân, tăng cân, giữ dáng)
+ * JPA Entity for member_nutrition_goals table
  */
 @Entity
-@Table(name = "user_nutrition_goals")
+@Table(name = "member_nutrition_goals")
 public class NutritionGoal {
     @Id
-    @Column(name = "user_id")
-    private Long userId;
+    @Column(name = "member_id")
+    private Integer memberId;
     
     @Column(name = "goal_type")
     private String goalType; // 'giam can', 'tang can', 'giu dang'
@@ -37,12 +37,23 @@ public class NutritionGoal {
     }
 
     // Getters and Setters
-    public Long getUserId() {
-        return userId;
+    public Integer getMemberId() {
+        return memberId;
     }
 
+    public void setMemberId(Integer memberId) {
+        this.memberId = memberId;
+    }
+    
+    // Backward compatibility - deprecated, use getMemberId() instead
+    @Deprecated
+    public Long getUserId() {
+        return memberId != null ? memberId.longValue() : null;
+    }
+
+    @Deprecated
     public void setUserId(Long userId) {
-        this.userId = userId;
+        this.memberId = userId != null ? userId.intValue() : null;
     }
 
     public String getGoalType() {

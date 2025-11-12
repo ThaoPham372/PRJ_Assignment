@@ -4,7 +4,11 @@
   Cấu hình Context cho hệ thống quản lý phòng gym
 -->
 <Context>
+<<<<<<< HEAD
     <!-- MySQL DataSource Configuration -->
+=======
+    <!-- MySQL DataSource Configuration - Using AWS RDS database from persistence.xml -->
+>>>>>>> dev/dev-admin
     <Resource name="jdbc/gymDB" 
               auth="Container"
               type="javax.sql.DataSource"
@@ -24,10 +28,17 @@
               logAbandoned="true"
               minEvictableIdleTimeMillis="30000"
               jmxEnabled="true"
+<<<<<<< HEAD
               username="root" 
               password=""
               driverClassName="com.mysql.cj.jdbc.Driver"
               url="jdbc:mysql://localhost:3306/gym_management_local?useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=UTC&amp;characterEncoding=UTF-8&amp;autoReconnect=true&amp;useUnicode=true"/>
+=======
+              username="admin" 
+              password="ToThanhNam123!!!"
+              driverClassName="com.mysql.cj.jdbc.Driver"
+              url="jdbc:mysql://gym-fitness-project.cbsayms8ae98.ap-southeast-2.rds.amazonaws.com:3306/gym_management?useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=UTC&amp;characterEncoding=UTF-8&amp;autoReconnect=true&amp;useUnicode=true"/>
+>>>>>>> dev/dev-admin
               
     <!-- Email Configuration -->
     <Environment name="mail/smtp/host" 

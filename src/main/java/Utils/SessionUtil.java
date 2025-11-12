@@ -64,41 +64,85 @@ public class SessionUtil {
     }
     
     /**
-     * Check if user has specific role
+     * Check if user has specific role (case-insensitive)
      * Checks both session roles list and user.role column
+     * 
+     * @param request HTTP request
+     * @param roleName Role name to check (case-insensitive)
+     * @return true if user has the role
      */
     public static boolean hasRole(HttpServletRequest request, String roleName) {
-        // Check session roles list first (for backward compatibility)
-        List<String> roles = getUserRoles(request);
-        if (roles != null && roles.contains(roleName)) {
-            return true;
+        if (roleName == null || roleName.trim().isEmpty()) {
+            return false;
         }
         
-        // Fallback to user.role column
+        String normalizedRoleName = roleName.trim().toUpperCase();
+        
+        // Check session roles list first (for backward compatibility)
+        List<String> roles = getUserRoles(request);
+        if (roles != null) {
+            for (String role : roles) {
+                if (role != null && role.trim().toUpperCase().equals(normalizedRoleName)) {
+                    return true;
+                }
+            }
+        }
+        
+        // Fallback to user.role column (case-insensitive)
         String userRole = getUserRole(request);
-        return userRole != null && userRole.equalsIgnoreCase(roleName);
+        if (userRole != null) {
+            return userRole.trim().toUpperCase().equals(normalizedRoleName);
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Get normalized role from session (case-insensitive)
+     * Returns role in uppercase for consistent comparison
+     * 
+     * @param request HTTP request
+     * @return Normalized role (uppercase) or null if not found
+     */
+    public static String getNormalizedRole(HttpServletRequest request) {
+        String role = getUserRole(request);
+        if (role != null && !role.trim().isEmpty()) {
+            return role.trim().toUpperCase();
+        }
+        
+        // Fallback to roles list
+        List<String> roles = getUserRoles(request);
+        if (roles != null && !roles.isEmpty()) {
+            String firstRole = roles.get(0);
+            if (firstRole != null && !firstRole.trim().isEmpty()) {
+                return firstRole.trim().toUpperCase();
+            }
+        }
+        
+        return null;
     }
     
     /**
      * Check if user is a member
-     * Accepts both "USER" and "MEMBER" roles
+     * Accepts both "USER" and "MEMBER" roles (case-insensitive)
      */
     public static boolean isMember(HttpServletRequest request) {
-        return hasRole(request, "MEMBER") || hasRole(request, "member") ;
+        return hasRole(request, "MEMBER") || hasRole(request, "USER");
     }
     
     /**
-     * Check if user is an admin
+     * Check if user is an admin (case-insensitive)
      */
     public static boolean isAdmin(HttpServletRequest request) {
-        return hasRole(request, "ADMIN") || hasRole(request, "admin");
+        return hasRole(request, "ADMIN");
     }
     
     /**
-     * Check if user is a personal trainer
+     * Check if user is a personal trainer (case-insensitive)
+     * Accepts "TRAINER" and "PT" roles
      */
     public static boolean isTrainer(HttpServletRequest request) {
-        return hasRole(request, "TRAINER") || hasRole(request, "trainer") || hasRole(request, "PT");
+        return hasRole(request, "TRAINER") || hasRole(request, "PT");
     }
     
     /**

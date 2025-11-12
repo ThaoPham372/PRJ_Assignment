@@ -64,6 +64,7 @@
     font-size: 0.9rem;
 }
 
+<<<<<<< HEAD
 /* Booking Status Styles - Different colors for each status */
 .booking-status {
     padding: 8px 20px;
@@ -104,6 +105,26 @@
     color: #721c24;
     border: 2px solid #dc3545;
     box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+=======
+.status-PENDING {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-CONFIRMED {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-CANCELLED {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-COMPLETED {
+    background: #d1ecf1;
+    color: #0c5460;
+>>>>>>> dev/dev-admin
 }
 
 .booking-info {
@@ -233,7 +254,11 @@
 </div>
 
 <script>
+<<<<<<< HEAD
 // Store context path in JavaScript variable
+=======
+// Get context path
+>>>>>>> dev/dev-admin
 const contextPath = '${pageContext.request.contextPath}';
 
 // Load bookings on page load
@@ -263,6 +288,7 @@ function displayBookings(bookings) {
     const container = document.getElementById('bookingsList');
     
     if (bookings.length === 0) {
+<<<<<<< HEAD
         container.innerHTML = 
             '<div class="empty-state">' +
                 '<div class="empty-icon">' +
@@ -285,6 +311,23 @@ function displayBookings(bookings) {
         return dateA - dateB;
     });
     
+=======
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-calendar-times"></i>
+                </div>
+                <h3 class="empty-title">Chưa Có Lịch Tập</h3>
+                <p class="empty-text">Bạn chưa đặt lịch tập nào. Hãy bắt đầu ngay!</p>
+                <a href="${contextPath}/member/schedule" class="btn-new">
+                    <i class="fas fa-plus-circle"></i> Đặt Lịch Ngay
+                </a>
+            </div>
+        `;
+        return;
+    }
+    
+>>>>>>> dev/dev-admin
     container.innerHTML = '';
     bookings.forEach(booking => {
         const card = createBookingCard(booking);
@@ -305,6 +348,7 @@ function createBookingCard(booking) {
     const card = document.createElement('div');
     card.className = 'booking-card';
     
+<<<<<<< HEAD
     const statusClass = 'status-' + (booking.bookingStatus || '');
     const statusText = getStatusText(booking.bookingStatus);
     const canCancel = booking.bookingStatus === 'PENDING' || booking.bookingStatus === 'CONFIRMED';
@@ -358,6 +402,86 @@ function createBookingCard(booking) {
         cancelledReason +
         cancelButton;
     
+=======
+    const statusClass = `status-${booking.bookingStatus}`;
+    const statusText = getStatusText(booking.bookingStatus);
+    const canCancel = booking.bookingStatus === 'PENDING' || booking.bookingStatus === 'CONFIRMED';
+    
+    // Build HTML content
+    let html = `
+        <div class="booking-header">
+            <h3 style="margin: 0; color: var(--primary);">
+                <i class="fas fa-dumbbell"></i> Buổi Tập PT
+            </h3>
+            <span class="booking-status ${statusClass}">${escapeHtml(statusText)}</span>
+        </div>
+        
+        <div class="booking-info">
+            <div class="info-item">
+                <div class="info-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="info-content">
+                    <div class="info-label">Huấn luyện viên</div>
+                    <div class="info-value">${escapeHtml(booking.trainer ? booking.trainer.name : 'N/A')}</div>
+                </div>
+            </div>
+            
+            <div class="info-item">
+                <div class="info-icon">
+                    <i class="fas fa-calendar"></i>
+                </div>
+                <div class="info-content">
+                    <div class="info-label">Ngày tập</div>
+                    <div class="info-value">${formatDate(booking.bookingDate)}</div>
+                </div>
+            </div>
+            
+            <div class="info-item">
+                <div class="info-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="info-content">
+                    <div class="info-label">Giờ tập</div>
+                    <div class="info-value">
+                        ${booking.timeSlot ? escapeHtml(booking.timeSlot.startTime + ' - ' + booking.timeSlot.endTime) : 'N/A'}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add notes if exists
+    if (booking.notes && booking.notes.trim()) {
+        html += `
+            <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                <strong>Ghi chú:</strong> ${escapeHtml(booking.notes)}
+            </div>
+        `;
+    }
+    
+    // Add cancelled reason if exists
+    if (booking.cancelledReason && booking.cancelledReason.trim()) {
+        html += `
+            <div style="margin-top: 15px; padding: 15px; background: #f8d7da; border-radius: 10px; color: #721c24;">
+                <strong>Lý do hủy:</strong> ${escapeHtml(booking.cancelledReason)}
+            </div>
+        `;
+    }
+    
+    // Add cancel button if applicable
+    if (canCancel) {
+        html += `
+            <div class="booking-actions">
+                <button class="btn btn-danger" onclick="cancelBooking(${booking.bookingId})">
+                    <i class="fas fa-times-circle"></i> Hủy Lịch
+                </button>
+            </div>
+        `;
+    }
+    
+    card.innerHTML = html;
+>>>>>>> dev/dev-admin
     return card;
 }
 
@@ -384,6 +508,7 @@ function formatDate(dateStr) {
 }
 
 // Cancel booking
+<<<<<<< HEAD
 function cancelBooking(bookingId, event) {
     if (!confirm('Bạn có chắc muốn hủy lịch tập này?\n\n⚠️ Lưu ý: Chỉ có thể hủy lịch trước 24 giờ diễn ra buổi tập.\n\nKhung giờ sẽ được giải phóng để người khác có thể đặt lịch.')) {
         return;
@@ -479,10 +604,28 @@ function cancelBooking(bookingId, event) {
             // Re-enable button
             button.disabled = false;
             button.innerHTML = originalText;
+=======
+function cancelBooking(bookingId) {
+    if (!confirm('Bạn có chắc muốn hủy lịch tập này?\n\nLưu ý: Chỉ có thể hủy trước 24 giờ.')) {
+        return;
+    }
+    
+    fetch(contextPath + '/api/schedule/bookings/' + bookingId + '/cancel', {
+        method: 'PUT'
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('Hủy lịch thành công!');
+            loadBookings(); // Reload list
+        } else {
+            alert(result.message || 'Không thể hủy lịch');
+>>>>>>> dev/dev-admin
         }
     })
     .catch(error => {
         console.error('Error cancelling booking:', error);
+<<<<<<< HEAD
         let errorMsg = 'Có lỗi xảy ra khi hủy lịch. Vui lòng thử lại.';
         if (error.message && !error.message.includes('<html') && !error.message.includes('<!doctype')) {
             errorMsg = error.message;
@@ -491,17 +634,29 @@ function cancelBooking(bookingId, event) {
         // Re-enable button
         button.disabled = false;
         button.innerHTML = originalText;
+=======
+        alert('Có lỗi xảy ra khi hủy lịch');
+>>>>>>> dev/dev-admin
     });
 }
 
 // Show error
 function showError(message) {
     const container = document.getElementById('bookingsList');
+<<<<<<< HEAD
     container.innerHTML = 
         '<div style="text-align: center; padding: 40px; color: #dc3545;">' +
             '<i class="fas fa-exclamation-circle" style="font-size: 3rem; margin-bottom: 15px;"></i>' +
             '<h3>' + escapeHtml(message) + '</h3>' +
         '</div>';
+=======
+    container.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: #dc3545;">
+            <i class="fas fa-exclamation-circle" style="font-size: 3rem; margin-bottom: 15px;"></i>
+            <h3>${message}</h3>
+        </div>
+    `;
+>>>>>>> dev/dev-admin
 }
 </script>
 

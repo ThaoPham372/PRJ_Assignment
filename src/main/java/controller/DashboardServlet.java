@@ -104,7 +104,7 @@ public class DashboardServlet extends BaseMemberServlet {
             }
             
             // 2. Lấy tổng calories đã nạp trong ngày từ NutritionService
-            DailyIntakeDTO todayTotals = nutritionService.todayTotals(member.getId().longValue());
+            DailyIntakeDTO todayTotals = nutritionService.todayTotals(member.getId().intValue());
             BigDecimal todayCalories = todayTotals != null && todayTotals.getCaloriesKcal() != null 
                     ? todayTotals.getCaloriesKcal() 
                     : BigDecimal.ZERO;

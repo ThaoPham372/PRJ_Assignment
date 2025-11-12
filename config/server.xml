@@ -17,17 +17,28 @@
               factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
               pathname="conf/tomcat-users.xml" />
               
+<<<<<<< HEAD
     <!-- MySQL DataSource for Local Development -->
+=======
+    <!-- MySQL DataSource - Using AWS RDS database from persistence.xml -->
+>>>>>>> dev/dev-admin
     <Resource name="jdbc/gymDB" 
               auth="Container"
               type="javax.sql.DataSource"
               maxTotal="20" 
               maxIdle="10"
               maxWaitMillis="-1"
+<<<<<<< HEAD
               username="root" 
               password=""
               driverClassName="com.mysql.cj.jdbc.Driver"
               url="jdbc:mysql://localhost:3306/gym_management_local?useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=UTC&amp;characterEncoding=UTF-8"/>
+=======
+              username="admin" 
+              password="ToThanhNam123!!!"
+              driverClassName="com.mysql.cj.jdbc.Driver"
+              url="jdbc:mysql://gym-fitness-project.cbsayms8ae98.ap-southeast-2.rds.amazonaws.com:3306/gym_management?useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=UTC&amp;characterEncoding=UTF-8"/>
+>>>>>>> dev/dev-admin
   </GlobalNamingResources>
 
   <Service name="Catalina">
