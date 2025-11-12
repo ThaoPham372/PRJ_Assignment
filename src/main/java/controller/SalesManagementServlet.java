@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.stream.Collectors;
 import model.Product;
 import model.ProductType;
 import model.shop.Order;
@@ -48,9 +51,20 @@ public class SalesManagementServlet extends HttpServlet {
         
         // Load order items for each order
         loadOrderItemsForOrders(orders);
+        
+        // Sắp xếp orders theo thời gian giảm dần (mới nhất trước)
+        orders = sortOrdersByDateDescending(orders);
+        
+        // Lọc orders theo trạng thái nếu có filter parameter
+        String statusFilter = req.getParameter("statusFilter");
+        if (statusFilter != null && !statusFilter.isEmpty()) {
+            orders = filterOrdersByStatus(orders, statusFilter);
+        }
 
-        // Load metrics from real data
-        loadDashboardMetrics(req, products, orders);
+        // Load metrics from real data (sử dụng tất cả orders, không filter)
+        List<Order> allOrders = orderService.getAll();
+        loadOrderItemsForOrders(allOrders);
+        loadDashboardMetrics(req, products, allOrders);
 
         switch (action) {
             case "deleteProduct" -> {
@@ -107,6 +121,11 @@ public class SalesManagementServlet extends HttpServlet {
             activeTab = "products";
         }
         req.setAttribute("activeTab", activeTab);
+        
+        // Set status filter parameter
+        if (statusFilter != null && !statusFilter.isEmpty()) {
+            req.setAttribute("statusFilter", statusFilter);
+        }
         
         // Get messages from request parameters (for redirect messages)
         String success = req.getParameter("success");
@@ -263,18 +282,95 @@ public class SalesManagementServlet extends HttpServlet {
     }
 
     /**
-     * Load order items cho mỗi order
+     * Load order items cho mỗi order - Tối ưu bằng batch loading để tránh N+1 query problem
      */
     private void loadOrderItemsForOrders(List<Order> orders) {
+        if (orders == null || orders.isEmpty()) {
+            return;
+        }
+        
         OrderItemDao orderItemDao = new OrderItemDao();
+        
+        // Lấy danh sách order IDs
+        List<Integer> orderIds = orders.stream()
+                .filter(order -> order.getOrderId() != null)
+                .map(Order::getOrderId)
+                .distinct()
+                .collect(java.util.stream.Collectors.toList());
+        
+        if (orderIds.isEmpty()) {
+            return;
+        }
+        
+        // Load tất cả order items trong một query duy nhất (batch loading)
+        List<OrderItem> allItems = orderItemDao.findByOrderIds(orderIds);
+        
+        // Group items by orderId để map vào từng order
+        Map<Integer, List<OrderItem>> itemsByOrderId = allItems.stream()
+                .collect(java.util.stream.Collectors.groupingBy(OrderItem::getOrderId));
+        
+        // Map items vào từng order
         for (Order order : orders) {
             if (order.getOrderId() != null) {
-                List<OrderItem> items = orderItemDao.findByOrderId(order.getOrderId());
+                List<OrderItem> items = itemsByOrderId.get(order.getOrderId());
                 if (items != null) {
                     order.setItems(items);
+                } else {
+                    order.setItems(new java.util.ArrayList<>());
                 }
             }
         }
+    }
+
+    /**
+     * Sắp xếp orders theo thời gian giảm dần (mới nhất trước)
+     * Sử dụng createdAt nếu có, nếu không thì dùng orderDate
+     */
+    private List<Order> sortOrdersByDateDescending(List<Order> orders) {
+        return orders.stream()
+                .sorted(Comparator
+                        .comparing((Order o) -> {
+                            if (o.getCreatedAt() != null) {
+                                return o.getCreatedAt();
+                            } else if (o.getOrderDate() != null) {
+                                return o.getOrderDate();
+                            } else {
+                                return LocalDateTime.MIN;
+                            }
+                        })
+                        .reversed()) // Giảm dần (mới nhất trước)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Lọc orders theo trạng thái
+     * @param orders Danh sách orders cần lọc
+     * @param statusFilter "pending" cho chưa xác nhận, "confirmed" cho đã xác nhận, "all" cho tất cả
+     * @return Danh sách orders đã được lọc
+     */
+    private List<Order> filterOrdersByStatus(List<Order> orders, String statusFilter) {
+        if (statusFilter == null || statusFilter.isEmpty() || "all".equalsIgnoreCase(statusFilter)) {
+            return orders;
+        }
+        
+        return orders.stream()
+                .filter(order -> {
+                    if ("pending".equalsIgnoreCase(statusFilter)) {
+                        // Chưa xác nhận: PENDING, PREPARING, READY, PROCESSING
+                        return order.getOrderStatus() == OrderStatus.PENDING || 
+                               order.getOrderStatus() == OrderStatus.PREPARING ||
+                               order.getOrderStatus() == OrderStatus.READY ||
+                               order.getOrderStatus() == OrderStatus.PROCESSING;
+                    } else if ("confirmed".equalsIgnoreCase(statusFilter)) {
+                        // Đã xác nhận: CONFIRMED, COMPLETED, SHIPPED, DELIVERED
+                        return order.getOrderStatus() == OrderStatus.CONFIRMED || 
+                               order.getOrderStatus() == OrderStatus.COMPLETED ||
+                               order.getOrderStatus() == OrderStatus.SHIPPED ||
+                               order.getOrderStatus() == OrderStatus.DELIVERED;
+                    }
+                    return true;
+                })
+                .collect(Collectors.toList());
     }
 
     /**

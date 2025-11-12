@@ -812,6 +812,36 @@
 
                         <!-- Orders Tab -->
                         <div id="orders" class="tab-content ${activeTab == 'orders' ? 'active' : ''}">
+                            <!-- Filter Section -->
+                            <div style="margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px var(--shadow); display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                                <label style="font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-filter"></i> Lọc theo trạng thái:
+                                </label>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <button 
+                                        type="button" 
+                                        class="filter-btn ${empty statusFilter || statusFilter == 'all' ? 'active' : ''}" 
+                                        onclick="applyStatusFilter('all')"
+                                        style="padding: 8px 20px; border: 2px solid var(--primary); border-radius: 8px; background: ${empty statusFilter || statusFilter == 'all' ? 'var(--gradient-accent)' : 'transparent'}; color: ${empty statusFilter || statusFilter == 'all' ? '#fff' : 'var(--primary)'}; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                        <i class="fas fa-list"></i> Tất cả
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        class="filter-btn ${statusFilter == 'pending' ? 'active' : ''}" 
+                                        onclick="applyStatusFilter('pending')"
+                                        style="padding: 8px 20px; border: 2px solid var(--primary); border-radius: 8px; background: ${statusFilter == 'pending' ? 'var(--gradient-accent)' : 'transparent'}; color: ${statusFilter == 'pending' ? '#fff' : 'var(--primary)'}; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                        <i class="fas fa-clock"></i> Chưa xác nhận
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        class="filter-btn ${statusFilter == 'confirmed' ? 'active' : ''}" 
+                                        onclick="applyStatusFilter('confirmed')"
+                                        style="padding: 8px 20px; border: 2px solid var(--primary); border-radius: 8px; background: ${statusFilter == 'confirmed' ? 'var(--gradient-accent)' : 'transparent'}; color: ${statusFilter == 'confirmed' ? '#fff' : 'var(--primary)'}; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                        <i class="fas fa-check-circle"></i> Đã xác nhận
+                                    </button>
+                                </div>
+                            </div>
+                            
                             <c:if test="${empty orders}">
                                 <div style="text-align: center; padding: 40px; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px var(--shadow);">
                                     <i class="fas fa-shopping-cart" style="font-size: 3rem; color: #ccc; margin-bottom: 15px;"></i>
@@ -1063,6 +1093,18 @@
                         const url = new URL(window.location);
                         url.searchParams.set('tab', tabName);
                         window.history.pushState({}, '', url);
+                    }
+                    
+                    // Function to apply status filter
+                    function applyStatusFilter(statusFilter) {
+                        const url = new URL(window.location);
+                        url.searchParams.set('tab', 'orders');
+                        if (statusFilter === 'all') {
+                            url.searchParams.delete('statusFilter');
+                        } else {
+                            url.searchParams.set('statusFilter', statusFilter);
+                        }
+                        window.location.href = url.toString();
                     }
                     
                     function closeModal(modalId) {

@@ -609,7 +609,7 @@
               name="username"
               class="form-input"
               placeholder="user name"
-              value="${username != null ? username : (sessionScope.registeredUsername != null ? sessionScope.registeredUsername : '')}"
+              value="${username != null ? username : (rememberedUsername != null ? rememberedUsername : (sessionScope.registeredUsername != null ? sessionScope.registeredUsername : ''))}"
               required
             />
             <div id="username-error" class="error-message"></div>
@@ -623,6 +623,7 @@
               name="password"
               class="form-input"
               placeholder="mật khẩu"
+              value="${rememberedPassword != null ? rememberedPassword : ''}"
               required
             />
             <div id="password-error" class="error-message"></div>
@@ -635,6 +636,7 @@
               id="rememberMe"
               name="rememberMe"
               class="checkbox-input"
+              ${hasRememberMeCookies == true ? 'checked' : ''}
             />
             <label for="rememberMe" class="checkbox-label"
               >Ghi nhớ đăng nhập</label
@@ -677,6 +679,7 @@
         const form = document.getElementById('loginForm');
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
+        const rememberMeCheckbox = document.getElementById('rememberMe');
         const loginBtn = document.getElementById('loginBtn');
         const loginText = document.getElementById('loginText');
         const loadingSpinner = document.getElementById('loadingSpinner');
@@ -685,6 +688,36 @@
 
         // Flag to prevent double submission
         let isSubmitting = false;
+
+        // Hàm đọc cookie
+        function getCookie(name) {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop().split(';').shift();
+          return null;
+        }
+
+        // Tự động điền form từ cookie nếu có (fallback nếu JSP không set)
+        function loadRememberMeFromCookies() {
+          const rememberedUsername = getCookie('rememberedUsername');
+          const rememberedPassword = getCookie('rememberedPassword');
+          
+          if (rememberedUsername && !usernameInput.value) {
+            usernameInput.value = rememberedUsername;
+          }
+          
+          if (rememberedPassword && !passwordInput.value) {
+            passwordInput.value = rememberedPassword;
+          }
+          
+          // Tự động check checkbox nếu có cookie
+          if (rememberedUsername && rememberedPassword) {
+            rememberMeCheckbox.checked = true;
+          }
+        }
+
+        // Gọi hàm load cookie khi trang tải
+        loadRememberMeFromCookies();
 
         // Function to enable login button
         function enableLoginButton() {

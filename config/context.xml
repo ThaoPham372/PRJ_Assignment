@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Context Configuration for Gym Management System
+  Cấu hình Context cho hệ thống quản lý phòng gym
+-->
+<Context>
+    <!-- MySQL DataSource Configuration - Using AWS RDS database from persistence.xml -->
+    <Resource name="jdbc/gymDB" 
+              auth="Container"
+              type="javax.sql.DataSource"
+              factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+              testWhileIdle="true"
+              testOnBorrow="true"
+              testOnReturn="false"
+              validationQuery="SELECT 1"
+              validationInterval="30000"
+              timeBetweenEvictionRunsMillis="30000"
+              maxActive="20"
+              minIdle="5"
+              maxWait="10000"
+              initialSize="5"
+              removeAbandonedTimeout="60"
+              removeAbandoned="true"
+              logAbandoned="true"
+              minEvictableIdleTimeMillis="30000"
+              jmxEnabled="true"
+              username="admin" 
+              password="ToThanhNam123!!!"
+              driverClassName="com.mysql.cj.jdbc.Driver"
+              url="jdbc:mysql://gym-fitness-project.cbsayms8ae98.ap-southeast-2.rds.amazonaws.com:3306/gym_management?useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=UTC&amp;characterEncoding=UTF-8&amp;autoReconnect=true&amp;useUnicode=true"/>
+              
+    <!-- Email Configuration -->
+    <Environment name="mail/smtp/host" 
+                 type="java.lang.String" 
+                 value="smtp.gmail.com"/>
+    <Environment name="mail/smtp/port" 
+                 type="java.lang.Integer" 
+                 value="587"/>
+    <Environment name="mail/smtp/auth" 
+                 type="java.lang.Boolean" 
+                 value="true"/>
+    <Environment name="mail/smtp/starttls" 
+                 type="java.lang.Boolean" 
+                 value="true"/>
+                 
+    <!-- Session Configuration -->
+    <Manager pathname="" />
+    
+    <!-- Security Configuration -->
+    <Valve className="org.apache.catalina.valves.RemoteAddrValve"
+           allow="127\.0\.0\.1|::1|0:0:0:0:0:0:0:1" />
+</Context>
